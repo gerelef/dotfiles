@@ -127,9 +127,9 @@ alias restartnetwork="sudo /etc/init.d/network-manager restart"
 alias restartsoundmanager="sudo /sbin/alsa force-reload"
 alias updateupgrade="sudo apt update -y && sudo apt upgrade -y && sudo apt autoremove -y"
 alias untar="tar -xvzf"
-alias fuck="sudo $(history -p !!)"
+alias fuck='sudo $(history -p \!\!)'
 alias please="sudo"
-alias IAMROOT="sudo $(history -p !!)"
+alias IAMROOT='sudo $(history -p \!\!)'
 
 # displays standard information every time shell starts
 neofetch
