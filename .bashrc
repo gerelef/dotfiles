@@ -134,3 +134,5 @@ alias IAMROOT='sudo $(history -p \!\!)'
 # displays standard information every time shell starts
 neofetch
 
+. "$HOME/.cargo/env"
+source /home/cerberus/alacritty/extra/completions/alacritty.bash
