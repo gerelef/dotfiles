@@ -1,6 +1,6 @@
-# ~/.bashrc: executed by bash(1) for non-login shells.
 # see /usr/share/doc/bash/examples/startup-files (in the package bash-doc)
 # for examples
+# ~/.bashrc: executed by bash(1) for non-login shells.
 
 # If not running interactively, don't do anything
 case $- in
@@ -132,7 +132,7 @@ alias please="sudo"
 alias IAMROOT='sudo $(history -p \!\!)'
 
 # displays standard information every time shell starts
-neofetch
+neofetch --color_blocks off
 
 . "$HOME/.cargo/env"
 source /home/cerberus/alacritty/extra/completions/alacritty.bash
