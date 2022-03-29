@@ -130,7 +130,8 @@ alias untar="tar -xvzf"
 alias fuck='sudo $(history -p \!\!)'
 alias please="sudo"
 alias IAMROOT='sudo $(history -p \!\!)'
-
+alias setperformancemode="echo performance | sudo tee /sys/devices/system/cpu/cpu*/cpufreq/scaling_governor"
+alias setpowersavemode="echo powersave | sudo tee /sys/devices/system/cpu/cpu*/cpufreq/scaling_governor"
 # displays standard information every time shell starts
 neofetch --color_blocks off
 
