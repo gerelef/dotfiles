@@ -5,7 +5,7 @@ live_config_reload: true
 window:
     dimensions:
         columns: 107
-        lines: 29
+        lines: 30
 
 scrolling:
     history: 100000
