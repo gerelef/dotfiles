@@ -6,6 +6,13 @@ window:
     dimensions:
         columns: 107
         lines: 30
+        
+    padding:
+        x: 0
+        y: 0
+        
+    dynamic_padding: false
+    
 
 scrolling:
     history: 100000
