@@ -1,4 +1,4 @@
-# my alacritty yml
+# my alacritty yml, dump in ~/alacritty/alacrity.yml
 dynamic_title: true
 live_config_reload: true
 
@@ -44,6 +44,9 @@ font:
     style: Bold Italic
 
   size: 12
+
+key_bindings:
+  - { key: Return,         mods: Alt,                    action: ToggleFullscreen }
 
 # Dracula theme for Alacritty
 # https://draculatheme.com/alacritty
