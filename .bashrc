@@ -134,6 +134,7 @@ alias setperformancemode="echo performance | sudo tee /sys/devices/system/cpu/cp
 alias setpowersavemode="echo powersave | sudo tee /sys/devices/system/cpu/cpu*/cpufreq/scaling_governor"
 # displays standard information every time shell starts
 neofetch --color_blocks off
+PATH=$PATH:~/Downloads/appImages
 
 . "$HOME/.cargo/env"
 source /home/cerberus/alacritty/extra/completions/alacritty.bash
