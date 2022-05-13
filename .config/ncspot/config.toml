@@ -1,0 +1,137 @@
+# put this in ~/.config/ncspot/config.toml
+default_keybindings = false
+flip_status_indicators = true
+initial_screen = "library"
+audio_cache = true
+audio_cache_size = 8192
+bitrate = 320
+volnorm = false
+gapless = true
+shuffle = false
+repeat = "off"
+album_column = true
+
+
+[keybindings]
+## unbinded: nN, c, eE, xX
+"`" = "update"
+######################################
+# Movements
+######################################
+"F1" = "focus queue"
+"F2" = "focus library"
+"F3" = "focus search"
+# Go to the playing track
+"." = "move playing"
+# Navigation
+"Home" = "move top"
+"End" = "move bottom"
+"Up" = "move up 1"
+"Down" = "move down 1"
+"Left" = "move left 1"
+"Right" = "move right 1"
+"Ctrl+Up" = "move up 5"
+"Ctrl+Down" = "move down 5"
+"Ctrl+Left" = "move left 5"
+"Ctrl+Right" = "move right 5"
+"PageUp" = "move up 15"
+"PageDown" = "move down 5"
+
+"Escape" = "quit"
+
+######################################
+# Song controls
+######################################
+
+##################
+# Fast forward / rewind
+##################
+"[" = "seek -1000"
+"]" = "seek +1000"
+"{" = "seek -10000"
+"}" = "seek +10000"
+
+##################
+# Play / pause
+##################
+" " = "playpause"
+"Enter" = "play"
+"Backspace" = "back"
+
+######################################
+# Sound
+######################################
+"=" = "volup 1"
+"-" = "voldown 1"
+"+" = "volup 5"
+"_" = "voldown 5"
+
+##################
+# Track manipulation
+##################
+"<" = "previous"
+">" = "next"
+";" = "repeat"
+"l" = "shuffle"
+"'" = "save"
+"Ctrl+'" = "delete"
+# Open context menu
+"o" = "open current"
+"Ctrl+o" = "open selected"
+"a" = "goto album"
+"Ctrl+a" = "goto artist"
+"p" = "similar current"
+"Ctrl+p" = "similar selected"
+
+##################
+# Queue
+##################
+# Add to queue
+"z" = "queue"
+"Ctrl+z" = "save queue"
+# Move selected song up/down in the queue
+"W" = "shift up 1"
+"S" = "shift down 1"
+"Ctrl+W" = "clear"
+# Open the context menu for a Spotify link in the clipboard
+"Ctrl+v" = "insert"
+
+######################################
+# Sorting
+######################################
+"t" = "sort added d"
+"T" = "sort title a"
+
+######################################
+# Sharing
+######################################
+"Y" = "share selected"
+"y" = "share current"
+
+######################################
+# Other
+######################################
+"Q" = "quit"
+"Z" = "quit"
+"?" = "help"
+"U" = "update"
+
+# official spotify client ui
+[theme]
+background = "black"
+primary = "light white"
+secondary = "light black"
+title = "green"
+playing = "green"
+playing_selected = "light green"
+playing_bg = "black"
+highlight = "light white"
+highlight_bg = "#484848"
+error = "light white"
+error_bg = "red"
+statusbar = "black"
+statusbar_progress = "green"
+statusbar_bg = "green"
+cmdline = "light white"
+cmdline_bg = "black"
+search_match = "light red"
