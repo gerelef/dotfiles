@@ -1,3 +1,4 @@
+# based on https://old.reddit.com/r/linux4noobs/comments/ob57rr/ncspot_configuration/
 # put this in ~/.config/ncspot/config.toml
 default_keybindings = false
 flip_status_indicators = true
@@ -63,35 +64,33 @@ album_column = true
 ######################################
 "=" = "volup 1"
 "-" = "voldown 1"
-"+" = "volup 5"
-"_" = "voldown 5"
+"Shift+=" = "volup 5"
+"Shift+-" = "voldown 5"
 
 ##################
 # Track manipulation
 ##################
 "<" = "previous"
 ">" = "next"
-";" = "repeat"
-"l" = "shuffle"
-"'" = "save"
-"Ctrl+'" = "delete"
+"'" = "repeat"
+";" = "shuffle"
+"s" = "save"
+"d" = "delete"
 # Open context menu
-"o" = "open current"
-"Ctrl+o" = "open selected"
-"a" = "goto album"
-"Ctrl+a" = "goto artist"
-"p" = "similar current"
-"Ctrl+p" = "similar selected"
+"o" = "open selected"
+"Ctrl+o" = "open current"
+"p" = "similar selected"
+"Ctrl+p" = "similar current"
+"u" = "goto album"
+"Ctrl+u" = "goto artist"
 
 ##################
 # Queue
 ##################
 # Add to queue
 "z" = "queue"
-"Ctrl+z" = "save queue"
-# Move selected song up/down in the queue
-"W" = "shift up 1"
-"S" = "shift down 1"
+"Ctrl+Up" = "shift up 1"
+"Ctrl+Down" = "shift down 1"
 "Ctrl+W" = "clear"
 # Open the context menu for a Spotify link in the clipboard
 "Ctrl+v" = "insert"
@@ -105,16 +104,13 @@ album_column = true
 ######################################
 # Sharing
 ######################################
-"Y" = "share selected"
-"y" = "share current"
+"u" = "share selected"
+"U" = "share current"
 
 ######################################
 # Other
 ######################################
-"Q" = "quit"
-"Z" = "quit"
 "?" = "help"
-"U" = "update"
 
 # official spotify client ui
 [theme]
