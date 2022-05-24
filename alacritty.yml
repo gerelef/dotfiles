@@ -28,25 +28,28 @@ debug:
 # ubuntu font
 font:
   normal:
-    family: ubuntu mono
+    family: mono
     style: Regular
 
   bold:
-    family: ubuntu mono
+    family: mono
     style: Bold
 
   italic:
-    family: ubuntu mono
+    family: mono
     style: Italic
 
   bold_italic:
-    family: ubuntu mono
+    family: mono
     style: Bold Italic
 
-  size: 12
+  size: 10
 
 key_bindings:
-  - { key: Return,         mods: Alt,                    action: ToggleFullscreen }
+  - { key: Return,         mods: Alt,                    action: ToggleFullscreen             }
+  - { key: Key0,           mods: Command,                action: ResetFontSize                }
+  - { key: Equals,         mods: Command,                action: IncreaseFontSize             }
+  - { key: Minus,          mods: Command,                action: DecreaseFontSize             }
 
 # Dracula theme for Alacritty
 # https://draculatheme.com/alacritty
