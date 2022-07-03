@@ -1,0 +1,17 @@
+//getpos/setpos
+//use weapon_flashbang
+//use weapon_smokegrenade
+//use weapon_incgrenade; use weapon_molotov
+//use weapon_hegrenade
+
+
+// VERTIGO
+
+say "TESTED ON 128-TICK";
+
+//some util cannot be setpos normally, and need setpos_exact instead. setang should work though...
+say "T spawn NAVI leftmost smoke. Jump-throw"; setpos_exact -1567.536255 -1072.031250 -352.675262; setang -22.393797 -18.661070 0.000000; use weapon_smokegrenade
+say "T spawn NAVI middle smoke. Jump-throw. Third smoke is same lineup, but walk until window ends, and jumpthrow."; setpos_exact -1569.042236 -1072.752075 -352.687164; setang -25.325275 -19.490402 0.000000; use weapon_smokegrenade
+say "T roof molly + flash. Jump-throw"; setpos_exact -112.041321 -733.562500 -107.906189; setang -3.103097 10.425183 0.000000; use weapon_flashbang
+say "T roof molly hut. Run and release left before dropping off the thingy."; setpos_exact -24.364098 -954.934937 42.093803; setang -10.957003 -32.117191 0.000000; use weapon_incgrenade; use weapon_molotov
+say "T silo heaven smoke. Left-click"; setpos_exact 62.997688 -1430.770020 -25.906189; setang -21.953917 49.178196 0.000000; use weapon_smokegrenade

@@ -1,0 +1,13 @@
+//getpos/setpos
+//use weapon_flashbang
+//use weapon_smokegrenade
+//use weapon_incgrenade; use weapon_molotov
+//use weapon_hegrenade
+
+
+// VERTIGO
+
+say "TESTED ON 128-TICK";
+
+//some util cannot be setpos normally, and need setpos_exact instead. setang should work though...
+
