@@ -5,9 +5,48 @@
 //use weapon_hegrenade
 
 
-// VERTIGO
+// OVERPASS
 
 say "TESTED ON 128-TICK";
 
 //some util cannot be setpos normally, and need setpos_exact instead. setang should work though...
+say "T spawn molly B short . Jump-throw"; setpos_exact -563.208496 -1817.418945 145.093811; setang 4.858966 109.335609 0.000000; use weapon_incgrenade; use weapon_molotov
+say "T spawn flash B short . Jump-throw"; setpos_exact -569.714417 -1810.011719 145.093811; setang -0.832420 153.083817 0.000000; use weapon_flashbang
 
+say "T monster molly B barrels. Shift-run left click"; setpos_exact -614.983765 -1155.369141 70.744812; setang -22.525623 99.687820 0.000000; use weapon_incgrenade; use weapon_molotov
+say "T monster flash B . Left click"; setpos_exact -654.524231 -1021.431702 25.785393; setang -27.044441 64.138107 0.000000; use weapon_flashbang
+say "T monster grenade B boost pos 1. Run jumpthrow"; setpos_exact -197.626205 -928.507446 28.313477000000006; setang -2.076636 156.072708 0.000000; use weapon_hegrenade
+say "T monster grenade B boost pos 2. Run jumpthrow"; setpos_exact -258.894287 -782.499451 51.808769; setang -4.021437 163.680283 0.000000; use weapon_hegrenade
+say "T monster flash out B pipe. Shift-run left click"; setpos_exact -287.918030 -713.557007 62.683807; setang -21.510321 -152.904602 0.000000; use weapon_flashbang
+
+say "T water smoke B heaven. Left-click"; setpos_exact -1559.989502 -728.782837 52.750434999999996; setang -30.219028 97.299385 0.000000; use weapon_smokegrenade
+say "T water smoke B out short. Left click"; setpos_exact -1463.397217 -470.067413 6.657096999999993; setang -38.541660 158.460464 0.000000; use weapon_smokegrenade
+say "T water molly B jungle. Left click"; setpos_exact -1463.398804 -467.279663 6.530304000000001; setang -36.639786 167.984283 0.000000; use weapon_incgrenade; use weapon_molotov
+say "T water molly B CT. Left click"; setpos_exact -1559.999634 -728.791138 52.235168; setang -24.084366 103.977715 0.000000; use weapon_incgrenade; use weapon_molotov
+say "T water molly B CT. Left click"; setpos_exact -1559.999634 -728.791138 52.235168; setang -24.084366 103.977715 0.000000; use weapon_incgrenade; use weapon_molotov
+say "T water molly B ramp. Run Left click"; setpos_exact -1585.044800 -778.396912 136.093811; setang -8.096962 71.631050 0.000000; use weapon_incgrenade; use weapon_molotov
+say "T water molly B barrels. Run Left click"; setpos_exact -1584.789429 -857.368042 136.093811; setang -10.313472 65.768059 0.000000; use weapon_incgrenade; use weapon_molotov
+
+say "T conn molly high conn. Run left click"; setpos_exact -1797.256714 -1394.202026 96.09381099999999; setang -19.094097 97.273178 0.000000; use weapon_incgrenade; use weapon_molotov
+say "T conn molly deep conn. left click"; setpos_exact -1734.064819 -1269.327881 96.09381099999999; setang 1.283392 119.152336 0.000000; use weapon_incgrenade; use weapon_molotov
+say "T conn flash out water. Ctrl + Left click"; setpos_exact -1839.998291 -1071.987183 96.09381099999999; setang -51.412136 168.759506 0.000000; use weapon_flashbang
+say "T conn flash out banana. left click"; setpos_exact -2233.919189 -1327.999390 432.093811; setang -12.358819 138.200577 0.000000; use weapon_flashbang
+
+say "T fountain smoke bathrooms. Left click"; setpos_exact -2596.002441 -1984.597900 514.632019; setang -0.203622 93.887054 0.000000; use weapon_smokegrenade
+say "T fountain molly divider. Left click"; setpos_exact -2515.124512 -1926.648315 514.632019; setang -15.261542 79.401077 0.000000; use weapon_incgrenade; use weapon_molotov
+say "T fountain self-flash out long. Run + Jumpthrow"; setpos_exact -2979.860596 -2489.134033 472.09381099999996; setang -1.075922 113.549858 0.000000; use weapon_flashbang
+
+say "T banana A bank smoke. Jumpthrow"; setpos_exact -2320.031250 -1251.567871 432.31134; setang -3.349612 93.215149 0.000000; use weapon_smokegrenade
+say "T banana A garbage smoke. Left click"; setpos_exact -2351.968750 -790.031250 388.802643; setang -37.612484 81.183723 0.000000; use weapon_smokegrenade
+say "T banana A truck smoke. Left click"; setpos_exact -2351.968750 -790.031250 388.802643; setang -37.555279 79.096085 0.000000; use weapon_smokegrenade
+say "T banana A deep garbage smoke. Left click"; setpos_exact -2351.991211 -736.367493 429.968811; setang -37.755478 76.907791 0.000000; use weapon_smokegrenade
+say "T long A bank smoke. Jumpthrow"; setpos_exact -3801.624512 -1270.298218 506.432556; setang -7.825532 62.565041 0.000000; use weapon_smokegrenade
+
+say "CT spawn B monster quick smoke. Jumpthrow"; setpos_exact -2116.398682 993.194214 480.09381099999996; setang -16.631958 -50.790138 0.000000; use weapon_smokegrenade
+say "CT banana quick molly T ramp. Run Jumpthrow"; setpos_exact -2299.593994 -209.360229 390.040161; setang 1.314546 -79.544701 0.000000; use weapon_incgrenade; use weapon_molotov
+say "CT banana quick molly T park. Run Jumpthrow"; setpos_exact -2269.864258 -449.303589 384.343811; setang 0.342078 -87.571167 0.000000; use weapon_incgrenade; use weapon_molotov
+
+say "CT heaven flash monster. shift left click"; setpos_exact -2002.007324 592.995972 256.093811; setang 1.743451 -13.211332 0.000000; use weapon_flashbang
+say "CT B molly pipe. left click"; setpos_exact -1931.583130 135.105423 128.093811; setang -12.284847 -56.211494 0.000000; use weapon_incgrenade; use weapon_molotov
+say "CT B flash out short water. run left click"; setpos_exact -1197.603882 -178.726761 99.20275899999999; setang -9.796910 -38.351227 0.000000; use weapon_flashbang
+say "CT banana smoke fountain awp oneway. run left click"; setpos_exact -2436.898926 -635.849182 432.088531; setang -1.474300 -121.963661 0.000000; use weapon_smokegrenade
