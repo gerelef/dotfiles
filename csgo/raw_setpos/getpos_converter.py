@@ -19,7 +19,7 @@ if __name__ == "__main__":
         for line in f:
             if "say" in line:
                 if alias_counter > 0:
-                    final_alias += f"; alias {alias_name} {alias_name}{alias_counter}\"; bind \"f10\" \"{alias_name}{alias_counter-1}\""
+                    final_alias += f"; bind f10 {alias_name}{alias_counter-1}; alias {alias_name} {alias_name}{alias_counter};"
                 print(final_alias)
                 final_alias = f"alias \"{alias_name}{alias_counter}\" \"{line[:-1]}"
                 alias_counter += 1 
