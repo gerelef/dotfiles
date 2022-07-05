@@ -16,10 +16,10 @@ def show_entry_fields():
     
     global OUTPUT 
     
-    args = e1.get().trim().split(';')
+    args = e1.get().strip().split(';')
     pos_flag = False
     angle_flag = False
-    echo_str = e2.get().trim()
+    echo_str = e2.get().strip()
     util = ""
     for arg in args:
         pos_flag =  "setpos" in arg

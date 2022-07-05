@@ -1,0 +1,39 @@
+//getpos/setpos
+//use weapon_flashbang
+//use weapon_smokegrenade
+//use weapon_incgrenade; use weapon_molotov
+//use weapon_hegrenade
+
+
+// OVERPASS
+//some util cannot be setpos normally, and need setpos_exact instead. setang should work though...
+
+//BACK SPAWNS
+say "T Spawn instant window smoke 1. W Jumpthrow (together)"; setpos_exact 1376.000000 -304.000000 -167.90618899999998; setang -28.013672 -173.355057 0.000000; use weapon_smokegrenade
+say "T Spawn instant window smoke 2. W Jumpthrow (together)"; setpos_exact 1376.000000 -208.000000 -163.90252700000002; setang -30.173044 -171.166565 0.000000; use weapon_smokegrenade
+say "T Spawn instant window smoke 3. CTRL W, jumpthrow when on the red"; setpos_exact 1376.000000 -112.000000 -163.90252700000002; setang -29.400822 -169.393417 0.000000; use weapon_smokegrenade
+say "T Spawn instant window smoke 4. CTRL W, jumpthrow when on the third eye"; setpos_exact 1376.000000 -16.000000 -167.90618899999998; setang -30.001390 -167.491302 0.000000; use weapon_smokegrenade
+//FRONT SPAWNS
+say "T Spawn instant window smoke 1.1. W Jumpthrow (together)"; setpos_exact 1296.000000 -352.000000 -167.90618899999998; setang -39.711414 -174.040878 0.000000; use weapon_smokegrenade
+say "T Spawn instant window smoke 1.2. W Jumpthrow (together)"; setpos_exact 1296.000000 -256.000000 -167.90618899999998; setang -39.482334 -172.196030 0.000000; use weapon_smokegrenade
+say "T Spawn instant window smoke 1.3. W Jumpthrow (together)"; setpos_exact 1296.000000 -160.000000 -167.90618899999998; setang -29.000467 -169.750748 0.000000; use weapon_smokegrenade
+say "T Spawn instant window smoke 1.4. W Jumpthrow (together)"; setpos_exact 1296.000000 -64.000000 -167.90618899999998; setang -27.899313 -168.220566 0.000000; use weapon_smokegrenade
+
+say "T Spawn window smoke. D Jumpthrow (together)"; setpos_exact 1422.985718 34.830582 -167.90618899999998; setang -31.274094 -165.003204 0.000000; use weapon_smokegrenade
+say "T Spawn top mid smoke. Left click"; setpos_exact 1422.997070 70.998367 -112.840103; setang -32.775745 -163.484100 0.000000; use weapon_smokegrenade
+
+say "T ramp A stairs smoke. Left click"; setpos_exact 1151.686279 -1183.999756 -205.51062; setang -42.209778 -165.594513 0.000000; use weapon_smokegrenade
+say "T ramp A jungle smoke. Left click"; setpos_exact 815.968750 -1413.302124 -108.906189; setang -27.851542 -172.757156 0.000000; use weapon_smokegrenade
+say "T ramp A lamp flash. Left click"; setpos_exact 872.357117 -1036.005005 -251.906189; setang -33.142525 -153.909775 0.000000; use weapon_flashbang
+say "T ramp A stair molly. shift left click"; setpos_exact 456.226471 -1620.788818 -240.015747; setang -18.563980 171.996735 0.000000; use weapon_incgrenade; use weapon_molotov
+say "T tetris A deep jungle smoke. left click"; setpos_exact -31.917040 -1418.000366 -167.90618899999998; setang -70.412102 -179.236633 0.000000; use weapon_smokegrenade
+
+say "T top mid top conn smoke. jumpthrow"; setpos_exact 277.678802 -97.554718 -175.834015; setang -10.116428 -126.023041 0.000000; use weapon_smokegrenade
+say "T top mid deep jungle smoke. jumpthrow"; setpos_exact 276.632599 -102.524551 -173.167511; setang -7.313590 -130.928223 0.000000; use weapon_smokegrenade
+
+say "T apps smoke A top conn. jumpthrow"; setpos_exact -160.007629 887.992615 -135.26603699999998; setang -14.792513 -102.743080 0.000000; use weapon_smokegrenade
+say "T apps smoke B market. jumpthrow"; setpos_exact -160.007629 887.992615 -135.26603699999998; setang -51.114536 -147.430405 0.000000; use weapon_smokegrenade
+
+say "T B default smoke window. Jumpthrow"; setpos_exact -1968.000244 450.031250 -159.90618899999998; setang -4.676122 -138.449432 0.000000; use weapon_smokegrenade
+
+say "CT Spawn instant smoke deep B apps. Run Jumpthrow (when at the door)"; setpos_exact -1649.543091 -1579.535034 -263.90618900000004; setang -38.309677 74.817856 0.000000; use weapon_smokegrenade

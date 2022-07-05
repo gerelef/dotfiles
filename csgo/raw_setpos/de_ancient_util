@@ -1,0 +1,19 @@
+//getpos/setpos
+//use weapon_flashbang
+//use weapon_smokegrenade
+//use weapon_incgrenade; use weapon_molotov
+//use weapon_hegrenade
+
+
+// OVERPASS
+//some util cannot be setpos normally, and need setpos_exact instead. setang should work though...
+say "T Spawn top mid smoke. Jumpthrow"; setpos_exact -391.983948 -2039.874390 -146.90618899999998; setang -27.527521 94.381973 0.000000; use weapon_smokegrenade
+say "T Spawn fast cave smoke. Run Jumpthrow"; setpos_exact -735.968750 -2135.998535 -164.108643; setang -27.384550 65.967514 0.000000; use weapon_smokegrenade
+say "T Spawn donut molly. Jumpthrow"; setpos_exact -709.638367 -2343.564453 -159.605087; setang -21.321415 88.419685 0.000000; use weapon_incgrenade; use weapon_molotov
+say "T spawn mid flash. jumpthrow"; setpos_exact -216.031250 -1935.220703 -164.41171300000002; setang -21.007212 97.321289 0.000000; use weapon_flashbang
+
+say "T out A main flash. run left click"; setpos_exact -1823.075928 -11.325486 83.09381099999999; setang -1.745092 119.657867 0.000000; use weapon_flashbang
+say "T out A main CT rotate smoke. jumpthrow"; setpos_exact -2143.968750 -1003.968750 -2.7942350000000005; setang -29.261803 60.902851 0.000000; use weapon_smokegrenade
+
+say "CT B site nadestack lane. left click"; setpos_exact 867.667358 226.450760 134.093811; setang 0.868234 -50.810646 0.000000; use weapon_hegrenade
+

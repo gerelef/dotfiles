@@ -6,9 +6,6 @@
 
 
 // OVERPASS
-
-say "TESTED ON 128-TICK";
-
 //some util cannot be setpos normally, and need setpos_exact instead. setang should work though...
 say "T spawn NAVI smoke 1. Jump throw"; setpos_exact -1568.040771 -1072.027954 -416.675201; setang -22.379549 -18.727327 0.000000; use weapon_smokegrenade
 say "T spawn NAVI smoke 2. Jump throw"; setpos_exact -1568.040771 -1072.027954 -416.675201; setang -25.296757 -19.642509 0.000000; use weapon_smokegrenade

@@ -6,9 +6,6 @@
 
 
 // OVERPASS
-
-say "TESTED ON 128-TICK";
-
 //some util cannot be setpos normally, and need setpos_exact instead. setang should work though...
 say "T spawn molly B short . Jump-throw"; setpos_exact -563.208496 -1817.418945 145.093811; setang 4.858966 109.335609 0.000000; use weapon_incgrenade; use weapon_molotov
 say "T spawn flash B short . Jump-throw"; setpos_exact -569.714417 -1810.011719 145.093811; setang -0.832420 153.083817 0.000000; use weapon_flashbang
