@@ -23,6 +23,7 @@ say "T water molly B CT. Left click"; setpos_exact -1559.999634 -728.791138 52.2
 say "T water molly B CT. Left click"; setpos_exact -1559.999634 -728.791138 52.235168; setang -24.084366 103.977715 0.000000; use weapon_incgrenade; use weapon_molotov
 say "T water molly B ramp. Run Left click"; setpos_exact -1585.044800 -778.396912 136.093811; setang -8.096962 71.631050 0.000000; use weapon_incgrenade; use weapon_molotov
 say "T water molly B barrels. Run Left click"; setpos_exact -1584.789429 -857.368042 136.093811; setang -10.313472 65.768059 0.000000; use weapon_incgrenade; use weapon_molotov
+say "T water molly B barrels. jumpthrow"; setpos_exact -1559.997925 -728.753418 52.666306000000006; setang 1.584352 61.102325 0.000000; use weapon_incgrenade; use weapon_molotov
 
 say "T conn molly high conn. Run left click"; setpos_exact -1797.256714 -1394.202026 96.09381099999999; setang -19.094097 97.273178 0.000000; use weapon_incgrenade; use weapon_molotov
 say "T conn molly deep conn. left click"; setpos_exact -1734.064819 -1269.327881 96.09381099999999; setang 1.283392 119.152336 0.000000; use weapon_incgrenade; use weapon_molotov
