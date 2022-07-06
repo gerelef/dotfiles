@@ -18,7 +18,7 @@ if __name__ == "__main__":
                     final_alias = f"alias \"{alias_name}{alias_counter}\" \"{line[:-1]}"
                     alias_counter += 1 
                     last_say = line
-            print(f"alias \"{alias_name}{alias_counter-1}\" \"{last_say[0:-1]}\"; bind f10 {alias_name}{alias_counter-1}; alias {alias_name} {alias_name}0")
+            print(f"alias \"{alias_name}{alias_counter-1}\" \"{last_say[0:-1]}; bind f10 {alias_name}{alias_counter-1}; alias {alias_name} {alias_name}0\"")
             print(f"alias \"{alias_name}\" \"{alias_name}0\"")
             print()
             print()
