@@ -41,6 +41,10 @@ say "T banana A deep garbage smoke. Left click"; setpos_exact -2351.991211 -736.
 say "T long A bank smoke. Jumpthrow"; setpos_exact -3801.624512 -1270.298218 506.432556; setang -7.825532 62.565041 0.000000; use weapon_smokegrenade
 
 say "CT spawn B monster quick smoke. Jumpthrow"; setpos_exact -2116.398682 993.194214 480.09381099999996; setang -16.631958 -50.790138 0.000000; use weapon_smokegrenade
+say "CT Backsite default plant molly. left click"; setpos_exact -1744.002686 1217.228271 352.737061; setang -17.935364 -141.154236 0.000000; use weapon_incgrenade; use weapon_molotov
+say "CT Backsite flash site. left click"; setpos_exact -1744.002686 1217.228271 352.737061; setang -25.371382 -162.217911 0.000000; use weapon_flashbang
+say "CT Backsite molly truck. left click"; setpos_exact -1744.000122 1307.968750 355.511444; setang -16.748621 -114.501747 0.000000; use weapon_incgrenade; use weapon_molotov
+
 say "CT banana quick molly T ramp. Run Jumpthrow"; setpos_exact -2299.593994 -209.360229 390.040161; setang 1.314546 -79.544701 0.000000; use weapon_incgrenade; use weapon_molotov
 say "CT banana quick molly T park. Run Jumpthrow"; setpos_exact -2269.864258 -449.303589 384.343811; setang 0.342078 -87.571167 0.000000; use weapon_incgrenade; use weapon_molotov
 

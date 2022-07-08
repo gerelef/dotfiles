@@ -30,6 +30,8 @@ say "T tetris A deep jungle smoke. left click"; setpos_exact -31.917040 -1418.00
 
 say "T top mid top conn smoke. jumpthrow"; setpos_exact 277.678802 -97.554718 -175.834015; setang -10.116428 -126.023041 0.000000; use weapon_smokegrenade
 say "T top mid deep jungle smoke. jumpthrow"; setpos_exact 276.632599 -102.524551 -173.167511; setang -7.313590 -130.928223 0.000000; use weapon_smokegrenade
+say "T top mid smoke B short. jumpthrow"; setpos_exact 502.968750 -64.031250 -159.945236; setang -8.325773 177.891724 0.000000; use weapon_smokegrenade
+say "T bot mid deep nest smoke to jump ladder. left click"; setpos_exact -1055.968750 -788.996948 -263.90618900000004; setang -17.424360 99.246033 0.000000; use weapon_smokegrenade
 
 say "T apps smoke A top conn. jumpthrow"; setpos_exact -160.007629 887.992615 -135.26603699999998; setang -14.792513 -102.743080 0.000000; use weapon_smokegrenade
 say "T apps smoke B market. jumpthrow"; setpos_exact -160.007629 887.992615 -135.26603699999998; setang -51.114536 -147.430405 0.000000; use weapon_smokegrenade
