@@ -47,8 +47,9 @@ say "CT Backsite molly truck. left click"; setpos_exact -1744.000122 1307.968750
 
 say "CT banana quick molly T ramp. Run Jumpthrow"; setpos_exact -2299.593994 -209.360229 390.040161; setang 1.314546 -79.544701 0.000000; use weapon_incgrenade; use weapon_molotov
 say "CT banana quick molly T park. Run Jumpthrow"; setpos_exact -2269.864258 -449.303589 384.343811; setang 0.342078 -87.571167 0.000000; use weapon_incgrenade; use weapon_molotov
+say "CT banana smoke fountain awp oneway. run left click"; setpos_exact -2436.898926 -635.849182 432.088531; setang -1.474300 -121.963661 0.000000; use weapon_smokegrenade
 
 say "CT heaven flash monster. shift left click"; setpos_exact -2002.007324 592.995972 256.093811; setang 1.743451 -13.211332 0.000000; use weapon_flashbang
 say "CT B molly pipe. left click"; setpos_exact -1931.583130 135.105423 128.093811; setang -12.284847 -56.211494 0.000000; use weapon_incgrenade; use weapon_molotov
 say "CT B flash out short water. run left click"; setpos_exact -1197.603882 -178.726761 99.20275899999999; setang -9.796910 -38.351227 0.000000; use weapon_flashbang
-say "CT banana smoke fountain awp oneway. run left click"; setpos_exact -2436.898926 -635.849182 432.088531; setang -1.474300 -121.963661 0.000000; use weapon_smokegrenade
+say "CT B smoke A entry. jumpthrow"; setpos_exact -1088.936890 -301.786987 84.98587; setang -20.566425 155.253433 0.000000; use weapon_smokegrenade
