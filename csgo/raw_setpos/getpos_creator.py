@@ -117,7 +117,7 @@ tk.Button(master, text='Undo', font='TkFixedFont', command=undo_e1).grid(row=0,
 e2 = tk.StringVar()
 e2.set("")
 e2_backup = str()
-e2_lbl = tk.Entry(master, textvariable=e2, font='TkFixedFont', fg="black", bg="white", bd=0, state="readonly").grid(row=1, column=1)
+e2_lbl = tk.Entry(master, textvariable=e2, font='TkFixedFont', fg="black", bg="white", bd=0, state="normal").grid(row=1, column=1)
 tk.Button(master, text='Paste', font='TkFixedFont', command=paste_e2).grid(row=1, 
                                                        column=2, 
                                                        sticky=tk.W, 
@@ -130,7 +130,7 @@ tk.Button(master, text='Undo', font='TkFixedFont', command=undo_e2).grid(row=1,
 e3 = tk.StringVar()
 e3.set("")
 e3_backup = str()
-e3_lbl = tk.Entry(master, textvariable=e3, font='TkFixedFont', fg="black", bg="white", bd=0, state="readonly").grid(row=2, column=1)
+e3_lbl = tk.Entry(master, textvariable=e3, font='TkFixedFont', fg="black", bg="white", bd=0, state="normal").grid(row=2, column=1)
 tk.Button(master, text='Paste', font='TkFixedFont', command=paste_e3).grid(row=2, 
                                                        column=2, 
                                                        sticky=tk.W, 
@@ -144,7 +144,7 @@ tk.Button(master, text='Undo', font='TkFixedFont', command=undo_e3).grid(row=2,
 OUTPUT = tk.StringVar()
 OUTPUT.set("")
 
-lbl = tk.Entry(master, textvariable=OUTPUT, fg="black", bg="white", bd=0, state="readonly").grid(row=3, column=1)
+lbl = tk.Entry(master, textvariable=OUTPUT, fg="black", bg="black", bd=0, state="readonly").grid(row=3, column=1)
 
 tk.Button(master, text='Copy', font='TkFixedFont', command=copy_out_str).grid(row=3, 
                                                        column=3, 

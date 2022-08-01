@@ -20,7 +20,6 @@ say "T water smoke B heaven. Left-click"; setpos_exact -1559.989502 -728.782837 
 say "T water smoke B out short. Left click"; setpos_exact -1463.397217 -470.067413 6.657096999999993; setang -38.541660 158.460464 0.000000; use weapon_smokegrenade
 say "T water molly B jungle. Left click"; setpos_exact -1463.398804 -467.279663 6.530304000000001; setang -36.639786 167.984283 0.000000; use weapon_incgrenade; use weapon_molotov
 say "T water molly B CT. Left click"; setpos_exact -1559.999634 -728.791138 52.235168; setang -24.084366 103.977715 0.000000; use weapon_incgrenade; use weapon_molotov
-say "T water molly B CT. Left click"; setpos_exact -1559.999634 -728.791138 52.235168; setang -24.084366 103.977715 0.000000; use weapon_incgrenade; use weapon_molotov
 say "T water molly B ramp. Run Left click"; setpos_exact -1585.044800 -778.396912 136.093811; setang -8.096962 71.631050 0.000000; use weapon_incgrenade; use weapon_molotov
 say "T water molly B barrels. Run Left click"; setpos_exact -1584.789429 -857.368042 136.093811; setang -10.313472 65.768059 0.000000; use weapon_incgrenade; use weapon_molotov
 say "T water molly B barrels. jumpthrow"; setpos_exact -1559.997925 -728.753418 52.666306000000006; setang 1.584352 61.102325 0.000000; use weapon_incgrenade; use weapon_molotov

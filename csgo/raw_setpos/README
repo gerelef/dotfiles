@@ -1,7 +1,6 @@
-TODO: make converter/creator all in one.
-- make it create profile per map (with arbitrary map name) AND tickrate
-- give alias prefix for map lineups to load
-- F9 for next, F10 for repeat... non changeable, fuck it
+TODO: 
+make converter/creator all in one.
+make it create profile per map (with arbitrary map name) AND tickrate
 
 have two tabs: 
 (first row)
