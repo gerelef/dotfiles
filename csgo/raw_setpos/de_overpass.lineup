@@ -37,6 +37,8 @@ say "T banana A bank smoke. Jumpthrow"; setpos_exact -2320.031250 -1251.567871 4
 say "T banana A garbage smoke. Left click"; setpos_exact -2351.968750 -790.031250 388.802643; setang -37.612484 81.183723 0.000000; use weapon_smokegrenade
 say "T banana A truck smoke. Left click"; setpos_exact -2351.968750 -790.031250 388.802643; setang -37.555279 79.096085 0.000000; use weapon_smokegrenade
 say "T banana A deep garbage smoke. Left click"; setpos_exact -2351.991211 -736.367493 429.968811; setang -37.755478 76.907791 0.000000; use weapon_smokegrenade
+say "T Park nade A long tree. Run + Jump-throw"; setpos_exact -2807.472168 -2738.448242 477.672363; setang 4.047006 123.092903 0.000000; use weapon_hegrenade
+say "T Park flash A long. Run + Jump-throw"; setpos_exact -3015.626465 -2472.469238 472.09381099999996; setang -0.071395 115.442459 0.000000; use weapon_flashbang
 say "T long A bank smoke. Jumpthrow"; setpos_exact -3801.624512 -1270.298218 506.432556; setang -7.825532 62.565041 0.000000; use weapon_smokegrenade
 
 say "CT spawn B monster quick smoke. Jumpthrow"; setpos_exact -2116.398682 993.194214 480.09381099999996; setang -16.631958 -50.790138 0.000000; use weapon_smokegrenade
