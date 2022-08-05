@@ -1,4 +1,5 @@
 TODO: 
+convert .lineup file to JSON
 add converter & creator to support lineup tags
 make converter/creator all in one.
 make it create profile per map (with arbitrary map name) AND tickrate
