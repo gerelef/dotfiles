@@ -82,7 +82,7 @@ ammo_grenade_limit_flashbang 1;
 
 sv_grenade_trajectory 1; 
 sv_showimpacts_time 5;
-sv_infinite_ammo 1; 
+sv_infinite_ammo 2; 
 
 mp_buy_anywhere 1;
 mp_buytime 999999; 
