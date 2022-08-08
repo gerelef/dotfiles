@@ -27,6 +27,7 @@ say "T ruins flash B short. jumpthrow"; setpos_exact 1255.998535 -1479.993774 30
 say "T ruins flash B short (2nd throw). jumpthrow"; setpos_exact 1255.944580 -1479.968750 30.063225000000003; setang -4.455135 80.093018 0.000000; use weapon_flashbang
 
 say "T Cave smoke short. Run + left-click"; setpos_exact 408.809998 -234.409607 162.093811; setang -2.760033 70.424202 0.000000; use weapon_smokegrenade
+say "T Cave molly long. run + left-click"; setpos_exact 368.778656 16.284464 152.717316; setang -1.201231 29.116417 0.000000; use weapon_incgrenade; use weapon_molotov
 
 say "CT B site nadestack lane. left click"; setpos_exact 867.667358 226.450760 134.093811; setang 0.868234 -50.810646 0.000000; use weapon_hegrenade
 
