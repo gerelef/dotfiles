@@ -117,10 +117,11 @@ if ! shopt -oq posix; then
 fi
 
 #################### USER STUFF ##########################
+mkdir -p $HOME/.bin/work/
 
-#currently set in .profile
-#export PATH="$HOME/work/graph-visualization-sync-main/UnrealEngine/Engine/Binaries/Linux:$PATH"
 export DOTNET_CLI_TELEMETRY_OPTOUT=1
+PATH="$PATH:~/Downloads/appImages"
+PATH="$PATH:$HOME/.bin/"
 
 alias venv="source venv/bin/activate"
 alias restartnetwork="sudo /etc/init.d/network-manager restart"
@@ -156,9 +157,7 @@ alias amogus='echo "
 "'
 
 # displays standard information every time shell starts
-neofetch --color_blocks off
-PATH=$PATH:~/Downloads/appImages
+neofetch --color_blocks off --distro_shorthand tiny --gpu_type all --package_managers off --speed_type max --speed_shorthand on --cpu_brand off --cpu_cores logical --cpu_temp C
 
 
-. "$HOME/.cargo/env"
 source /home/cerberus/alacritty/extra/completions/alacritty.bash
