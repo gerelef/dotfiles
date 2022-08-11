@@ -19,11 +19,16 @@ identifier_limiter = r"// ------------------------ AUTO-GENERATED LIMITER ------
 training_extra = fr"""alias "showspawns" "map_showspawnpoints 15"
 alias "+toggleables" "showspawns; toggle mp_radar_showall;toggle cl_showpos;toggle sv_autobunnyhopping;toggle sv_showimpacts;toggle cl_grenadepreview; toggle mp_drop_knife_enable; toggle sv_regeneration_force_on"
 alias "-toggleables ""
+alias "+fastforward" "host_timescale 15"
+alias "-fastforward" "host_timescale 1"
 
 bind "," "sv_rethrow_last_grenade"
 bind "." "bot_place"
-bindtoggle "/" "bot_crouch"
-bindtoggle "mouse3" "bot_mimic"
+bind "/" "toggle bot_crouch"
+bind "l" "radio"
+bind ";" "radio1"
+bind "'" "+fastforward"
+bind "mouse3" "toggle bot_mimic; cast_ray"
 bind "{TOGGLE_KEY}" "say_team SHOWING SPAWNS & TOGGLING: mp_radar_showall cl_showpos sv_autobunnyhopping sv_showimpacts cl_grenadepreview mp_drop_knife_enable;+toggleables"
 
 
@@ -99,6 +104,9 @@ echo | F5         | Previous Lineup |
 echo | F6         | Next Lineup     |
 echo | F7         | Repeat Lineup   |
 echo | F8         | Toggle Helpers  |
+echo | L          | Radio  (modded) |
+echo | Colon(;)   | Radio1 (modded) |
+echo | Apostrophe | Fast Forward    |
 echo | Comma (,)  | Rethrow grenade |
 echo | Dot   (.)  | Place bot       |
 echo | Slash (/)  | Crouch bot      |
