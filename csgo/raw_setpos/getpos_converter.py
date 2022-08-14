@@ -30,6 +30,7 @@ bind "l" "radio"
 bind ";" "radio1"
 bind "'" "+fastforward"
 bind "mouse3" "toggle bot_mimic; cast_ray"
+bind "pause" "pause"
 bind "{TOGGLE_KEY}" "say_team SHOWING SPAWNS & TOGGLING: mp_radar_showall cl_showpos sv_autobunnyhopping sv_showimpacts cl_grenadepreview mp_drop_knife_enable;+toggleables"
 
 
@@ -37,6 +38,7 @@ bind "{TOGGLE_KEY}" "say_team SHOWING SPAWNS & TOGGLING: mp_radar_showall cl_sho
 say "COMMANDS: Check commands in console, toggle helper settings with '{TOGGLE_KEY}'"
 bot_kick;
 sv_cheats 1; 
+sv_pausable 1;
 
 cl_grenadepreview 0;
 sv_showimpacts 0; 
@@ -112,6 +114,7 @@ echo | Comma (,)  | Rethrow grenade |
 echo | Dot   (.)  | Place bot       |
 echo | Slash (/)  | Crouch bot      |
 echo | Mouse3(m3) | Mimic bot       |
+echo | PAUSE      | Pause Server    |
 echo +------------+-----------------+
 """
 
