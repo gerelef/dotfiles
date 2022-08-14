@@ -728,6 +728,7 @@ export DOTNET_CLI_TELEMETRY_OPTOUT=1
 PATH="$PATH:~/Downloads/appImages"
 PATH="$PATH:$HOME/bin/"
 
+alias c="clear"
 alias venv="source venv/bin/activate"
 alias restartnetwork="sudo /etc/init.d/network-manager restart"
 alias restartsoundmanager="sudo /sbin/alsa force-reload"
