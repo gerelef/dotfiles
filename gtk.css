@@ -1,8 +1,8 @@
 /* shrink headerbars (don't forget semicolons after each property) */
 headerbar {
     min-height: 0px;
-    padding-left: 2px; /* same as childrens vertical margins for nicer proportions */
-    padding-right: 2px;
+    padding-left: 1px; /* same as childrens vertical margins for nicer proportions */
+    padding-right: 1px;
 }
 
 headerbar entry,
@@ -25,13 +25,13 @@ headerbar separator {
 }
 
 window.ssd headerbar.titlebar {
-    padding-top: 3px;
-    padding-bottom: 3px;
+    padding-top: 1px;
+    padding-bottom: 1px;
     min-height: 0;
 }
 
 window.ssd headerbar.titlebar button.titlebutton {
-    padding-top: 3px;
-    padding-bottom:3px;
+    padding-top: 1px;
+    padding-bottom:1px;
     min-height: 0;
 }
