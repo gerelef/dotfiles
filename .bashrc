@@ -696,7 +696,7 @@ function __setprompt
 	# PS1+="(\[${GREEN}\]$(/bin/ls -lah | /bin/grep -m 1 total | /bin/sed 's/total //')\[${DARKGRAY}\]:"
     
 	# Number of files
-	PS1+="\[${GREEN}\]\$(/bin/ls -A -1 | /usr/bin/wc -l)\[${DARKGRAY}\])"
+	# PS1+="\[${GREEN}\]\$(/bin/ls -A -1 | /usr/bin/wc -l)\[${DARKGRAY}\])"
 
 	# Skip to the next line
 	PS1+="\n"
@@ -704,7 +704,7 @@ function __setprompt
 	if [[ $EUID -ne 0 ]]; then
 		PS1+="\[${GREEN}\]>\[${NOCOLOR}\] " # Normal user
 	else
-		PS1+="\[${RED}\]>\[${NOCOLOR}\] " # Root user
+		PS1+="\[${RED}\]\$\[${NOCOLOR}\] " # Root user
 	fi
 
 	# PS2 is used to continue a command using the \ character
@@ -729,13 +729,10 @@ PATH="$PATH:$HOME/bin/"
 
 alias c="clear"
 alias venv="source venv/bin/activate"
-alias restartnetwork="sudo /etc/init.d/network-manager restart"
-alias restartsoundmanager="sudo /sbin/alsa force-reload"
-alias updateupgrade="sudo apt update -y && sudo apt upgrade -y && sudo apt autoremove -y"
-alias untar="tar -xvzf"
+alias aptupdateupgrade="sudo apt update -y && sudo apt upgrade -y && sudo apt autoremove -y"
+alias dnfupdateupgrade="sudo dnf check-update && sudo dnf upgrade && sudo dnf autoremove"
 alias fuck='sudo $(history -p \!\!)'
 alias please="sudo"
-alias IAMROOT='sudo $(history -p \!\!)'
 alias setperformancemode="echo performance | sudo tee /sys/devices/system/cpu/cpu*/cpufreq/scaling_governor"
 alias setpowersavemode="echo powersave | sudo tee /sys/devices/system/cpu/cpu*/cpufreq/scaling_governor"
 alias ssh='TERM=xterm-256color ssh'
