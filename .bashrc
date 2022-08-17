@@ -767,5 +767,7 @@ alias amogus='echo "
 # displays standard information every time shell starts
 neofetch --color_blocks off --distro_shorthand tiny --gpu_type all --package_managers off --speed_type max --speed_shorthand on --cpu_brand off --cpu_cores logical --cpu_temp C
 
+# Comment out to stop helpful echo
+echo "Additional functions provided by bashrc file: edit extract ftext mvg mkdirg"
 
 source /home/cerberus/alacritty/extra/completions/alacritty.bash
