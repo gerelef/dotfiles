@@ -1,0 +1,48 @@
+say "CT deep banana smoke. left-click"; setpos_exact 691.031250 2144.406006 136.093811; setang -11.140759 -124.778427 0.000000; use weapon_smokegrenade
+say "CT early round top banana molly. Jumpthrow"; setpos_exact 919.094543 2723.262695 128.371918; setang -46.117691 -125.695000 0.000000; use weapon_incgrenade; use weapon_molotov
+say "CT B Coffins smoke oneway. left click"; setpos_exact 535.968750 3200.010010 160.093811; setang 10.194813 -104.774818 0.000000; use weapon_smokegrenade
+say "CT ruins whitebox molly. run + jumpthrow (release at end of sculpture)"; setpos_exact 1178.051758 3279.988525 128.093811; setang -32.905388 -152.853912 0.000000; use weapon_incgrenade; use weapon_molotov
+
+say "CT CT Spawn barrel flash. left-click"; setpos_exact 1130.003296 2796.383301 128.079636; setang -27.442822 -145.298950 0.000000; use weapon_flashbang
+say "CT CT Spawn smoke banana. jumpthrow"; setpos_exact 1719.802979 2975.968750 129.832428; setang -18.905674 -150.208313 0.000000; use weapon_smokegrenade
+say "CT CT Spawn top mid smoke. Jumpthrow "; setpos_exact 2537.744385 2120.973633 132.093811; setang -13.829302 -128.138351 0.000000; use weapon_smokegrenade
+
+say "CT long short smoke. left-click"; setpos_exact 2147.984375 1225.968750 172.24118; setang -26.270161 -100.210625 0.000000; use weapon_smokegrenade
+say "CT Long smoke pit. left-click"; setpos_exact 2039.662964 1225.998291 174.093811; setang -6.779292 -58.382931 0.000000; use weapon_smokegrenade
+say "CT long site molly. jumpthrow"; setpos_exact 2039.662964 1225.998291 174.093811; setang -29.687897 -96.034805 0.000000; use weapon_incgrenade; use weapon_molotov
+
+say "CT top mid Second mid god flash. jumpthrow"; setpos_exact 1517.968750 951.968750 147.848953; setang -1.945025 -121.095161 0.000000; use weapon_flashbang
+say "CT Top mid mid molly. jump-throw"; setpos_exact 1517.999268 727.989258 138.588211; setang 5.862818 -171.650223 0.000000; use weapon_incgrenade; use weapon_molotov
+say "CT top mid deep mid smoke. left-click"; setpos_exact 1517.968750 727.968750 138.581223; setang -3.619104 -150.217224 0.000000; use weapon_smokegrenade
+say "CT Top mid mexico molly. run+jump-throw, release when at the edge"; setpos_exact 1517.993774 653.368713 137.323334; setang -39.082153 179.874710 0.000000; use weapon_incgrenade; use weapon_molotov
+say "CT Top mid smoke t-ramp. left-click"; setpos_exact 1517.993774 653.368713 137.334991; setang -26.855646 178.730835 0.000000; use weapon_smokegrenade
+
+say "CT Short second mid balcony molly. jumpthrow"; setpos_exact 1747.458374 141.958969 183.093811; setang -21.221468 -165.943054 0.000000; use weapon_incgrenade; use weapon_molotov
+
+say "T Second top mid rush flash. run+jumpthrow"; setpos_exact 665.447754 -109.580383 87.710815; setang -29.315336 53.905987 0.000000; use weapon_flashbang
+say "T second mid short smoke. left-click"; setpos_exact 736.031250 119.184837 100.263016; setang -30.074106 54.115253 0.000000; use weapon_smokegrenade
+
+say "T ferrari moto smoke. Jump-throw"; setpos_exact 373.998383 467.031250 81.26181; setang -14.801386 11.471162 0.000000; use weapon_smokegrenade
+say "T top mid moto smoke. left-click"; setpos_exact 968.253784 434.031250 88.66655; setang -45.818138 13.218337 0.000000; use weapon_smokegrenade
+say "T a short moto smoke. left-click"; setpos_exact 1764.991943 -108.968750 130.13559; setang -14.143643 50.169510 0.000000; use weapon_smokegrenade
+
+say "T top mid pit smoke. left-click"; setpos_exact 966.541565 589.968750 88.437546; setang -41.600006 -24.734854 0.000000; use weapon_smokegrenade
+
+say "T mexico short smoke. left-click"; setpos_exact 272.031250 644.180542 20.093811000000002; setang -22.280592 -11.693435 0.000000; use weapon_smokegrenade
+say "T Ramp top mid flash. run+left-click"; setpos_exact -396.538818 857.572021 -27.349091; setang -15.662088 -13.398288 0.000000; use weapon_flashbang
+
+say "T banana car molly. run+left-click (release at door)"; setpos_exact 62.504326 896.264526 73.01731899999999; setang -8.554963 81.653717 0.000000; use weapon_incgrenade; use weapon_molotov
+say "T banana ct smoke. left-click"; setpos_exact 110.817719 1569.625977 132.076431; setang -31.890059 54.316006 0.000000; use weapon_smokegrenade
+say "T banana ct smoke 2. left-click"; setpos_exact 368.368042 1681.612915 122.09381099999999; setang -34.392574 65.485786 0.000000; use weapon_smokegrenade
+
+say "T banana coffin smoke. left-click"; setpos_exact 110.809830 1569.610474 132.091965; setang -44.216656 76.896263 0.000000; use weapon_smokegrenade
+say "T Top banana CT flash. jumpthrow"; setpos_exact 610.997375 1873.000732 134.252365; setang -2.231201 56.885563 0.000000; use weapon_flashbang
+
+say "T Top banana dark molly. jumpthrow"; setpos_exact 460.435181 1828.479248 136.177994; setang 2.973288 105.136902 0.000000; use weapon_incgrenade; use weapon_molotov
+
+say "T Top banana whitebox molly. jumpthrow"; setpos_exact 479.274414 2017.968750 128.471924; setang -41.328159 122.628044 0.000000; use weapon_incgrenade; use weapon_molotov
+say "T top banana whitebox molly 2. left-click"; setpos_exact 875.968750 2381.935547 145.457794; setang -17.747362 166.670410 0.000000; use weapon_incgrenade; use weapon_molotov
+
+
+
+

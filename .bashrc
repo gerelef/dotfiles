@@ -368,10 +368,16 @@ up ()
 cd ()
 {
 	if [ -n "$1" ]; then
-		builtin cd "$@" && la
+	    echo "---------- $1 ----------"
+		builtin cd "$@" && ls -1A --group-directories-first
 	else
 		builtin cd ~ && la
 	fi
+	
+	if [ -d ".git" ]; then
+	    echo "---------- git ----------"
+	    git status -s --untracked-files=no --ignored=no;
+	fi 
 }
 
 # Returns the last 2 fields of the working directory

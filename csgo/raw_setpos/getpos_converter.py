@@ -22,7 +22,7 @@ alias "-toggleables ""
 alias "+fastforward" "host_timescale 15"
 alias "-fastforward" "host_timescale 1"
 
-bind "m" "noclip"
+bind "n" "noclip"
 bind "," "sv_rethrow_last_grenade"
 bind "." "bot_place"
 bind "/" "toggle bot_crouch"
