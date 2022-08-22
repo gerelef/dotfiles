@@ -1,0 +1,8 @@
+# auto
+*           text=auto     
+*.txt       text
+# windows line-endings
+*.vcproj    text eol=crlf 
+# linux line-endings
+*.sh        text eol=lf   
+*.jpg       -text
