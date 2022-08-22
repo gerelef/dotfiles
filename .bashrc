@@ -93,13 +93,6 @@ if [[ $iatest > 0 ]]; then bind "set completion-ignore-case on"; fi
 # Show auto-completion list automatically, without double tab
 if [[ $iatest > 0 ]]; then bind "set show-all-if-ambiguous On"; fi
 
-# Set the default editor
-export EDITOR=nano
-export VISUAL=nano
-alias pico='edit'
-alias spico='sedit'
-alias nano='edit'
-alias snano='sedit'
 
 # To have colors for ls and all grep commands such as grep, egrep and zgrep
 export CLICOLOR=1
@@ -181,20 +174,10 @@ alias bd='cd "$OLDPWD"'
 alias rmd='/bin/rm  --recursive --force --verbose '
 
 # Alias's for multiple directory listing commands
-alias la='ls -Alh' # show hidden files
-alias ls='ls -aFh --color=always' # add colors and file type extensions
-alias lx='ls -lXBh' # sort by extension
-alias lk='ls -lSrh' # sort by size
-alias lc='ls -lcrh' # sort by change time
-alias lu='ls -lurh' # sort by access time
-alias lr='ls -lRh' # recursive ls
-alias lt='ls -ltrh' # sort by date
-alias lm='ls -alh |more' # pipe through 'more'
-alias lw='ls -xAh' # wide listing format
-alias ll='ls -Fls' # long listing format
-alias labc='ls -lap' #alphabetical sort
+alias lsla="ls -la --color=always"
 alias lf="ls -l | egrep -v '^d'" # files only
 alias ldir="ls -l | egrep '^d'" # directories only
+alias ls="ls -aFh --color=always"
 
 # alias chmod commands
 alias mx='chmod a+x'
@@ -385,6 +368,14 @@ up ()
 	cd $d
 }
 
+# Multi-column ls
+lss ()
+{
+    current_directory_dirs_out=$(echo "------ $1*.d ------"; ls -p $1 | grep /; )
+    current_directory_files_out=$(echo "------ $1* ------"; ls -p $1 | grep -v /; )
+    paste <(echo "$current_directory_dirs_out") <(echo "$current_directory_files_out") | column -s $'\t' -t -d -N C1,C2 -T C1,C2   
+}
+
 #Automatically do an ls after each cd
 cd ()
 {
@@ -397,15 +388,15 @@ cd ()
 	        if [ "------ .git ------" == "$current_directory_status_out" ]; then
 	            current_directory_status_out=$(echo "------ .git ------"; echo "Your branch is up to date"; )
 	        fi
-	        paste <(echo "$current_directory_dirs_out") <(echo "$current_directory_files_out") <(echo "$current_directory_status_out") | column -s $'\t' -t -d -c 120 -N C1,C2,C3 -T C1,C2,C3
+	        paste <(echo "$current_directory_dirs_out") <(echo "$current_directory_files_out") <(echo "$current_directory_status_out") | column -s $'\t' -t -d -N C1,C2,C3 -T C1,C2,C3
 	    else 
-	        paste <(echo "$current_directory_dirs_out") <(echo "$current_directory_files_out") | column -s $'\t' -t -d -c 120 -N C1,C2 -T C1,C2
+	        paste <(echo "$current_directory_dirs_out") <(echo "$current_directory_files_out") | column -s $'\t' -t -d -N C1,C2 -T C1,C2
 		fi
 	else
 		builtin cd $HOME
 		current_directory_dirs_out=$(echo "------ $HOME.d ------"; ls -p | grep /; )
 		current_directory_files_out=$(echo "------ $HOME ------"; ls -p | grep -v /; )
-	    paste <(echo "$current_directory_dirs_out") <(echo "$current_directory_files_out") | column -s $'\t' -t -d -c 120 -N C1,C2 -T C1,C2
+	    paste <(echo "$current_directory_dirs_out") <(echo "$current_directory_files_out") | column -s $'\t' -t -d -N C1,C2 -T C1,C2
 	fi
 }
 
