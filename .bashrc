@@ -767,10 +767,10 @@ alias venv="source venv/bin/activate"
 alias aptupdateupgrade="sudo apt update -y && sudo apt upgrade -y && sudo apt autoremove -y"
 alias dnfupdateupgrade="sudo dnf check-update && sudo dnf update && sudo dnf autoremove"
 alias fuck='sudo $(history -p \!\!)'
-alias please="sudo"
-alias setperformancemode="echo performance | sudo tee /sys/devices/system/cpu/cpu*/cpufreq/scaling_governor"
-alias setpowersavemode="echo powersave | sudo tee /sys/devices/system/cpu/cpu*/cpufreq/scaling_governor"
-alias ssh='TERM=xterm-256color ssh'
+alias gst="git status"
+alias gstv="git status -v"
+alias gdd="git add ."
+alias gcmt="git commit -m"
 alias amogus='echo "
 ⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⣀⣤⣤⣤⣀⣀⣀⣀⡀⠀⠀⠀⠀⠀⠀⠀
 ⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⣼⠟⠉⠉⠉⠉⠉⠉⠉⠙⠻⢶⣄⠀⠀⠀⠀⠀
@@ -799,4 +799,4 @@ neofetch --color_blocks off --distro_shorthand tiny --gpu_type all --package_man
 # Comment out to stop helpful echo
 #echo "Additional functions provided by bashrc file: edit extract ftext mvg mkdirg"
 
-source /home/cerberus/alacritty/extra/completions/alacritty.bash
+source $HOME/alacritty/extra/completions/alacritty.bash
