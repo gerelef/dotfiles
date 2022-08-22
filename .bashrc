@@ -661,7 +661,8 @@ function __setprompt
 	# Show error exit code if there is one
 	if [[ $LAST_COMMAND != 0 ]]; then
 		# PS1="\[${RED}\](\[${LIGHTRED}\]ERROR\[${RED}\])-(\[${LIGHTRED}\]Exit Code \[${WHITE}\]${LAST_COMMAND}\[${RED}\])-(\[${LIGHTRED}\]"
-		PS1="\[${DARKGRAY}\](\[${LIGHTRED}\]ERROR\[${DARKGRAY}\])-(\[${RED}\]Exit Code \[${LIGHTRED}\]${LAST_COMMAND}\[${DARKGRAY}\])-(\[${RED}\]"
+		# PS1="\[${DARKGRAY}\](\[${LIGHTRED}\]ERROR\[${DARKGRAY}\])-(\[${RED}\]Exit Code \[${LIGHTRED}\]${LAST_COMMAND}\[${DARKGRAY}\])-(\[${RED}\]"
+		PS1="\[${RED}\]Exit Code \[${LIGHTRED}\]${LAST_COMMAND}\[${DARKGRAY}\])-(\[${RED}\]"
 		if [[ $LAST_COMMAND == 1 ]]; then
 			PS1+="General error"
 		elif [ $LAST_COMMAND == 2 ]; then
@@ -764,6 +765,7 @@ PATH="$PATH:$HOME/bin/"
 
 alias c="clear"
 alias venv="source venv/bin/activate"
+alias vvenv="deactivate"
 alias aptupdateupgrade="sudo apt update -y && sudo apt upgrade -y && sudo apt autoremove -y"
 alias dnfupdateupgrade="sudo dnf check-update && sudo dnf update && sudo dnf autoremove"
 alias fuck='sudo $(history -p \!\!)'
@@ -800,4 +802,4 @@ neofetch --color_blocks off --distro_shorthand tiny --gpu_type all --package_man
 # Comment out to stop helpful echo
 #echo "Additional functions provided by bashrc file: edit extract ftext mvg mkdirg"
 
-source $HOME/alacritty/extra/completions/alacritty.bash
+[[ -f "$HOME/alacritty/extra/completions/alacritty.bash" ]] && source $HOME/alacritty/extra/completions/alacritty.bash
