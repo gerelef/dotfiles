@@ -771,6 +771,7 @@ alias gst="git status"
 alias gstv="git status -v"
 alias gdd="git add ."
 alias gcmt="git commit -m"
+alias gpsh="git push"
 alias amogus='echo "
 ⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⣀⣤⣤⣤⣀⣀⣀⣀⡀⠀⠀⠀⠀⠀⠀⠀
 ⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⣼⠟⠉⠉⠉⠉⠉⠉⠉⠙⠻⢶⣄⠀⠀⠀⠀⠀
