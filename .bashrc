@@ -389,16 +389,21 @@ up ()
 cd ()
 {
 	if [ -n "$1" ]; then
-	    echo "---------- $1 ----------"
-		builtin cd "$@" && ls -1A --group-directories-first
+	    builtin cd "$@"
+	    current_directory_dirs_out=$(echo "------ $1.d ------"; ls -p | grep /; )
+	    current_directory_files_out=$(echo "------ $1 ------"; ls -p | grep -v /; )
+	    if [ -d ".git" ]; then
+	        current_directory_status_out=$(echo -e "------ .git ------"; git status -s --untracked-files=no --ignored=no; )
+	        paste <(echo "$current_directory_dirs_out") <(echo "$current_directory_files_out") <(echo "$current_directory_status_out") | column -s $'\t' -t -d -c 120 -N C1,C2,C3 -T C1,C2,C3
+	    else 
+	        paste <(echo "$current_directory_dirs_out") <(echo "$current_directory_files_out") | column -s $'\t' -t -d -c 120 -N C1,C2 -T C1,C2
+		fi
 	else
-		builtin cd ~ && la
+		builtin cd $HOME
+		current_directory_dirs_out=$(echo "------ $HOME.d ------"; ls -p | grep /; )
+		current_directory_files_out=$(echo "------ $HOME ------"; ls -p | grep -v /; )
+	    paste <(echo "$current_directory_dirs_out") <(echo "$current_directory_files_out") | column -s $'\t' -t -d -c 120 -N C1,C2 -T C1,C2
 	fi
-	
-	if [ -d ".git" ]; then
-	    echo "---------- git ----------"
-	    git status -s --untracked-files=no --ignored=no;
-	fi 
 }
 
 # Returns the last 2 fields of the working directory
