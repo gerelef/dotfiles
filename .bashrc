@@ -376,6 +376,11 @@ lss ()
     paste <(echo "$current_directory_dirs_out") <(echo "$current_directory_files_out") | column -s $'\t' -t -d -N C1,C2 -T C1,C2   
 }
 
+# Highlight (and not filter) text with grep
+highlight () {
+  grep --color=always -E "$1|\$"
+}
+
 #Automatically do an ls after each cd
 cd ()
 {
