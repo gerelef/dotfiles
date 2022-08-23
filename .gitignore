@@ -1,5 +1,4 @@
-csgo/raw_setpos/.idea/*
-csgo/raw_setpos/.idea
-csgo/raw_setpos/venv/*
-csgo/raw_setpos/venv
+*__pycache__*
+*venv*
+*.idea*
 csgo/raw_setpos/training.cfg
