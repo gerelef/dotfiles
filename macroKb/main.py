@@ -1,13 +1,15 @@
 import os
+import multiprocessing as mp
 from evdev import InputDevice, categorize, ecodes
 from abc import ABC
 from enum import Enum
 from typing import Callable
 
+# https://stackoverflow.com/questions/71121522/turn-py-file-to-an-appimage
+
 # cat /proc/bus/input/devices  | highlight sysrq
 #  https://old.reddit.com/r/linux/comments/8geyru/diy_linux_macro_board/
 # https://python-evdev.readthedocs.io/en/latest/usage.html#accessing-event-codes
-
 
 
 class Physical(Enum):
@@ -48,5 +50,12 @@ class Keyboard:
                 
 if __name__ == "__main__":
     macroboard = Keyboard(InputDevice('/dev/input/event25'))
-    macroboard.main()
+    macroboard_extra = Keyboard(InputDevice('/dev/input/event26'))
+    # https://docs.python.org/3.8/library/multiprocessing.html#the-process-class
+    mb  = mp.Process(target=macroboard.main)
+    mbe = mp.Process(target=macroboard_extra.main)
+    mb.start()
+    mbe.start()
+    mb.join()
+    mbe.join()
     
