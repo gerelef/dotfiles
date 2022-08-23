@@ -699,10 +699,10 @@ function __setprompt
 
 	# Date
 	# PS1+="\[${DARKGRAY}\](\[${CYAN}\]\$(date +%a) $(date +%b-'%-m')" # Date
-	PS1+="${BLUE} $(date +'%-I':%M:%S%P)\[${DARKGRAY}\])-" # Time
+	# PS1+="${BLUE} $(date +'%-I':%M:%S)\[${DARKGRAY}\])-" # Time
 
 	# CPU
-	PS1+="(\[${MAGENTA}\]CPU $(cpu)%"
+	# PS1+="(\[${MAGENTA}\]CPU $(cpu)%"
 
 	# Jobs
 	# PS1+="\[${DARKGRAY}\]:\[${MAGENTA}\]\j"
@@ -710,15 +710,15 @@ function __setprompt
 	# Network Connections (for a server - comment out for non-server)
 	# PS1+="\[${DARKGRAY}\]:\[${MAGENTA}\]Net $(awk 'END {print NR}' /proc/net/tcp)"
 
-	PS1+="\[${DARKGRAY}\])-"
+	# PS1+="\[${DARKGRAY}\])-"
 
 	# User and server
 	local SSH_IP=`echo $SSH_CLIENT | awk '{ print $1 }'`
 	local SSH2_IP=`echo $SSH2_CLIENT | awk '{ print $1 }'`
 	if [ $SSH2_IP ] || [ $SSH_IP ] ; then
-		PS1+="(\[${RED}\]\u@\h"
+		PS1+="\[${RED}\]\u@\h"
 	else
-		PS1+="(\[${RED}\]\u"
+		PS1+="\[${RED}\]\u"
 	fi
 
 	# Current directory
@@ -732,7 +732,9 @@ function __setprompt
 
 	# Skip to the next line
 	PS1+="\n"
-
+    
+    PS1+="${BLUE}$(date +'%-I':%M:%S)\[${DARKGRAY}\] " # Time
+    
 	if [[ $EUID -ne 0 ]]; then
 		PS1+="\[${GREEN}\]>\[${NOCOLOR}\] " # Normal user
 	else
