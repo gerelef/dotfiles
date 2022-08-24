@@ -617,6 +617,10 @@ rot13 () {
 	fi
 }
 
+git_branch() {
+     git branch 2> /dev/null | sed -e '/^[^*]/d' -e 's/* \(.*\)/ (\1)/'
+}
+
 # Trim leading and trailing spaces (for scripts)
 trim()
 {
@@ -658,7 +662,7 @@ function __setprompt
 	if [[ $LAST_COMMAND != 0 ]]; then
 		# PS1="\[${RED}\](\[${LIGHTRED}\]ERROR\[${RED}\])-(\[${LIGHTRED}\]Exit Code \[${WHITE}\]${LAST_COMMAND}\[${RED}\])-(\[${LIGHTRED}\]"
 		# PS1="\[${DARKGRAY}\](\[${LIGHTRED}\]ERROR\[${DARKGRAY}\])-(\[${RED}\]Exit Code \[${LIGHTRED}\]${LAST_COMMAND}\[${DARKGRAY}\])-(\[${RED}\]"
-		PS1="\[${RED}\]Exit Code \[${LIGHTRED}\]${LAST_COMMAND}\[${DARKGRAY}\])-(\[${RED}\]"
+		PS1="\[${RED}\]Exit Code \[${LIGHTRED}\]${LAST_COMMAND}\[${DARKGRAY}\] \[${RED}\]"
 		if [[ $LAST_COMMAND == 1 ]]; then
 			PS1+="General error"
 		elif [ $LAST_COMMAND == 2 ]; then
@@ -720,9 +724,12 @@ function __setprompt
 	else
 		PS1+="\[${RED}\]\u"
 	fi
-
+    
 	# Current directory
-	PS1+="\[${DARKGRAY}\]:\[${BROWN}\]\W\[${DARKGRAY}\])-"
+	PS1+=" \[${BROWN}\]\W\[${DARKGRAY}\]"
+    
+    # active branch
+    PS1+="\[${WHITE}\]$(git_branch)"
 
 	# Total size of files in current directory
 	# PS1+="(\[${GREEN}\]$(/bin/ls -lah | /bin/grep -m 1 total | /bin/sed 's/total //')\[${DARKGRAY}\]:"
@@ -733,12 +740,12 @@ function __setprompt
 	# Skip to the next line
 	PS1+="\n"
     
-    PS1+="${BLUE}$(date +'%-I':%M:%S)\[${DARKGRAY}\] " # Time
+    PS1+="\[${BLUE}\]$(date +'%-I':%M:%S)\[${DARKGRAY}\] " # Time
     
 	if [[ $EUID -ne 0 ]]; then
 		PS1+="\[${GREEN}\]>\[${NOCOLOR}\] " # Normal user
 	else
-		PS1+="\[${RED}\]\$\[${NOCOLOR}\] " # Root user
+		PS1+="\[${RED}\]#\[${NOCOLOR}\] " # Root user
 	fi
 
 	# PS2 is used to continue a command using the \ character
@@ -748,7 +755,7 @@ function __setprompt
 	PS3='Please enter a number from above list: '
 
 	# PS4 is used for tracing a script in debug mode
-	PS4='\[${DARKGRAY}\]+\[${NOCOLOR}\] '
+	PS4="\[${DARKGRAY}\]+\[${NOCOLOR}\] "
 }
 PROMPT_COMMAND='__setprompt'
 
@@ -800,4 +807,5 @@ neofetch --color_blocks off --distro_shorthand tiny --gpu_type all --package_man
 # Comment out to stop helpful echo
 #echo "Additional functions provided by bashrc file: edit extract ftext mvg mkdirg"
 
-[[ -f "$HOME/alacritty/extra/completions/alacritty.bash" ]] && source $HOME/alacritty/extra/completions/alacritty.bash
+# from what ive seen this is not needed, and just produces errors, lol...
+# [[ -f "$HOME/alacritty/extra/completions/alacritty.bash" ]] && source $HOME/alacritty/extra/completions/alacritty.bash
