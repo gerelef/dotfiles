@@ -405,6 +405,20 @@ cd ()
 	fi
 }
 
+_journalctl () 
+{
+    # https://stackoverflow.com/questions/6482377/check-existence-of-input-argument-in-a-bash-shell-script
+    if [ $# -eq 0 ]; then
+        command journalctl -e -n 2000 -b
+    elif [ $# -eq 1 ]; then # called with just a service name (-u opt)
+        command journalctl -e -n 5000 -u "$1"
+    else 
+        command journalctl -e "$@"
+    fi
+
+
+}
+
 # Returns the last 2 fields of the working directory
 pwdtail ()
 {
@@ -490,7 +504,7 @@ install_bashrc_support ()
 {
 	local dtype
 	dtype=$(distribution)
-
+	
 	if [ $dtype == "redhat" ]; then
 		sudo yum install multitail tree joe
 	elif [ $dtype == "suse" ]; then
@@ -740,13 +754,8 @@ function __setprompt
 	# Skip to the next line
 	PS1+="\n"
     
-    PS1+="\[${BLUE}\]$(date +'%-I':%M:%S)\[${DARKGRAY}\] " # Time
-    
-	if [[ $EUID -ne 0 ]]; then
-		PS1+="\[${GREEN}\]>\[${NOCOLOR}\] " # Normal user
-	else
-		PS1+="\[${RED}\]#\[${NOCOLOR}\] " # Root user
-	fi
+    PS1+="\[${BLUE}\]\t\[${DARKGRAY}\] " # Time    
+    PS1+="\[${GREEN}\]\$\[${NOCOLOR}\] " # Normal user    
 
 	# PS2 is used to continue a command using the \ character
 	PS2="\[${DARKGRAY}\]>\[${NOCOLOR}\] "
@@ -779,6 +788,7 @@ alias gstv="git status -v"
 alias gdd="git add ."
 alias gcmt="git commit -m"
 alias gpsh="git push"
+alias journalctl="_journalctl"
 alias amogus='echo "
 ⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⣀⣤⣤⣤⣀⣀⣀⣀⡀⠀⠀⠀⠀⠀⠀⠀
 ⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⣼⠟⠉⠉⠉⠉⠉⠉⠉⠙⠻⢶⣄⠀⠀⠀⠀⠀
