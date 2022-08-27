@@ -409,7 +409,7 @@ _journalctl ()
 {
     # https://stackoverflow.com/questions/6482377/check-existence-of-input-argument-in-a-bash-shell-script
     if [ $# -eq 0 ]; then
-        command journalctl -e -n 2000 -b
+        command journalctl -e -n 2000
     elif [ $# -eq 1 ]; then # called with just a service name (-u opt)
         command journalctl -e -n 5000 -u "$1"
     else 
