@@ -1,0 +1,8 @@
+/* Option 2 */
+#TabsToolbar {
+    visibility: collapse;
+}
+
+#navigator-toolbox:hover #TabsToolbar {
+    visibility: visible;
+}
