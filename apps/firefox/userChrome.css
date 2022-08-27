@@ -4,5 +4,5 @@
 }
 
 #navigator-toolbox:hover #TabsToolbar {
-    visibility: visible;
+    visibility: collapse;
 }

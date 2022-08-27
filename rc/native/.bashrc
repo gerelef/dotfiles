@@ -153,7 +153,6 @@ alias ps='ps auxf'
 alias less='less -R'
 alias cls='clear'
 alias apt-get='sudo apt-get'
-alias multitail='multitail --no-repeat -c'
 alias freshclam='sudo freshclam'
 alias vi='vim'
 alias svi='sudo vi'
@@ -239,13 +238,36 @@ alias sha1='openssl sha1'
 # SPECIAL FUNCTIONS
 #######################################################
 
+# Automatically install the needed support files for this .bashrc file
+install_bashrc_support ()
+{
+	local dtype
+	dtype=$(distribution)
+	
+	if [ $dtype == "redhat" ]; then
+		sudo yum install tree tldr tldr
+	elif [ $dtype == "suse" ]; then
+		sudo zypper install tree
+		sudo zypper install tldr
+	elif [ $dtype == "debian" ]; then
+		sudo apt-get install tree tldr
+	elif [ $dtype == "gentoo" ]; then
+		sudo emerge tree
+		sudo emerge tldr
+	elif [ $dtype == "mandriva" ]; then
+		sudo urpmi tree
+		sudo urpmi tldr
+	elif [ $dtype == "slackware" ]; then
+		echo "No install support for Slackware"
+	else
+		echo "Unknown distribution"
+	fi
+}
+
 # Use the best version of pico installed
 edit ()
 {
-	if [ "$(type -t jpico)" = "file" ]; then
-		# Use JOE text editor http://joe-editor.sourceforge.net/
-		jpico -nonotice -linums -nobackups "$@"
-	elif [ "$(type -t nano)" = "file" ]; then
+    if [ "$(type -t nano)" = "file" ]; then
 		nano -c "$@"
 	elif [ "$(type -t pico)" = "file" ]; then
 		pico "$@"
@@ -255,10 +277,7 @@ edit ()
 }
 sedit ()
 {
-	if [ "$(type -t jpico)" = "file" ]; then
-		# Use JOE text editor http://joe-editor.sourceforge.net/
-		sudo jpico -nonotice -linums -nobackups "$@"
-	elif [ "$(type -t nano)" = "file" ]; then
+    if [ "$(type -t nano)" = "file" ]; then
 		sudo nano -c "$@"
 	elif [ "$(type -t pico)" = "file" ]; then
 		sudo pico "$@"
@@ -368,57 +387,6 @@ up ()
 	cd $d
 }
 
-# Multi-column ls
-lss ()
-{
-    current_directory_dirs_out=$(echo "------ $1*.d ------"; ls -p $1 | grep /; )
-    current_directory_files_out=$(echo "------ $1* ------"; ls -p $1 | grep -v /; )
-    paste <(echo "$current_directory_dirs_out") <(echo "$current_directory_files_out") | column -s $'\t' -t -d -N C1,C2 -T C1,C2   
-}
-
-# Highlight (and not filter) text with grep
-highlight () {
-  grep --color=always -E "$1|\$"
-}
-
-#Automatically do an ls after each cd
-cd ()
-{
-	if [ -n "$1" ]; then
-	    builtin cd "$@"
-	    current_directory_dirs_out=$(echo "------ $1*.d ------"; ls -p | grep /; )
-	    current_directory_files_out=$(echo "------ $1* ------"; ls -p | grep -v /; )
-	    if [ -d ".git" ]; then
-	        current_directory_status_out=$(echo "------ .git ------"; git status -s --untracked-files=no --ignored=no; )
-	        if [ "------ .git ------" == "$current_directory_status_out" ]; then
-	            current_directory_status_out=$(echo "------ .git ------"; echo "Your branch is up to date"; )
-	        fi
-	        paste <(echo "$current_directory_dirs_out") <(echo "$current_directory_files_out") <(echo "$current_directory_status_out") | column -s $'\t' -t -d -N C1,C2,C3 -T C1,C2,C3
-	    else 
-	        paste <(echo "$current_directory_dirs_out") <(echo "$current_directory_files_out") | column -s $'\t' -t -d -N C1,C2 -T C1,C2
-		fi
-	else
-		builtin cd $HOME
-		current_directory_dirs_out=$(echo "------ $HOME.d ------"; ls -p | grep /; )
-		current_directory_files_out=$(echo "------ $HOME ------"; ls -p | grep -v /; )
-	    paste <(echo "$current_directory_dirs_out") <(echo "$current_directory_files_out") | column -s $'\t' -t -d -N C1,C2 -T C1,C2
-	fi
-}
-
-_journalctl () 
-{
-    # https://stackoverflow.com/questions/6482377/check-existence-of-input-argument-in-a-bash-shell-script
-    if [ $# -eq 0 ]; then
-        command journalctl -e -n 2000
-    elif [ $# -eq 1 ]; then # called with just a service name (-u opt)
-        command journalctl -e -n 5000 -u "$1"
-    else 
-        command journalctl -e "$@"
-    fi
-
-
-}
-
 # Returns the last 2 fields of the working directory
 pwdtail ()
 {
@@ -499,35 +467,6 @@ ver ()
 	fi
 }
 
-# Automatically install the needed support files for this .bashrc file
-install_bashrc_support ()
-{
-	local dtype
-	dtype=$(distribution)
-	
-	if [ $dtype == "redhat" ]; then
-		sudo yum install multitail tree joe
-	elif [ $dtype == "suse" ]; then
-		sudo zypper install multitail
-		sudo zypper install tree
-		sudo zypper install joe
-	elif [ $dtype == "debian" ]; then
-		sudo apt-get install multitail tree joe
-	elif [ $dtype == "gentoo" ]; then
-		sudo emerge multitail
-		sudo emerge tree
-		sudo emerge joe
-	elif [ $dtype == "mandriva" ]; then
-		sudo urpmi multitail
-		sudo urpmi tree
-		sudo urpmi joe
-	elif [ $dtype == "slackware" ]; then
-		echo "No install support for Slackware"
-	else
-		echo "Unknown distribution"
-	fi
-}
-
 # Show current network information
 netinfo ()
 {
@@ -554,16 +493,6 @@ function whatsmyip ()
 
 	# External IP Lookup
 	echo -n "External IP: " ; wget http://smart-ip.net/myip -O - -q
-}
-
-# View Apache logs
-apachelog ()
-{
-	if [ -f /etc/httpd/conf/httpd.conf ]; then
-		cd /var/log/httpd && ls -xAh && multitail --no-repeat -c -s 2 /var/log/httpd/*_log
-	else
-		cd /var/log/apache2 && ls -xAh && multitail --no-repeat -c -s 2 /var/log/apache2/*.log
-	fi
 }
 
 # Edit the Apache configuration
@@ -631,17 +560,70 @@ rot13 () {
 	fi
 }
 
-git_branch() {
-     git branch 2> /dev/null | sed -e '/^[^*]/d' -e 's/* \(.*\)/ (\1)/'
+# Multi-column ls
+lss ()
+{
+    current_directory_dirs_out=$(echo "------ $1*.d ------"; ls -p $1 | grep /; )
+    current_directory_files_out=$(echo "------ $1* ------"; ls -p $1 | grep -v /; )
+    paste <(echo "$current_directory_dirs_out") <(echo "$current_directory_files_out") | column -s $'\t' -t -d -N C1,C2 -T C1,C2   
 }
 
-# Trim leading and trailing spaces (for scripts)
-trim()
+# Highlight (and not filter) text with grep
+highlight () {
+  grep --color=always -E "$1|\$"
+}
+
+#Automatically do an ls after each cd
+cd ()
 {
-	local var=$@
-	var="${var#"${var%%[![:space:]]*}"}"  # remove leading whitespace characters
-	var="${var%"${var##*[![:space:]]}"}"  # remove trailing whitespace characters
-	echo -n "$var"
+	if [ -n "$1" ]; then
+	    builtin cd "$@"
+	    current_directory_dirs_out=$(echo "------ $1*.d ------"; ls -p | grep /; )
+	    current_directory_files_out=$(echo "------ $1* ------"; ls -p | grep -v /; )
+	    if [ -d ".git" ]; then
+	        current_directory_status_out=$(echo "------ .git ------"; git status -s --untracked-files=no --ignored=no; )
+	        if [ "------ .git ------" == "$current_directory_status_out" ]; then
+	            current_directory_status_out=$(echo "------ .git ------"; echo "Your branch is up to date"; )
+	        fi
+	        paste <(echo "$current_directory_dirs_out") <(echo "$current_directory_files_out") <(echo "$current_directory_status_out") | column -s $'\t' -t -d -N C1,C2,C3 -T C1,C2,C3
+	    else 
+	        paste <(echo "$current_directory_dirs_out") <(echo "$current_directory_files_out") | column -s $'\t' -t -d -N C1,C2 -T C1,C2
+		fi
+	else
+		builtin cd $HOME
+		current_directory_dirs_out=$(echo "------ $HOME.d ------"; ls -p | grep /; )
+		current_directory_files_out=$(echo "------ $HOME ------"; ls -p | grep -v /; )
+	    paste <(echo "$current_directory_dirs_out") <(echo "$current_directory_files_out") | column -s $'\t' -t -d -N C1,C2 -T C1,C2
+	fi
+}
+
+# journalctl wrapper for ease of use
+_journalctl () 
+{
+    # https://stackoverflow.com/questions/6482377/check-existence-of-input-argument-in-a-bash-shell-script
+    if [ $# -eq 0 ]; then
+        command journalctl -e -n 2000
+    elif [ $# -eq 1 ]; then # called with just a service name (-u opt)
+        command journalctl -e -n 5000 -u "$1"
+    else 
+        command journalctl "$@"
+    fi
+}
+
+# tldr wrapper for ease of use
+_tldr ()
+{
+    if [ $# -eq 0 ]; then
+        (command tldr tldr && command tldr --help) | less
+    elif [ $# -eq 1 ]; then
+        (command tldr "$1" && "$1" --help) | less
+    else
+        command tldr "$@"
+    fi
+}
+
+git_branch() {
+     git branch 2> /dev/null | sed -e '/^[^*]/d' -e 's/* \(.*\)/ (\1)/'
 }
 
 #######################################################
@@ -789,7 +771,8 @@ alias gdd="git add ."
 alias gcmt="git commit -m"
 alias gpsh="git push"
 alias journalctl="_journalctl"
-alias amogus='echo "
+alias help="_tldr"
+alias amogus='echo"
 ⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⣀⣤⣤⣤⣀⣀⣀⣀⡀⠀⠀⠀⠀⠀⠀⠀
 ⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⣼⠟⠉⠉⠉⠉⠉⠉⠉⠙⠻⢶⣄⠀⠀⠀⠀⠀
 ⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣾⡏⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠙⣷⡀⠀⠀⠀
@@ -813,9 +796,3 @@ alias amogus='echo "
 
 # displays standard information every time shell starts
 neofetch --color_blocks off --distro_shorthand tiny --gpu_type all --package_managers off --speed_type max --speed_shorthand on --cpu_brand off --cpu_cores logical --cpu_temp C
-
-# Comment out to stop helpful echo
-#echo "Additional functions provided by bashrc file: edit extract ftext mvg mkdirg"
-
-# from what ive seen this is not needed, and just produces errors, lol...
-# [[ -f "$HOME/alacritty/extra/completions/alacritty.bash" ]] && source $HOME/alacritty/extra/completions/alacritty.bash
