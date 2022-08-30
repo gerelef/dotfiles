@@ -736,9 +736,19 @@ function __setprompt
 	# Skip to the next line
 	PS1+="\n"
     
-    PS1+="\[${BLUE}\]\t\[${DARKGRAY}\] " # Time    
-    PS1+="\[${GREEN}\]\$\[${NOCOLOR}\] " # Normal user    
-
+    PS1+="\[${BLUE}\]\t\[${NOCOLOR}\] " # Time    
+    
+    if [ ! -z "$VIRTUAL_ENV" ] ; then
+        DIRNAME="$VIRTUAL_ENV"
+        D2=$(dirname "$DIRNAME")
+        DIRNAME2=$(basename "$D2")/$(basename "$DIRNAME")
+        
+        PS1+="\[${LIGHTMAGENTA}\]$DIRNAME2\[${NOCOLOR}\] "
+    fi
+    
+    PS1+="\[${GREEN}\]\$\[${NOCOLOR}\] " 
+    
+    
 	# PS2 is used to continue a command using the \ character
 	PS2="\[${DARKGRAY}\]>\[${NOCOLOR}\] "
 
