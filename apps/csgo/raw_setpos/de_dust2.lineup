@@ -1,0 +1,22 @@
+say "T Spawn XBOX Smoke. Jumpthrow"; setpos_exact -299.968750 -1163.968750 77.76071200000001; setang -12.616896 90.105301 0.000000; use weapon_smokegrenade
+say "T Spawn Long corner smoke. jumpthrow"; setpos_exact -190.564651 -660.031250 52.349791999999994; setang -21.481733 53.612049 0.000000; use weapon_smokegrenade
+say "T Spawn long flash (1:47). Jumpthrow"; setpos_exact 348.974091 -406.506439 1.7274630000000002; setang -6.968375 47.760921 0.000000; use weapon_flashbang
+say "T Upper tunnel flash out B. run + left click"; setpos_exact -1881.396118 1160.321777 32.098243999999994; setang -11.444599 101.715858 0.000000; use weapon_flashbang
+say "T Upper tunnel B door smoke. Left click"; setpos_exact -1837.999756 982.008911 40.654678000000004; setang -60.965889 69.141624 0.000000; use weapon_smokegrenade
+say "T hinge smoke. right click"; setpos_exact -489.968750 1582.369141 -123.445381; setang 7.503155 113.428902 0.000000; use weapon_smokegrenade
+say "T mid doors flash. left click"; setpos_exact -275.031250 1345.399780 -122.456604; setang -43.705151 60.362194 0.000000; use weapon_flashbang
+say "T xbox ct spawn b split smoke. left click"; setpos_exact -275.002258 1345.381226 -122.60311899999999; setang -35.625664 131.046982 0.000000; use weapon_smokegrenade
+say "T Cat Short flash. run+Jumpthrow"; setpos_exact -177.927643 758.103943 2.065010000000001; setang -0.190205 90.248314 0.000000; use weapon_flashbang
+say "T Short smoke out A. left click"; setpos_exact 489.968750 1446.031250 0.6157149999999945; setang -26.359552 123.895111 0.000000; use weapon_smokegrenade
+say "T Short molly insite A. run + jumpthrow"; setpos_exact 308.022522 1745.013916 84.40164200000001; setang 10.963452 56.871105 0.000000; use weapon_incgrenade; use weapon_molotov
+say "T Short nade goose. run + left click"; setpos_exact 295.270264 1723.419312 71.126556; setang -16.892998 56.828815 0.000000; use weapon_hegrenade
+say "T Long molly car. Jumpthrow "; setpos_exact 847.074036 790.145325 47.093811; setang 6.329598 53.419853 0.000000; use weapon_incgrenade; use weapon_molotov
+say "T Long single smoke elevator. left click"; setpos_exact 516.003235 984.949463 1.574157999999997; setang -52.112511 89.105301 0.000000; use weapon_smokegrenade
+say "T Long smoke cross 1. run + leftclick"; setpos_exact 1106.709717 1001.348755 -2.6348040000000026; setang -22.969223 46.489979 0.000000; use weapon_smokegrenade
+say "T Long smoke cross 2. run + leftclick"; setpos_exact 1156.477051 1055.594971 -2.3462869999999967; setang -25.343006 42.886406 0.000000; use weapon_smokegrenade
+say "CT Spawn mid cross smoke. shift+run+left"; setpos_exact 286.099396 2388.348145 -120.28304299999999; setang -3.292217 -139.702927 0.000000; use weapon_smokegrenade
+say "CT Spawn xbox molly. run + jumpthrow"; setpos_exact -174.142151 2136.288086 -126.479584; setang -10.925902 -135.754501 0.000000; use weapon_incgrenade; use weapon_molotov
+say "CT Long corner smoke. Run+right click (release after blue door)"; setpos_exact 1287.081787 1786.735107 1.8626940000000047; setang 1.944747 -91.501083 0.000000; use weapon_smokegrenade
+say "CT Long running molly. Run+left click (release near the middle/end of blue bin)"; setpos_exact 1358.305176 1488.404175 -7.114165999999997; setang -7.950850 -177.915482 0.000000; use weapon_incgrenade; use weapon_molotov
+say "CT short xbox smoke to peek mid. run + left click"; setpos_exact 489.774750 1474.272827 0.7539830000000052; setang -2.462808 -177.625656 0.000000; use weapon_smokegrenade
+
