@@ -6,3 +6,21 @@
 #navigator-toolbox:hover #TabsToolbar {
     visibility: collapse;
 }
+
+#sidebar-box {
+    width: auto !important;
+}
+
+#sidebar-splitter {
+    width: 1px !important;
+}
+
+#sidebar-header {
+    height: 10px !important;
+    overflow-y: hidden;
+}
+
+#sidebar-header:hover {
+    height: auto;
+    overflow-y: visible;
+}
