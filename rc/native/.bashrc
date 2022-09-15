@@ -622,7 +622,7 @@ _tldr ()
     fi
 }
 
-git_branch() {
+_git_branch () {
      git branch 2> /dev/null | sed -e '/^[^*]/d' -e 's/* \(.*\)/ (\1)/'
 }
 
@@ -722,10 +722,10 @@ function __setprompt
 	fi
     
 	# Current directory
-	PS1+=" \[${BROWN}\]\W\[${DARKGRAY}\]"
+	PS1+=" \[${BROWN}\]\w\[${DARKGRAY}\]"
     
     # active branch
-    PS1+="\[${WHITE}\]$(git_branch)"
+    PS1+="\[${WHITE}\]$(_git_branch)"
 
 	# Total size of files in current directory
 	# PS1+="(\[${GREEN}\]$(/bin/ls -lah | /bin/grep -m 1 total | /bin/sed 's/total //')\[${DARKGRAY}\]:"
@@ -775,11 +775,6 @@ alias vvenv="deactivate"
 alias aptupdateupgrade="sudo apt update -y && sudo apt upgrade -y && sudo apt autoremove -y"
 alias dnfupdateupgrade="sudo dnf check-update && sudo dnf update && sudo dnf autoremove"
 alias fuck='sudo $(history -p \!\!)'
-alias gst="git status"
-alias gstv="git status -v"
-alias gdd="git add ."
-alias gcmt="git commit -m"
-alias gpsh="git push"
 alias journalctl="_journalctl"
 alias help="_tldr"
 alias amogus='echo"
