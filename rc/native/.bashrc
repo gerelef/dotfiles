@@ -560,6 +560,34 @@ rot13 () {
 	fi
 }
 
+gbi ()
+{
+    if [ -n "$1" ] && [ -f "$1" ]; then
+        echo "All instances of $1:"
+        whereis "$1"
+        echo ""
+        echo "File & Filesystem information:"
+        stat "$1"
+        echo ""
+        echo "Dependencies:"
+        ldd "$1"
+        echo ""
+        echo "Technical information:"
+        file "$1"
+        echo ""
+        readelf -h "$1"
+        echo ""
+        nm "$1" | head
+    else 
+        if [ -n "$1" ]; then
+            echo "File "$1" does not exist."
+        else 
+            echo "usage: gbi path/to/bin"
+        fi
+            
+    fi
+}
+
 # Multi-column ls
 lss ()
 {
