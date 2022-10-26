@@ -803,6 +803,7 @@ alias vvenv="deactivate"
 alias aptupdateupgrade="sudo apt update -y && sudo apt upgrade -y && sudo apt autoremove -y"
 alias dnfupdateupgrade="sudo dnf update && sudo dnf autoremove"
 alias restartpipewire="systemctl --user restart pipewire"
+alias restartnetworkmanager="systemctl restart NetworkManager"
 alias fuck='sudo $(history -p \!\!)'
 alias journalctl="_journalctl"
 alias help="_tldr"
