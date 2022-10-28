@@ -794,7 +794,7 @@ PROMPT_COMMAND='__setprompt'
 mkdir -p $HOME/bin/work/
 
 export DOTNET_CLI_TELEMETRY_OPTOUT=1
-PATH="$PATH:~/Downloads/appImages"
+PATH="$PATH:$HOME/Downloads/appImages"
 PATH="$PATH:$HOME/bin/"
 
 alias c="clear"
