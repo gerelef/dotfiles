@@ -1,2 +1,0 @@
-source nobara_36_gnome_x86_64_main.sh
-source nobara_36_gnome_x86_64_gsettings.sh
