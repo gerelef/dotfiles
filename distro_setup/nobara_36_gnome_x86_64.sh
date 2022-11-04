@@ -283,91 +283,91 @@ gsettings set org.gnome.desktop.remote-desktop.rdp enable false
 gsettings set org.gnome.desktop.screensaver color-shading-type 'solid'
 gsettings set org.gnome.desktop.sound allow-volume-above-100-percent false
 gsettings set org.gnome.desktop.sound event-sounds true
-gsettings set org.gnome.desktop.wm.keybindings activate-window-menu ['Menu']
-gsettings set org.gnome.desktop.wm.keybindings always-on-top @as []
-gsettings set org.gnome.desktop.wm.keybindings begin-move @as []
-gsettings set org.gnome.desktop.wm.keybindings begin-resize @as []
-gsettings set org.gnome.desktop.wm.keybindings close ['<Super>d']
-gsettings set org.gnome.desktop.wm.keybindings cycle-group ['<Alt>grave']
-gsettings set org.gnome.desktop.wm.keybindings cycle-group-backward ['<Shift><Alt>grave']
-gsettings set org.gnome.desktop.wm.keybindings cycle-panels @as []
-gsettings set org.gnome.desktop.wm.keybindings cycle-panels-backward @as []
-gsettings set org.gnome.desktop.wm.keybindings cycle-windows @as []
-gsettings set org.gnome.desktop.wm.keybindings cycle-windows-backward @as []
-gsettings set org.gnome.desktop.wm.keybindings lower @as []
-gsettings set org.gnome.desktop.wm.keybindings maximize @as []
-gsettings set org.gnome.desktop.wm.keybindings maximize-horizontally @as []
-gsettings set org.gnome.desktop.wm.keybindings maximize-vertically @as []
-gsettings set org.gnome.desktop.wm.keybindings minimize ['<Super>z']
-gsettings set org.gnome.desktop.wm.keybindings move-to-center @as []
-gsettings set org.gnome.desktop.wm.keybindings move-to-corner-ne @as []
-gsettings set org.gnome.desktop.wm.keybindings move-to-corner-nw @as []
-gsettings set org.gnome.desktop.wm.keybindings move-to-corner-se @as []
-gsettings set org.gnome.desktop.wm.keybindings move-to-corner-sw @as []
-gsettings set org.gnome.desktop.wm.keybindings move-to-monitor-down @as []
-gsettings set org.gnome.desktop.wm.keybindings move-to-monitor-left @as []
-gsettings set org.gnome.desktop.wm.keybindings move-to-monitor-right @as []
-gsettings set org.gnome.desktop.wm.keybindings move-to-monitor-up @as []
-gsettings set org.gnome.desktop.wm.keybindings move-to-side-e @as []
-gsettings set org.gnome.desktop.wm.keybindings move-to-side-n @as []
-gsettings set org.gnome.desktop.wm.keybindings move-to-side-s @as []
-gsettings set org.gnome.desktop.wm.keybindings move-to-side-w @as []
-gsettings set org.gnome.desktop.wm.keybindings move-to-workspace-1 ['<Super><Shift>Home']
-gsettings set org.gnome.desktop.wm.keybindings move-to-workspace-10 @as []
-gsettings set org.gnome.desktop.wm.keybindings move-to-workspace-11 @as []
-gsettings set org.gnome.desktop.wm.keybindings move-to-workspace-12 @as []
-gsettings set org.gnome.desktop.wm.keybindings move-to-workspace-2 @as []
-gsettings set org.gnome.desktop.wm.keybindings move-to-workspace-3 @as []
-gsettings set org.gnome.desktop.wm.keybindings move-to-workspace-4 @as []
-gsettings set org.gnome.desktop.wm.keybindings move-to-workspace-5 @as []
-gsettings set org.gnome.desktop.wm.keybindings move-to-workspace-6 @as []
-gsettings set org.gnome.desktop.wm.keybindings move-to-workspace-7 @as []
-gsettings set org.gnome.desktop.wm.keybindings move-to-workspace-8 @as []
-gsettings set org.gnome.desktop.wm.keybindings move-to-workspace-9 @as []
-gsettings set org.gnome.desktop.wm.keybindings move-to-workspace-down @as []
-gsettings set org.gnome.desktop.wm.keybindings move-to-workspace-last @as []
-gsettings set org.gnome.desktop.wm.keybindings move-to-workspace-left ['<Shift><Control>Home']
-gsettings set org.gnome.desktop.wm.keybindings move-to-workspace-right ['<Shift><Control>End']
-gsettings set org.gnome.desktop.wm.keybindings move-to-workspace-up @as []
-gsettings set org.gnome.desktop.wm.keybindings panel-main-menu @as []
-gsettings set org.gnome.desktop.wm.keybindings panel-run-dialog ['<Alt>F2']
-gsettings set org.gnome.desktop.wm.keybindings raise @as []
-gsettings set org.gnome.desktop.wm.keybindings raise-or-lower @as []
-gsettings set org.gnome.desktop.wm.keybindings set-spew-mark @as []
-gsettings set org.gnome.desktop.wm.keybindings show-desktop @as []
-gsettings set org.gnome.desktop.wm.keybindings switch-applications ['<Alt>Tab']
-gsettings set org.gnome.desktop.wm.keybindings switch-applications-backward ['<Shift><Alt>Tab']
-gsettings set org.gnome.desktop.wm.keybindings switch-group @as []
-gsettings set org.gnome.desktop.wm.keybindings switch-group-backward @as []
-gsettings set org.gnome.desktop.wm.keybindings switch-input-source ['<Super>space']
-gsettings set org.gnome.desktop.wm.keybindings switch-input-source-backward ['<Shift><Super>space']
-gsettings set org.gnome.desktop.wm.keybindings switch-panels @as []
-gsettings set org.gnome.desktop.wm.keybindings switch-panels-backward @as []
-gsettings set org.gnome.desktop.wm.keybindings switch-to-workspace-1 @as []
-gsettings set org.gnome.desktop.wm.keybindings switch-to-workspace-10 @as []
-gsettings set org.gnome.desktop.wm.keybindings switch-to-workspace-11 @as []
-gsettings set org.gnome.desktop.wm.keybindings switch-to-workspace-12 @as []
-gsettings set org.gnome.desktop.wm.keybindings switch-to-workspace-2 @as []
-gsettings set org.gnome.desktop.wm.keybindings switch-to-workspace-3 @as []
-gsettings set org.gnome.desktop.wm.keybindings switch-to-workspace-4 @as []
-gsettings set org.gnome.desktop.wm.keybindings switch-to-workspace-5 @as []
-gsettings set org.gnome.desktop.wm.keybindings switch-to-workspace-6 @as []
-gsettings set org.gnome.desktop.wm.keybindings switch-to-workspace-7 @as []
-gsettings set org.gnome.desktop.wm.keybindings switch-to-workspace-8 @as []
-gsettings set org.gnome.desktop.wm.keybindings switch-to-workspace-9 @as []
-gsettings set org.gnome.desktop.wm.keybindings switch-to-workspace-down ['<Primary><Super>Down', '<Primary><Super>j']
-gsettings set org.gnome.desktop.wm.keybindings switch-to-workspace-last @as []
-gsettings set org.gnome.desktop.wm.keybindings switch-to-workspace-left ['<Control>Home']
-gsettings set org.gnome.desktop.wm.keybindings switch-to-workspace-right ['<Control>End']
-gsettings set org.gnome.desktop.wm.keybindings switch-to-workspace-up ['<Primary><Super>Up', '<Primary><Super>k']
-gsettings set org.gnome.desktop.wm.keybindings switch-windows @as []
-gsettings set org.gnome.desktop.wm.keybindings switch-windows-backward @as []
-gsettings set org.gnome.desktop.wm.keybindings toggle-above @as []
-gsettings set org.gnome.desktop.wm.keybindings toggle-fullscreen @as []
-gsettings set org.gnome.desktop.wm.keybindings toggle-maximized ['<Super>x']
-gsettings set org.gnome.desktop.wm.keybindings toggle-on-all-workspaces @as []
-gsettings set org.gnome.desktop.wm.keybindings toggle-shaded @as []
-gsettings set org.gnome.desktop.wm.keybindings unmaximize @as []
+gsettings set org.gnome.desktop.wm.keybindings activate-window-menu "['Menu']"
+gsettings set org.gnome.desktop.wm.keybindings always-on-top  "[]"
+gsettings set org.gnome.desktop.wm.keybindings begin-move  "[]"
+gsettings set org.gnome.desktop.wm.keybindings begin-resize  "[]"
+gsettings set org.gnome.desktop.wm.keybindings close "['<Super>d']"
+gsettings set org.gnome.desktop.wm.keybindings cycle-group "['<Alt>grave']"
+gsettings set org.gnome.desktop.wm.keybindings cycle-group-backward "['<Shift><Alt>grave']"
+gsettings set org.gnome.desktop.wm.keybindings cycle-panels  "[]"
+gsettings set org.gnome.desktop.wm.keybindings cycle-panels-backward  "[]"
+gsettings set org.gnome.desktop.wm.keybindings cycle-windows  "[]"
+gsettings set org.gnome.desktop.wm.keybindings cycle-windows-backward  "[]"
+gsettings set org.gnome.desktop.wm.keybindings lower  "[]"
+gsettings set org.gnome.desktop.wm.keybindings maximize  "[]"
+gsettings set org.gnome.desktop.wm.keybindings maximize-horizontally  "[]"
+gsettings set org.gnome.desktop.wm.keybindings maximize-vertically  "[]"
+gsettings set org.gnome.desktop.wm.keybindings minimize "['<Super>z']"
+gsettings set org.gnome.desktop.wm.keybindings move-to-center  "[]"
+gsettings set org.gnome.desktop.wm.keybindings move-to-corner-ne  "[]"
+gsettings set org.gnome.desktop.wm.keybindings move-to-corner-nw  "[]"
+gsettings set org.gnome.desktop.wm.keybindings move-to-corner-se  "[]"
+gsettings set org.gnome.desktop.wm.keybindings move-to-corner-sw  "[]"
+gsettings set org.gnome.desktop.wm.keybindings move-to-monitor-down  "[]"
+gsettings set org.gnome.desktop.wm.keybindings move-to-monitor-left  "[]"
+gsettings set org.gnome.desktop.wm.keybindings move-to-monitor-right  "[]"
+gsettings set org.gnome.desktop.wm.keybindings move-to-monitor-up  "[]"
+gsettings set org.gnome.desktop.wm.keybindings move-to-side-e  "[]"
+gsettings set org.gnome.desktop.wm.keybindings move-to-side-n  "[]"
+gsettings set org.gnome.desktop.wm.keybindings move-to-side-s  "[]"
+gsettings set org.gnome.desktop.wm.keybindings move-to-side-w  "[]"
+gsettings set org.gnome.desktop.wm.keybindings move-to-workspace-1 "['<Super><Shift>Home']"
+gsettings set org.gnome.desktop.wm.keybindings move-to-workspace-10  "[]"
+gsettings set org.gnome.desktop.wm.keybindings move-to-workspace-11  "[]"
+gsettings set org.gnome.desktop.wm.keybindings move-to-workspace-12  "[]"
+gsettings set org.gnome.desktop.wm.keybindings move-to-workspace-2  "[]"
+gsettings set org.gnome.desktop.wm.keybindings move-to-workspace-3  "[]"
+gsettings set org.gnome.desktop.wm.keybindings move-to-workspace-4  "[]"
+gsettings set org.gnome.desktop.wm.keybindings move-to-workspace-5  "[]"
+gsettings set org.gnome.desktop.wm.keybindings move-to-workspace-6  "[]"
+gsettings set org.gnome.desktop.wm.keybindings move-to-workspace-7  "[]"
+gsettings set org.gnome.desktop.wm.keybindings move-to-workspace-8  "[]"
+gsettings set org.gnome.desktop.wm.keybindings move-to-workspace-9  "[]"
+gsettings set org.gnome.desktop.wm.keybindings move-to-workspace-down  "[]"
+gsettings set org.gnome.desktop.wm.keybindings move-to-workspace-last  "[]"
+gsettings set org.gnome.desktop.wm.keybindings move-to-workspace-left "['<Shift><Control>Home']"
+gsettings set org.gnome.desktop.wm.keybindings move-to-workspace-right "['<Shift><Control>End']"
+gsettings set org.gnome.desktop.wm.keybindings move-to-workspace-up  "[]"
+gsettings set org.gnome.desktop.wm.keybindings panel-main-menu  "[]"
+gsettings set org.gnome.desktop.wm.keybindings panel-run-dialog "['<Alt>F2']"
+gsettings set org.gnome.desktop.wm.keybindings raise  "[]"
+gsettings set org.gnome.desktop.wm.keybindings raise-or-lower  "[]"
+gsettings set org.gnome.desktop.wm.keybindings set-spew-mark  "[]"
+gsettings set org.gnome.desktop.wm.keybindings show-desktop  "[]"
+gsettings set org.gnome.desktop.wm.keybindings switch-applications "['<Alt>Tab']"
+gsettings set org.gnome.desktop.wm.keybindings switch-applications-backward "['<Shift><Alt>Tab']"
+gsettings set org.gnome.desktop.wm.keybindings switch-group  "[]"
+gsettings set org.gnome.desktop.wm.keybindings switch-group-backward  "[]"
+gsettings set org.gnome.desktop.wm.keybindings switch-input-source "['<Super>space']"
+gsettings set org.gnome.desktop.wm.keybindings switch-input-source-backward "['<Shift><Super>space']"
+gsettings set org.gnome.desktop.wm.keybindings switch-panels  "[]"
+gsettings set org.gnome.desktop.wm.keybindings switch-panels-backward  "[]"
+gsettings set org.gnome.desktop.wm.keybindings switch-to-workspace-1  "[]"
+gsettings set org.gnome.desktop.wm.keybindings switch-to-workspace-10  "[]"
+gsettings set org.gnome.desktop.wm.keybindings switch-to-workspace-11  "[]"
+gsettings set org.gnome.desktop.wm.keybindings switch-to-workspace-12  "[]"
+gsettings set org.gnome.desktop.wm.keybindings switch-to-workspace-2  "[]"
+gsettings set org.gnome.desktop.wm.keybindings switch-to-workspace-3  "[]"
+gsettings set org.gnome.desktop.wm.keybindings switch-to-workspace-4  "[]"
+gsettings set org.gnome.desktop.wm.keybindings switch-to-workspace-5  "[]"
+gsettings set org.gnome.desktop.wm.keybindings switch-to-workspace-6  "[]"
+gsettings set org.gnome.desktop.wm.keybindings switch-to-workspace-7  "[]"
+gsettings set org.gnome.desktop.wm.keybindings switch-to-workspace-8  "[]"
+gsettings set org.gnome.desktop.wm.keybindings switch-to-workspace-9  "[]"
+gsettings set org.gnome.desktop.wm.keybindings switch-to-workspace-down "['<Primary><Super>Down', '<Primary><Super>j']"
+gsettings set org.gnome.desktop.wm.keybindings switch-to-workspace-last  "[]"
+gsettings set org.gnome.desktop.wm.keybindings switch-to-workspace-left "['<Control>Home']"
+gsettings set org.gnome.desktop.wm.keybindings switch-to-workspace-right "['<Control>End']"
+gsettings set org.gnome.desktop.wm.keybindings switch-to-workspace-up "['<Primary><Super>Up', '<Primary><Super>k']"
+gsettings set org.gnome.desktop.wm.keybindings switch-windows  "[]"
+gsettings set org.gnome.desktop.wm.keybindings switch-windows-backward  "[]"
+gsettings set org.gnome.desktop.wm.keybindings toggle-above  "[]"
+gsettings set org.gnome.desktop.wm.keybindings toggle-fullscreen  "[]"
+gsettings set org.gnome.desktop.wm.keybindings toggle-maximized "['<Super>x']"
+gsettings set org.gnome.desktop.wm.keybindings toggle-on-all-workspaces  "[]"
+gsettings set org.gnome.desktop.wm.keybindings toggle-shaded  "[]"
+gsettings set org.gnome.desktop.wm.keybindings unmaximize  "[]"
 gsettings set org.gnome.desktop.wm.preferences action-double-click-titlebar 'toggle-maximize'
 gsettings set org.gnome.desktop.wm.preferences action-middle-click-titlebar 'none'
 gsettings set org.gnome.desktop.wm.preferences action-right-click-titlebar 'menu'
@@ -387,15 +387,15 @@ gsettings set org.gnome.desktop.wm.preferences titlebar-font 'Cantarell Light 11
 gsettings set org.gnome.desktop.wm.preferences titlebar-uses-system-font true
 gsettings set org.gnome.desktop.wm.preferences visual-bell false
 gsettings set org.gnome.desktop.wm.preferences visual-bell-type 'fullscreen-flash'
-gsettings set org.gnome.desktop.wm.preferences workspace-names @as []
-gsettings set org.gnome.gedit.plugins active-plugins ['spell', 'sort', 'quickhighlight', 'openlinks', 'modelines', 'filebrowser', 'docinfo']
-gsettings set org.gnome.gedit.plugins.drawspaces draw-spaces ['space', 'tab', 'leading', 'text', 'trailing']
+gsettings set org.gnome.desktop.wm.preferences workspace-names  "[]"
+gsettings set org.gnome.gedit.plugins active-plugins "['spell', 'sort', 'quickhighlight', 'openlinks', 'modelines', 'filebrowser', 'docinfo']"
+gsettings set org.gnome.gedit.plugins.drawspaces draw-spaces "['space', 'tab', 'leading', 'text', 'trailing']"
 gsettings set org.gnome.gedit.plugins.drawspaces show-white-space true
 gsettings set org.gnome.gedit.plugins.externaltools font 'Monospace 10'
 gsettings set org.gnome.gedit.plugins.externaltools use-system-font true
-gsettings set org.gnome.gedit.plugins.filebrowser binary-patterns ['*.la', '*.lo']
+gsettings set org.gnome.gedit.plugins.filebrowser binary-patterns "['*.la', '*.lo']"
 gsettings set org.gnome.gedit.plugins.filebrowser enable-remote false
-gsettings set org.gnome.gedit.plugins.filebrowser filter-mode ['hide-hidden', 'hide-binary']
+gsettings set org.gnome.gedit.plugins.filebrowser filter-mode "['hide-hidden', 'hide-binary']"
 gsettings set org.gnome.gedit.plugins.filebrowser filter-pattern ''
 gsettings set org.gnome.gedit.plugins.filebrowser open-at-first-doc true
 gsettings set org.gnome.gedit.plugins.filebrowser root 'file:///'
@@ -442,7 +442,7 @@ gsettings set org.gnome.gedit.preferences.editor tabs-size 4
 gsettings set org.gnome.gedit.preferences.editor use-default-font true
 gsettings set org.gnome.gedit.preferences.editor wrap-last-split-mode 'word'
 gsettings set org.gnome.gedit.preferences.editor wrap-mode 'none'
-gsettings set org.gnome.gedit.preferences.encodings candidate-encodings ['']
+gsettings set org.gnome.gedit.preferences.encodings candidate-encodings "['']"
 gsettings set org.gnome.gedit.preferences.print margin-bottom 25.0
 gsettings set org.gnome.gedit.preferences.print margin-left 25.0
 gsettings set org.gnome.gedit.preferences.print margin-right 25.0
@@ -464,9 +464,9 @@ gsettings set org.gnome.mutter auto-maximize true
 gsettings set org.gnome.mutter center-new-windows true
 gsettings set org.gnome.mutter check-alive-timeout 15000
 gsettings set org.gnome.nautilus.compression default-compression-format 'tar.xz'
-gsettings set org.gnome.nautilus.icon-view captions ['date_modified_with_time', 'permissions']
+gsettings set org.gnome.nautilus.icon-view captions "['date_modified_with_time', 'permissions']"
 gsettings set org.gnome.nautilus.icon-view default-zoom-level 'small'
-gsettings set org.gnome.nautilus.list-view default-visible-columns ['name', 'date_modified_with_time', 'permissions', 'size']
+gsettings set org.gnome.nautilus.list-view default-visible-columns "['name', 'date_modified_with_time', 'permissions', 'size']"
 gsettings set org.gnome.nautilus.preferences click-policy 'double'
 gsettings set org.gnome.nautilus.preferences default-folder-viewer 'list-view'
 gsettings set org.gnome.nautilus.preferences search-filter-time-type 'last_modified'
@@ -494,70 +494,70 @@ gsettings set org.gnome.shell.extensions.appindicator icon-size 0
 gsettings set org.gnome.shell.extensions.appindicator icon-spacing 12
 gsettings set org.gnome.shell.extensions.appindicator tray-order 1
 gsettings set org.gnome.shell.extensions.appindicator tray-pos 'right'
-gsettings set org.gnome.shell.extensions.pop-shell activate-launcher []
+gsettings set org.gnome.shell.extensions.pop-shell activate-launcher "[]"
 gsettings set org.gnome.shell.extensions.pop-shell active-hint true
 gsettings set org.gnome.shell.extensions.pop-shell column-size 64
-gsettings set org.gnome.shell.extensions.pop-shell focus-down ['<Super>Down', '<Super>KP_Down', '<Super>j']
-gsettings set org.gnome.shell.extensions.pop-shell focus-left ['<Super>Left', '<Super>KP_Left', '<Super>h']
-gsettings set org.gnome.shell.extensions.pop-shell focus-right ['<Super>Right', '<Super>KP_Right', '<Super>l']
-gsettings set org.gnome.shell.extensions.pop-shell focus-up ['<Super>Up', '<Super>KP_Up', '<Super>k']
+gsettings set org.gnome.shell.extensions.pop-shell focus-down "['<Super>Down', '<Super>KP_Down', '<Super>j']"
+gsettings set org.gnome.shell.extensions.pop-shell focus-left "['<Super>Left', '<Super>KP_Left', '<Super>h']"
+gsettings set org.gnome.shell.extensions.pop-shell focus-right "['<Super>Right', '<Super>KP_Right', '<Super>l']"
+gsettings set org.gnome.shell.extensions.pop-shell focus-up "['<Super>Up', '<Super>KP_Up', '<Super>k']"
 gsettings set org.gnome.shell.extensions.pop-shell gap-inner 0
 gsettings set org.gnome.shell.extensions.pop-shell gap-outer 0
 gsettings set org.gnome.shell.extensions.pop-shell hint-color-rgba 'rgba(0,114,198,0.195946)'
 gsettings set org.gnome.shell.extensions.pop-shell log-level 1
-gsettings set org.gnome.shell.extensions.pop-shell management-orientation ['o']
-gsettings set org.gnome.shell.extensions.pop-shell pop-monitor-down ['<Super><Shift><Primary>Down', '<Super><Shift><Primary>KP_Down', '<Super><Shift><Primary>j']
-gsettings set org.gnome.shell.extensions.pop-shell pop-monitor-left ['<Super><Shift>Left', '<Super><Shift>KP_Left', '<Super><Shift>h']
-gsettings set org.gnome.shell.extensions.pop-shell pop-monitor-right ['<Super><Shift>Right', '<Super><Shift>KP_Right', '<Super><Shift>l']
-gsettings set org.gnome.shell.extensions.pop-shell pop-monitor-up ['<Super><Shift><Primary>Up', '<Super><Shift><Primary>KP_Up', '<Super><Shift><Primary>k']
-gsettings set org.gnome.shell.extensions.pop-shell pop-workspace-down ['<Super><Shift>Down', '<Super><Shift>KP_Down', '<Super><Shift>j']
-gsettings set org.gnome.shell.extensions.pop-shell pop-workspace-up ['<Super><Shift>Up', '<Super><Shift>KP_Up', '<Super><Shift>k']
+gsettings set org.gnome.shell.extensions.pop-shell management-orientation "['o']"
+gsettings set org.gnome.shell.extensions.pop-shell pop-monitor-down "['<Super><Shift><Primary>Down', '<Super><Shift><Primary>KP_Down', '<Super><Shift><Primary>j']"
+gsettings set org.gnome.shell.extensions.pop-shell pop-monitor-left "['<Super><Shift>Left', '<Super><Shift>KP_Left', '<Super><Shift>h']"
+gsettings set org.gnome.shell.extensions.pop-shell pop-monitor-right "['<Super><Shift>Right', '<Super><Shift>KP_Right', '<Super><Shift>l']"
+gsettings set org.gnome.shell.extensions.pop-shell pop-monitor-up "['<Super><Shift><Primary>Up', '<Super><Shift><Primary>KP_Up', '<Super><Shift><Primary>k']"
+gsettings set org.gnome.shell.extensions.pop-shell pop-workspace-down "['<Super><Shift>Down', '<Super><Shift>KP_Down', '<Super><Shift>j']"
+gsettings set org.gnome.shell.extensions.pop-shell pop-workspace-up "['<Super><Shift>Up', '<Super><Shift>KP_Up', '<Super><Shift>k']"
 gsettings set org.gnome.shell.extensions.pop-shell row-size 64
 gsettings set org.gnome.shell.extensions.pop-shell show-skip-taskbar true
 gsettings set org.gnome.shell.extensions.pop-shell show-title false
 gsettings set org.gnome.shell.extensions.pop-shell smart-gaps true
 gsettings set org.gnome.shell.extensions.pop-shell snap-to-grid false
-gsettings set org.gnome.shell.extensions.pop-shell tile-accept ['Return', 'KP_Enter']
+gsettings set org.gnome.shell.extensions.pop-shell tile-accept "['Return', 'KP_Enter']"
 gsettings set org.gnome.shell.extensions.pop-shell tile-by-default true
-gsettings set org.gnome.shell.extensions.pop-shell tile-enter ['<Super>Return', '<Super>KP_Enter']
-gsettings set org.gnome.shell.extensions.pop-shell tile-move-down ['Down', 'KP_Down', 'j']
-gsettings set org.gnome.shell.extensions.pop-shell tile-move-left ['Left', 'KP_Left', 'h']
-gsettings set org.gnome.shell.extensions.pop-shell tile-move-right ['Right', 'KP_Right', 'l']
-gsettings set org.gnome.shell.extensions.pop-shell tile-move-up ['Up', 'KP_Up', 'k']
-gsettings set org.gnome.shell.extensions.pop-shell tile-orientation ['<Super>o']
-gsettings set org.gnome.shell.extensions.pop-shell tile-reject ['Escape']
-gsettings set org.gnome.shell.extensions.pop-shell tile-resize-down ['<Shift>Down', '<Shift>KP_Down', '<Shift>j']
-gsettings set org.gnome.shell.extensions.pop-shell tile-resize-left ['<Shift>Left', '<Shift>KP_Left', '<Shift>h']
-gsettings set org.gnome.shell.extensions.pop-shell tile-resize-right ['<Shift>Right', '<Shift>KP_Right', '<Shift>l']
-gsettings set org.gnome.shell.extensions.pop-shell tile-resize-up ['<Shift>Up', '<Shift>KP_Up', '<Shift>k']
-gsettings set org.gnome.shell.extensions.pop-shell tile-swap-down ['<Primary>Down', '<Primary>KP_Down', '<Primary>j']
-gsettings set org.gnome.shell.extensions.pop-shell tile-swap-left ['<Primary>Left', '<Primary>KP_Left', '<Primary>h']
-gsettings set org.gnome.shell.extensions.pop-shell tile-swap-right ['<Primary>Right', '<Primary>KP_Right', '<Primary>l']
-gsettings set org.gnome.shell.extensions.pop-shell tile-swap-up ['<Primary>Up', '<Primary>KP_Up', '<Primary>k']
-gsettings set org.gnome.shell.extensions.pop-shell toggle-floating ['<Super>g']
-gsettings set org.gnome.shell.extensions.pop-shell toggle-stacking ['s']
-gsettings set org.gnome.shell.extensions.pop-shell toggle-stacking-global ['<Super>s']
-gsettings set org.gnome.shell.extensions.pop-shell toggle-tiling ['<Super>y']
-gsettings set org.gnome.shell.keybindings focus-active-notification @as []
-gsettings set org.gnome.shell.keybindings open-application-menu @as []
-gsettings set org.gnome.shell.keybindings screenshot ['<Shift>Print']
-gsettings set org.gnome.shell.keybindings screenshot-window ['<Control>Print']
-gsettings set org.gnome.shell.keybindings shift-overview-down @as []
-gsettings set org.gnome.shell.keybindings shift-overview-up @as []
-gsettings set org.gnome.shell.keybindings show-screen-recording-ui ['<Shift><Control>Print']
-gsettings set org.gnome.shell.keybindings show-screenshot-ui ['Print']
-gsettings set org.gnome.shell.keybindings switch-to-application-1 @as []
-gsettings set org.gnome.shell.keybindings switch-to-application-2 @as []
-gsettings set org.gnome.shell.keybindings switch-to-application-3 @as []
-gsettings set org.gnome.shell.keybindings switch-to-application-4 @as []
-gsettings set org.gnome.shell.keybindings switch-to-application-5 @as []
-gsettings set org.gnome.shell.keybindings switch-to-application-6 @as []
-gsettings set org.gnome.shell.keybindings switch-to-application-7 @as []
-gsettings set org.gnome.shell.keybindings switch-to-application-8 @as []
-gsettings set org.gnome.shell.keybindings switch-to-application-9 @as []
-gsettings set org.gnome.shell.keybindings toggle-application-view []
-gsettings set org.gnome.shell.keybindings toggle-message-tray ['<Super>v']
-gsettings set org.gnome.shell.keybindings toggle-overview []
+gsettings set org.gnome.shell.extensions.pop-shell tile-enter "['<Super>Return', '<Super>KP_Enter']"
+gsettings set org.gnome.shell.extensions.pop-shell tile-move-down "['Down', 'KP_Down', 'j']"
+gsettings set org.gnome.shell.extensions.pop-shell tile-move-left "['Left', 'KP_Left', 'h']"
+gsettings set org.gnome.shell.extensions.pop-shell tile-move-right "['Right', 'KP_Right', 'l']"
+gsettings set org.gnome.shell.extensions.pop-shell tile-move-up "['Up', 'KP_Up', 'k']"
+gsettings set org.gnome.shell.extensions.pop-shell tile-orientation "['<Super>o']"
+gsettings set org.gnome.shell.extensions.pop-shell tile-reject "['Escape']"
+gsettings set org.gnome.shell.extensions.pop-shell tile-resize-down "['<Shift>Down', '<Shift>KP_Down', '<Shift>j']"
+gsettings set org.gnome.shell.extensions.pop-shell tile-resize-left "['<Shift>Left', '<Shift>KP_Left', '<Shift>h']"
+gsettings set org.gnome.shell.extensions.pop-shell tile-resize-right "['<Shift>Right', '<Shift>KP_Right', '<Shift>l']"
+gsettings set org.gnome.shell.extensions.pop-shell tile-resize-up "['<Shift>Up', '<Shift>KP_Up', '<Shift>k']"
+gsettings set org.gnome.shell.extensions.pop-shell tile-swap-down "['<Primary>Down', '<Primary>KP_Down', '<Primary>j']"
+gsettings set org.gnome.shell.extensions.pop-shell tile-swap-left "['<Primary>Left', '<Primary>KP_Left', '<Primary>h']"
+gsettings set org.gnome.shell.extensions.pop-shell tile-swap-right "['<Primary>Right', '<Primary>KP_Right', '<Primary>l']"
+gsettings set org.gnome.shell.extensions.pop-shell tile-swap-up "['<Primary>Up', '<Primary>KP_Up', '<Primary>k']"
+gsettings set org.gnome.shell.extensions.pop-shell toggle-floating "['<Super>g']"
+gsettings set org.gnome.shell.extensions.pop-shell toggle-stacking "['s']"
+gsettings set org.gnome.shell.extensions.pop-shell toggle-stacking-global "['<Super>s']"
+gsettings set org.gnome.shell.extensions.pop-shell toggle-tiling "['<Super>y']"
+gsettings set org.gnome.shell.keybindings focus-active-notification  "[]"
+gsettings set org.gnome.shell.keybindings open-application-menu  "[]"
+gsettings set org.gnome.shell.keybindings screenshot "['<Shift>Print']"
+gsettings set org.gnome.shell.keybindings screenshot-window "['<Control>Print']"
+gsettings set org.gnome.shell.keybindings shift-overview-down  "[]"
+gsettings set org.gnome.shell.keybindings shift-overview-up  "[]"
+gsettings set org.gnome.shell.keybindings show-screen-recording-ui "['<Shift><Control>Print']"
+gsettings set org.gnome.shell.keybindings show-screenshot-ui "['Print']"
+gsettings set org.gnome.shell.keybindings switch-to-application-1  "[]"
+gsettings set org.gnome.shell.keybindings switch-to-application-2  "[]"
+gsettings set org.gnome.shell.keybindings switch-to-application-3  "[]"
+gsettings set org.gnome.shell.keybindings switch-to-application-4  "[]"
+gsettings set org.gnome.shell.keybindings switch-to-application-5  "[]"
+gsettings set org.gnome.shell.keybindings switch-to-application-6  "[]"
+gsettings set org.gnome.shell.keybindings switch-to-application-7  "[]"
+gsettings set org.gnome.shell.keybindings switch-to-application-8  "[]"
+gsettings set org.gnome.shell.keybindings switch-to-application-9  "[]"
+gsettings set org.gnome.shell.keybindings toggle-application-view "[]"
+gsettings set org.gnome.shell.keybindings toggle-message-tray "['<Super>v']"
+gsettings set org.gnome.shell.keybindings toggle-overview "[]"
 gsettings set org.gnome.shell.overrides attach-modal-dialogs false
 gsettings set org.gnome.shell.overrides dynamic-workspaces true
 gsettings set org.gnome.shell.overrides edge-tiling true
