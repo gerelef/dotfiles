@@ -222,7 +222,7 @@ if [[ $REPLY =~ ^[Yy]$ ]]; then
     chmod 551 "gnome-shell-extension-installer"
     mv "gnome-shell-extension-installer" "/usr/bin/"
     
-    /usr/bin/gnome-shell-extension-installer "$GDBUS_NIGHT_THEME_SWITCHER_ID --restart-shell"
+    /usr/bin/gnome-shell-extension-installer "$GDBUS_NIGHT_THEME_SWITCHER_ID"
     echo "Finished installing extensions."
 fi
 
