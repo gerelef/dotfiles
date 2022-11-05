@@ -222,7 +222,6 @@ if [[ $REPLY =~ ^[Yy]$ ]]; then
     chmod 551 "gnome-shell-extension-installer"
     mv "gnome-shell-extension-installer" "/usr/bin/"
     
-    /usr/bin/gnome-shell-extension-installer "$GDBUS_NIGHT_THEME_SWITCHER_ID"
     echo "Finished installing extensions."
 fi
 
@@ -264,13 +263,6 @@ if ! [ $? -eq 0 ]; then
     /usr/sbin/updatedb
 fi
 
-echo "-------------------INSTALLING MINECRAFT----------------"
-cd "$REAL_USER_HOME/cloned"
-curl -fsSL "https://launcher.mojang.com/download/Minecraft.tar.gz" 
-tar –xvzf "Minecraft.tar.gz"
-bash "Minecraft/minecraft-launcher/minecraft-launcher"
-echo "Finished installing Minecraft."
-
 echo "---------------------------------------------"
 echo "Jetbrains has been automatically installed."
 echo "Recommended IDEs are:"
@@ -278,6 +270,8 @@ echo "- PyCharm Ultimate"
 echo "- IntelliJ Idea Ultimate"
 echo "- CLion"
 echo "- Android Studio"
+echo "---------------------------------------------"
+echo "Please run gnome-shell-extension-installer $GDBUS_NIGHT_THEME_SWITCHER_ID to install the last available extension."
 echo "---------------------------------------------"
 echo "Please sudo visudo and add:"
 echo "  Defaults env_reset, timestamp_timeout=120, pwfeedback"
