@@ -279,7 +279,7 @@ gsettings set org.gnome.nautilus.preferences show-create-link true
 gsettings set org.gnome.nautilus.preferences show-delete-permanently false
 gsettings set org.gnome.nautilus.preferences show-directory-item-counts 'local-only'
 gsettings set org.gnome.nautilus.preferences tabs-open-position 'after-current-tab'
-gsettings set org.gnome.nautilus.preferences enable-interactive-search false
+gsettings set org.gnome.nautilus.preferences enable-interactive-search true
 gsettings set org.gnome.nautilus.window-state sidebar-width 150
 gsettings set org.gnome.settings-daemon.plugins.color night-light-enabled true
 gsettings set org.gnome.settings-daemon.plugins.color night-light-schedule-automatic false
