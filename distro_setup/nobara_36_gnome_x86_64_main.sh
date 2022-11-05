@@ -205,7 +205,6 @@ su - $REAL_USER -c "flatpak install -y $INSTALLABLE_FLATPAKS"
 echo "Continuing as $(whoami)"
 
 echo "-------------------INSTALLING---------------- $INSTALLABLE_EXTENSIONS" | tr " " "\n"
-echo "& night theme switcher using gnome-shell-extension-installer"
 while : ; do
     read -p "Do you want to install extensions?[Y/n] " -n 1 -r
     ! [[ $REPLY =~ ^[YyNn]$ ]] || break
@@ -217,10 +216,6 @@ if [[ $REPLY =~ ^[Yy]$ ]]; then
         dnf install -y $INSTALLABLE_EXTENSIONS 
         [[ $? != 0 ]] || break  
     done
-    
-    wget -O "gnome-shell-extension-installer" "https://github.com/brunelli/gnome-shell-extension-installer/raw/master/gnome-shell-extension-installer"
-    chmod 551 "gnome-shell-extension-installer"
-    mv "gnome-shell-extension-installer" "/usr/bin/"
     
     echo "Finished installing extensions."
 fi
@@ -271,7 +266,7 @@ echo "- IntelliJ Idea Ultimate"
 echo "- CLion"
 echo "- Android Studio"
 echo "---------------------------------------------"
-echo "Please run gnome-shell-extension-installer $GDBUS_NIGHT_THEME_SWITCHER_ID to install the last available extension."
+echo "Please install 'night theme switcher' using the gnome extensions website."
 echo "---------------------------------------------"
 echo "Please sudo visudo and add:"
 echo "  Defaults env_reset, timestamp_timeout=120, pwfeedback"
