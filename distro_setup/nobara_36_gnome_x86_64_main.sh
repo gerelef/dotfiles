@@ -11,7 +11,10 @@ fi
 if ! ping -q -c 1 -W 1 google.com > /dev/null; then
     echo "Network connection was not detected."
     echo "This script needs network connectivity to continue."
-    read -p "Are you sure you want to continue?[Y/n] " -n 1 -r
+    while : ; do
+        read -p "Are you sure you want to continue?[Y/n] " -n 1 -r
+        ! [[ $REPLY =~ ^[YyNn]$ ]] || break
+    done 
     echo ""
     if ! [[ $REPLY =~ ^[Yy]$ ]]; then
         exit 1
@@ -139,16 +142,24 @@ chown "$REAL_USER" "$REAL_USER_HOME"
 sudo systemctl enable fstrim.timer
 
 echo "-------------------UPDATING----------------"
-dnf update -y 
+while : ; do
+    dnf update fedora-repos nobara-repos --refresh && sudo dnf update --refresh && sudo dnf distro-sync --refresh
+    dnf update -y 
+    [[ $? != 0 ]] || break
+done
 echo "Finished updating system."
 
 echo "-------------------INSTALLING---------------- $INSTALLABLE_PACKAGES" | tr " " "\n"
-dnf install -y $INSTALLABLE_PACKAGES 
+while : ; do
+    dnf install -y $INSTALLABLE_PACKAGES 
+    [[ $? != 0 ]] || break
+done
 
 case "btrfs" in
     "$ROOT_FS" | "$REAL_USER_HOME_FS" |  "$SCRIPT_DIR_FS")
         echo "found BTRFS, installing btrfs-assistant"
-        dnf install -y btrfs-assistant > /dev/null
+        dnf install -y btrfs-assistant
+        echo "finished installing btrfs-assistant"
         ;;
     *)
         echo "BTRFS not found; continuing as usual..."
@@ -157,18 +168,28 @@ esac
 
 echo "-------------------INSTALLING----------------" | tr " " "\n"
 dnf group info "Development Tools"
-read -p "Are you sure you want to install Development Tools?[Y/n] " -n 1 -r
+while : ; do
+    read -p "Are you sure you want to install Development Tools?[Y/n] " -n 1 -r
+    ! [[ $REPLY =~ ^[YyNn]$ ]] || break
+done 
 echo ""
 if [[ $REPLY =~ ^[Yy]$ ]]; then
-    dnf groupinstall -y "Development Tools" 
+    while : ; do
+        dnf groupinstall -y "Development Tools"     
+        [[ $? != 0 ]] || break
+    done
     echo "Finished installing Development Tools."
 fi
 
 echo "-------------------INSTALLING---------------- $INSTALLABLE_IDE_FLATPAKS" | tr " " "\n"
-read -p "Are you sure you want to install Community IDEs?[Y/n] " -n 1 -r
+while : ; do
+    read -p "Are you sure you want to install Community IDEs?[Y/n] " -n 1 -r
+    ! [[ $REPLY =~ ^[YyNn]$ ]] || break
+done 
+
 echo ""
 if [[ $REPLY =~ ^[Yy]$ ]]; then
-    su - $REAL_USER -c "flatpak install --user -y $INSTALLABLE_IDE_FLATPAKS"
+    su - $REAL_USER -c "flatpak install -y $INSTALLABLE_IDE_FLATPAKS"
     echo "Finished installing IDEs."
 fi
 
@@ -180,16 +201,22 @@ echo "Finished installing toolbox."
 
 echo "Switching to $REAL_USER to install flatpaks"
 echo "-------------------INSTALLING---------------- $INSTALLABLE_FLATPAKS" | tr " " "\n"
-su - $REAL_USER -c "flatpak install --user -y $INSTALLABLE_FLATPAKS"
+su - $REAL_USER -c "flatpak install -y $INSTALLABLE_FLATPAKS"
 echo "Continuing as $(whoami)"
 
 echo "-------------------INSTALLING---------------- $INSTALLABLE_EXTENSIONS" | tr " " "\n"
 echo "& night theme switcher using gnome-shell-extension-installer"
-read -p "Do you want to install extensions?[Y/n] " -n 1 -r
+while : ; do
+    read -p "Do you want to install extensions?[Y/n] " -n 1 -r
+    ! [[ $REPLY =~ ^[YyNn]$ ]] || break
+done 
 echo ""
 
 if [[ $REPLY =~ ^[Yy]$ ]]; then
-    dnf install -y $INSTALLABLE_EXTENSIONS 
+    while : ; do
+        dnf install -y $INSTALLABLE_EXTENSIONS 
+        [[ $? != 0 ]] || break  
+    done
     
     wget -O "gnome-shell-extension-installer" "https://github.com/brunelli/gnome-shell-extension-installer/raw/master/gnome-shell-extension-installer"
     chmod 551 "gnome-shell-extension-installer"
@@ -223,13 +250,6 @@ done
 
 echo "Finished installing rc files."
 
-echo "-------------------INSTALLING MINECRAFT----------------"
-cd "$REAL_USER_HOME/cloned"
-curl -fsSL "https://launcher.mojang.com/download/Minecraft.tar.gz" 
-tar –xvzf "Minecraft.tar.gz"
-bash "Minecraft/minecraft-launcher/minecraft-launcher"
-echo "Finished installing Minecraft."
-
 mkdir -p "$REAL_USER_HOME/.ssh"
 chown -R "$REAL_USER" "$REAL_USER_HOME/.ssh"
 ssh-keygen -t rsa -b 4096 -C "$REAL_USER@$DISTRIBUTION_NAME" -f "$REAL_USER_HOME/.ssh/id_rsa" -P "" && cat "$REAL_USER_HOME/.ssh/id_rsa.pub"
@@ -244,6 +264,12 @@ if ! [ $? -eq 0 ]; then
     /usr/sbin/updatedb
 fi
 
+echo "-------------------INSTALLING MINECRAFT----------------"
+cd "$REAL_USER_HOME/cloned"
+curl -fsSL "https://launcher.mojang.com/download/Minecraft.tar.gz" 
+tar –xvzf "Minecraft.tar.gz"
+bash "Minecraft/minecraft-launcher/minecraft-launcher"
+echo "Finished installing Minecraft."
 
 echo "---------------------------------------------"
 echo "Jetbrains has been automatically installed."
