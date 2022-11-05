@@ -227,10 +227,10 @@ fi
 
 echo "-------------------INSTALLING RC FILES----------------"
 
-ln -s "$RC_DIR/.vimrc" "$REAL_USER_HOME/.vimrc"
-ln -s "$RC_DIR/.bashrc" "$REAL_USER_HOME/.bashrc" 
-ln -s "$RC_DIR/.nanorc" "$REAL_USER_HOME/.nanorc"
-ln -s "$RC_DIR/.gitconfig" "$REAL_USER_HOME/.gitconfig"
+ln -sf "$RC_DIR/.vimrc" "$REAL_USER_HOME/.vimrc"
+ln -sf "$RC_DIR/.bashrc" "$REAL_USER_HOME/.bashrc" 
+ln -sf "$RC_DIR/.nanorc" "$REAL_USER_HOME/.nanorc"
+ln -sf "$RC_DIR/.gitconfig" "$REAL_USER_HOME/.gitconfig"
 
 #https://askubuntu.com/questions/239543/get-the-default-firefox-profile-directory-from-bash
 MZL_ROOT="$REAL_USER_HOME/.mozilla/firefox"
