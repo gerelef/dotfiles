@@ -245,7 +245,7 @@ install_bashrc_support ()
 	dtype=$(distribution)
 	
 	if [ $dtype == "redhat" ]; then
-		sudo yum install tree tldr tldr
+		sudo yum install tree tldr
 	elif [ $dtype == "suse" ]; then
 		sudo zypper install tree
 		sudo zypper install tldr
@@ -654,6 +654,11 @@ _git_branch () {
      git branch 2> /dev/null | sed -e '/^[^*]/d' -e 's/* \(.*\)/ (\1)/'
 }
 
+_get_sha256sum () {
+    sha=$(cat $1 | sha256sum | head -c 64)
+    echo "SHA256: $sha"
+}
+
 #######################################################
 # Set the ultimate amazing command prompt
 #######################################################
@@ -797,6 +802,7 @@ export DOTNET_CLI_TELEMETRY_OPTOUT=1
 PATH="$PATH:$HOME/Downloads/appImages"
 PATH="$PATH:$HOME/bin/"
 
+alias sha256="_get_sha256sum"
 alias c="clear"
 alias venv="source venv/bin/activate"
 alias vvenv="deactivate"
