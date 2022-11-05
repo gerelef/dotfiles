@@ -1,0 +1,3 @@
+[submodule "csgorc"]
+	path = csgorc
+	url = git@github.com:GerElef/csgorc.git
