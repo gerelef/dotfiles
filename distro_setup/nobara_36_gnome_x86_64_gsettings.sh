@@ -13,6 +13,10 @@ fi
 #gsettings set org.gnome.settings-daemon.plugins.media-keys.custom-keybinding:/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom0/ binding '<key_combination>'
 echo "-------------------GSETTINGS----------------"
 ################################### GSETTINGS ###################################
+gsettings set org.gnome.builder.editor style-scheme-name 'Adwaita'
+gsettings set org.gnome.desktop.interface cursor-theme 'Adwaita'
+gsettings set org.gnome.desktop.interface gtk-theme 'Adwaita-dark'
+gsettings set org.gnome.desktop.interface icon-theme 'Adwaita'
 gsettings set org.gnome.settings-daemon.plugins.media-keys custom-keybindings "['/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom0/', '/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom1/']"
 gsettings set org.gnome.settings-daemon.plugins.media-keys.custom-keybinding:/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom0/ name 'alacritty'
 gsettings set org.gnome.settings-daemon.plugins.media-keys.custom-keybinding:/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom0/ command "alacritty --config-file $HOME/dotfiles/rc/alacritty.yml"
@@ -59,10 +63,10 @@ gsettings set org.gnome.desktop.interface show-battery-percentage true
 gsettings set org.gnome.desktop.media-handling automount true
 gsettings set org.gnome.desktop.media-handling automount-open true
 gsettings set org.gnome.desktop.media-handling autorun-never true
-gsettings set org.gnome.desktop.notifications show-banners true
+gsettings set org.gnome.desktop.notifications show-banners false
 gsettings set org.gnome.desktop.notifications show-in-lock-screen true
 gsettings set org.gnome.desktop.peripherals.keyboard numlock-state false
-gsettings set org.gnome.desktop.peripherals.keyboard remember-numlock-state true
+gsettings set org.gnome.desktop.peripherals.keyboard remember-numlock-state false
 gsettings set org.gnome.desktop.peripherals.keyboard repeat true
 gsettings set org.gnome.desktop.peripherals.keyboard repeat-interval 25
 gsettings set org.gnome.desktop.peripherals.mouse double-click 250
@@ -187,7 +191,6 @@ gsettings set org.gnome.desktop.wm.preferences num-workspaces 3
 gsettings set org.gnome.desktop.wm.preferences raise-on-click true
 gsettings set org.gnome.desktop.wm.preferences resize-with-right-button false
 gsettings set org.gnome.desktop.wm.preferences theme 'Adwaita'
-gsettings set org.gnome.desktop.wm.preferences titlebar-font 'Cantarell Light 11'
 gsettings set org.gnome.desktop.wm.preferences titlebar-uses-system-font true
 gsettings set org.gnome.desktop.wm.preferences visual-bell false
 gsettings set org.gnome.desktop.wm.preferences visual-bell-type 'fullscreen-flash'
@@ -231,7 +234,6 @@ gsettings set org.gnome.gedit.preferences.editor create-backup-copy false
 gsettings set org.gnome.gedit.preferences.editor display-line-numbers true
 gsettings set org.gnome.gedit.preferences.editor display-overview-map false
 gsettings set org.gnome.gedit.preferences.editor display-right-margin true
-gsettings set org.gnome.gedit.preferences.editor editor-font 'Monospace 12'
 gsettings set org.gnome.gedit.preferences.editor ensure-trailing-newline true
 gsettings set org.gnome.gedit.preferences.editor highlight-current-line false
 gsettings set org.gnome.gedit.preferences.editor insert-spaces true
@@ -289,7 +291,7 @@ gsettings set org.gnome.settings-daemon.plugins.color night-light-temperature 27
 gsettings set org.gnome.settings-daemon.plugins.power ambient-enabled true
 gsettings set org.gnome.settings-daemon.plugins.power idle-brightness 30
 gsettings set org.gnome.settings-daemon.plugins.power idle-dim true
-gsettings set org.gnome.shell development-tools true
+gsettings set org.gnome.shell development-tools false
 gsettings set org.gnome.shell disable-extension-version-validation false
 gsettings set org.gnome.shell disable-user-extensions false
 gsettings set org.gnome.shell.extensions.appindicator icon-contrast 0.0
@@ -362,9 +364,9 @@ gsettings set org.gnome.shell.keybindings switch-to-application-9  "[]"
 gsettings set org.gnome.shell.keybindings toggle-application-view "[]"
 gsettings set org.gnome.shell.keybindings toggle-message-tray "['<Super>v']"
 gsettings set org.gnome.shell.keybindings toggle-overview "[]"
-gsettings set org.gnome.shell.overrides attach-modal-dialogs false
+gsettings set org.gnome.shell.overrides attach-modal-dialogs true
 gsettings set org.gnome.shell.overrides dynamic-workspaces true
-gsettings set org.gnome.shell.overrides edge-tiling true
+gsettings set org.gnome.shell.overrides edge-tiling false
 gsettings set org.gnome.shell.overrides focus-change-on-pointer-rest true
 gsettings set org.gnome.shell.overrides workspaces-only-on-primary false
 gsettings set org.gnome.shell.weather automatic-location true
