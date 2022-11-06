@@ -108,6 +108,7 @@ gnome-system-monitor \
 INSTALLABLE_FLATPAKS="\
 spotify \
 com.discordapp.Discord \
+com.teamspeak.TeamSpeak \
 joplin \
 teamspeak \
 skype \
