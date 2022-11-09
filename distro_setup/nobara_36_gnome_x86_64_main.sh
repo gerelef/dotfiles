@@ -73,9 +73,6 @@ chromium \
 fedora-chromium-config \
 git \
 alacritty \
-gedit \
-gedit-plugin* \
-gedit-color-schemes \
 gimp \
 obs-studio \
 libreoffice \
