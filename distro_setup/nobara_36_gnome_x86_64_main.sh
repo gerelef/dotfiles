@@ -109,6 +109,7 @@ INSTALLABLE_FLATPAKS="\
 spotify \
 com.discordapp.Discord \
 com.teamspeak.TeamSpeak \
+com.raggesilver.BlackBox \
 joplin \
 teamspeak \
 skype \
