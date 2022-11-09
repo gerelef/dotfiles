@@ -240,6 +240,8 @@ for MZL_PROF_DIR in $PROFPATH; do
     MZL_PROF_CHROME_DIR_ABSOLUTE="$MZL_PROF_DIR_ABSOLUTE/chrome"
     mkdir -p "$MZL_PROF_CHROME_DIR_ABSOLUTE"
     ln -s "$RC_MZL_DIR/userChrome.css" "$MZL_PROF_CHROME_DIR_ABSOLUTE/userChrome.css"
+    ln -s "$RC_MZL_DIR/userContent.css" "$MZL_PROF_CHROME_DIR_ABSOLUTE/userContent.css"
+    ln -s "$RC_MZL_DIR/mono-firefox-theme" "$MZL_PROF_CHROME_DIR_ABSOLUTE/mono-firefox-theme"
 done
 
 echo "Finished installing rc files."
