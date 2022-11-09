@@ -725,7 +725,7 @@ function __setprompt
 		else
 			PS1+="Unknown error code"
 		fi
-		PS1+="\[${DARKGRAY}\])\[${NOCOLOR}\]\n"
+		PS1+="\n"
 	else
 		PS1=""
 	fi
