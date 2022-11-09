@@ -110,6 +110,7 @@ spotify \
 com.discordapp.Discord \
 com.teamspeak.TeamSpeak \
 com.raggesilver.BlackBox \
+io.github.Foldex.AdwSteamGtk \
 joplin \
 teamspeak \
 skype \
@@ -269,6 +270,8 @@ echo "- CLion"
 echo "- Android Studio"
 echo "---------------------------------------------"
 echo "Please install 'night theme switcher' using the gnome extensions website."
+echo "---------------------------------------------"
+echo "Please run adwsteamgtk to convert steam to the Adwaita theme."
 echo "---------------------------------------------"
 echo "Please sudo visudo and add:"
 echo "  Defaults env_reset, timestamp_timeout=120, pwfeedback"
