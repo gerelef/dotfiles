@@ -239,6 +239,26 @@ rot13 () {
 	fi
 }
 
+ffextract_audio () {
+    ffmpeg -i "$1" -vn "$1.mp3"
+}
+
+fftrim_mp3 () {
+    ffmpeg -ss "$2" -t "$3" -i "$1" -acodec copy "$1-trimmed.mp3" 
+}
+
+fftrim_mp4 () {
+    ffmpeg -ss "$2" -to "$3" -i "$1" -codec copy "$1-trimmed.mp4"
+}
+
+ytdl_mp3 () {
+    yt-dlp --extract-audio --audio-format mp3 --audio-quality 0 "$@" 
+}
+
+ytdl_mp4 () {
+    yt-dlp --format "bv*[ext=mp4]+ba[ext=m4a]/b[ext=mp4]" "$@"
+}
+
 gbi ()
 {
     if [ -n "$1" ] && [ -f "$1" ]; then
