@@ -312,6 +312,10 @@ cd ()
 	        if [ "------ .git ------" == "$current_directory_status_out" ]; then
 	            current_directory_status_out=$(echo "------ .git ------"; echo "Your branch is up to date"; )
 	        fi
+	        top_lvl_git_dir=$(git rev-parse --show-toplevel)
+	        if [ "$PWD" = $top_lvl_git_dir ]; then 
+	            onefetch --no-bold --no-palette --show-logo auto --authors-number 0  -d repo
+	        fi
 	        paste <(echo "$current_directory_dirs_out") <(echo "$current_directory_files_out") <(echo "$current_directory_status_out") | column -s $'\t' -t -d -N C1,C2,C3 -T C1,C2,C3
 	    else 
 	        paste <(echo "$current_directory_dirs_out") <(echo "$current_directory_files_out") | column -s $'\t' -t -d -N C1,C2 -T C1,C2
