@@ -67,6 +67,7 @@ neofetch \
 onefetch \
 meson \
 curl \
+bat \
 java-latest-openjdk \
 java-latest-openjdk-devel \
 firefox \
