@@ -205,8 +205,7 @@ alias sha512="openssl sha512"
 #######################################################
 
 # Searches for text in all files in the current folder
-ftext ()
-{
+ftext () {
 	# -i case-insensitive
 	# -I ignore binary files
 	# -H causes filename to be printed
@@ -218,15 +217,13 @@ ftext ()
 }
 
 # Create and go to the directory
-mkdirg ()
-{
+mkdirg () {
 	mkdir -p $1
 	cd $1
 }
 
 # Returns the last 2 fields of the working directory
-pwdtail ()
-{
+pwdtail () {
 	pwd|awk -F/ '{nlast = NF -1;print $nlast"/"$NF}'
 }
 
@@ -259,8 +256,7 @@ ytdl_mp4 () {
     yt-dlp --format "bv*[ext=mp4]+ba[ext=m4a]/b[ext=mp4]" "$@"
 }
 
-gbi ()
-{
+gbi () {
     if [ -n "$1" ] && [ -f "$1" ]; then
         echo "All instances of $1:"
         whereis "$1"
@@ -287,8 +283,7 @@ gbi ()
 }
 
 # Multi-column ls
-lss ()
-{
+lss () {
     current_directory_dirs_out=$(echo "------ $1*.d ------"; ls -p $1 | grep /; )
     current_directory_files_out=$(echo "------ $1* ------"; ls -p $1 | grep -v /; )
     paste <(echo "$current_directory_dirs_out") <(echo "$current_directory_files_out") | column -s $'\t' -t -d -N C1,C2 -T C1,C2   
@@ -326,8 +321,7 @@ cd ()
 }
 
 # journalctl wrapper for ease of use
-_journalctl ()
-{
+_journalctl () {
     # https://stackoverflow.com/questions/6482377/check-existence-of-input-argument-in-a-bash-shell-script
     if [ $# -eq 0 ]; then
         command journalctl -e -n 2000
@@ -339,8 +333,7 @@ _journalctl ()
 }
 
 # tldr wrapper for ease of use
-_tldr ()
-{
+_tldr () {
     if [ $# -eq 0 ]; then
         (command tldr tldr && command tldr --help) | less
     elif [ $# -eq 1 ]; then
