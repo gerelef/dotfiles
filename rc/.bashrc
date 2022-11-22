@@ -128,10 +128,6 @@ alias web='cd /var/www/html'
 # To temporarily bypass an alias, we preceed the command with a \
 # EG: the ls command is aliased, but to use the normal ls command you would type \ls
 
-# Add an "alert" alias for long running commands.  Use like so:
-#   sleep 10; alert
-alias alert='notify-send --urgency=low -i "$([ $? = 0 ] && echo terminal || echo error)" "$(history|tail -n1|sed -e '\''s/^\s*[0-9]\+\s*//;s/[;&|]\s*alert$//'\'')"'
-
 # Alias's to modified commands
 alias cp='cp -i'
 alias mv='mv -i'
@@ -470,6 +466,7 @@ PATH="$PATH:$HOME/bin/"
 alias c="clear"
 alias venv="source venv/bin/activate"
 alias vvenv="deactivate"
+alias cvenv="python -m venv venv"
 alias aptupdateupgrade="sudo apt update -y && sudo apt upgrade -y && sudo apt autoremove -y"
 alias dnfupdateupgrade="sudo dnf update && sudo dnf autoremove"
 alias restartpipewire="systemctl --user restart pipewire"
@@ -477,6 +474,7 @@ alias restartnetworkmanager="systemctl restart NetworkManager"
 alias fuck='sudo $(history -p \!\!)'
 alias journalctl="_journalctl"
 alias help="_tldr"
+alias ccat="bat"
 
 # displays standard information every time shell starts
 neofetch --off --color_blocks off --distro_shorthand tiny --gtk3 off --gtk2 off --gpu_type all --package_managers off --speed_type max --speed_shorthand on --cpu_brand off --cpu_cores logical --cpu_temp C --disable memory theme icons packages resolution
