@@ -140,7 +140,6 @@ gnome-shell-extension-dash-to-panel \
 INSTALLABLE_IDE_FLATPAKS="\
 org.gnome.Builder \
 ar.xjuan.Cambalache \
-org.gnome.Glade \
 cc.arduino.IDE2 \
 com.vscodium.codium \
 "
@@ -156,7 +155,9 @@ flatpak remote-add --if-not-exists fedora oci+https://registry.fedoraproject.org
 flatpak remote-add --if-not-exists appcenter https://flatpak.elementary.io/repo.flatpakrepo
 dnf copr enable -y astrawan/gnome-shell-extensions 
 dnf copr enable -y varlad/onefetch
+
 #######################################################################################################
+
 echo "-------------------UPDATING----------------"
 while : ; do
     dnf update -y --refresh && dnf distro-sync -y --refresh
@@ -164,7 +165,9 @@ while : ; do
     [[ $? != 0 ]] || break
 done
 echo "Finished updating system."
+
 #######################################################################################################
+
 echo "-------------------INSTALLING---------------- $INSTALLABLE_PACKAGES" | tr " " "\n"
 while : ; do
     dnf install -y $INSTALLABLE_PACKAGES 
@@ -186,7 +189,9 @@ echo "Switching to $REAL_USER to install flatpaks"
 echo "-------------------INSTALLING---------------- $INSTALLABLE_FLATPAKS" | tr " " "\n"
 su - $REAL_USER -c "flatpak install -y $INSTALLABLE_FLATPAKS"
 echo "Continuing as $(whoami)"
+
 #######################################################################################################
+
 echo "-------------------INSTALLING----------------" | tr " " "\n"
 dnf group info "Development Tools"
 while : ; do
@@ -201,7 +206,9 @@ if [[ $REPLY =~ ^[Yy]$ ]]; then
     done
     echo "Finished installing Development Tools."
 fi
+
 #######################################################################################################
+
 echo "-------------------INSTALLING---------------- $INSTALLABLE_IDE_FLATPAKS" | tr " " "\n"
 while : ; do
     read -p "Are you sure you want to install Community IDEs & Jetbrains Toolbox?[Y/n] " -n 1 -r
@@ -219,7 +226,9 @@ if [[ $REPLY =~ ^[Yy]$ ]]; then
     curl -fsSL https://raw.githubusercontent.com/nagygergo/jetbrains-toolbox-install/master/jetbrains-toolbox.sh | bash
     echo "Finished installing toolbox."
 fi
+
 #######################################################################################################
+
 echo "-------------------INSTALLING---------------- $INSTALLABLE_EXTENSIONS" | tr " " "\n"
 while : ; do
     read -p "Do you want to install extensions?[Y/n] " -n 1 -r
@@ -235,7 +244,9 @@ if [[ $REPLY =~ ^[Yy]$ ]]; then
     
     echo "Finished installing extensions."
 fi
+
 #######################################################################################################
+
 echo "-------------------INSTALLING RC FILES----------------"
 
 ln -sf "$RC_DIR/.vimrc" "$REAL_USER_HOME/.vimrc"
@@ -261,12 +272,16 @@ for MZL_PROF_DIR in $PROFPATH; do
 done
 
 echo "Finished installing rc files."
+
 #######################################################################################################
+
 mkdir -p "$REAL_USER_HOME/.ssh"
 chown -R "$REAL_USER" "$REAL_USER_HOME/.ssh"
 ssh-keygen -t rsa -b 4096 -C "$REAL_USER@$DISTRIBUTION_NAME" -f "$REAL_USER_HOME/.ssh/id_rsa" -P "" && cat "$REAL_USER_HOME/.ssh/id_rsa.pub"
 chmod 700 "$REAL_USER_HOME/.ssh"
+
 #######################################################################################################
+
 systemctl restart NetworkManager
 hostnamectl hostname "$DISTRIBUTION_NAME"
 
@@ -275,7 +290,9 @@ if ! [ $? -eq 0 ]; then
     echo "Couldn't updatedb, retrying with absolute path"
     /usr/sbin/updatedb
 fi
+
 #######################################################################################################
+
 echo "--------------------------- IDE ---------------------------"
 echo "Recommended Jetbrains IDEs are:"
 echo "- PyCharm Ultimate"
