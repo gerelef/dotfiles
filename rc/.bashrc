@@ -277,13 +277,12 @@ gbi ()
         readelf -h "$1"
         echo ""
         nm "$1" | head
-    else 
+    else
         if [ -n "$1" ]; then
             echo "File "$1" does not exist."
-        else 
+        else
             echo "usage: gbi path/to/bin"
         fi
-            
     fi
 }
 
@@ -309,11 +308,13 @@ cd ()
 	    current_directory_files_out=$(echo "------ $1* ------"; ls -p | grep -v /; )
 	    if [ -d ".git" ]; then
 	        top_lvl_git_dir=$(git rev-parse --show-toplevel)
-	        if [ "$PWD" = $top_lvl_git_dir ]; then 
-	            onefetch --no-bold --no-palette --show-logo never --authors-number 0  -d repo
+	        if [ "$PWD" = $top_lvl_git_dir ]; then
+	            # one of these two commands won't work depending on the version, so just have both of them and get over it lol
+	            onefetch --no-bold --no-color-palette --show-logo never --authors-number 0 -d repo 2> /dev/null
+	            onefetch --no-bold --no-palette --show-logo never --authors-number 0 -d repo 2> /dev/null
 	        fi
 	        paste <(echo "$current_directory_dirs_out") <(echo "$current_directory_files_out") <(echo "$current_directory_status_out") | column -s $'\t' -t -d -N C1,C2,C3 -T C1,C2,C3
-	    else 
+	    else
 	        paste <(echo "$current_directory_dirs_out") <(echo "$current_directory_files_out") | column -s $'\t' -t -d -N C1,C2 -T C1,C2
 		fi
 	else
@@ -325,7 +326,7 @@ cd ()
 }
 
 # journalctl wrapper for ease of use
-_journalctl () 
+_journalctl ()
 {
     # https://stackoverflow.com/questions/6482377/check-existence-of-input-argument-in-a-bash-shell-script
     if [ $# -eq 0 ]; then
