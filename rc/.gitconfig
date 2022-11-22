@@ -14,6 +14,3 @@
     br = branch
     df = "!git --no-pager diff"
     alias = "!git config -l | grep alias | cut -c 7-"
-    
-    
-    
