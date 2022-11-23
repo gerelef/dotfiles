@@ -76,7 +76,6 @@ gimp \
 libreoffice \
 qbittorrent \
 sqlitebrowser \
-smplayer \
 steam \
 gnome-system-monitor \
 pinta \
@@ -100,7 +99,7 @@ INSTALLABLE_CODECS="\
 ffmpeg-free \
 gstreamer1-plugins-{bad-\*,good-\*,base} \
 gstreamer1-plugin-openh264 \
-gstreamer1-libav --exclude=gstreamer1-plugins-bad-free-devel
+gstreamer1-libav --exclude=gstreamer1-plugins-bad-free-devel \
 lame* --exclude=lame-devel \
 "
 
@@ -137,19 +136,20 @@ com.raggesilver.BlackBox \
 com.spotify.Client \
 com.discordapp.Discord \
 com.teamspeak.TeamSpeak \
-io.github.Foldex.AdwSteamGtk \
 net.davidotek.pupgui2 \
 fr.handbrake.ghb \
 net.cozic.joplin_desktop \
 com.teamspeak.TeamSpeak \
 com.skype.Client \
 us.zoom.Zoom \
-net.openra.OpenRA \
-com.obsproject.Studio \
+info.smplayer.SMPlayer \
+io.github.Foldex.AdwSteamGtk \
 com.github.Matoking.protontricks \
+net.openra.OpenRA \
 "
 
 INSTALLABLE_OBS_STUDIO="\
+com.obsproject.Studio \
 com.obsproject.Studio.Plugin.Gstreamer \
 com.obsproject.Studio.Plugin.InputOverlay \
 com.obsproject.Studio.Plugin.MoveTransition \
