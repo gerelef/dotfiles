@@ -1,3 +1,4 @@
 [submodule "csgorc"]
 	path = csgorc
 	url = git@github.com:gerelef/csgorc.git
+	branch = master
