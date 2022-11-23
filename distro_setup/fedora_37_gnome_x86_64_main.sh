@@ -187,6 +187,17 @@ systemctl enable fstrim.timer
 
 #######################################################################################################
 
+echo "-------------------DNF.CONF----------------"
+echo "Setting up dnf.conf..."
+
+command cp -r "$RC_DIR/dnf.conf" "/etc/dnf/dnf.conf"
+chown root "/etc/dnf/dnf.conf"
+chmod 644 "/etc/dnf/dnf.conf"
+
+echo "Finished copying dnf.conf."
+
+#######################################################################################################
+
 flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
 flatpak remote-add --if-not-exists fedora oci+https://registry.fedoraproject.org
 flatpak remote-add --if-not-exists appcenter https://flatpak.elementary.io/repo.flatpakrepo
