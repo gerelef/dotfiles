@@ -96,11 +96,9 @@ qemu-kvm \
 "
 
 INSTALLABLE_CODECS="\
-ffmpeg-free \
-gstreamer1-plugins-{bad-\*,good-\*,base} \
+gstreamer1-plugins-* \
 gstreamer1-plugin-openh264 \
 gstreamer1-libav --exclude=gstreamer1-plugins-bad-free-devel \
-lame* --exclude=lame-devel \
 "
 
 INSTALLABLE_BASHRC_DEPENDENCIES="\
