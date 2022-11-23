@@ -108,21 +108,6 @@ export LESS_TERMCAP_ue=$'\E[0m'
 export LESS_TERMCAP_us=$'\E[01;32m'
 
 #######################################################
-# MACHINE SPECIFIC ALIAS'S
-#######################################################
-
-# Alias's for SSH
-# alias SERVERNAME='ssh YOURWEBSITE.com -l USERNAME -p PORTNUMBERHERE'
-
-# Alias's to change the directory
-alias web='cd /var/www/html'
-
-# Alias's to mount ISO files
-# mount -o loop /home/NAMEOFISO.iso /home/ISOMOUNTDIR/
-# umount /home/NAMEOFISO.iso
-# (Both commands done as root only.)
-
-#######################################################
 # GENERAL ALIAS'S
 #######################################################
 # To temporarily bypass an alias, we preceed the command with a \
@@ -135,11 +120,6 @@ alias rm='rm -iv'
 alias mkdir='mkdir -p'
 alias ps='ps auxf'
 alias less='less -R'
-alias cls='clear'
-alias apt-get='sudo apt-get'
-alias vi='vim'
-alias svi='sudo vi'
-alias vis='vim "+set si"'
 
 # Change directory aliases
 alias home='cd ~'
@@ -151,29 +131,6 @@ alias .....='cd ../../../..'
 
 # cd into the old directory
 alias bd='cd "$OLDPWD"'
-
-# Alias's for multiple directory listing commands
-alias lsla="ls -la --color=always"
-alias ls="ls -aFh --color=always"
-
-# alias chmod commands
-alias 000='chmod -R 000'
-alias 644='chmod -R 644'
-alias 666='chmod -R 666'
-alias 755='chmod -R 755'
-alias 777='chmod -R 777'
-
-# Search command line history
-alias h="history | grep "
-
-# Search files in the current folder
-alias f="find . | grep "
-
-# To see typeof command command
-alias typeof="type -t"
-
-# Show open ports
-alias openports='netstat -nape --inet'
 
 # Alias's for safe and forced reboots
 alias rebootsafe='sudo shutdown -r now'
@@ -287,7 +244,7 @@ lss () {
 
 # Highlight (and not filter) text with grep
 highlight () {
-  grep --color=always -E "$1|\$"
+    grep --color=always -E "$1|\$"
 }
 
 #Automatically do an ls after each cd
@@ -467,8 +424,6 @@ alias c="clear"
 alias venv="source venv/bin/activate"
 alias vvenv="deactivate"
 alias cvenv="python -m venv venv"
-alias aptupdateupgrade="sudo apt update -y && sudo apt upgrade -y && sudo apt autoremove -y"
-alias dnfupdateupgrade="sudo dnf update && sudo dnf autoremove"
 alias restartpipewire="systemctl --user restart pipewire"
 alias restartnetworkmanager="systemctl restart NetworkManager"
 alias fuck='sudo $(history -p \!\!)'
@@ -478,4 +433,3 @@ alias ccat="bat"
 
 # displays standard information every time shell starts
 neofetch --off --color_blocks off --distro_shorthand tiny --gtk3 off --gtk2 off --gpu_type all --package_managers off --speed_type max --speed_shorthand on --cpu_brand off --cpu_cores logical --cpu_temp C --disable memory theme icons packages resolution
-# source ~/.local/share/blesh/ble.sh

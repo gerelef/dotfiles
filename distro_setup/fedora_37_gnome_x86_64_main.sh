@@ -63,25 +63,28 @@ SCRIPT_DIR_FS=$(stat -f --format=%T $SCRIPT_DIR)
 DISTRIBUTION_NAME="fedora"
 
 INSTALLABLE_PACKAGES="\
-neofetch \
-onefetch \
+git \
+flatpak \
 meson \
 curl \
-bat \
 java-latest-openjdk \
 java-latest-openjdk-devel \
 firefox \
 chromium \
 fedora-chromium-config \
-git \
 gimp \
 libreoffice \
-piper \
 qbittorrent \
 sqlitebrowser \
-gydl \
-lm_sensors \
-tldr \
+smplayer \
+steam \
+gnome-system-monitor \
+pinta \
+piper \
+qt5-qtbase \
+adwaita-qt* \
+setroubleshoot \
+setroubleshoot-plugins \
 virt-manager \
 libvirt-devel \
 virt-top \
@@ -91,21 +94,49 @@ bridge-utils \
 libvirt \
 virt-install \
 qemu-kvm \
-steam \
-pinta \
-qt5-qtbase \
-flatpak \
-openvpn \
+"
+
+INSTALLABLE_CODECS="\
+ffmpeg \
+gstreamer1-plugins-{bad-\*,good-\*,base} \
+gstreamer1-plugin-openh264 \
+gstreamer1-libav --exclude=gstreamer1-plugins-bad-free-devel
+lame* --exclude=lame-devel \
+"
+
+INSTALLABLE_BASHRC_DEPENDENCIES="\
+onefetch \
+neofetch \
+openssl \
+tree \
+git \
 plocate \
-gnome-system-monitor \
-adwaita-qt* \
+openvpn \
+bat \
+lm_sensors \
+tldr \
+ffmpeg \
+yt-dlp \
+yt-dlp-bash-completion \
+"
+
+UNINSTALLABLE_BLOAT="\
+gnome-terminal \
+gnome-terminal-* \
+gnome-boxes* \
+gnome-calculator* \
+gnome-calendar* \
+gnome-clocks* \
+gnome-color-manager* \
+gnome-contacts* \
+gnome-maps* \
 "
 
 INSTALLABLE_FLATPAKS="\
+com.raggesilver.BlackBox \
 com.spotify.Client \
 com.discordapp.Discord \
 com.teamspeak.TeamSpeak \
-com.raggesilver.BlackBox \
 io.github.Foldex.AdwSteamGtk \
 net.davidotek.pupgui2 \
 fr.handbrake.ghb \
@@ -116,6 +147,9 @@ us.zoom.Zoom \
 net.openra.OpenRA \
 com.obsproject.Studio \
 com.github.Matoking.protontricks \
+"
+
+INSTALLABLE_OBS_STUDIO="\
 com.obsproject.Studio.Plugin.Gstreamer \
 com.obsproject.Studio.Plugin.InputOverlay \
 com.obsproject.Studio.Plugin.MoveTransition \
@@ -151,6 +185,8 @@ chmod 700 "$REAL_USER_HOME"
 chown "$REAL_USER" "$REAL_USER_HOME"
 systemctl enable fstrim.timer
 
+#######################################################################################################
+
 flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
 flatpak remote-add --if-not-exists fedora oci+https://registry.fedoraproject.org
 flatpak remote-add --if-not-exists appcenter https://flatpak.elementary.io/repo.flatpakrepo
@@ -169,9 +205,17 @@ echo "Finished updating system."
 
 #######################################################################################################
 
-echo "-------------------INSTALLING---------------- $INSTALLABLE_PACKAGES" | tr " " "\n"
+fwupdmgr refresh --force -y
+fwupdmgr get-updates -y 
+fwupdmgr update -y
+
+echo "-------------------INSTALLING---------------- $INSTALLABLE_PACKAGES $INSTALLABLE_CODECS $INSTALLABLE_BASHRC_DEPENDENCIES" | tr " " "\n"
 while : ; do
-    dnf install -y $INSTALLABLE_PACKAGES 
+    dnf remove -y "$UNINSTALLABLE_BLOAT"
+    dnf install -y "$INSTALLABLE_PACKAGES" 
+    dnf install -y "$INSTALLABLE_CODECS"
+    dnf install -y "$INSTALLABLE_BASHRC_DEPENDENCIES"
+    dnf group upgrade -y --with-optional Multimedia
     [[ $? != 0 ]] || break
 done
 
@@ -187,8 +231,9 @@ case "btrfs" in
 esac
 
 echo "Switching to $REAL_USER to install flatpaks"
-echo "-------------------INSTALLING---------------- $INSTALLABLE_FLATPAKS" | tr " " "\n"
+echo "-------------------INSTALLING---------------- $INSTALLABLE_FLATPAKS $INSTALLABLE_OBS_STUDIO" | tr " " "\n"
 su - $REAL_USER -c "flatpak install -y $INSTALLABLE_FLATPAKS"
+su - $REAL_USER -c "flatpak install -y $INSTALLABLE_OBS_STUDIO"
 echo "Continuing as $(whoami)"
 
 #######################################################################################################
