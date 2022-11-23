@@ -97,7 +97,7 @@ qemu-kvm \
 "
 
 INSTALLABLE_CODECS="\
-ffmpeg \
+ffmpeg-free \
 gstreamer1-plugins-{bad-\*,good-\*,base} \
 gstreamer1-plugin-openh264 \
 gstreamer1-libav --exclude=gstreamer1-plugins-bad-free-devel
@@ -115,7 +115,7 @@ openvpn \
 bat \
 lm_sensors \
 tldr \
-ffmpeg \
+ffmpeg-free \
 yt-dlp \
 yt-dlp-bash-completion \
 "
