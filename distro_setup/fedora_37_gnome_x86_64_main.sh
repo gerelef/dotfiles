@@ -222,10 +222,10 @@ fwupdmgr update -y
 
 echo "-------------------INSTALLING---------------- $INSTALLABLE_PACKAGES $INSTALLABLE_CODECS $INSTALLABLE_BASHRC_DEPENDENCIES" | tr " " "\n"
 while : ; do
-    dnf remove -y "$UNINSTALLABLE_BLOAT"
-    dnf install -y "$INSTALLABLE_PACKAGES" 
-    dnf install -y "$INSTALLABLE_CODECS"
-    dnf install -y "$INSTALLABLE_BASHRC_DEPENDENCIES"
+    dnf remove -y $UNINSTALLABLE_BLOAT
+    dnf install -y $INSTALLABLE_PACKAGES
+    dnf install -y $INSTALLABLE_CODECS
+    dnf install -y $INSTALLABLE_BASHRC_DEPENDENCIES
     dnf group upgrade -y --with-optional Multimedia
     [[ $? != 0 ]] || break
 done

@@ -7,8 +7,8 @@ There is no particular philosophy to these configuration files, it's all persona
 
 - `rc/` directory contain generic configuration files from all kinds of sources. The filenames should be a hint for their usage.
 - `firefox/` contains firefox specific configuration files & themes. 
-- `distro_setup` contains distribution setup scripts that I created for personal use to minimize downtime, when refreshing an install of a particular distribution. They are, of course, not guaranteed to work with any hardware other than the ones I ran them with, but even then, it's a liability to assume so. If you want to see what each script does, make sure to run it in a VM first, to make sure nothing's broken either by the years passing by or by bugs.
-- `csgorc` contains csgo specific configuration files, located in another github submodule. This is not something I use in each & every machine I use, so I thought it better not be inside the "root" dotfile directory.
+- `distro_setup/` contains distribution setup scripts that I created for personal use to minimize downtime, when refreshing an install of a particular distribution. They are, of course, not guaranteed to work with any hardware other than the ones I ran them with, but even then, it's a liability to assume so. If you want to see what each script does, make sure to run it in a VM, to make sure nothing's broken either by the years passing by or by bugs.
+- `csgorc/` contains csgo specific configuration files, located in another github submodule. This is not something I use in each & every machine, so I thought it better not be inside the "root" `dotfile` directory.
 
 ## Extra:
 
