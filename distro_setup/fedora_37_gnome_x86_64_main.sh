@@ -84,6 +84,7 @@ qt5-qtbase \
 adwaita-qt* \
 setroubleshoot \
 setroubleshoot-plugins \
+vulkan \
 virt-manager \
 libvirt-devel \
 virt-top \
@@ -231,14 +232,28 @@ done
 
 case "btrfs" in
     "$ROOT_FS" | "$REAL_USER_HOME_FS" |  "$SCRIPT_DIR_FS")
-        echo "found BTRFS, installing btrfs-assistant"
+        echo "Found BTRFS, installing btrfs-assistant"
         dnf install -y btrfs-assistant
-        echo "finished installing btrfs-assistant"
+        echo "Finished installing btrfs-assistant"
         ;;
     *)
         echo "BTRFS not found; continuing as usual..."
         ;;
 esac
+
+GPU=$(lspci | grep -i vga | grep NVIDIA)
+if [ ! -z "$GPU" ]; then
+    echo "Found NVIDIA GPU $GPU, installing latest drivers..."
+    dnf install akmod-nvidia
+    dnf install xorg-x11-drv-nvidia-cuda
+    echo "Finished installing latest drivers."
+    echo "Signing GPU drivers..."
+    /usr/sbin/kmodgenca
+    mokutil --import /etc/pki/akmods/certs/public_key.der
+    echo "Signed GPU drivers."
+fi
+
+
 
 echo "Switching to $REAL_USER to install flatpaks"
 echo "-------------------INSTALLING---------------- $INSTALLABLE_FLATPAKS $INSTALLABLE_OBS_STUDIO" | tr " " "\n"
@@ -383,12 +398,13 @@ fi
 
 #######################################################################################################
 
-echo "--------------------------- IDE ---------------------------"
-echo "Recommended Jetbrains IDEs are:"
-echo "- PyCharm Ultimate"
-echo "- IntelliJ Idea Ultimate"
-echo "- CLion"
-echo "- Android Studio"
+echo "--------------------------- VISUDO ---------------------------"
+echo "Please sudo visudo and add:"
+echo "  Defaults env_reset, timestamp_timeout=120, pwfeedback"
+echo "--------------------------- SELINUX ---------------------------"
+echo "Please sudo nano /etc/sysconfig/selinux and set:"
+echo "  SELINUX=permissive"
+echo "  SELINUXTYPE=targeted"
 echo "--------------------------- THEMING ---------------------------"
 echo "Please install 'night theme switcher' using the Gnome Extensions website."
 echo "https://extensions.gnome.org/extension/2236/night-theme-switcher/"
@@ -396,9 +412,12 @@ echo ""
 echo "Please run AdwSteamGtk to convert steam to the Adwaita theme."
 echo ""
 echo "Please go to firefox about:config and enable toolkit.legacyUserProfileCustomizations.stylesheets to true."
-echo "--------------------------- VISUDO ---------------------------"
-echo "Please sudo visudo and add:"
-echo "  Defaults env_reset, timestamp_timeout=120, pwfeedback"
+echo "--------------------------- IDE ---------------------------"
+echo "Recommended Jetbrains IDEs are:"
+echo "- PyCharm Ultimate"
+echo "- IntelliJ Idea Ultimate"
+echo "- CLion"
+echo "- Android Studio"
 echo "--------------------------- FSTAB ---------------------------"
 echo "Remember to add a permanent mount point for permanently mounted partitions."
 echo "Standard fstab USER mount arguments:"
