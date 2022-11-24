@@ -310,6 +310,21 @@ ln -sf "$RC_DIR/.bashrc" "$REAL_USER_HOME/.bashrc"
 ln -sf "$RC_DIR/.nanorc" "$REAL_USER_HOME/.nanorc"
 ln -sf "$RC_DIR/.gitconfig" "$REAL_USER_HOME/.gitconfig"
 
+mkdir -p "$REAL_USER_HOME/cloned/mono-firefox-theme"
+echo "Created $REAL_USER_HOME/cloned/mono-firefox-theme/"
+RC_VIS_MZL_DIR="$REAL_USER_HOME/cloned/mono-firefox-theme/"
+while : ; do
+    wget --directory-prefix "$REAL_USER_HOME/cloned/" "https://github.com/witalihirsch/Mono-firefox-theme/releases/download/0.2/mono-firefox-theme.tar.xz"
+    [[ $? != 0 ]] || break  # if something goes wrong, install the previous version  
+    wget --directory-prefix "$REAL_USER_HOME/cloned/" "https://github.com/witalihirsch/Mono-firefox-theme/releases/download/0.1/mono-firefox-theme.tar.xz"
+    break
+done
+tar -xf "$REAL_USER_HOME/cloned/mono-firefox-theme.tar.xz" --directory="$RC_VIS_MZL_DIR"
+echo "Extracted $REAL_USER_HOME/cloned/mono-firefox-theme.tar.xz"
+rm -vf "$REAL_USER_HOME/cloned/mono-firefox-theme.tar.xz"
+cat "$RC_MZL_DIR/userChrome.css" >> "$RC_VIS_MZL_DIR/userChrome.css"
+echo "Installing visual rc files from $RC_VIS_MZL_DIR"
+
 #https://askubuntu.com/questions/239543/get-the-default-firefox-profile-directory-from-bash
 MZL_ROOT="$REAL_USER_HOME/.mozilla/firefox"
 if [[ $(grep '\[Profile[^0]\]' "$MZL_ROOT/profiles.ini") ]];then 
@@ -321,13 +336,15 @@ fi
 for MZL_PROF_DIR in $PROFPATH; do
     MZL_PROF_DIR_ABSOLUTE="$MZL_ROOT/$MZL_PROF_DIR"
     MZL_PROF_CHROME_DIR_ABSOLUTE="$MZL_PROF_DIR_ABSOLUTE/chrome"
+    
     # preference rc
     ln -sf "$RC_MZL_DIR/user.js" "$MZL_PROF_DIR_ABSOLUTE/user.js"
+    
     # visual rc
     mkdir -p "$MZL_PROF_CHROME_DIR_ABSOLUTE"
-    ln -sf "$RC_MZL_DIR/userChrome.css" "$MZL_PROF_CHROME_DIR_ABSOLUTE/userChrome.css"
-    ln -sf "$RC_MZL_DIR/userContent.css" "$MZL_PROF_CHROME_DIR_ABSOLUTE/userContent.css"
-    ln -sf "$RC_MZL_DIR/mono-firefox-theme" "$MZL_PROF_CHROME_DIR_ABSOLUTE/mono-firefox-theme"
+    ln -sf "$RC_VIS_MZL_DIR/userChrome.css" "$MZL_PROF_CHROME_DIR_ABSOLUTE/userChrome.css"
+    ln -sf "$RC_VIS_MZL_DIR/userContent.css" "$MZL_PROF_CHROME_DIR_ABSOLUTE/userContent.css"
+    ln -sf "$RC_VIS_MZL_DIR/mono-firefox-theme" "$MZL_PROF_CHROME_DIR_ABSOLUTE/mono-firefox-theme"
 done
 
 echo "Finished installing rc files."
