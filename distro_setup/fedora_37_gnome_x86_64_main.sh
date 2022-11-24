@@ -323,6 +323,8 @@ tar -xf "$REAL_USER_HOME/cloned/mono-firefox-theme.tar.xz" --directory="$RC_VIS_
 echo "Extracted $REAL_USER_HOME/cloned/mono-firefox-theme.tar.xz"
 rm -vf "$REAL_USER_HOME/cloned/mono-firefox-theme.tar.xz"
 cat "$RC_MZL_DIR/userChrome.css" >> "$RC_VIS_MZL_DIR/userChrome.css"
+chown -R "$REAL_USER" "$RC_VIS_MZL_DIR/"
+chmod -R 700 "$RC_VIS_MZL_DIR/"
 echo "Installing visual rc files from $RC_VIS_MZL_DIR"
 
 #https://askubuntu.com/questions/239543/get-the-default-firefox-profile-directory-from-bash
@@ -352,8 +354,8 @@ echo "Finished installing rc files."
 #######################################################################################################
 
 mkdir -p "$REAL_USER_HOME/.ssh"
-chown -R "$REAL_USER" "$REAL_USER_HOME/.ssh"
 ssh-keygen -t rsa -b 4096 -C "$REAL_USER@$DISTRIBUTION_NAME" -f "$REAL_USER_HOME/.ssh/id_rsa" -P "" && cat "$REAL_USER_HOME/.ssh/id_rsa.pub"
+chown -R "$REAL_USER" "$REAL_USER_HOME/.ssh"
 chmod 700 "$REAL_USER_HOME/.ssh"
 
 #######################################################################################################
