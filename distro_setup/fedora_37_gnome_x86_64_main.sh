@@ -349,8 +349,6 @@ done
 
 echo "Finished installing rc files."
 
-clear 
-
 #######################################################################################################
 
 mkdir -p "$REAL_USER_HOME/.ssh"
