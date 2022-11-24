@@ -1,3 +1,6 @@
+// enable stylesheets for mono ff
+user_pref("toolkit.legacyUserProfileCustomizations.stylesheets", true);
+
 // GENERIC
 user_pref("browser.bookmarks.restore_default_bookmarks", false);
 user_pref("browser.tabs.insertRelatedAfterCurrent", false)
