@@ -81,7 +81,6 @@ steam \
 gnome-system-monitor \
 pinta \
 piper \
-vlc \
 qt5-qtbase \
 adwaita-qt* \
 setroubleshoot \
@@ -134,6 +133,10 @@ gnome-maps* \
 "
 
 INSTALLABLE_FLATPAKS="\
+org.videolan.VLC \
+org.videolan.VLC.Plugin.makemkv \
+org.videolan.VLC.Plugin.bdj \
+org.videolan.VLC.Plugin.fdkaac \
 com.raggesilver.BlackBox \
 com.spotify.Client \
 com.discordapp.Discord \
