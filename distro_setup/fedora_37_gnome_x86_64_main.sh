@@ -120,6 +120,7 @@ yt-dlp-bash-completion \
 "
 
 UNINSTALLABLE_BLOAT="\
+rhythmbox* \
 gnome-tour \
 gnome-terminal \
 gnome-terminal-* \
