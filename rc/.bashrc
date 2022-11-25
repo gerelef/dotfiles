@@ -114,10 +114,6 @@ export LESS_TERMCAP_us=$'\E[01;32m'
 # EG: the ls command is aliased, but to use the normal ls command you would type \ls
 
 # Alias's to modified commands
-alias cp='cp -i'
-alias mv='mv -i'
-alias rm='rm -iv'
-alias mkdir='mkdir -p'
 alias ps='ps auxf'
 alias less='less -R'
 
@@ -146,6 +142,7 @@ alias mkgz='tar -cvzf'
 alias untar='tar -xvf'
 alias unbz2='tar -xvjf'
 alias ungz='tar -xvzf'
+alias unxz="tar -xf"
 
 # encryptions
 alias md5="openssl md5"
@@ -169,11 +166,7 @@ ftext () {
 	grep -iIHrn --color=always "$1" . | less -r
 }
 
-# Create and go to the directory
-mkdirg () {
-	mkdir -p $1
-	cd $1
-}
+
 
 # Returns the last 2 fields of the working directory
 pwdtail () {
@@ -181,7 +174,7 @@ pwdtail () {
 }
 
 # For some reason, rot13 pops up everywhere
-rot13 () {
+rot-13 () {
 	if [ $# -eq 0 ]; then
 		tr '[a-m][n-z][A-M][N-Z]' '[n-z][a-m][N-Z][A-M]'
 	else
@@ -189,31 +182,31 @@ rot13 () {
 	fi
 }
 
-ffextract_audio () {
+ffextract-audio-mp3 () {
     ffmpeg -i "$1" -vn "$1.mp3"
 }
 
-fftrim_mp3 () {
+fftrim-mp3 () {
     ffmpeg -ss "$2" -t "$3" -i "$1" -acodec copy "$1-trimmed.mp3" 
 }
 
-fftrim_mp4 () {
+fftrim-mp4 () {
     ffmpeg -ss "$2" -to "$3" -i "$1" -codec copy "$1-trimmed.mp4"
 }
 
-ffcompress_mp3 () {
+ffcompress-mp3 () {
     ffmpeg -i "$1" -map 0:a:0 -b:a "$2" "$1-compressed.mp3"
 }
 
-ffcompress_mp4 () {
+ffcompress-mp4 () {
     ffmpeg -i "$1" -vcodec libx265 -crf "$2" "$1-compressed.mp4"
 }
 
-ytdl_mp3 () {
+ytdl-mp3 () {
     yt-dlp --extract-audio --audio-format mp3 --audio-quality 0 "$@" 
 }
 
-ytdl_mp4 () {
+ytdl-mp4 () {
     yt-dlp --format "bv*[ext=mp4]+ba[ext=m4a]/b[ext=mp4]" "$@"
 }
 
@@ -308,7 +301,7 @@ _tldr () {
     fi
 }
 
-_git_branch () {
+_git-branch () {
      git branch 2> /dev/null | sed -e '/^[^*]/d' -e 's/* \(.*\)/ (\1)/'
 }
 
@@ -396,7 +389,7 @@ function __setprompt
 	PS1+=" \[${BROWN}\]\w\[${DARKGRAY}\]"
     
     # active branch
-    PS1+="\[${WHITE}\]$(_git_branch)"
+    PS1+="\[${WHITE}\]$(_git-branch)"
 
 	# Skip to the next line
 	PS1+="\n"
@@ -428,11 +421,9 @@ PROMPT_COMMAND='__setprompt'
 #################### zachbrowne ##########################
 
 #################### USER STUFF ##########################
-mkdir -p $HOME/bin/work/
+PATH="$PATH:$HOME/bin/"
 
 export DOTNET_CLI_TELEMETRY_OPTOUT=1
-PATH="$PATH:$HOME/Downloads/appImages"
-PATH="$PATH:$HOME/bin/"
 
 alias c="clear"
 alias venv="source venv/bin/activate"

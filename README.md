@@ -5,8 +5,8 @@ There is no particular philosophy to these configuration files, it's all persona
 
 ## Details:
 
-- `rc/` directory contain generic configuration files from all kinds of sources. The filenames should be a hint for their usage.
-- `firefox/` contains firefox specific configuration files & themes. 
+- `rc/` directory contain generic configuration files from all kinds of sources. The filenames should be a hint to their usage. `.bashrc` is heavily inspired & modified by this [.bashrc](https://gist.github.com/zachbrowne/8bc414c9f30192067831fafebd14255c)
+- `firefox/` contains firefox specific configuration files & themes. [mono-firefox-theme](https://github.com/witalihirsch/Mono-firefox-theme) is an external dependency & as such is not included in this repository. It should be automatically installed by the appropriate distribution setup script.
 - `distro_setup/` contains distribution setup scripts that I created for personal use to minimize downtime, when refreshing an install of a particular distribution. They are, of course, not guaranteed to work with any hardware other than the ones I ran them with, but even then, it's a liability to assume so. If you want to see what each script does, make sure to run it in a VM, to make sure nothing's broken either by the years passing by or by bugs.
 - `csgorc/` contains csgo specific configuration files, located in another github submodule. This is not something I use in each & every machine, so I thought it better not be inside the "root" `dotfile` directory.
 

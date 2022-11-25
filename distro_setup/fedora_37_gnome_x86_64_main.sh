@@ -386,6 +386,19 @@ chmod 700 "$REAL_USER_HOME/.ssh"
 
 #######################################################################################################
 
+mkdir -p "$REAL_USER_HOME/bin"
+mkdir -p "$REAL_USER_HOME/work"
+mkdir -p "$REAL_USER_HOME/seminar"
+mkdir -p "$REAL_USER_HOME/random"
+chmod 700 "$REAL_USER_HOME/bin"
+chown -R "$REAL_USER" "$REAL_USER_HOME/bin"
+chmod 700 "$REAL_USER_HOME/work"
+chown -R "$REAL_USER" "$REAL_USER_HOME/work"
+chmod 700 "$REAL_USER_HOME/seminar"
+chown -R "$REAL_USER" "$REAL_USER_HOME/seminar"
+chmod 700 "$REAL_USER_HOME/random"
+chown -R "$REAL_USER" "$REAL_USER_HOME/random"
+
 systemctl restart NetworkManager
 hostnamectl hostname "$DISTRIBUTION_NAME"
 
