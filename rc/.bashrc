@@ -250,8 +250,8 @@ lss () {
     top_lvl_git_dir=$(git rev-parse --show-toplevel 2> /dev/null)
     if [ -n "$top_lvl_git_dir" ]; then
         current_directory_status_out=$(git status -s --ignored=no; )
-        if [ "------ .git ------" == "$current_directory_status_out" ]; then
-	        current_directory_status_out=$(echo "Your branch is up to date"; )
+        if [ "" == "$current_directory_status_out" ]; then
+	        current_directory_status_out=$(echo "Up to date."; )
 	    fi
 	    paste <(echo "$current_directory_dirs_out") <(echo "$current_directory_files_out") <(echo "$current_directory_status_out") | column -o "│" -s $'\t' -t -d -N C1,C2,C3 -T C1,C2,C3
 	    return
