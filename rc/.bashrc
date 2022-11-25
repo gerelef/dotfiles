@@ -201,6 +201,14 @@ fftrim_mp4 () {
     ffmpeg -ss "$2" -to "$3" -i "$1" -codec copy "$1-trimmed.mp4"
 }
 
+ffcompress_mp3 () {
+    ffmpeg -i "$1" -map 0:a:0 -b:a "$2" "$1-compressed.mp3"
+}
+
+ffcompress_mp4 () {
+    ffmpeg -i "$1" -vcodec libx265 -crf "$2" "$1-compressed.mp4"
+}
+
 ytdl_mp3 () {
     yt-dlp --extract-audio --audio-format mp3 --audio-quality 0 "$@" 
 }
@@ -237,9 +245,25 @@ gbi () {
 
 # Multi-column ls
 lss () {
-    current_directory_dirs_out=$(echo "------ $1*.d ------"; ls -p $1 | grep /; )
-    current_directory_files_out=$(echo "------ $1* ------"; ls -p $1 | grep -v /; )
-    paste <(echo "$current_directory_dirs_out") <(echo "$current_directory_files_out") | column -s $'\t' -t -d -N C1,C2 -T C1,C2   
+    if [ -z "$1" ]; then
+        ls_dir="$PWD"
+    else
+        ls_dir="$1"
+    fi
+    current_directory_dirs_out=$(ls -ap $1 | grep /; )
+    current_directory_files_out=$(ls -ap $1 | grep -v /; )
+
+    current_directory_status_out=""
+    top_lvl_git_dir=$(git rev-parse --show-toplevel 2> /dev/null)
+    if [ -n "$top_lvl_git_dir" ]; then
+        current_directory_status_out=$(git status -s --ignored=no; )
+        if [ "------ .git ------" == "$current_directory_status_out" ]; then
+	        current_directory_status_out=$(echo "Your branch is up to date"; )
+	    fi
+	    paste <(echo "$current_directory_dirs_out") <(echo "$current_directory_files_out") <(echo "$current_directory_status_out") | column -o "│" -s $'\t' -t -d -N C1,C2,C3 -T C1,C2,C3
+	    return
+    fi
+    paste <(echo "$current_directory_dirs_out") <(echo "$current_directory_files_out") | column -o "│" -s $'\t' -t -d -N C1,C2 -T C1,C2
 }
 
 # Highlight (and not filter) text with grep
@@ -252,25 +276,13 @@ cd ()
 {
 	if [ -n "$1" ]; then
 	    builtin cd "$@"
-	    current_directory_dirs_out=$(echo "------ $1*.d ------"; ls -p | grep /; )
-	    current_directory_files_out=$(echo "------ $1* ------"; ls -p | grep -v /; )
-	    if [ -d ".git" ]; then
-	        top_lvl_git_dir=$(git rev-parse --show-toplevel)
-	        if [ "$PWD" = $top_lvl_git_dir ]; then
-	            # one of these two commands won't work depending on the version, so just have both of them and get over it lol
-	            onefetch --no-bold --no-color-palette --show-logo never --authors-number 0 -d repo 2> /dev/null
-	            onefetch --no-bold --no-palette --show-logo never --authors-number 0 -d repo 2> /dev/null
-	        fi
-	        paste <(echo "$current_directory_dirs_out") <(echo "$current_directory_files_out") <(echo "$current_directory_status_out") | column -s $'\t' -t -d -N C1,C2,C3 -T C1,C2,C3
-	    else
-	        paste <(echo "$current_directory_dirs_out") <(echo "$current_directory_files_out") | column -s $'\t' -t -d -N C1,C2 -T C1,C2
-		fi
 	else
 		builtin cd $HOME
-		current_directory_dirs_out=$(echo "------ $HOME.d ------"; ls -p | grep /; )
-		current_directory_files_out=$(echo "------ $HOME ------"; ls -p | grep -v /; )
-	    paste <(echo "$current_directory_dirs_out") <(echo "$current_directory_files_out") | column -s $'\t' -t -d -N C1,C2 -T C1,C2
 	fi
+	if [ ! $? -eq 0 ]; then
+	    return
+	fi
+	lss
 }
 
 # journalctl wrapper for ease of use
@@ -325,6 +337,8 @@ function __setprompt
 	local CYAN="\033[0;36m"
 	local LIGHTCYAN="\033[1;36m"
 	local NOCOLOR="\033[0m"
+	
+	PROMPT_DIRTRIM=2
 
 	# Show error exit code if there is one
 	if [[ $LAST_COMMAND != 0 ]]; then
@@ -368,7 +382,7 @@ function __setprompt
 	else
 		PS1=""
 	fi
-
+    
 	# User and server
 	local SSH_IP=`echo $SSH_CLIENT | awk '{ print $1 }'`
 	local SSH2_IP=`echo $SSH2_CLIENT | awk '{ print $1 }'`

@@ -104,7 +104,6 @@ gstreamer1-libav --exclude=gstreamer1-plugins-bad-free-devel \
 "
 
 INSTALLABLE_BASHRC_DEPENDENCIES="\
-onefetch \
 neofetch \
 openssl \
 tree \
@@ -202,8 +201,7 @@ echo "Finished copying dnf.conf."
 flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
 flatpak remote-add --if-not-exists fedora oci+https://registry.fedoraproject.org
 flatpak remote-add --if-not-exists appcenter https://flatpak.elementary.io/repo.flatpakrepo
-dnf copr enable -y astrawan/gnome-shell-extensions 
-dnf copr enable -y varlad/onefetch
+dnf copr enable -y astrawan/gnome-shell-extensions
 
 #######################################################################################################
 
