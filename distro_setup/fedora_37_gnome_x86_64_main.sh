@@ -80,6 +80,7 @@ steam \
 gnome-system-monitor \
 pinta \
 piper \
+vlc \
 qt5-qtbase \
 adwaita-qt* \
 setroubleshoot \
@@ -142,7 +143,6 @@ net.cozic.joplin_desktop \
 com.teamspeak.TeamSpeak \
 com.skype.Client \
 us.zoom.Zoom \
-info.smplayer.SMPlayer \
 io.github.Foldex.AdwSteamGtk \
 com.github.Matoking.protontricks \
 net.openra.OpenRA \
