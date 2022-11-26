@@ -3,10 +3,6 @@
     visibility: collapse;
 }
 
-#navigator-toolbox:hover #TabsToolbar {
-    visibility: collapse;
-}
-
 #sidebar-box {
     width: auto !important;
 }
@@ -17,4 +13,15 @@
 
 #sidebar-header {
     visibility: collapse !important;
+}
+
+/* TST Styling */
+@media (max-width: 1000px) {
+    #sidebar-box[sidebarcommand="treestyletab_piro_sakura_ne_jp-sidebar-action"] {
+        visibility: collapse;
+    }
+    
+    #TabsToolbar {
+        visibility: visible;
+    }
 }
