@@ -235,7 +235,7 @@ gsettings set org.gnome.mutter check-alive-timeout 15000
 gsettings set org.gnome.nautilus.compression default-compression-format 'tar.xz'
 gsettings set org.gnome.nautilus.icon-view captions "['date_modified_with_time', 'permissions']"
 gsettings set org.gnome.nautilus.icon-view default-zoom-level 'small'
-gsettings set org.gnome.nautilus.list-view default-visible-columns "['name', 'date_modified_with_time', 'permissions', 'size']"
+gsettings set org.gnome.nautilus.list-view default-visible-columns "['name', 'date_modified_with_time', 'owner', 'permissions', 'size']"
 gsettings set org.gnome.nautilus.list-view default-zoom-level 'small'
 gsettings set org.gnome.nautilus.preferences click-policy 'double'
 gsettings set org.gnome.nautilus.preferences default-folder-viewer 'list-view'
