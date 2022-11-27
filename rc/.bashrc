@@ -435,6 +435,9 @@ alias fuck='sudo $(history -p \!\!)'
 alias journalctl="_journalctl"
 alias help="_tldr"
 alias ccat="bat"
+alias reverse="tac"
+alias palindrome="rev"
+
 
 # displays standard information every time shell starts
 neofetch --off --color_blocks off --distro_shorthand tiny --gtk3 off --gtk2 off --gpu_type all --package_managers off --speed_type max --speed_shorthand on --cpu_brand off --cpu_cores logical --cpu_temp C --disable memory theme icons packages resolution
