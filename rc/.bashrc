@@ -187,18 +187,27 @@ ffextract-audio-mp3 () {
 }
 
 fftrim-mp3 () {
+    # $1 input
+    # $2 start (seconds)
+    # $3 duration (seconds)
     ffmpeg -ss "$2" -t "$3" -i "$1" -acodec copy "$1-trimmed.mp3" 
 }
 
 fftrim-mp4 () {
+    # $1 input
+    # $2 start (seconds)
+    # $3 duration (seconds)
     ffmpeg -ss "$2" -to "$3" -i "$1" -codec copy "$1-trimmed.mp4"
 }
 
 ffcompress-mp3 () {
+    # $1 input
+    # $2 bitrate (e.g. 96k)
     ffmpeg -i "$1" -map 0:a:0 -b:a "$2" "$1-compressed.mp3"
 }
 
 ffcompress-mp4 () {
+    # good values are from 27 to 30 for x265
     ffmpeg -i "$1" -vcodec libx265 -crf "$2" "$1-compressed.mp4"
 }
 
