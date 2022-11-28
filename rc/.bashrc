@@ -274,8 +274,7 @@ highlight () {
 }
 
 #Automatically do an ls after each cd
-cd ()
-{
+cd () {
 	if [ -n "$1" ]; then
 	    builtin cd "$@"
 	else
@@ -287,6 +286,10 @@ cd ()
 	lss
 }
 
+rn () {
+    mv -vn "$1" "$2"
+}
+
 # journalctl wrapper for ease of use
 _journalctl () {
     # https://stackoverflow.com/questions/6482377/check-existence-of-input-argument-in-a-bash-shell-script
@@ -294,7 +297,7 @@ _journalctl () {
         command journalctl -e -n 2000
     elif [ $# -eq 1 ]; then # called with just a service name (-u opt)
         command journalctl -e -n 5000 -u "$1"
-    else 
+    else
         command journalctl "$@"
     fi
 }
