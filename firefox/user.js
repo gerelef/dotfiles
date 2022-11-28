@@ -12,6 +12,14 @@ user_pref("browser.sessionhistory.max_entries", 25)
 user_pref("browser.sessionstore.interval", 60000)
 user_pref("browser.cache.offline.capacity", 4096000)
 user_pref("dom.security.https_only_mode", true)
+// FF 106+ Disable firefox-view
+user_pref("browser.tabs.firefox-view", false)
+user_pref("browser.tabs.firefox-view", false)
+user_pref("browser.firefox-view.view-count", 0)
+
+// Disable uitour
+user_pref("browser.uitour.enabled", false)
+
 // PRIVACY
 user_pref("geo.enabled", false) // might cause issue with specific sites; disable this if you get location issues
 user_pref("dom.battery.enabled", false)
