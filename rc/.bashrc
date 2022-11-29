@@ -245,6 +245,14 @@ gbi () {
     fi
 }
 
+gds () {
+    if [ -n "$1" ]; then
+        du -sh --apparent-size "$1"
+    else
+        du -sh --apparent-size .
+    fi
+}
+
 # Multi-column ls
 lss () {
     if [ -z "$1" ]; then
