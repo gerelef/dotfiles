@@ -14,7 +14,7 @@ if ! ping -q -c 1 -W 1 google.com > /dev/null; then
     while : ; do
         read -p "Are you sure you want to continue?[Y/n] " -n 1 -r
         ! [[ $REPLY =~ ^[YyNn]$ ]] || break
-    done 
+    done
     echo ""
     if ! [[ $REPLY =~ ^[Yy]$ ]]; then
         exit 1
@@ -118,6 +118,12 @@ yt-dlp \
 yt-dlp-bash-completion \
 "
 
+INSTALLABLE_MS_FONTS="\
+cabextract \
+xorg-x11-font-utils \
+fontconfig \
+"
+
 UNINSTALLABLE_BLOAT="\
 rhythmbox* \
 gnome-tour \
@@ -212,7 +218,7 @@ dnf copr enable -y nickavem/adw-gtk3
 echo "-------------------UPDATING----------------"
 while : ; do
     dnf update -y --refresh && dnf distro-sync -y --refresh
-    dnf update -y 
+    dnf update -y
     [[ $? != 0 ]] || break
 done
 echo "Finished updating system."
@@ -220,7 +226,7 @@ echo "Finished updating system."
 #######################################################################################################
 
 fwupdmgr refresh --force -y
-fwupdmgr get-updates -y 
+fwupdmgr get-updates -y
 fwupdmgr update -y
 
 echo "-------------------INSTALLING---------------- $INSTALLABLE_PACKAGES $INSTALLABLE_CODECS $INSTALLABLE_BASHRC_DEPENDENCIES" | tr " " "\n"
@@ -256,7 +262,10 @@ if [ ! -z "$GPU" ]; then
     echo "Signed GPU drivers."
 fi
 
-
+echo "Installing MS Libreoffice fonts..."
+dnf install -y $INSTALLABLE_MS_FONTS
+rpm -i https://downloads.sourceforge.net/project/mscorefonts2/rpms/msttcore-fonts-installer-2.6-1.noarch.rpm
+echo "Finished installing MS Libreoffice fonts..."
 
 echo "Switching to $REAL_USER to install flatpaks"
 echo "-------------------INSTALLING---------------- $INSTALLABLE_FLATPAKS $INSTALLABLE_OBS_STUDIO" | tr " " "\n"
@@ -271,11 +280,11 @@ dnf group info "Development Tools"
 while : ; do
     read -p "Are you sure you want to install Development Tools?[Y/n] " -n 1 -r
     ! [[ $REPLY =~ ^[YyNn]$ ]] || break
-done 
+done
 echo ""
 if [[ $REPLY =~ ^[Yy]$ ]]; then
     while : ; do
-        dnf groupinstall -y "Development Tools"     
+        dnf groupinstall -y "Development Tools"
         [[ $? != 0 ]] || break
     done
     echo "Finished installing Development Tools."
@@ -287,13 +296,13 @@ echo "-------------------INSTALLING---------------- $INSTALLABLE_IDE_FLATPAKS" |
 while : ; do
     read -p "Are you sure you want to install Community IDEs & Jetbrains Toolbox?[Y/n] " -n 1 -r
     ! [[ $REPLY =~ ^[YyNn]$ ]] || break
-done 
+done
 
 echo ""
 if [[ $REPLY =~ ^[Yy]$ ]]; then
     su - $REAL_USER -c "flatpak install -y $INSTALLABLE_IDE_FLATPAKS"
     echo "Finished installing IDEs."
-    
+
     echo "-------------------INSTALLING JETBRAINS TOOLBOX----------------"
     mkdir -p "$REAL_USER_HOME/cloned"
     chown -R "$REAL_USER" "$REAL_USER_HOME/cloned"
@@ -307,15 +316,15 @@ echo "-------------------INSTALLING---------------- $INSTALLABLE_EXTENSIONS" | t
 while : ; do
     read -p "Do you want to install extensions?[Y/n] " -n 1 -r
     ! [[ $REPLY =~ ^[YyNn]$ ]] || break
-done 
+done
 echo ""
 
 if [[ $REPLY =~ ^[Yy]$ ]]; then
     while : ; do
-        dnf install -y $INSTALLABLE_EXTENSIONS 
-        [[ $? != 0 ]] || break  
+        dnf install -y $INSTALLABLE_EXTENSIONS
+        [[ $? != 0 ]] || break
     done
-    
+
     echo "Finished installing extensions."
 fi
 
@@ -323,10 +332,14 @@ fi
 
 echo "-------------------INSTALLING RC FILES----------------"
 
-cat "$RC_DIR/mimeapps.list" "$REAL_USER_HOME/.config/mimeapps.list"
+cat "$RC_DIR/mimeapps.list" >> "$REAL_USER_HOME/.config/mimeapps.list"
+
+ln -sf "$RC_DIR/libreoffice/user" "$REAL_USER_HOME/.config/libreoffice/4/user"
+chown "$REAL_USER" "$REAL_USER_HOME/.config/libreoffice/4/user"
+chmod 700 "$REAL_USER_HOME/.config/libreoffice/4/user"
 
 ln -sf "$RC_DIR/.vimrc" "$REAL_USER_HOME/.vimrc"
-ln -sf "$RC_DIR/.bashrc" "$REAL_USER_HOME/.bashrc" 
+ln -sf "$RC_DIR/.bashrc" "$REAL_USER_HOME/.bashrc"
 ln -sf "$RC_DIR/.nanorc" "$REAL_USER_HOME/.nanorc"
 ln -sf "$RC_DIR/.gitconfig" "$REAL_USER_HOME/.gitconfig"
 chown "$REAL_USER" "$REAL_USER_HOME/.vimrc"
@@ -343,7 +356,7 @@ echo "Created $REAL_USER_HOME/cloned/mono-firefox-theme/"
 RC_VIS_MZL_DIR="$REAL_USER_HOME/cloned/mono-firefox-theme"
 while : ; do
     wget --directory-prefix "$REAL_USER_HOME/cloned/" "https://github.com/witalihirsch/Mono-firefox-theme/releases/download/0.2/mono-firefox-theme.tar.xz"
-    [[ $? != 0 ]] || break  # if something goes wrong, install the previous version  
+    [[ $? != 0 ]] || break  # if something goes wrong, install the previous version
     wget --directory-prefix "$REAL_USER_HOME/cloned/" "https://github.com/witalihirsch/Mono-firefox-theme/releases/download/0.1/mono-firefox-theme.tar.xz"
     break
 done
@@ -357,23 +370,23 @@ chmod -R 700 "$RC_VIS_MZL_DIR/"
 
 #https://askubuntu.com/questions/239543/get-the-default-firefox-profile-directory-from-bash
 MZL_ROOT="$REAL_USER_HOME/.mozilla/firefox"
-if [[ $(grep '\[Profile[^0]\]' "$MZL_ROOT/profiles.ini") ]];then 
+if [[ $(grep '\[Profile[^0]\]' "$MZL_ROOT/profiles.ini") ]];then
     PROFPATH=$(grep -E '^\[Profile|^Path|^Default' "$MZL_ROOT/profiles.ini" | grep '^Path' | cut -c6- | tr " " "\n")
-else 
+else
     PROFPATH=$(grep 'Path=' "$MZL_ROOT/profiles.ini" | sed 's/^Path=//')
 fi
 
 for MZL_PROF_DIR in $PROFPATH; do
     MZL_PROF_DIR_ABSOLUTE="$MZL_ROOT/$MZL_PROF_DIR"
     MZL_PROF_CHROME_DIR_ABSOLUTE="$MZL_PROF_DIR_ABSOLUTE/chrome"
-    
+
     # preference rc
     ln -sf "$RC_MZL_DIR/user.js" "$MZL_PROF_DIR_ABSOLUTE/user.js"
     chown -R "$REAL_USER" "$MZL_PROF_DIR_ABSOLUTE/user.js"
     chmod 700 "$MZL_PROF_DIR_ABSOLUTE/user.js"
-    
+
     # visual rc
-    mkdir -p "$MZL_PROF_CHROME_DIR_ABSOLUTE"    
+    mkdir -p "$MZL_PROF_CHROME_DIR_ABSOLUTE"
     ln -sf "$RC_VIS_MZL_DIR/userChrome.css" "$MZL_PROF_CHROME_DIR_ABSOLUTE/userChrome.css"
     ln -sf "$RC_VIS_MZL_DIR/userContent.css" "$MZL_PROF_CHROME_DIR_ABSOLUTE/userContent.css"
     ln -sf "$RC_VIS_MZL_DIR/mono-firefox-theme" "$MZL_PROF_CHROME_DIR_ABSOLUTE/mono-firefox-theme"
