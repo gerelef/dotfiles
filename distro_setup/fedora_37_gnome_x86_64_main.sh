@@ -323,6 +323,8 @@ fi
 
 echo "-------------------INSTALLING RC FILES----------------"
 
+cat "$RC_DIR/mimeapps.list" "$REAL_USER_HOME/.config/mimeapps.list"
+
 ln -sf "$RC_DIR/.vimrc" "$REAL_USER_HOME/.vimrc"
 ln -sf "$RC_DIR/.bashrc" "$REAL_USER_HOME/.bashrc" 
 ln -sf "$RC_DIR/.nanorc" "$REAL_USER_HOME/.nanorc"
