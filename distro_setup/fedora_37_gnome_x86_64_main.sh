@@ -175,6 +175,7 @@ INSTALLABLE_EXTENSIONS="\
 gnome-shell-extension-pop-shell \
 gnome-shell-extension-pop-shell-shortcut-overrides \
 gnome-shell-extension-places-menu \
+gnome-shell-extension-appindicator \
 gnome-shell-extension-sound-output-device-chooser \
 gnome-shell-extension-freon \
 gnome-shell-extension-lockkeys \
