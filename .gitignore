@@ -2,3 +2,4 @@
 *venv*
 *.idea*
 csgo/raw_setpos/training.cfg
+bashrc-private.sh
