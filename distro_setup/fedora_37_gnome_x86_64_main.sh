@@ -79,7 +79,6 @@ qbittorrent \
 sqlitebrowser \
 steam \
 gnome-system-monitor \
-pinta \
 piper \
 qt5-qtbase \
 adwaita-qt* \
@@ -139,6 +138,7 @@ gnome-maps* \
 "
 
 INSTALLABLE_FLATPAKS="\
+com.github.maoschanz.drawing \
 org.videolan.VLC \
 org.videolan.VLC.Plugin.makemkv \
 org.videolan.VLC.Plugin.bdj \
