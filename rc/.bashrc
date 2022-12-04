@@ -118,8 +118,6 @@ alias ps='ps auxf'
 alias less='less -R'
 
 # Change directory aliases
-alias home='cd ~'
-alias cd..='cd ..'
 alias ..='cd ..'
 alias ...='cd ../..'
 alias ....='cd ../../..'
@@ -445,6 +443,7 @@ PATH="$PATH:$HOME/bin/"
 
 export DOTNET_CLI_TELEMETRY_OPTOUT=1
 
+alias rm="rm -v"
 alias c="clear"
 alias venv="source venv/bin/activate"
 alias vvenv="deactivate"
