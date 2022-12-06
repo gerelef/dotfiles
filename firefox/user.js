@@ -1,6 +1,6 @@
 // enable stylesheets for mono ff
 user_pref("toolkit.legacyUserProfileCustomizations.stylesheets", true);
-user_pref("browser.quitShortcut.disabled", false);
+user_pref("browser.quitShortcut.disabled", true);
 
 // GENERIC
 user_pref("browser.bookmarks.restore_default_bookmarks", false);
