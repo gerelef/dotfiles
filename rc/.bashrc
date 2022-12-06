@@ -180,6 +180,11 @@ rot-13 () {
 	fi
 }
 
+#hours minutes seconds (0.1.2)
+hms () {
+    echo "$1" | awk -F. '{ print ($1 * 3600) + ($2 * 60) + $3 }';
+}
+
 ffextract-audio-mp3 () {
     ffmpeg -i "$1" -vn "$1.mp3"
 }
