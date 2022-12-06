@@ -1,33 +1,34 @@
 // enable stylesheets for mono ff
 user_pref("toolkit.legacyUserProfileCustomizations.stylesheets", true);
+user_pref("browser.quitShortcut.disabled", false);
 
 // GENERIC
 user_pref("browser.bookmarks.restore_default_bookmarks", false);
-user_pref("browser.tabs.insertRelatedAfterCurrent", false)
-user_pref("network.prefetch-next", false)
-user_pref("browser.zoom.siteSpecific", false)
-user_pref("browser.urlbar.maxRichResults", 25)
-user_pref("browser.ctrltabs.previews", false)
-user_pref("browser.sessionhistory.max_entries", 25)
-user_pref("browser.sessionstore.interval", 60000)
-user_pref("browser.cache.offline.capacity", 4096000)
-user_pref("dom.security.https_only_mode", true)
+user_pref("browser.tabs.insertRelatedAfterCurrent", false);
+user_pref("network.prefetch-next", false);
+user_pref("browser.zoom.siteSpecific", false);
+user_pref("browser.urlbar.maxRichResults", 25);
+user_pref("browser.ctrltabs.previews", false);
+user_pref("browser.sessionhistory.max_entries", 25);
+user_pref("browser.sessionstore.interval", 60000);
+user_pref("browser.cache.offline.capacity", 4096000);
+user_pref("dom.security.https_only_mode", true);
 // FF 106+ Disable firefox-view
-user_pref("browser.tabs.firefox-view", false)
-user_pref("browser.tabs.firefox-view", false)
-user_pref("browser.firefox-view.view-count", 0)
+user_pref("browser.tabs.firefox-view", false);
+user_pref("browser.tabs.firefox-view", false);
+user_pref("browser.firefox-view.view-count", 0);
 
 // Disable uitour
-user_pref("browser.uitour.enabled", false)
+user_pref("browser.uitour.enabled", false);
 
 // PRIVACY
-user_pref("geo.enabled", false) // might cause issue with specific sites; disable this if you get location issues
+user_pref("geo.enabled", false); // might cause issue with specific sites; disable this if you get location issues
 user_pref("dom.battery.enabled", false)
 user_pref("browser.pocket.enabled", false);
 user_pref("extensions.pocket.enabled", false);
-user_pref("beacon.enabled", false)
-user_pref("browser.urlbar.speculativeConnect.enabled", false)
-user_pref("privacy.trackingprotection.enabled", true)
+user_pref("beacon.enabled", false);
+user_pref("browser.urlbar.speculativeConnect.enabled", false);
+user_pref("privacy.trackingprotection.enabled", true);
 
 // everything below this line is found here:
 // https://github.com/pyllyukko/user.js/blob/relaxed/user.js
