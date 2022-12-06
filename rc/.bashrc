@@ -323,6 +323,10 @@ _git-branch () {
      git branch 2> /dev/null | sed -e '/^[^*]/d' -e 's/* \(.*\)/ (\1)/'
 }
 
+suod () {
+    'curl -s -L https://raw.githubusercontent.com/keroserene/rickrollrc/master/roll.sh | bash'
+}
+
 #######################################################
 # Set the ultimate amazing command prompt
 #######################################################

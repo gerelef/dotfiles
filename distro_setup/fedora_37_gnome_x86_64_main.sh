@@ -77,6 +77,8 @@ gimp \
 libreoffice \
 qbittorrent \
 sqlitebrowser \
+lmms \
+lmms-vst \
 steam \
 gnome-system-monitor \
 piper \
@@ -441,6 +443,7 @@ echo "Please sudo visudo and add:"
 echo "  Defaults env_reset, timestamp_timeout=120, pwfeedback"
 echo "--------------------------- SELINUX ---------------------------"
 echo "Please sudo nano /etc/sysconfig/selinux and set:"
+echo "Note: SELinux is not recommended to be disabled."
 echo "  SELINUX=permissive"
 echo "  SELINUXTYPE=targeted"
 echo "--------------------------- THEMING ---------------------------"
