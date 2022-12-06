@@ -194,7 +194,7 @@ fftrim-mp3 () {
 fftrim-mp4 () {
     # $1 input
     # $2 start (seconds)
-    # $3 duration (seconds)
+    # $3 end   (seconds)
     ffmpeg -ss "$2" -to "$3" -i "$1" -codec copy "$1-trimmed.mp4"
 }
 
