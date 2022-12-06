@@ -324,7 +324,7 @@ _git-branch () {
 }
 
 suod () {
-    curl -s -L https://raw.githubusercontent.com/keroserene/rickrollrc/master/roll.sh | bash
+    bash ~/dotfiles/rc/rr/roll.sh
 }
 
 #######################################################
