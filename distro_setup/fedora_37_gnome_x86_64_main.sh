@@ -343,8 +343,10 @@ touch "$REAL_USER_HOME/.bashrc_private"
 chown "$REAL_USER" "$REAL_USER_HOME/.bashrc_private"
 chmod 700 "$REAL_USER_HOME/.bashrc_private"
 
+mkdir -p "$REAL_USER_HOME/.config/libreoffice/4/user"
+chown "$REAL_USER" "$REAL_USER_HOME/.config/"
 ln -sf "$RC_DIR/libreoffice/user" "$REAL_USER_HOME/.config/libreoffice/4/user"
-chown "$REAL_USER" "$REAL_USER_HOME/.config/libreoffice/4/user"
+chown -R "$REAL_USER" "$REAL_USER_HOME/.config/libreoffice"
 chmod 700 "$REAL_USER_HOME/.config/libreoffice/4/user"
 
 ln -sf "$RC_DIR/.vimrc" "$REAL_USER_HOME/.vimrc"
