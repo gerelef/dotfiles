@@ -465,7 +465,7 @@ alias help="man"
 alias ccat="bat --theme Coldark-Cold"
 alias reverse="tac"
 alias palindrome="rev"
-
+alias gnano="gnome-text-editor" # gui text editor of choice
 
 # displays standard information every time shell starts
 #  neofetch --off --color_blocks off --distro_shorthand tiny --gtk3 off --gtk2 off --gpu_type all --package_managers off --speed_type max --speed_shorthand on --cpu_brand off --cpu_cores logical --cpu_temp C --disable memory theme icons packages resolution
