@@ -333,6 +333,11 @@ fi
 
 #######################################################################################################
 
+echo "Make sure to run firefox at least once; finishing install in 60 seconds..."
+sleep 60
+
+#######################################################################################################
+
 echo "-------------------INSTALLING RC FILES----------------"
 
 cat "$RC_DIR/mimeapps.list" >> "$REAL_USER_HOME/.config/mimeapps.list"
