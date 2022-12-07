@@ -314,11 +314,11 @@ _journalctl () {
 }
 
 # tldr wrapper for ease of use
-_tldr () {
+tldr () {
     if [ $# -eq 0 ]; then
-        (command tldr tldr && command tldr --help) | less
+        (command tldr tldr) | less
     elif [ $# -eq 1 ]; then
-        (command tldr "$1" && "$1" --help) | less
+        (command tldr "$1") | less
     else
         command tldr "$@"
     fi
@@ -357,7 +357,7 @@ function __setprompt
 	local CYAN="\033[0;36m"
 	local LIGHTCYAN="\033[1;36m"
 	local NOCOLOR="\033[0m"
-	
+
 	PROMPT_DIRTRIM=2
 
 	# Show error exit code if there is one
@@ -461,7 +461,7 @@ alias restartpipewire="systemctl --user restart pipewire"
 alias restartnetworkmanager="systemctl restart NetworkManager"
 alias fuck='sudo $(history -p \!\!)'
 alias journalctl="_journalctl"
-alias help="_tldr"
+alias help="man"
 alias ccat="bat --theme Coldark-Cold"
 alias reverse="tac"
 alias palindrome="rev"
