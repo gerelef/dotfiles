@@ -213,6 +213,7 @@ echo "Finished copying dnf.conf."
 flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
 flatpak remote-add --if-not-exists fedora oci+https://registry.fedoraproject.org
 flatpak remote-add --if-not-exists appcenter https://flatpak.elementary.io/repo.flatpakrepo
+dnf copr remove -y phracek/PyCharm
 dnf copr enable -y astrawan/gnome-shell-extensions
 dnf copr enable -y nickavem/adw-gtk3
 
@@ -220,9 +221,7 @@ dnf copr enable -y nickavem/adw-gtk3
 
 echo "-------------------UPDATING----------------"
 while : ; do
-    dnf update -y --refresh && dnf distro-sync -y --refresh
-    dnf update -y
-    [[ $? != 0 ]] || break
+    dnf update -y --refresh && break
 done
 echo "Finished updating system."
 
@@ -234,16 +233,11 @@ fwupdmgr update -y
 
 echo "-------------------INSTALLING---------------- $INSTALLABLE_PACKAGES $INSTALLABLE_CODECS $INSTALLABLE_BASHRC_DEPENDENCIES" | tr " " "\n"
 while : ; do
-    dnf remove -y $UNINSTALLABLE_BLOAT
-    [[ $? == 0 ]] && continue
-    dnf install -y $INSTALLABLE_PACKAGES
-    [[ $? == 0 ]] && continue
-    dnf install -y $INSTALLABLE_CODECS
-    [[ $? == 0 ]] && continue
-    dnf install -y $INSTALLABLE_BASHRC_DEPENDENCIES
-    [[ $? == 0 ]] && continue
-    dnf group upgrade -y --with-optional Multimedia
-    [[ $? == 0 ]] && continue
+    dnf remove -y $UNINSTALLABLE_BLOAT || continue
+    dnf install -y $INSTALLABLE_PACKAGES || continue
+    dnf install -y $INSTALLABLE_CODECS || continue
+    dnf install -y $INSTALLABLE_BASHRC_DEPENDENCIES || continue
+    dnf group upgrade -y --with-optional Multimedia || continue
     break
 done
 
@@ -292,8 +286,7 @@ done
 echo ""
 if [[ $REPLY =~ ^[Yy]$ ]]; then
     while : ; do
-        dnf groupinstall -y "Development Tools"
-        [[ $? == 0 ]] && continue
+        dnf groupinstall -y "Development Tools" || continue
         break
     done
     echo "Finished installing Development Tools."
@@ -378,8 +371,8 @@ mkdir -p "$REAL_USER_HOME/cloned/mono-firefox-theme"
 echo "Created $REAL_USER_HOME/cloned/mono-firefox-theme/"
 RC_VIS_MZL_DIR="$REAL_USER_HOME/cloned/mono-firefox-theme"
 while : ; do
-    wget --directory-prefix "$REAL_USER_HOME/cloned/" "https://github.com/witalihirsch/Mono-firefox-theme/releases/download/0.2/mono-firefox-theme.tar.xz"
-    [[ $? != 0 ]] || break  # if something goes wrong, install the previous version
+    wget --directory-prefix "$REAL_USER_HOME/cloned/" "https://github.com/witalihirsch/Mono-firefox-theme/releases/download/0.2/mono-firefox-theme.tar.xz" && break
+    # if something goes wrong, install the previous version
     wget --directory-prefix "$REAL_USER_HOME/cloned/" "https://github.com/witalihirsch/Mono-firefox-theme/releases/download/0.1/mono-firefox-theme.tar.xz"
     break
 done
