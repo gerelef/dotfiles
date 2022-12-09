@@ -119,12 +119,6 @@ yt-dlp \
 yt-dlp-bash-completion \
 "
 
-INSTALLABLE_MS_FONTS="\
-cabextract \
-xorg-x11-font-utils \
-fontconfig \
-"
-
 UNINSTALLABLE_BLOAT="\
 rhythmbox* \
 gnome-tour \
@@ -263,11 +257,6 @@ if [ ! -z "$GPU" ]; then
     mokutil --import /etc/pki/akmods/certs/public_key.der
     echo "Signed GPU drivers."
 fi
-
-echo "Installing MS Libreoffice fonts..."
-dnf install -y $INSTALLABLE_MS_FONTS
-rpm -i https://downloads.sourceforge.net/project/mscorefonts2/rpms/msttcore-fonts-installer-2.6-1.noarch.rpm
-echo "Finished installing MS Libreoffice fonts..."
 
 echo "Switching to $REAL_USER to install flatpaks"
 echo "-------------------INSTALLING---------------- $INSTALLABLE_FLATPAKS $INSTALLABLE_OBS_STUDIO" | tr " " "\n"
