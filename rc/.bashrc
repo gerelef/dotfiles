@@ -2,6 +2,10 @@
 # for examples
 # ~/.bashrc: executed by bash(1) for non-login shells.
 
+# AUTHOR NOTE:
+#  Treat this like you would PEP8 for Python. Read in detail.
+#   https://github.com/bahamas10/bash-style-guide#bashisms
+
 # If not running interactively, don't do anything
 case $- in
     *i*) ;;
@@ -185,6 +189,26 @@ hms () {
     echo "$1" | awk -F. '{ print ($1 * 3600) + ($2 * 60) + $3 }';
 }
 
+ffconcat-video () {
+    inputs=""
+    count=0
+    audio_video_ftracks=""
+    output_name=""
+    for arg in "$@"; do
+        inputs+="-i $arg "
+        audio_video_ftracks+="[$count:v] [$count:a] "
+        output_name+=$(head -c 3 <<< $arg)
+        count=$((count+1))
+    done
+    output_name=$(head -c 30 <<< $output_name)
+    output_name+="-concat$count.mkv"
+    ffmpeg $inputs -filter_complex "$audio_video_ftracks concat=n=$count:v=1:a=1 [v] [a]" -map "[v]" -map "[a]" -vsync 1 -r 60 "$output_name"
+}
+
+ffconvert-mp4 () {
+    ffmpeg -i "$1" -codec copy "$1".mp4
+}
+
 ffextract-audio-mp3 () {
     ffmpeg -i "$1" -vn "$1.mp3"
 }
@@ -211,7 +235,7 @@ ffcompress-mp3 () {
 
 ffcompress-mp4 () {
     # good values are from 27 to 30 for x265
-    ffmpeg -i "$1" -vcodec libx265 -crf "$2" "$1-compressed.mp4"
+    ffmpeg -i "$1" -vcodec libx265 -crf "$2" -vsync 1 -r 60 "$1-compressed.mp4"
 }
 
 ytdl-mp3 () {
@@ -220,32 +244,6 @@ ytdl-mp3 () {
 
 ytdl-mp4 () {
     yt-dlp --format "bv*[ext=mp4]+ba[ext=m4a]/b[ext=mp4]" "$@"
-}
-
-gbi () {
-    if [ -n "$1" ] && [ -f "$1" ]; then
-        echo "All instances of $1:"
-        whereis "$1"
-        echo ""
-        echo "File & Filesystem information:"
-        stat "$1"
-        echo ""
-        echo "Dependencies:"
-        ldd "$1"
-        echo ""
-        echo "Technical information:"
-        file "$1"
-        echo ""
-        readelf -h "$1"
-        echo ""
-        nm "$1" | head
-    else
-        if [ -n "$1" ]; then
-            echo "File "$1" does not exist."
-        else
-            echo "usage: gbi path/to/bin"
-        fi
-    fi
 }
 
 gds () {
