@@ -9,8 +9,8 @@
     find = "!git ls-files | grep -i"
     st = status
     stv = "!git status -v | less"
-    stvp = "!git status -v | grep -i + | less"
-    stvm = "!git status -v | grep -i - | less"
+    stvp = "!git status -v | grep -i ^+ | less"
+    stvm = "!git status -v | grep -i ^- | less"
     cl = clone
     cm = commit -m
     ck = checkout
