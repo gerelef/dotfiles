@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 # https://askubuntu.com/questions/425754/how-do-i-run-a-sudo-command-inside-a-script
 
@@ -235,11 +235,16 @@ fwupdmgr update -y
 echo "-------------------INSTALLING---------------- $INSTALLABLE_PACKAGES $INSTALLABLE_CODECS $INSTALLABLE_BASHRC_DEPENDENCIES" | tr " " "\n"
 while : ; do
     dnf remove -y $UNINSTALLABLE_BLOAT
+    [[ $? == 0 ]] && continue
     dnf install -y $INSTALLABLE_PACKAGES
+    [[ $? == 0 ]] && continue
     dnf install -y $INSTALLABLE_CODECS
+    [[ $? == 0 ]] && continue
     dnf install -y $INSTALLABLE_BASHRC_DEPENDENCIES
+    [[ $? == 0 ]] && continue
     dnf group upgrade -y --with-optional Multimedia
-    [[ $? != 0 ]] || break
+    [[ $? == 0 ]] && continue
+    break
 done
 
 case "btrfs" in
@@ -288,7 +293,8 @@ echo ""
 if [[ $REPLY =~ ^[Yy]$ ]]; then
     while : ; do
         dnf groupinstall -y "Development Tools"
-        [[ $? != 0 ]] || break
+        [[ $? == 0 ]] && continue
+        break
     done
     echo "Finished installing Development Tools."
 fi
@@ -325,7 +331,8 @@ echo ""
 if [[ $REPLY =~ ^[Yy]$ ]]; then
     while : ; do
         dnf install -y $INSTALLABLE_EXTENSIONS
-        [[ $? != 0 ]] || break
+        [[ $? == 0 ]] && continue
+        break
     done
 
     echo "Finished installing extensions."

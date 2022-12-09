@@ -42,7 +42,7 @@ export PATH
 # export SYSTEMD_PAGER=
 
 # User specific aliases and functions
-if [ -d ~/.bashrc.d ]; then
+if [[ -d ~/.bashrc.d ]]; then
 	for rc in ~/.bashrc.d/*; do
 		if [ -f "$rc" ]; then
 			. "$rc"
@@ -52,17 +52,19 @@ fi
 
 unset rc
 
+export DOTNET_CLI_TELEMETRY_OPTOUT=1
+
 #################### zachbrowne ##########################
 # https://gist.github.com/zachbrowne/8bc414c9f30192067831fafebd14255c
 # Source global definitions
-if [ -f /etc/bashrc ]; then
+if [[ -f /etc/bashrc ]]; then
 	 . /etc/bashrc
 fi
 
 # Enable bash programmable completion features in interactive shells
-if [ -f /usr/share/bash-completion/bash_completion ]; then
+if [[ -f /usr/share/bash-completion/bash_completion ]]; then
 	. /usr/share/bash-completion/bash_completion
-elif [ -f /etc/bash_completion ]; then
+elif [[ -f /etc/bash_completion ]]; then
 	. /etc/bash_completion
 fi
 
@@ -94,11 +96,9 @@ if [[ $iatest > 0 ]]; then bind "set completion-ignore-case on"; fi
 # Show auto-completion list automatically, without double tab
 if [[ $iatest > 0 ]]; then bind "set show-all-if-ambiguous on"; fi
 
-
 # To have colors for ls and all grep commands such as grep, egrep and zgrep
 export CLICOLOR=1
 export LS_COLORS='no=00:fi=00:di=00;34:ln=01;36:pi=40;33:so=01;35:do=01;35:bd=40;33;01:cd=40;33;01:or=40;31;01:ex=01;32:*.tar=01;31:*.tgz=01;31:*.arj=01;31:*.taz=01;31:*.lzh=01;31:*.zip=01;31:*.z=01;31:*.Z=01;31:*.gz=01;31:*.bz2=01;31:*.deb=01;31:*.rpm=01;31:*.jar=01;31:*.jpg=01;35:*.jpeg=01;35:*.gif=01;35:*.bmp=01;35:*.pbm=01;35:*.pgm=01;35:*.ppm=01;35:*.tga=01;35:*.xbm=01;35:*.xpm=01;35:*.tif=01;35:*.tiff=01;35:*.png=01;35:*.mov=01;35:*.mpg=01;35:*.mpeg=01;35:*.avi=01;35:*.fli=01;35:*.gl=01;35:*.dl=01;35:*.xcf=01;35:*.xwd=01;35:*.ogg=01;35:*.mp3=01;35:*.wav=01;35:*.xml=00;31:'
-#export GREP_OPTIONS='--color=auto' #deprecated
 alias grep="/usr/bin/grep -i $GREP_OPTIONS"
 unset GREP_OPTIONS
 
@@ -117,102 +117,39 @@ export LESS_TERMCAP_us=$'\E[01;32m'
 # To temporarily bypass an alias, we preceed the command with a \
 # EG: the ls command is aliased, but to use the normal ls command you would type \ls
 
-# Alias's to modified commands
-alias ps='ps auxf'
-alias less='less -R'
-
-# Change directory aliases
-alias ..='cd ..'
-alias ...='cd ../..'
-alias ....='cd ../../..'
-alias .....='cd ../../../..'
-
-# cd into the old directory
-alias bd='cd "$OLDPWD"'
-
-# Alias's for safe and forced reboots
-alias rebootsafe='sudo shutdown -r now'
-alias rebootforce='sudo shutdown -r -n now'
-
-# Alias's to show disk space and space used in a folder
-alias tree='tree -CAhF --dirsfirst'
-
-# archives
-alias mktar='tar -cvf'
-alias mkbz2='tar -cvjf'
-alias mkgz='tar -cvzf'
-alias untar='tar -xvf'
-alias unbz2='tar -xvjf'
-alias ungz='tar -xvzf'
-alias unxz="tar -xf"
-
-# encryptions
-alias md5="openssl md5"
-alias sha1="openssl sha1"
-alias sha256="openssl sha256"
-alias sha512="openssl sha512"
-
-#######################################################
-# SPECIAL FUNCTIONS
-#######################################################
-
-# Searches for text in all files in the current folder
-ftext () {
-	# -i case-insensitive
-	# -I ignore binary files
-	# -H causes filename to be printed
-	# -r recursive search
-	# -n causes line number to be printed
-	# optional: -F treat search term as a literal, not a regular expression
-	# optional: -l only print filenames and not the matching lines ex. grep -irl "$1" *
-	grep -iIHrn --color=always "$1" . | less -r
-}
-
-
-
-# Returns the last 2 fields of the working directory
-pwdtail () {
-	pwd|awk -F/ '{nlast = NF -1;print $nlast"/"$NF}'
-}
-
-# For some reason, rot13 pops up everywhere
-rot-13 () {
-	if [ $# -eq 0 ]; then
-		tr '[a-m][n-z][A-M][N-Z]' '[n-z][a-m][N-Z][A-M]'
-	else
-		echo $* | tr '[a-m][n-z][A-M][N-Z]' '[n-z][a-m][N-Z][A-M]'
-	fi
-}
-
-#hours minutes seconds (0.1.2)
+# convert Hours:Minutes:Seconds (colon seperated) to seconds 
 hms () {
-    echo "$1" | awk -F. '{ print ($1 * 3600) + ($2 * 60) + $3 }';
+    echo "$1" | awk -F: '{ print ($1 * 3600) + ($2 * 60) + $3 }';
 }
 
+# ffmpeg concatenate multiple video files into one 
 ffconcat-video () {
-    inputs=""
-    count=0
-    audio_video_ftracks=""
-    output_name=""
+    local inputs=""
+    local count=0
+    local audio_video_ftracks=""
+    local output_name=""
     for arg in "$@"; do
         inputs+="-i $arg "
         audio_video_ftracks+="[$count:v] [$count:a] "
         output_name+=$(head -c 3 <<< $arg)
         count=$((count+1))
     done
-    output_name=$(head -c 30 <<< $output_name)
-    output_name+="-concat$count.mkv"
+    local output_name=$(head -c 30 <<< $output_name)
+    local output_name+="-concat$count.mkv"
     ffmpeg $inputs -filter_complex "$audio_video_ftracks concat=n=$count:v=1:a=1 [v] [a]" -map "[v]" -map "[a]" -vsync 1 -r 60 "$output_name"
 }
 
+# ffmpeg convert video file to mp4
 ffconvert-mp4 () {
     ffmpeg -i "$1" -codec copy "$1".mp4
 }
 
+# ffmpeg extract audio from video file to mp3
 ffextract-audio-mp3 () {
     ffmpeg -i "$1" -vn "$1.mp3"
 }
 
+# ffmpeg trim mp3 from start to end
 fftrim-mp3 () {
     # $1 input
     # $2 start (seconds)
@@ -220,6 +157,7 @@ fftrim-mp3 () {
     ffmpeg -ss "$2" -t "$3" -i "$1" -acodec copy "$1-trimmed.mp3" 
 }
 
+# ffmpeg trim mp4 from start to end
 fftrim-mp4 () {
     # $1 input
     # $2 start (seconds)
@@ -227,54 +165,36 @@ fftrim-mp4 () {
     ffmpeg -ss "$2" -to "$3" -i "$1" -codec copy "$1-trimmed.mp4"
 }
 
+# ffmpeg compress mp3 audio
 ffcompress-mp3 () {
     # $1 input
     # $2 bitrate (e.g. 96k)
     ffmpeg -i "$1" -map 0:a:0 -b:a "$2" "$1-compressed.mp3"
 }
 
+# ffmpeg compress mp4 video
 ffcompress-mp4 () {
     # good values are from 27 to 30 for x265
     ffmpeg -i "$1" -vcodec libx265 -crf "$2" -vsync 1 -r 60 "$1-compressed.mp4"
 }
 
+# yt-dlp download to mp3
 ytdl-mp3 () {
     yt-dlp --extract-audio --audio-format mp3 --audio-quality 0 "$@" 
 }
 
+# yt-dlp download to mp4
 ytdl-mp4 () {
     yt-dlp --format "bv*[ext=mp4]+ba[ext=m4a]/b[ext=mp4]" "$@"
 }
 
+# Get directory size 
 gds () {
-    if [ -n "$1" ]; then
+    if [[ -n "$1" ]]; then
         du -sh --apparent-size "$1"
     else
         du -sh --apparent-size .
     fi
-}
-
-# Multi-column ls
-lss () {
-    if [ -z "$1" ]; then
-        ls_dir="$PWD"
-    else
-        ls_dir="$1"
-    fi
-    current_directory_dirs_out=$(ls -ap $1 | grep /; )
-    current_directory_files_out=$(ls -ap $1 | grep -v /; )
-
-    current_directory_status_out=""
-    top_lvl_git_dir=$(git rev-parse --show-toplevel 2> /dev/null)
-    if [ -n "$top_lvl_git_dir" ]; then
-        current_directory_status_out=$(git status -s --ignored=no; )
-        if [ "" == "$current_directory_status_out" ]; then
-	        current_directory_status_out=$(echo "Working tree clean."; )
-	    fi
-	    paste <(echo "$current_directory_dirs_out") <(echo "$current_directory_files_out") <(echo "$current_directory_status_out") | column -o "│" -s $'\t' -t -d -N C1,C2,C3 -T C1,C2,C3
-	    return
-    fi
-    paste <(echo "$current_directory_dirs_out") <(echo "$current_directory_files_out") | column -o "│" -s $'\t' -t -d -N C1,C2 -T C1,C2
 }
 
 # Highlight (and not filter) text with grep
@@ -282,29 +202,51 @@ highlight () {
     grep --color=always -iE "$1|\$"
 }
 
-#Automatically do an ls after each cd
-cd () {
-	if [ -n "$1" ]; then
-	    builtin cd "$@"
-	else
-		builtin cd $HOME
-	fi
-	if [ ! $? -eq 0 ]; then
-	    return
-	fi
-	lss
-}
-
+# Rename
 rn () {
     mv -vn "$1" "$2"
+}
+
+# Multi-column ls
+lss () {
+    if [[ -z "$1" ]]; then
+        local ls_dir="$PWD"
+    else
+        local ls_dir="$1"
+    fi
+    local current_directory_dirs_out=$(ls -ap $1 | grep /; )
+    local current_directory_files_out=$(ls -ap $1 | grep -v /; )
+
+    local current_directory_status_out=""
+    local top_lvl_git_dir=$(git rev-parse --show-toplevel 2> /dev/null)
+    if [[ -n "$top_lvl_git_dir" ]]; then
+        local current_directory_status_out=$(git status -s --ignored=no; )
+        if [[ "" == "$current_directory_status_out" ]]; then
+	        local current_directory_status_out=$(echo "Working tree clean."; )
+	    fi
+	    paste <(echo "$current_directory_dirs_out") <(echo "$current_directory_files_out") <(echo "$current_directory_status_out") | column -o "│" -s $'\t' -t -d -N C1,C2,C3 -T C1,C2,C3
+	    return
+    fi
+    paste <(echo "$current_directory_dirs_out") <(echo "$current_directory_files_out") | column -o "│" -s $'\t' -t -d -N C1,C2 -T C1,C2
+}
+
+
+# Automatically do an ls after each cd
+cd () {
+	if [[ -n "$1" ]]; then
+	    builtin cd "$@" || exit
+	else
+		builtin cd $HOME || exit
+	fi
+	lss
 }
 
 # journalctl wrapper for ease of use
 _journalctl () {
     # https://stackoverflow.com/questions/6482377/check-existence-of-input-argument-in-a-bash-shell-script
-    if [ $# -eq 0 ]; then
+    if [[ $# -eq 0 ]]; then
         command journalctl -e -n 2000
-    elif [ $# -eq 1 ]; then # called with just a service name (-u opt)
+    elif [[ $# -eq 1 ]]; then # called with just a service name (-u opt)
         command journalctl -e -n 5000 -u "$1"
     else
         command journalctl "$@"
@@ -312,10 +254,10 @@ _journalctl () {
 }
 
 # tldr wrapper for ease of use
-tldr () {
-    if [ $# -eq 0 ]; then
+_tldr () {
+    if [[ $# -eq 0 ]]; then
         (command tldr tldr) | less
-    elif [ $# -eq 1 ]; then
+    elif [[ $# -eq 1 ]]; then
         (command tldr "$1") | less
     else
         command tldr "$@"
@@ -326,7 +268,7 @@ _git-branch () {
      git branch 2> /dev/null | sed -e '/^[^*]/d' -e 's/* \(.*\)/ (\1)/'
 }
 
-suod () {
+_suod () {
     bash ~/dotfiles/rc/rr/roll.sh
 }
 
@@ -344,6 +286,7 @@ function __setprompt
 	local DARKGRAY="\033[1;30m"
 	local RED="\033[0;31m"
 	local LIGHTRED="\033[1;31m"
+	local ORANGE="\033[38;5;214m" # requires terminal with 256bit colour support
 	local GREEN="\033[0;32m"
 	local LIGHTGREEN="\033[1;32m"
 	local BROWN="\033[0;33m"
@@ -360,8 +303,6 @@ function __setprompt
 
 	# Show error exit code if there is one
 	if [[ $LAST_COMMAND != 0 ]]; then
-		# PS1="\[${RED}\](\[${LIGHTRED}\]ERROR\[${RED}\])-(\[${LIGHTRED}\]Exit Code \[${WHITE}\]${LAST_COMMAND}\[${RED}\])-(\[${LIGHTRED}\]"
-		# PS1="\[${DARKGRAY}\](\[${LIGHTRED}\]ERROR\[${DARKGRAY}\])-(\[${RED}\]Exit Code \[${LIGHTRED}\]${LAST_COMMAND}\[${DARKGRAY}\])-(\[${RED}\]"
 		PS1="\[${RED}\]Exit Code \[${LIGHTRED}\]${LAST_COMMAND}\[${DARKGRAY}\] \[${RED}\]"
 		if [[ $LAST_COMMAND == 1 ]]; then
 			PS1+="General error"
@@ -400,72 +341,94 @@ function __setprompt
 	else
 		PS1=""
 	fi
-    
-	# User and server
-	local SSH_IP=`echo $SSH_CLIENT | awk '{ print $1 }'`
-	local SSH2_IP=`echo $SSH2_CLIENT | awk '{ print $1 }'`
-	if [ $SSH2_IP ] || [ $SSH_IP ] ; then
-		PS1+="\[${RED}\]\u@\h"
-	else
-		PS1+="\[${RED}\]\u"
-	fi
+	
+	PS1+="\[${RED}\]\u\[${NOCOLOR}\]"
     
 	# Current directory
-	PS1+=" \[${BROWN}\]\w\[${DARKGRAY}\]"
+	if [[ ! -z "$VIRTUAL_ENV" ]] ; then
+        PS1+=" \[${LIGHTMAGENTA}\]\w (venv)\[${NOCOLOR}\]"
+    else
+        PS1+=" \[${BROWN}\]\w\[${DARKGRAY}\]" # working directory
+    fi
     
     # active branch
-    PS1+="\[${WHITE}\]$(_git-branch)"
+    PS1+="\[${ORANGE}\]$(_git-branch)\[${NOCOLOR}\]"
 
 	# Skip to the next line
 	PS1+="\n"
     
     PS1+="\[${BLUE}\]\t\[${NOCOLOR}\] " # Time    
     
-    if [ ! -z "$VIRTUAL_ENV" ] ; then
-        DIRNAME="$VIRTUAL_ENV"
-        D2=$(dirname "$DIRNAME")
-        DIRNAME2=$(basename "$D2")/$(basename "$DIRNAME")
-        
-        PS1+="\[${LIGHTMAGENTA}\]$DIRNAME2\[${NOCOLOR}\] "
-    fi
-    
-    PS1+="\[${GREEN}\]\$\[${NOCOLOR}\] " 
-    
+    PS1+="\[${GREEN}\]\$\[${NOCOLOR}\] " # $ 
     
 	# PS2 is used to continue a command using the \ character
-	PS2="\[${DARKGRAY}\]>\[${NOCOLOR}\] "
+	PS2="\[${LIGHTGREEN}\]>\[${NOCOLOR}\] "
 
 	# PS3 is used to enter a number choice in a script
 	PS3='Please enter a number from above list: '
 
 	# PS4 is used for tracing a script in debug mode
-	PS4="\[${DARKGRAY}\]+\[${NOCOLOR}\] "
+	PS4="\[${LIGHTRED}\]+\[${NOCOLOR}\] "
 }
 PROMPT_COMMAND='__setprompt'
 
+# Alias's to modified commands
+alias ps='ps auxf'
+alias less='less -R'
+
+# Change directory aliases
+alias ..='cd ..'
+alias ...='cd ../..'
+alias ....='cd ../../..'
+alias .....='cd ../../../..'
+
+# cd into the old directory
+alias bd='cd "$OLDPWD"'
+
+# Alias's for safe and forced reboots
+alias rebootsafe='sudo shutdown -r now'
+alias rebootforce='sudo shutdown -r -n now'
+
+# Alias's to show disk space and space used in a folder
+alias tree='tree -CAhF --dirsfirst'
+
+# archives
+alias mktar='tar -cvf'
+alias mkbz2='tar -cvjf'
+alias mkgz='tar -cvzf'
+alias untar='tar -xvf'
+alias unbz2='tar -xvjf'
+alias ungz='tar -xvzf'
+alias unxz="tar -xf"
+
+# encryptions
+alias md5="openssl md5"
+alias sha1="openssl sha1"
+alias sha256="openssl sha256"
+alias sha512="openssl sha512"
+
 #################### zachbrowne ##########################
-
-#################### USER STUFF ##########################
-PATH="$PATH:$HOME/bin/"
-
-export DOTNET_CLI_TELEMETRY_OPTOUT=1
-
-alias rm="rm -v"
-alias c="clear"
-alias venv="source venv/bin/activate"
-alias vvenv="deactivate"
-alias cvenv="python -m venv venv"
-alias restartpipewire="systemctl --user restart pipewire"
-alias restartnetworkmanager="systemctl restart NetworkManager"
-alias fuck='sudo $(history -p \!\!)'
+##########################################################
+# substitutes for commands 
 alias journalctl="_journalctl"
-alias help="man"
-alias ccat="bat --theme Coldark-Cold"
+alias tldr="_tldr"
+alias suod="_suod"
+
+# convenience alias
+alias c="clear"
+alias venv="source venv/bin/activate" # activate venv
+alias vvenv="deactivate" # exit venv
+alias cvenv="python -m venv venv" # create venv
+
+alias restartpipewire="systemctl --user restart pipewire" # restart audio (pipewire)
+alias restartnetworkmanager="systemctl restart NetworkManager" # restart internet (networkmanager)
+
 alias reverse="tac"
 alias palindrome="rev"
-alias gnano="gnome-text-editor" # gui text editor of choice
 
-# displays standard information every time shell starts
-#  neofetch --off --color_blocks off --distro_shorthand tiny --gtk3 off --gtk2 off --gpu_type all --package_managers off --speed_type max --speed_shorthand on --cpu_brand off --cpu_cores logical --cpu_temp C --disable memory theme icons packages resolution
+alias rm="rm -v"
+alias ccat="bat --theme Dracula"
+alias gedit="gnome-text-editor" # gedit replacement of choice 
+alias fuck='sudo $(history -p \!\!)'
 
 source ~/.bashrc_private 2> /dev/null
