@@ -6,12 +6,6 @@
 #  Treat this like you would PEP8 for Python. Read in detail.
 #   https://github.com/bahamas10/bash-style-guide#bashisms
 
-# If not running interactively, don't do anything
-case $- in
-    *i*) ;;
-      *) return;;
-esac
-
 # If set, the pattern "**" used in a pathname expansion context will
 # match all files and zero or more directories and subdirectories.
 shopt -s globstar
