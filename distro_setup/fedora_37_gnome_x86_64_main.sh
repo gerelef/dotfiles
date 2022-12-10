@@ -354,8 +354,9 @@ mkdir -p "$REAL_USER_HOME/cloned/mono-firefox-theme"
 echo "Created $REAL_USER_HOME/cloned/mono-firefox-theme/"
 RC_VIS_MZL_DIR="$REAL_USER_HOME/cloned/mono-firefox-theme"
 while : ; do
+    # if something goes wrong, install the next version, otherwise break
+    wget --directory-prefix "$REAL_USER_HOME/cloned/" "https://github.com/witalihirsch/Mono-firefox-theme/releases/download/0.3/mono-firefox-theme.tar.xz" && break
     wget --directory-prefix "$REAL_USER_HOME/cloned/" "https://github.com/witalihirsch/Mono-firefox-theme/releases/download/0.2/mono-firefox-theme.tar.xz" && break
-    # if something goes wrong, install the previous version
     wget --directory-prefix "$REAL_USER_HOME/cloned/" "https://github.com/witalihirsch/Mono-firefox-theme/releases/download/0.1/mono-firefox-theme.tar.xz"
     break
 done
