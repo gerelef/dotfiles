@@ -143,7 +143,7 @@ com.raggesilver.BlackBox \
 com.spotify.Client \
 com.discordapp.Discord \
 com.teamspeak.TeamSpeak \
-net.davidotek.pupgui2 \
+com.vysp3r.ProtonPlus \
 fr.handbrake.ghb \
 net.cozic.joplin_desktop \
 com.teamspeak.TeamSpeak \
@@ -172,9 +172,6 @@ gnome-shell-extension-pop-shell \
 gnome-shell-extension-pop-shell-shortcut-overrides \
 gnome-shell-extension-places-menu \
 gnome-shell-extension-appindicator \
-gnome-shell-extension-sound-output-device-chooser \
-gnome-shell-extension-freon \
-gnome-shell-extension-lockkeys \
 gnome-shell-extension-dash-to-panel \
 "
 
@@ -208,7 +205,6 @@ flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flat
 flatpak remote-add --if-not-exists fedora oci+https://registry.fedoraproject.org
 flatpak remote-add --if-not-exists appcenter https://flatpak.elementary.io/repo.flatpakrepo
 dnf copr remove -y phracek/PyCharm
-dnf copr enable -y astrawan/gnome-shell-extensions
 dnf copr enable -y nickavem/adw-gtk3
 
 #######################################################################################################

@@ -403,10 +403,12 @@ alias sha512="openssl sha512"
 
 #################### zachbrowne ##########################
 ##########################################################
-# substitutes for commands 
+# substitutes for commands
 alias journalctl="_journalctl"
 alias tldr="_tldr"
 alias suod="_suod"
+alias flatpak-log="flatpak remote-info --log flathub"
+alias flatpak-checkout="flatpak update --commit="
 
 # convenience alias
 alias c="clear"
@@ -422,7 +424,7 @@ alias palindrome="rev"
 
 alias rm="rm -v"
 alias ccat="bat --theme Dracula"
-alias gedit="gnome-text-editor" # gedit replacement of choice 
+alias gedit="gnome-text-editor" # gedit replacement of choice
 alias fuck='sudo $(history -p \!\!)'
 
 source ~/.bashrc_private 2> /dev/null
