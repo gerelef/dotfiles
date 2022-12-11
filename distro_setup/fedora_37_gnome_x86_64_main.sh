@@ -11,14 +11,7 @@ fi
 if ! ping -q -c 1 -W 1 google.com > /dev/null; then
     echo "Network connection was not detected."
     echo "This script needs network connectivity to continue."
-    while : ; do
-        read -p "Are you sure you want to continue?[Y/n] " -n 1 -r
-        ! [[ $REPLY =~ ^[YyNn]$ ]] || break
-    done
-    echo ""
-    if ! [[ $REPLY =~ ^[Yy]$ ]]; then
-        exit 1
-    fi
+    exit 1
 fi
 
 
