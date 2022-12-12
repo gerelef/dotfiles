@@ -249,8 +249,8 @@ fi
 
 echo "Switching to $REAL_USER to install flatpaks"
 echo "-------------------INSTALLING---------------- $INSTALLABLE_FLATPAKS $INSTALLABLE_OBS_STUDIO" | tr " " "\n"
-su - $REAL_USER -c "flatpak install -y $INSTALLABLE_FLATPAKS"
-su - $REAL_USER -c "flatpak install -y $INSTALLABLE_OBS_STUDIO"
+su - $REAL_USER -c "flatpak --system install -y $INSTALLABLE_FLATPAKS"
+su - $REAL_USER -c "flatpak --system install -y $INSTALLABLE_OBS_STUDIO"
 echo "Continuing as $(whoami)"
 
 #######################################################################################################
@@ -280,7 +280,7 @@ done
 
 echo ""
 if [[ $REPLY =~ ^[Yy]$ ]]; then
-    su - $REAL_USER -c "flatpak install -y $INSTALLABLE_IDE_FLATPAKS"
+    su - $REAL_USER -c "flatpak --system install -y $INSTALLABLE_IDE_FLATPAKS"
     echo "Finished installing IDEs."
 
     echo "-------------------INSTALLING JETBRAINS TOOLBOX----------------"
