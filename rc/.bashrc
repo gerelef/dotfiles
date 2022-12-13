@@ -117,30 +117,55 @@ hms () {
 }
 
 # ffmpeg concatenate multiple video files into one 
+#  INPUTS: files >= 2
 ffconcat-video () {
     local inputs=""
-    local count=0
     local audio_video_ftracks=""
+    local trimmed_arg=""
     local output_name=""
+    local count=0
     for arg in "$@"; do
         inputs+="-i $arg "
         audio_video_ftracks+="[$count:v] [$count:a] "
-        output_name+=$(head -c 3 <<< $arg)
+        trimmed_arg=${arg%.*}
+        output_name+=$(head -c 4 <<< $trimmed_arg)
         count=$((count+1))
     done
     local output_name=$(head -c 30 <<< $output_name)
-    local output_name+="-concat$count.mkv"
-    ffmpeg $inputs -filter_complex "$audio_video_ftracks concat=n=$count:v=1:a=1 [v] [a]" -map "[v]" -map "[a]" -vsync 1 -r 60 "$output_name"
+    local output_name+="-concat$count.mp4"
+    ffmpeg $inputs -filter_complex "$audio_video_ftracks concat=n=$count:v=1:a=1 [v] [a]" -map "[v]" -map "[a]" -vsync 1 -r 60 "$output_name" 
+}
+
+# ffmpeg convert audio file to mp3
+ffconvert-mp3 () {
+    local output=${1%.*}
+    ffmpeg -i "$1" -acodec libmp3lame "$output-converted.mp3"
 }
 
 # ffmpeg convert video file to mp4
 ffconvert-mp4 () {
-    ffmpeg -i "$1" -codec copy "$1".mp4
+    local output=${1%.*}
+    ffmpeg -i "$1" -codec copy "$output-converted.mp4"
 }
 
-# ffmpeg extract audio from video file to mp3
+# ffmpeg extract audio from video with audio to mp3
 ffextract-audio-mp3 () {
-    ffmpeg -i "$1" -vn "$1.mp3"
+    local output=${1%.*}
+    ffmpeg -i "$1" -vn "$output-audio.mp3"
+}
+
+# ffmpeg extract video from video with audio to mp3
+ffextract-video-mp4 () {
+    local output=${1%.*}
+    ffmpeg -i "$1" -c copy -an "$output-video.mp4"
+}
+
+# ffmpeg scale video file to selected resolution 
+ffscale-mp4 () {
+    # $1 input
+    # $2 width:height
+    local output=${1%.*}
+    ffmpeg -i "$1" -vf scale="$2" -vcodec libx265 -crf 22 -vsync 1 -r 60 "$output-scaled.mp4"
 }
 
 # ffmpeg trim mp3 from start to end
@@ -148,7 +173,8 @@ fftrim-mp3 () {
     # $1 input
     # $2 start (seconds)
     # $3 duration (seconds)
-    ffmpeg -ss "$2" -t "$3" -i "$1" -acodec copy "$1-trimmed.mp3" 
+    local output=${1%.*}
+    ffmpeg -ss "$2" -t "$3" -i "$1" -acodec copy "$output-trimmed.mp3" 
 }
 
 # ffmpeg trim mp4 from start to end
@@ -156,20 +182,25 @@ fftrim-mp4 () {
     # $1 input
     # $2 start (seconds)
     # $3 end   (seconds)
-    ffmpeg -ss "$2" -to "$3" -i "$1" -codec copy "$1-trimmed.mp4"
+    local output=${1%.*}
+    ffmpeg -ss "$2" -to "$3" -i "$1" -codec copy "$output-trimmed.mp4"
 }
 
 # ffmpeg compress mp3 audio
 ffcompress-mp3 () {
     # $1 input
     # $2 bitrate (e.g. 96k)
-    ffmpeg -i "$1" -map 0:a:0 -b:a "$2" "$1-compressed.mp3"
+    local output=${1%.*}
+    ffmpeg -i "$1" -map 0:a:0 -b:a "$2" "$output-compressed.mp3"
 }
 
 # ffmpeg compress mp4 video
 ffcompress-mp4 () {
-    # good values are from 27 to 30 for x265
-    ffmpeg -i "$1" -vcodec libx265 -crf "$2" -vsync 1 -r 60 "$1-compressed.mp4"
+    # $1 input
+    # $2 crf logarithmic value for x265
+    #  good values are from 27 to 30
+    local output=${1%.*}
+    ffmpeg -i "$1" -vcodec libx265 -crf "$2" -vsync 1 -r 60 "$output-compressed.mp4"
 }
 
 # yt-dlp download to mp3
