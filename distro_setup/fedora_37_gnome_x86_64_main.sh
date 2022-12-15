@@ -80,6 +80,8 @@ adwaita-qt* \
 setroubleshoot \
 setroubleshoot-plugins \
 vulkan \
+swtpm \
+swtpm-tools \
 virt-manager \
 libvirt-devel \
 virt-top \
