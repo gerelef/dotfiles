@@ -295,9 +295,9 @@ _journalctl () {
 # tldr wrapper for ease of use
 _tldr () {
     if [[ $# -eq 0 ]]; then
-        (command tldr tldr) | less
+        (command tldr tldr) | less -R
     elif [[ $# -eq 1 ]]; then
-        (command tldr "$1") | less
+        (command tldr "$1") | less -R
     else
         command tldr "$@"
     fi
