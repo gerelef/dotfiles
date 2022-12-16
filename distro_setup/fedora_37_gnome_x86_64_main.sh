@@ -146,6 +146,7 @@ net.cozic.joplin_desktop \
 com.teamspeak.TeamSpeak \
 com.skype.Client \
 us.zoom.Zoom \
+io.github.dummerle.rare \
 io.github.Foldex.AdwSteamGtk \
 com.github.Matoking.protontricks \
 net.openra.OpenRA \
