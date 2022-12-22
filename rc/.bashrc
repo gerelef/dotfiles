@@ -381,7 +381,8 @@ function __setprompt
 		PS1=""
 	fi
 	
-	PS1+="\[${RED}\]\u\[${NOCOLOR}\]"
+	PS1+="\[${BLUE}\]\t\[${NOCOLOR}\]" # Time
+	# PS1+="\[${RED}\]\u\[${NOCOLOR}\]" # User
     
 	# Current directory
 	if [[ ! -z "$VIRTUAL_ENV" ]] ; then
@@ -394,9 +395,7 @@ function __setprompt
     PS1+="\[${ORANGE}\]$(_git-branch)\[${NOCOLOR}\]"
 
 	# Skip to the next line
-	PS1+="\n"
-    
-    PS1+="\[${BLUE}\]\t\[${NOCOLOR}\] " # Time    
+	PS1+="\n"    
     
     PS1+="\[${GREEN}\]\$\[${NOCOLOR}\] " # $ 
     
