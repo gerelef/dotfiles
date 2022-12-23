@@ -9,7 +9,6 @@ _UTILITY_GIT_BRANCH="$DOTFILES_DIR/rc/utils/_git-branch.sh"
 _UTILITY_LSS="$DOTFILES_DIR/rc/utils/lss.sh"
 _UTILITY_PROMPT="$DOTFILES_DIR/rc/utils/__setprompt.sh"
 
-
 [[ -f "$_GLOBAL_BASHRC" ]] && . "$_GLOBAL_BASHRC" 
 [[ -f "$_PRIVATE_BASHRC" ]] && . "$_PRIVATE_BASHRC"
 
@@ -100,6 +99,19 @@ _tldr () {
     else
         command tldr "$@"
     fi
+}
+
+_source_bashrc_utils () {
+    [[ -f "$_GLOBAL_BASHRC" ]] && . "$_GLOBAL_BASHRC" 
+    [[ -f "$_PRIVATE_BASHRC" ]] && . "$_PRIVATE_BASHRC"
+
+    # SOFT DEPENDENCIES
+    [[ -f "$_UTILITY_FFMPEG" ]] && . "$_UTILITY_FFMPEG"
+    [[ -f "$_UTILITY_MAX" ]] && . "$_UTILITY_MAX"
+
+    # HARD DEPENDENCIES
+    [[ -f "$_UTILITY_LSS" ]] && . "$_UTILITY_LSS"
+    [[ -f "$_UTILITY_PROMPT" ]] && . "$_UTILITY_PROMPT"
 }
 
 #############################################################
