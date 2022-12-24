@@ -23,10 +23,20 @@ min () {
     echo "$m"
 }
 
+# checks if $1 is odd, echoes the mod result
 is-odd () {
     [[ -z "$*" ]] && return 2
+    [[ "$#" -ne 1 ]] && return 2
     
-    return $(("$1" % 2))
+    echo "$(($1 % 2))"
+}
+
+# checks that $1 is factor of $2, returns 0 on success, and anything else returns !=
+is-factor () {
+    [[ -z "$*" ]] && return 2
+    [[ "$#" -ne 2 ]] && return 2
+    
+    echo "$(($2 % $1))"
 }
 
 export -f max
