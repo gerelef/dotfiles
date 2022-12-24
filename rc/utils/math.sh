@@ -41,3 +41,5 @@ is-factor () {
 
 export -f max
 export -f min
+export -f is-odd
+export -f is-factor

@@ -111,6 +111,7 @@ tldr \
 ffmpeg-free \
 yt-dlp \
 yt-dlp-bash-completion \
+rubygem-ronn-ng \
 "
 
 UNINSTALLABLE_BLOAT="\

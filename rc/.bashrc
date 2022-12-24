@@ -2,8 +2,13 @@
 #  Treat these tutorials like you would PEP8. Read in detail.
 #   https://github.com/bahamas10/bash-style-guide#bashisms
 #   https://github.com/anordal/shellharden/blob/master/how_to_do_things_safely_in_bash.md
+#   https://tldp.org/HOWTO/Man-Page/q2.html 
+
+DOTFILES_DIR="$HOME/dotfiles"
 
 # EXPORTS
+# https://unix.stackexchange.com/questions/90759/where-should-i-install-manual-pages-in-user-directory
+export MANPATH="$MANPATH:$DOTFILES_DIR/man"
 export DOTNET_CLI_TELEMETRY_OPTOUT=1
 export HISTFILESIZE=100000
 export HISTSIZE=10000
@@ -16,7 +21,6 @@ require_bashrc () {
     local _GLOBAL_BASHRC="/etc/bashrc"
     local _PRIVATE_BASHRC="$HOME/.bashrc_private"
 
-    local DOTFILES_DIR="$HOME/dotfiles"
     local _UTILITY_DEBUG="$DOTFILES_DIR/rc/utils/debug.sh"
     local _UTILITY_FFMPEG="$DOTFILES_DIR/rc/utils/ffmpeg.sh"
     local _UTILITY_MATH="$DOTFILES_DIR/rc/utils/math.sh"

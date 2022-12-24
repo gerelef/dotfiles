@@ -12,3 +12,6 @@ shellcheck-bash () {
     
     \shellcheck --enable='add-default-case|avoid-nullary-conditions|check-unassigned-uppercase|deprecate-which|quote-safe-variables|require-variable-braces' --format tty --color=always --check-sourced -x --shell bash "$@"
 }
+
+export -f bash-debug-subshell
+export -f shellcheck-bash
