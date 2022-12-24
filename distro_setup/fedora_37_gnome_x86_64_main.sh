@@ -100,9 +100,8 @@ gstreamer1-libav --exclude=gstreamer1-plugins-bad-free-devel \
 "
 
 INSTALLABLE_BASHRC_DEPENDENCIES="\
-neofetch \
+ShellCheck \
 openssl \
-tree \
 git \
 plocate \
 openvpn \

@@ -43,8 +43,6 @@ function __setprompt
 			PS1+="Invalid argument to exit"
 		elif [ $LAST_COMMAND == 129 ]; then
 			PS1+="Fatal error signal 1"
-		elif [ $LAST_COMMAND == 130 ]; then
-			PS1+="Script terminated by Control-C"
 		elif [ $LAST_COMMAND == 131 ]; then
 			PS1+="Fatal error signal 3"
 		elif [ $LAST_COMMAND == 132 ]; then
@@ -81,8 +79,8 @@ function __setprompt
 	# Skip to the next line
 	PS1+="\n"    
 	
-    if [[ ! -z "$VIRTUAL_ENV" ]] ; then
-        PS1+="\[${LIGHTMAGENTA}\]>>>\[${NOCOLOR}\]"
+    if [[ -n "$VIRTUAL_ENV" ]] ; then
+        PS1+="\[${LIGHTMAGENTA}\]>>> \[${NOCOLOR}\]"
     else
         PS1+="\[${GREEN}\]\$\[${NOCOLOR}\] "
     fi

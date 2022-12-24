@@ -1,111 +1,26 @@
-# Source global definitions
-_GLOBAL_BASHRC="/etc/bashrc"
-_PRIVATE_BASHRC="$HOME/.bashrc_private"
-
-DOTFILES_DIR="$HOME/dotfiles"
-_UTILITY_FFMPEG="$DOTFILES_DIR/rc/utils/ffmpeg.sh"
-_UTILITY_MAX="$DOTFILES_DIR/rc/utils/math.sh"
-_UTILITY_GIT_BRANCH="$DOTFILES_DIR/rc/utils/_git-branch.sh"
-_UTILITY_LSS="$DOTFILES_DIR/rc/utils/lss.sh"
-_UTILITY_PROMPT="$DOTFILES_DIR/rc/utils/__setprompt.sh"
-
-[[ -f "$_GLOBAL_BASHRC" ]] && . "$_GLOBAL_BASHRC" 
-[[ -f "$_PRIVATE_BASHRC" ]] && . "$_PRIVATE_BASHRC"
-
-# SOFT DEPENDENCIES
-[[ -f "$_UTILITY_FFMPEG" ]]     && . "$_UTILITY_FFMPEG"
-[[ -f "$_UTILITY_MAX" ]]        && . "$_UTILITY_MAX"
-
-# HARD DEPENDENCIES
-[[ -f "$_UTILITY_LSS" ]]        && . "$_UTILITY_LSS"
-[[ -f "$_UTILITY_PROMPT" ]]     && . "$_UTILITY_PROMPT"
-
-# EXPORTS
-export DOTNET_CLI_TELEMETRY_OPTOUT=1
-export HISTFILESIZE=100000
-export HISTSIZE=10000
-export HISTCONTROL=erasedups:ignoredups:ignorespace
-
 # AUTHOR NOTE:
 #  Treat this tutorial like you would PEP8. Read in detail.
 #   https://github.com/bahamas10/bash-style-guide#bashisms
-shopt -s globstar
 
-# SHOPT
-shopt -s checkwinsize
-shopt -s histappend
-
-PROMPT_COMMAND='history -a'
-
-bind "set completion-ignore-case on"
-bind "set show-all-if-ambiguous on"
-
-PROMPT_COMMAND='__setprompt'
 #############################################################
 
-hexcat () {
-    for arg in "$@"; do
-        xxd < "$arg"
-    done
-}
+require_bashrc () {
+    # Source global & private definitions
+    local _GLOBAL_BASHRC="/etc/bashrc"
+    local _PRIVATE_BASHRC="$HOME/.bashrc_private"
 
-# Get directory size 
-gds () {
-    if [[ -n "$1" ]]; then
-        du -sh --apparent-size "$1"
-    else
-        du -sh --apparent-size .
-    fi
-}
-
-# Highlight (and not filter) text with grep
-highlight () {
-    grep --color=always -iE "$1|\$"
-}
-
-# Rename
-rn () {
-    mv -vn "$1" "$2"
-}
-
-# Automatically do an ls after each cd
-cd () {
-	if [[ -n "$1" ]]; then
-	    builtin cd "$@" || exit
-	else
-		builtin cd $HOME || exit
-	fi
-	lss
-}
-
-# journalctl wrapper for ease of use
-_journalctl () {
-    # https://stackoverflow.com/questions/6482377/check-existence-of-input-argument-in-a-bash-shell-script
-    if [[ $# -eq 0 ]]; then
-        command journalctl -e -n 2000
-    elif [[ $# -eq 1 ]]; then # called with just a service name (-u opt)
-        command journalctl -e -n 5000 -u "$1"
-    else
-        command journalctl "$@"
-    fi
-}
-
-# tldr wrapper for ease of use
-_tldr () {
-    if [[ $# -eq 0 ]]; then
-        (command tldr tldr) | less -R
-    elif [[ $# -eq 1 ]]; then
-        (command tldr "$1") | less -R
-    else
-        command tldr "$@"
-    fi
-}
-
-_source_bashrc_utils () {
+    local DOTFILES_DIR="$HOME/dotfiles"
+    local _UTILITY_DEBUG="$DOTFILES_DIR/rc/utils/debug.sh"
+    local _UTILITY_FFMPEG="$DOTFILES_DIR/rc/utils/ffmpeg.sh"
+    local _UTILITY_MAX="$DOTFILES_DIR/rc/utils/math.sh"
+    local _UTILITY_LSS="$DOTFILES_DIR/rc/utils/lss.sh"
+    local _UTILITY_PROMPT="$DOTFILES_DIR/rc/utils/__setprompt.sh"
+    
     [[ -f "$_GLOBAL_BASHRC" ]] && . "$_GLOBAL_BASHRC" 
     [[ -f "$_PRIVATE_BASHRC" ]] && . "$_PRIVATE_BASHRC"
 
     # SOFT DEPENDENCIES
+    [[ -f "$_UTILITY_DEBUG" ]] && . "$_UTILITY_DEBUG"
     [[ -f "$_UTILITY_FFMPEG" ]] && . "$_UTILITY_FFMPEG"
     [[ -f "$_UTILITY_MAX" ]] && . "$_UTILITY_MAX"
 
@@ -113,6 +28,83 @@ _source_bashrc_utils () {
     [[ -f "$_UTILITY_LSS" ]] && . "$_UTILITY_LSS"
     [[ -f "$_UTILITY_PROMPT" ]] && . "$_UTILITY_PROMPT"
 }
+
+hexcat () {
+    [[ -z "$*" ]] && return 2
+    
+    for arg in "$@"; do
+        xxd < "$arg"
+    done
+}
+
+# Get directory size 
+gds () {
+    if [[ -n "$*" ]]; then
+        for arg in "$@"; do
+            du -sh --apparent-size "$arg"
+        done
+    else
+        du -sh --apparent-size .
+    fi
+}
+
+# Highlight (and not filter) text with grep
+highlight () {
+    [[ -z "$*" ]] && return 2
+    
+    grep --color=always -iE "$1|\$"
+}
+
+# Rename
+rn () {
+    [[ -z "$*" ]] && return 2
+    [[ $# -eq 2 ]] || return 2
+    
+    mv -vn "$1" "$2"
+}
+
+# Automatically do an ls after each cd
+cd () {
+	if [[ $# -eq 1 ]]; then
+	    builtin cd "$1"
+	    lss
+	    
+	    return
+    fi
+    
+	builtin cd "$HOME"
+	lss
+}
+
+venv-subshell () {
+    bash --init-file <(echo ". \"$HOME/.bashrc\"; . ./venv/bin/activate")
+}
+
+# journalctl wrapper for ease of use
+_journalctl () {
+    [[ $# -eq 0 ]] && command journalctl -e -n 2000 && return
+    # called with just a service name (-u)
+    [[ $# -eq 1 ]] &&  command journalctl -e -n 5000 -u "$1" && return
+    command journalctl "$@"
+}
+
+# tldr wrapper for ease of use
+_tldr () {
+    [[ $# -eq 0 ]] && (command tldr tldr) | less -R && return    
+    [[ $# -eq 1 ]] && (command tldr "$1") | less -R && return
+    command tldr "$@"
+}
+
+require_bashrc
+PROMPT_COMMAND='__setprompt; history -a'
+
+shopt -s globstar
+shopt -s nullglob
+shopt -s checkwinsize
+shopt -s histappend
+
+bind "set completion-ignore-case on"
+bind "set show-all-if-ambiguous on"
 
 #############################################################
 
@@ -151,8 +143,7 @@ alias flatpak-checkout="flatpak update --commit="
 
 # convenience alias
 alias c="clear"
-alias venv="source venv/bin/activate" # activate venv
-alias vvenv="deactivate"        # exit venv
+alias venv="venv-subshell" # activate venv
 alias cvenv="-m venv venv" # create venv (pythonXX cvenv)
 
 alias restartpipewire="systemctl --user restart pipewire" # restart audio (pipewire)
@@ -166,3 +157,9 @@ alias rm="rm -v"
 alias ccat="bat --theme Dracula"
 alias gedit="gnome-text-editor" # gedit replacement of choice
 alias fuck='sudo $(history -p \!\!)'
+
+# EXPORTS
+export DOTNET_CLI_TELEMETRY_OPTOUT=1
+export HISTFILESIZE=100000
+export HISTSIZE=10000
+export HISTCONTROL=erasedups:ignoredups:ignorespace

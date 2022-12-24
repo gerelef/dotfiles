@@ -153,8 +153,8 @@ unicode_girder () {
         done
         
         ((++column_index))
-        local next_column_width="${sizes[column_index]}"
-        local prev_column_width="${sizes[column_index - 1]}"
+        local next_column_width="${sizes[$column_index-$#]}"
+        local prev_column_width="${sizes[$column_index - 1]}"
         
         # special case, last column, skip the join symbol
         [[ $column_index -eq "${#sizes[@]}" ]] && break
@@ -177,12 +177,9 @@ unicode_girder () {
 lss () {
     # https://linuxhint.com/bash_operator_examples 
     # https://www.ditig.com/256-colors-cheat-sheet
-    local ls_dir="$PWD/"
-    [[ -z "$1" ]] || local ls_dir="$1/"
+    local ls_dir="${1-$PWD}/"
     [[ ! -d "$ls_dir" ]] && echo "Cannot access '$ls_dir': No such file or  directory" && return 2
-    
-    
-    
+
     local git_dir_status_out=""
     if [[ -n "$(git -C "$ls_dir" rev-parse --show-toplevel 2> /dev/null)" ]]; then
         local git_dir_status_out="Working tree clean"
@@ -230,12 +227,13 @@ lss () {
         fi
     done
     
-    # echo $(stat -c "%a" "$ffn") # print octet form permission   
-    local TERM_LINES="$(tput lines)"
-    local TERM_COLS="$(tput cols)"
-    # - 2 spaces for the girder, -2 for padding, + 1 to make it 1 column if it's smaller than the screen size
-    local dcolumns=$(((dcount / (TERM_LINES - 4)) + 1))
-    local fcolumns=$(((fcount / (TERM_LINES - 4)) + 1))
+    # echo $(stat -c "%a" "$ffn") # print octet form permission
+    # - 2 spaces for the girder, -2 for padding
+    local TERM_LINES="$(( $(tput lines) - 4))"
+    local TERM_COLS="$(( $(tput cols) - 2))"
+    # + 1 to make it 1 column if it's smaller than the screen size
+    local dcolumns=$(((dcount / TERM_LINES) + 1))
+    local fcolumns=$(((fcount / TERM_LINES) + 1))
     local di=0
     local fi=0
     local mcount=$(max "$dcount" "$fcount" "$scount")
@@ -254,7 +252,7 @@ lss () {
             local dl="${dirs[$i]}"
             local dl_size="${dirs_s[$i]}"
         fi
-        for ((j=dl_size;j<max_dir_size;++j)); do
+        for ((j=dl_size;j<max_dir_size*dcolumns;++j)); do
             local dl+=' '
         done
         ((++di))
@@ -267,7 +265,7 @@ lss () {
             local fl="${files[$i]}"
             local fl_size="${files_s[$i]}"
         fi
-        for ((j=fl_size;j<max_fn_size;++j)); do
+        for ((j=fl_size;j<max_fn_size*fcolumns;++j)); do
             local fl+=' '
         done
         ((++fi))
