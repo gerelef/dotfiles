@@ -10,8 +10,121 @@ shopt -s globstar
 shopt -s dotglob
 shopt -s nullglob
 
-_unicode_table () {
-    [[ -z "$@" ]] && return
+__BLUE="27m"
+__LIGHT_BLUE="39m"
+__GREEN="34m"
+__PALE_GREEN="42m"
+__MAGENTA="127m"
+__YELLOW="178m"
+__RED="124m"
+__WHITE="15m"
+__BLACK="0m"
+
+__PREFIX="\033["
+__FOREGROUND="38;"
+__BACKGROUND="48;"
+__INFIX="5;"
+__PFI="$__PREFIX$__FOREGROUND$__INFIX"
+__PBI="$__PREFIX$__BACKGROUND$__INFIX"
+
+_NOCOLOUR="\033[0m"
+_FBLUE="$__PFI$__BLUE"
+_BBLUE="$__PBI$__BLUE"
+_FLBLUE="$__PFI$__LIGHT_BLUE"
+_BLBLUE="$__PBI$__LIGHT_BLUE"
+_FGREEN="$__PFI$__GREEN"
+_BGREEN="$__PBI$__GREEN"
+_FPGREEN="$__PFI$__PALE_GREEN"
+_BPGREEN="$__PBI$__PALE_GREEN"
+_FMAGENTA="$__PFI$__MAGENTA"
+_BMAGENTA="$__PBI$__MAGENTA"
+_FYELLOW="$__PFI$__YELLOW"
+_BYELLOW="$__PBI$__YELLOW"
+_BRED="$__PBI$__RED"
+_FWHITE="$__PFI$__WHITE"
+_BWHITE="$__PBI$__WHITE"
+_FBLACK="$__PFI$__BLACK"
+
+__colour_dir () {
+    local ffn="$1"
+    local bfn="$2"
+    
+    local ls_dir_sub=("$ffn/"*)
+    local ls_dir_sub_count=${#ls_dir_sub[@]}
+    
+    local coloured_dir="$_FLBLUE$bfn$_NOCOLOUR"
+    [[ $ls_dir_sub_count -gt 0 ]] && local coloured_dir="$_FBLUE$bfn$_NOCOLOUR"
+    if [[ -h "$ffn" ]]; then
+        local coloured_dir="$_BLBLUE$bfn$_NOCOLOUR"
+        [[ $ls_dir_sub_count -gt 0 ]] && local coloured_dir="$_BBLUE$_FWHITE$bfn$_NOCOLOUR"
+    fi
+    
+    echo "$coloured_dir"
+}
+
+__colour_file () {
+    local ffn="$1"
+    local bfn="$2"
+    
+    local ext="${bfn#*.}"
+    local head=$(head -n 1 "$ffn" 2> /dev/null | tr -d '\0')
+    
+    local coloured_file="$_NOCOLOUR$bfn"
+    [[ -h "$ffn" ]] && local coloured_file="$_BWHITE$_FBLACK$bfn$_NOCOLOUR"
+    if [[ -x "$ffn" ]]; then
+        local coloured_file="$_FGREEN$bfn$_NOCOLOUR"
+        [[ -h "$ffn" ]] && local coloured_file="$_BGREEN$_FWHITE$bfn$_NOCOLOUR"
+    fi
+    
+    case "$head" in
+        "#!/usr/bin/env python"* | \
+        "#!/usr/bin/python"* | \
+        "#!python"*) 
+            local coloured_file="$_FYELLOW$bfn$_NOCOLOUR"
+            [[ -h "$ffn" ]] && local coloured_file="$_BYELLOW$_FWHITE$bfn$_NOCOLOUR"
+            ;;
+        "#!/usr/bin/env bash"* | \
+        "#!/bin/bash"* | \
+        "#!/bin/sh"* | \
+        "#/usr/local/bin/bash"* )
+            local coloured_file="$_FPGREEN$bfn$_NOCOLOUR"
+            [[ -h "$ffn" ]] && local coloured_file="$_BPGREEN$_FWHITE$bfn$_NOCOLOUR"
+            ;;
+    esac
+    
+    case "$ext" in
+        "py" | "pyc" | "pyo" | "pyd" )
+            local coloured_file="$_FYELLOW$bfn$_NOCOLOUR"
+            [[ -h "$ffn" ]] && local coloured_file="$_BYELLOW$_FWHITE$bfn$_NOCOLOUR"
+            ;; 
+        "sh")
+            local coloured_file="$_FPGREEN$bfn$_NOCOLOUR"
+            [[ -h "$ffn" ]] && local coloured_file="$_BPGREEN$_FWHITE$bfn$_NOCOLOUR"
+            ;;
+        "a" | ".ar" | "cpio" | "shar" | \
+        "LBR" | "iso" | "lbr" | "mar" | "sbx" | \
+        "tar" | "bz2" | "gz" | "lz" | "lz4" | \
+        "lzma" | "xz" | "7z" | "zip" | "rar" | \
+        "dmg" | "jar" | "pak" | "tar.gz" | "tgz" | \
+        "tar.Z" | "tar.bz2" | "tbz2" | "tar.lz" | "tlz" | \
+        "tar.xz" | "txz" | "tar.zst" | "xar" | "zipx" )
+            local coloured_file="$_FMAGENTA$bfn$_NOCOLOUR"
+            [[ -h "$ffn" ]] && local coloured_file="$_BMAGENTA$_FWHITE$bfn$_NOCOLOUR"
+            ;;
+    esac
+    
+    echo "$coloured_file"
+}
+
+__colour_symlink () {
+    local ffn="$1"
+    local bfn="$2"
+    
+    echo "$_BRED$_FWHITE$bfn$_NOCOLOUR"
+}
+
+unicode_girder () {
+    [[ -z "$*" ]] && return
     local START_SYMBOL="┌"
     local JOIN_SYMBOL="┬"
     local ROW_SYMBOL="─"
@@ -29,15 +142,34 @@ _unicode_table () {
         local sizes+=( "$arg" )
     done
     
-    local cc=1
+    local column_index=0
+    local prev_column_width=1
     echo -n "$START_SYMBOL"
-    for s in "${sizes[@]}"; do
-        for ((i=0; i<$s; ++i)); do
+    #echo "${sizes[column_index]}"
+    for s in "${sizes[@]}"; do        
+        #echo -en "$prev_column_width $s\t"
+        for ((i=0; i<s; ++i)); do
             echo -n "$ROW_SYMBOL"
         done
         
-        [[ $cc -lt "${#sizes[@]}" ]] && echo -n "$JOIN_SYMBOL"
-        ((++cc))
+        ((++column_index))
+        local next_column_width="${sizes[column_index]}"
+        local prev_column_width="${sizes[column_index - 1]}"
+        
+        # special case, last column, skip the join symbol
+        [[ $column_index -eq "${#sizes[@]}" ]] && break
+        
+        # special case, next column is empty, skip the join symbol
+        [[ "$next_column_width" -eq 0 ]] && continue
+        
+        # special case, previous column is empty, skip the join symbol
+        [[ "$prev_column_width" -eq 0 ]] && continue
+        
+        
+        # special case, current column is empty, skip the join symbol
+        [[ "$s" -eq 0 ]] && continue
+        
+        echo -n "$JOIN_SYMBOL"
     done
     echo "$END_SYMBOL"
 }
@@ -52,51 +184,14 @@ lss () {
         return 2
     fi
     
-    local BLUE="27m"
-    local LIGHT_BLUE="39m"
-    local GREEN="34m"
-    local PALE_GREEN="42m"
-    local MAGENTA="127m"
-    local YELLOW="178m"
-    local RED="124m"
-    local WHITE="15m"
-    local BLACK="0m"
-    
-    local PREFIX="\033["
-    local FOREGROUND="38;"
-    local BACKGROUND="48;"
-    local INFIX="5;"
-	local NOCOLOUR="\033[0m"
-	local PFI="$PREFIX$FOREGROUND$INFIX"
-	local PBI="$PREFIX$BACKGROUND$INFIX"
-	
-	local F_BLUE="$PFI$BLUE"
-	local B_BLUE="$PBI$BLUE"
-	local F_LBLUE="$PFI$LIGHT_BLUE"
-	local B_LBLUE="$PBI$LIGHT_BLUE"
-	local F_GREEN="$PFI$GREEN"
-	local B_GREEN="$PBI$GREEN"
-	local F_PGREEN="$PFI$PALE_GREEN"
-	local B_PGREEN="$PBI$PALE_GREEN"
-	local F_MAGENTA="$PFI$MAGENTA"
-	local B_MAGENTA="$PBI$MAGENTA"
-	local F_YELLOW="$PFI$YELLOW"
-	local B_YELLOW="$PBI$YELLOW"
-	local F_RED="$PFI$RED"
-	local B_RED="$PBI$RED"
-	local F_WHITE="$PFI$WHITE"
-	local B_WHITE="$PBI$WHITE"
-	local F_BLACK="$PFI$BLACK"
-	local B_BLACK="$PBI$BLACK"
-	
-	local TERM_LINES=$(tput lines)
+	  local TERM_LINES=$(tput lines)
     local TERM_COLS=$(tput cols)
     
     local git_dir_status_out=""
     if [[ -n "$(git -C "$ls_dir" rev-parse --show-toplevel 2> /dev/null)" ]]; then
         local git_dir_status=$(git -C "$ls_dir" status -s --ignored=no)
         local git_dir_status_out="Working tree clean"
-        if [[ ! -z "$git_dir_status" ]]; then
+        if [[ -n "$git_dir_status" ]]; then
             local git_dir_status_out="Uncommited changes"
         fi
     fi
@@ -109,89 +204,27 @@ lss () {
     local dcount=0 # directory count
     local fcount=0 # file count
     local scount=0 # broken symlink count
-    
-    local bsym=()
-    local bsym_s=()
+
     local dirs=()
     local dirs_s=()
     local files=()
     local files_s=()
     for ffn in "$ls_dir"*; do
-        local bfn="$(basename -- $ffn)"
+        local bfn=$(basename -- "$ffn")
         
         # DIRECTORY
         if [[ -d "$ffn" ]]; then
             [[ ${#bfn} -gt $max_dir_size ]] && local max_dir_size=${#bfn}
-            
-            local ls_dir_sub=("$ffn/"*)
-            local ls_dir_sub_count=${#ls_dir_sub[@]}
-            
-            local coloured_dir="$F_LBLUE$bfn$NOCOLOUR"
-            [[ $ls_dir_sub_count -gt 0 ]] && local coloured_dir="$F_BLUE$bfn$NOCOLOUR"
-            if [[ -h "$ffn" ]]; then
-                local coloured_dir="$B_LBLUE$bfn$NOCOLOUR"
-                [[ $ls_dir_sub_count -gt 0 ]] && local coloured_dir="$B_BLUE$F_WHITE$bfn$NOCOLOUR"
-            fi
-            
             ((++dcount))
-            dirs+=( "$coloured_dir" )
+            dirs+=( "$(__colour_dir "$ffn" "$bfn" )" )
             dirs_s+=( "${#bfn}" )
         fi
         
         # FILE
         if [[ -f "$ffn" ]]; then
             [[ ${#bfn} -gt $max_fn_size ]] && local max_fn_size=${#bfn}
-            
-            local ext="${bfn#*.}"
-            local head=$(head -n 1 "$ffn" 2> /dev/null | tr -d '\0')
-            
-            local coloured_file="$NOCOLOUR$bfn"
-            [[ -h "$ffn" ]] && local coloured_file="$B_WHITE$F_BLACK$bfn$NOCOLOUR"
-            if [[ -x "$ffn" ]]; then
-                local coloured_file="$F_GREEN$bfn$NOCOLOUR"
-                [[ -h "$ffn" ]] && local coloured_file="$B_GREEN$F_WHITE$bfn$NOCOLOUR"
-            fi
-            
-            case "$head" in
-                "#!/usr/bin/env python"* | \
-                "#!/usr/bin/python"* | \
-                "#!python"*) 
-                    local coloured_file="$F_YELLOW$bfn$NOCOLOUR"
-                    [[ -h "$ffn" ]] && local coloured_file="$B_YELLOW$F_WHITE$bfn$NOCOLOUR"
-                    ;;
-                "#!/usr/bin/env bash"* | \
-                "#!/bin/bash"* | \
-                "#!/bin/sh"* | \
-                "#!/bin/sh -"* | \
-                "#/usr/local/bin/bash"* )
-                    local coloured_file="$F_PGREEN$bfn$NOCOLOUR"
-                    [[ -h "$ffn" ]] && local coloured_file="$B_PGREEN$F_WHITE$bfn$NOCOLOUR"
-                    ;;
-            esac
-            
-            case "$ext" in
-                "py" | "pyc" | "pyo" | "pyd" )
-                    local coloured_file="$F_YELLOW$bfn$NOCOLOUR"
-                    [[ -h "$ffn" ]] && local coloured_file="$B_YELLOW$F_WHITE$bfn$NOCOLOUR"
-                    ;; 
-                "sh")
-                    local coloured_file="$F_PGREEN$bfn$NOCOLOUR"
-                    [[ -h "$ffn" ]] && local coloured_file="$B_PGREEN$F_WHITE$bfn$NOCOLOUR"
-                    ;;
-                "a" | ".ar" | "cpio" | "shar" | \
-                "LBR" | "iso" | "lbr" | "mar" | "sbx" | \
-                "tar" | "bz2" | "gz" | "lz" | "lz4" | \
-                "lzma" | "xz" | "7z" | "zip" | "rar" | \
-                "dmg" | "jar" | "pak" | "tar.gz" | "tgz" | \
-                "tar.Z" | "tar.bz2" | "tbz2" | "tar.lz" | "tlz" | \
-                "tar.xz" | "txz" | "tar.zst" | "xar" | "zipx" )
-                    local coloured_file="$F_MAGENTA$bfn$NOCOLOUR" 
-                    [[ -h "$ffn" ]] && local coloured_file="$B_MAGENTA$F_WHITE$bfn$NOCOLOUR"
-                    ;;
-            esac
-            
             ((++fcount))
-            files+=( "$coloured_file" )
+            files+=( $(__colour_file "$ffn" "$bfn" ) )
             files_s+=( "${#bfn}" )
         fi 
         
@@ -200,19 +233,24 @@ lss () {
             [[ ${#bfn} -gt $max_sym_size ]] && local max_sym_size=${#bfn}
             
             ((++scount))
-            files+=( "$B_RED$F_WHITE$bfn$NOCOLOUR" )
+            files+=( $(__colour_symlink "$ffn" "$bfn" ) )
             files_s+=( "${#bfn}" )
         fi
     done
     
-    local dcolumns=$((($dcount / $TERM_LINES) + 1))
-    local fcolumns=$((($fcount / $TERM_LINES) + 1))
+    # - 2 spaces for the girder, -2 for padding, + 1 to make it 1 column if it's smaller than the screen size
+    local dcolumns=$(((dcount / (TERM_LINES - 4)) + 1))
+    local fcolumns=$(((fcount / (TERM_LINES - 4)) + 1))
     local di=0
     local fi=0
-    local mcount=$(max $dcount $fcount $scount)
-    echo "$dcount directories, $fcount files. $git_dir_status_out$(_git-branch $ls_dir)"
-    _unicode_table --top $(( $max_dir_size * $dcolumns )) $(( $max_fn_size * $fcolumns ))
-    for ((i=0;i<$mcount;++i)); do
+    local mcount=$(max "$dcount" "$fcount" "$scount")
+    echo "$dcount directories, $fcount files. $git_dir_status_out$(_git-branch "$ls_dir")"
+    
+    # if the directory is completely empty, stop
+    [[ "$dcount" -eq 0 ]] && [[ "$fcount" -eq 0 ]] && return 0
+    
+    unicode_girder --top $(( max_dir_size * dcolumns )) $(( max_fn_size * fcolumns ))
+    for ((i=0;i<mcount;++i)); do
         # pad dir name
         local dl=""
         local dl_size=0
@@ -221,8 +259,7 @@ lss () {
             local dl="${dirs[$i]}"
             local dl_size="${dirs_s[$i]}"
         fi
-        
-        for ((j=$dl_size;j<$max_dir_size;++j)); do 
+        for ((j=dl_size;j<max_dir_size;++j)); do
             local dl+=' '
         done
         ((++di))
@@ -230,21 +267,20 @@ lss () {
         # pad file name
         local fl=""
         local fl_size=0
-        if [[ fi -lt fcount ]]; then
+        # if we're still in range...
+        if [[ $fi -lt fcount ]]; then
             local fl="${files[$i]}"
             local fl_size="${files_s[$i]}"
         fi
-        for ((j=$fl_size;j<$max_fn_size;++j)); do 
+        for ((j=fl_size;j<max_fn_size;++j)); do
             local fl+=' '
         done
         ((++fi))
-        
-        echo -n "│"
-        [[ ! $dcount -eq 0 ]] && echo -en "$dl"
+        [[ ! $dcount -eq 0 ]] && echo -en "│$dl"
         [[ ! $fcount -eq 0 ]] && echo -en "│$fl"
-        echo "│"
+        [[ ! $fcount -eq 0 ]] || [[ ! $dcount -eq 0 ]] && echo "│" 
     done
-    _unicode_table --bot $(( $max_dir_size * $dcolumns )) $(( $max_fn_size * $fcolumns ))
+    unicode_girder --bot $(( max_dir_size * dcolumns )) $(( max_fn_size * fcolumns ))
 }
 
 export -f lss
