@@ -1,6 +1,13 @@
 # AUTHOR NOTE:
-#  Treat this tutorial like you would PEP8. Read in detail.
+#  Treat these tutorials like you would PEP8. Read in detail.
 #   https://github.com/bahamas10/bash-style-guide#bashisms
+#   https://github.com/anordal/shellharden/blob/master/how_to_do_things_safely_in_bash.md
+
+# EXPORTS
+export DOTNET_CLI_TELEMETRY_OPTOUT=1
+export HISTFILESIZE=100000
+export HISTSIZE=10000
+export HISTCONTROL=erasedups:ignoredups:ignorespace
 
 #############################################################
 
@@ -12,7 +19,7 @@ require_bashrc () {
     local DOTFILES_DIR="$HOME/dotfiles"
     local _UTILITY_DEBUG="$DOTFILES_DIR/rc/utils/debug.sh"
     local _UTILITY_FFMPEG="$DOTFILES_DIR/rc/utils/ffmpeg.sh"
-    local _UTILITY_MAX="$DOTFILES_DIR/rc/utils/math.sh"
+    local _UTILITY_MATH="$DOTFILES_DIR/rc/utils/math.sh"
     local _UTILITY_LSS="$DOTFILES_DIR/rc/utils/lss.sh"
     local _UTILITY_PROMPT="$DOTFILES_DIR/rc/utils/__setprompt.sh"
     
@@ -22,7 +29,7 @@ require_bashrc () {
     # SOFT DEPENDENCIES
     [[ -f "$_UTILITY_DEBUG" ]] && . "$_UTILITY_DEBUG"
     [[ -f "$_UTILITY_FFMPEG" ]] && . "$_UTILITY_FFMPEG"
-    [[ -f "$_UTILITY_MAX" ]] && . "$_UTILITY_MAX"
+    [[ -f "$_UTILITY_MATH" ]] && . "$_UTILITY_MATH"
 
     # HARD DEPENDENCIES
     [[ -f "$_UTILITY_LSS" ]] && . "$_UTILITY_LSS"
@@ -162,9 +169,3 @@ alias rm="rm -v"
 alias ccat="bat --theme Dracula"
 alias gedit="gnome-text-editor" # gedit replacement of choice
 alias fuck='sudo $(history -p \!\!)'
-
-# EXPORTS
-export DOTNET_CLI_TELEMETRY_OPTOUT=1
-export HISTFILESIZE=100000
-export HISTSIZE=10000
-export HISTCONTROL=erasedups:ignoredups:ignorespace

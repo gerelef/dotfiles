@@ -69,7 +69,7 @@ __colour_file () {
     local ext="${bfn#*.}"
     local head=$(head -n 1 "$ffn" 2> /dev/null | tr -d '\0')
     
-    local coloured_file="$_NOCOLOUR$bfn"
+    local coloured_file="$bfn"
     [[ -h "$ffn" ]] && local coloured_file="$_BWHITE$_FBLACK$bfn$_NOCOLOUR"
     if [[ -x "$ffn" ]]; then
         local coloured_file="$_FGREEN$bfn$_NOCOLOUR"
@@ -123,7 +123,7 @@ __colour_symlink () {
     echo "$_BRED$_FWHITE$bfn$_NOCOLOUR"
 }
 
-unicode_girder () {
+__unicode_girder () {
     [[ -z "$*" ]] && return
     local START_SYMBOL="┌"
     local JOIN_SYMBOL="┬"
@@ -142,29 +142,30 @@ unicode_girder () {
         local sizes+=( "$arg" )
     done
     
+    local TERM_COLS="$(( $(tput cols) - 2))"
+    local cursor_index=0
     local column_index=0
     local prev_column_width=1
     echo -n "$START_SYMBOL"
-    #echo "${sizes[column_index]}"
     for s in "${sizes[@]}"; do        
-        #echo -en "$prev_column_width $s\t"
         for ((i=0; i<s; ++i)); do
             echo -n "$ROW_SYMBOL"
+            ((++cursor_index))
+            [[ $cursor_index -eq $TERM_COLS ]] && echo "" && return
         done
         
+        local next_column_width="${sizes[column_index + 1]-0}"
+        local prev_column_width="${sizes[column_index]}"
         ((++column_index))
-        local next_column_width="${sizes[$column_index-$#]}"
-        local prev_column_width="${sizes[$column_index - 1]}"
         
         # special case, last column, skip the join symbol
         [[ $column_index -eq "${#sizes[@]}" ]] && break
         
-        # special case, next column is empty, skip the join symbol
-        [[ "$next_column_width" -eq 0 ]] && continue
-        
         # special case, previous column is empty, skip the join symbol
         [[ "$prev_column_width" -eq 0 ]] && continue
         
+        # special case, next column is empty, skip the join symbol
+        [[ "$next_column_width" -eq 0 ]] && continue
         
         # special case, current column is empty, skip the join symbol
         [[ "$s" -eq 0 ]] && continue
@@ -186,18 +187,14 @@ lss () {
         [[ -n "$(git -C "$ls_dir" status -s --ignored=no)" ]] && local git_dir_status_out="Uncommited changes"
     fi
 
-    local max_dir_size=0
-    local max_fn_size=0
-    local max_sym_size=0
-    
+    local max_dir_size=0 # max dir name length
+    local max_fn_size=0 # max file name length
     local dcount=0 # directory count
     local fcount=0 # file count
-    local scount=0 # broken symlink count
-
     local dirs=()
-    local dirs_s=()
+    local dirs_s=() # dir name sizes (before applying colours)
     local files=()
-    local files_s=()
+    local files_s=() # file name sizes (before applying colours)
     for ffn in "$ls_dir"*; do
         local bfn=$(basename -- "$ffn")
         
@@ -219,9 +216,8 @@ lss () {
         
         # SYMLINK (BROKEN)
         if [[ ! -e "$ffn" ]] && [[ -h "$ffn" ]]; then
-            [[ ${#bfn} -gt $max_sym_size ]] && local max_sym_size=${#bfn}
-            
-            ((++scount))
+            [[ ${#bfn} -gt $max_fn_size ]] && local max_fn_size=${#bfn}
+            ((++fcount))
             files+=( $(__colour_symlink "$ffn" "$bfn" ) )
             files_s+=( "${#bfn}" )
         fi
@@ -230,50 +226,65 @@ lss () {
     # echo $(stat -c "%a" "$ffn") # print octet form permission
     # - 2 spaces for the girder, -2 for padding
     local TERM_LINES="$(( $(tput lines) - 4))"
-    local TERM_COLS="$(( $(tput cols) - 2))"
+    local TERM_COLS="$(( $(tput cols)))"
     # + 1 to make it 1 column if it's smaller than the screen size
     local dcolumns=$(((dcount / TERM_LINES) + 1))
     local fcolumns=$(((fcount / TERM_LINES) + 1))
+    local drows=$(((dcount / dcolumns))) # if we have two columns, dirs are going to be split evenly etc.
+    local frows=$(((fcount / dcolumns)))
     local di=0
     local fi=0
-    local mcount=$(max "$dcount" "$fcount" "$scount")
+    local mcount=$(max "$drows" "$frows") 
+    # if TERM_LINES is the minimum of the two, that means we have multiple columns in either side;
+    #  meaning, that's the size to output regarding rows
+    local mcount=$(min "$TERM_LINES" "$mcount") 
     echo "$dcount directories, $fcount files. $git_dir_status_out$(_git-branch "$ls_dir")"
     
     # if the directory is completely empty, stop
     [[ "$dcount" -eq 0 ]] && [[ "$fcount" -eq 0 ]] && return 0
     
-    unicode_girder --top $(( max_dir_size * dcolumns )) $(( max_fn_size * fcolumns ))
+    __unicode_girder --top $(( max_dir_size * dcolumns )) $(( max_fn_size * fcolumns ))
     for ((i=0;i<mcount;++i)); do
         # pad dir name
         local dl=""
         local dl_size=0
-        #if we're still in range...
-        if [[ di -lt dcount ]]; then
-            local dl="${dirs[$i]}"
-            local dl_size="${dirs_s[$i]}"
-        fi
-        for ((j=dl_size;j<max_dir_size*dcolumns;++j)); do
-            local dl+=' '
+        local dl_size_overhead=0
+        for ((k=0;k<dcolumns;++k)); do
+            #if we're still in range...
+            if [[ di -lt dcount ]]; then
+                local dl+="${dirs[$di]}"
+                local dl_size="${dirs_s[$di]}"
+                local dl_size_overhead=$(( ${#dirs[$di]} - dl_size + dl_size_overhead))
+            fi
+            for ((j=dl_size;j<max_dir_size;++j)); do
+                local dl+=' '
+            done
+            ((++di))
         done
-        ((++di))
-        
         # pad file name
         local fl=""
         local fl_size=0
-        # if we're still in range...
-        if [[ $fi -lt fcount ]]; then
-            local fl="${files[$i]}"
-            local fl_size="${files_s[$i]}"
-        fi
-        for ((j=fl_size;j<max_fn_size*fcolumns;++j)); do
-            local fl+=' '
+        local fl_size_overhead=0
+        for ((k=0;k<fcolumns;++k)); do
+            # if we're still in range...
+            if [[ $fi -lt fcount ]]; then
+                local fl+="${files[$fi]}"
+                local fl_size="${files_s[$fi]}"
+                local fl_size_overhead=$(( ${#files[$fi]} - fl_size + fl_size_overhead ))
+            fi
+            for ((j=fl_size;j<max_fn_size;++j)); do
+                local fl+=' '
+            done
+            ((++fi))
         done
-        ((++fi))
-        [[ ! $dcount -eq 0 ]] && echo -en "│$dl"
-        [[ ! $fcount -eq 0 ]] && echo -en "│$fl"
-        [[ ! $fcount -eq 0 ]] || [[ ! $dcount -eq 0 ]] && echo "│" 
+        local term_cols_with_overhead=$(( dl_size_overhead + fl_size_overhead + TERM_COLS ))
+        local line_out=""
+        [[ ! $dcount -eq 0 ]] && line_out+="│$dl"
+        [[ ! $fcount -eq 0 ]] && line_out+="│$fl"
+        [[ ! $fcount -eq 0 ]] || [[ ! $dcount -eq 0 ]] && line_out+="│"
+        echo -e "${line_out:0:$term_cols_with_overhead}$_NOCOLOUR"
     done
-    unicode_girder --bot $(( max_dir_size * dcolumns )) $(( max_fn_size * fcolumns ))
+    __unicode_girder --bot $(( max_dir_size * dcolumns )) $(( max_fn_size * fcolumns ))
 }
 
 export -f lss

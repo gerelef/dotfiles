@@ -23,5 +23,11 @@ min () {
     echo "$m"
 }
 
+is-odd () {
+    [[ -z "$*" ]] && return 2
+    
+    return $(("$1" % 2))
+}
+
 export -f max
 export -f min
