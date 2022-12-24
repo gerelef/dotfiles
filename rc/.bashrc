@@ -65,6 +65,10 @@ rn () {
 
 # Automatically do an ls after each cd
 cd () {
+    # if superfluous arguments...
+    [[ $# -gt 1 ]] && return 2 
+    
+    # if argument given, cd there
 	if [[ $# -eq 1 ]]; then
 	    builtin cd "$1"
 	    lss
@@ -72,6 +76,7 @@ cd () {
 	    return
     fi
     
+    # otherwise go to $HOME
 	builtin cd "$HOME"
 	lss
 }
