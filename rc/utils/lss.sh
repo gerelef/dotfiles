@@ -46,6 +46,8 @@ _BWHITE="$__PBI$__WHITE"
 _FBLACK="$__PFI$__BLACK"
 
 __colour_dir () {
+    [[ -z "$*" ]] && return 2 
+    
     local ffn="$1"
     local bfn="$2"
     
@@ -63,6 +65,8 @@ __colour_dir () {
 }
 
 __colour_file () {
+    [[ -z "$*" ]] && return 2 
+    
     local ffn="$1"
     local bfn="$2"
     
@@ -117,6 +121,8 @@ __colour_file () {
 }
 
 __colour_symlink () {
+    [[ -z "$*" ]] && return 2
+    
     local ffn="$1"
     local bfn="$2"
     
@@ -124,7 +130,8 @@ __colour_symlink () {
 }
 
 __unicode_girder () {
-    [[ -z "$*" ]] && return
+    [[ -z "$*" ]] && return 2 
+    
     local START_SYMBOL="┌"
     local JOIN_SYMBOL="┬"
     local ROW_SYMBOL="─"
@@ -175,6 +182,24 @@ __unicode_girder () {
     echo "$END_SYMBOL"
 }
 
+__padded_echo () {
+    [[ -z "$*" ]] && return 2 
+    [[ "$#" -ne 3 ]] && return 2
+    # $1 name
+    # $2 current size
+    # $3 size to pad to
+    
+    local name="$1"
+    local size="$2"
+    local max_size="$3"
+    
+    for ((i=size;i<max_size;++i)); do
+        local name+=' '
+    done
+    
+    echo "$name"
+}
+
 lss () {
     # https://linuxhint.com/bash_operator_examples 
     # https://www.ditig.com/256-colors-cheat-sheet
@@ -210,7 +235,7 @@ lss () {
         if [[ -f "$ffn" ]]; then
             [[ ${#bfn} -gt $max_fn_size ]] && local max_fn_size=${#bfn}
             ((++fcount))
-            files+=( $(__colour_file "$ffn" "$bfn" ) )
+            files+=( "$(__colour_file "$ffn" "$bfn" )" )
             files_s+=( "${#bfn}" )
         fi 
         
@@ -218,20 +243,27 @@ lss () {
         if [[ ! -e "$ffn" ]] && [[ -h "$ffn" ]]; then
             [[ ${#bfn} -gt $max_fn_size ]] && local max_fn_size=${#bfn}
             ((++fcount))
-            files+=( $(__colour_symlink "$ffn" "$bfn" ) )
+            files+=( "$(__colour_symlink "$ffn" "$bfn" )" )
             files_s+=( "${#bfn}" )
         fi
     done
     
     # echo $(stat -c "%a" "$ffn") # print octet form permission
-    # - 2 spaces for the girder, -2 for padding
-    local TERM_LINES="$(( $(tput lines) - 4))"
+    # - 2 spaces for the girder, -2 for padding, -1 for the "N dirs N files" line
+    local TERM_LINES="$(( $(tput lines) - 5))"
     local TERM_COLS="$(( $(tput cols)))"
     # + 1 to make it 1 column if it's smaller than the screen size
-    local dcolumns=$(((dcount / TERM_LINES) + 1))
-    local fcolumns=$(((fcount / TERM_LINES) + 1))
-    local drows=$(((dcount / dcolumns))) # if we have two columns, dirs are going to be split evenly etc.
-    local frows=$(((fcount / dcolumns)))
+    local dcolumns=$(( (dcount / TERM_LINES) + 1))
+    local fcolumns=$(( (fcount / TERM_LINES) + 1))
+    local drows=$((dcount / dcolumns)) # if we have two columns, dirs are going to be split evenly, etc...
+    local frows=$((fcount / fcolumns))
+    
+    # if the number of columns do not evenly fit the number of directories, add one
+    [[ "$(is-factor "$dcolumns" "$dcount")" -ne 0 ]] && local drows=$((drows + 1)) 
+    
+    # if the number of columns do not evenly fit the number of directories, add one
+    [[ "$(is-factor "$fcolumns" "$fcount")" -ne 0 ]] && local frows+=$((frows + 1))
+    
     local di=0
     local fi=0
     local mcount=$(max "$drows" "$frows") 
@@ -243,48 +275,47 @@ lss () {
     # if the directory is completely empty, stop
     [[ "$dcount" -eq 0 ]] && [[ "$fcount" -eq 0 ]] && return 0
     
-    __unicode_girder --top $(( max_dir_size * dcolumns )) $(( max_fn_size * fcolumns ))
+    __unicode_girder --top "$(( max_dir_size * dcolumns ))" "$(( max_fn_size * fcolumns ))"
     for ((i=0;i<mcount;++i)); do
-        # pad dir name
+        # create & pad dir name
         local dl=""
-        local dl_size=0
         local dl_size_overhead=0
         for ((k=0;k<dcolumns;++k)); do
             #if we're still in range...
-            if [[ di -lt dcount ]]; then
-                local dl+="${dirs[$di]}"
-                local dl_size="${dirs_s[$di]}"
-                local dl_size_overhead=$(( ${#dirs[$di]} - dl_size + dl_size_overhead))
+            if [[ "$di" -lt "$dcount" ]]; then
+                local dl+="$(__padded_echo "${dirs[$di]}" "${dirs_s[$di]}" "$max_dir_size" )"
+                local dl_size_overhead="$(( ${#dirs[$di]} - ${dirs_s[$di]} + dl_size_overhead))"
+                ((++di))
+            else
+                local dl+="$(__padded_echo '' 0 "$max_dir_size")"
             fi
-            for ((j=dl_size;j<max_dir_size;++j)); do
-                local dl+=' '
-            done
-            ((++di))
+            
         done
-        # pad file name
+        
+        # create & pad file name
         local fl=""
-        local fl_size=0
         local fl_size_overhead=0
         for ((k=0;k<fcolumns;++k)); do
             # if we're still in range...
-            if [[ $fi -lt fcount ]]; then
-                local fl+="${files[$fi]}"
-                local fl_size="${files_s[$fi]}"
-                local fl_size_overhead=$(( ${#files[$fi]} - fl_size + fl_size_overhead ))
+            if [[ "$fi" -lt "$fcount" ]]; then
+                local fl+="$(__padded_echo "${files[$fi]}" "${files_s[$fi]}" "$max_fn_size" )"
+                local fl_size_overhead="$(( ${#files[$fi]} - ${files_s[$fi]} + fl_size_overhead ))"
+                ((++fi))
+            else 
+                # pad with empty string
+                local fl+="$(__padded_echo '' 0 "$max_fn_size" )"
             fi
-            for ((j=fl_size;j<max_fn_size;++j)); do
-                local fl+=' '
-            done
-            ((++fi))
         done
-        local term_cols_with_overhead=$(( dl_size_overhead + fl_size_overhead + TERM_COLS ))
+        
         local line_out=""
-        [[ ! $dcount -eq 0 ]] && line_out+="│$dl"
-        [[ ! $fcount -eq 0 ]] && line_out+="│$fl"
-        [[ ! $fcount -eq 0 ]] || [[ ! $dcount -eq 0 ]] && line_out+="│"
+        [[ ! "$dcount" -eq 0 ]] && line_out+="│$dl"
+        [[ ! "$fcount" -eq 0 ]] && line_out+="│$fl"
+        [[ ! "$fcount" -eq 0 ]] || [[ ! "$dcount" -eq 0 ]] && line_out+="│"
+        
+        local term_cols_with_overhead="$(( dl_size_overhead + fl_size_overhead + TERM_COLS ))"
         echo -e "${line_out:0:$term_cols_with_overhead}$_NOCOLOUR"
     done
-    __unicode_girder --bot $(( max_dir_size * dcolumns )) $(( max_fn_size * fcolumns ))
+    __unicode_girder --bot "$(( max_dir_size * dcolumns ))" "$(( max_fn_size * fcolumns ))"
 }
 
 export -f lss
