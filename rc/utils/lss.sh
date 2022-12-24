@@ -179,28 +179,20 @@ lss () {
     # https://www.ditig.com/256-colors-cheat-sheet
     local ls_dir="$PWD/"
     [[ -z "$1" ]] || local ls_dir="$1/"
-    if [[ ! -d "$ls_dir" ]]; then
-        echo "Cannot access '$ls_dir': No such file or  directory"
-        return 2
-    fi
+    [[ ! -d "$ls_dir" ]] && echo "Cannot access '$ls_dir': No such file or  directory" && return 2
     
-	  local TERM_LINES=$(tput lines)
-    local TERM_COLS=$(tput cols)
+    
     
     local git_dir_status_out=""
     if [[ -n "$(git -C "$ls_dir" rev-parse --show-toplevel 2> /dev/null)" ]]; then
-        local git_dir_status=$(git -C "$ls_dir" status -s --ignored=no)
         local git_dir_status_out="Working tree clean"
-        if [[ -n "$git_dir_status" ]]; then
-            local git_dir_status_out="Uncommited changes"
-        fi
+        [[ -n "$(git -C "$ls_dir" status -s --ignored=no)" ]] && local git_dir_status_out="Uncommited changes"
     fi
 
     local max_dir_size=0
     local max_fn_size=0
     local max_sym_size=0
     
-    # echo $(stat -c "%a" "$ffn") # print octet form permission    
     local dcount=0 # directory count
     local fcount=0 # file count
     local scount=0 # broken symlink count
@@ -238,6 +230,9 @@ lss () {
         fi
     done
     
+    # echo $(stat -c "%a" "$ffn") # print octet form permission   
+    local TERM_LINES="$(tput lines)"
+    local TERM_COLS="$(tput cols)"
     # - 2 spaces for the girder, -2 for padding, + 1 to make it 1 column if it's smaller than the screen size
     local dcolumns=$(((dcount / (TERM_LINES - 4)) + 1))
     local fcolumns=$(((fcount / (TERM_LINES - 4)) + 1))
