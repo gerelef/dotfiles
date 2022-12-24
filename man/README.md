@@ -5,6 +5,9 @@ export MANPATH="$MANPATH:$DOTFILES_DIR/man"
 ```
 Where `$DOTFILES_DIR` is a bash variable pointing to the root dotfile directory.
 Manpages are generated using `ronn-format` provided by the `rubygem-ronn-ng` under `Fedora 36`.
+Further reading:
+- [man ronn](https://rtomayko.github.io/ronn/ronn.1.html)
+- [man ronn-format](https://rtomayko.github.io/ronn/ronn-format.7.html)
 
 Categories are as follows (as per this [manual](https://tldp.org/HOWTO/Man-Page/q2.html)):
 1) User commands that may be started by everyone.[^1]
