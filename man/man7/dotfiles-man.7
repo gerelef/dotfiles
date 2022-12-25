@@ -1,0 +1,23 @@
+.\" generated with Ronn-NG/v0.9.1
+.\" http://github.com/apjanke/ronn-ng/tree/0.9.1
+.TH "DOTFILES\-MAN" "7" "December 2022" ""
+.SH "NAME"
+\fBdotfiles\-man\fR \- manpages
+.SH "SYNOPSIS"
+Manual pages, authored in \fBMarkdown\fR, converted to manpages through \fBronn\fR\. They describe things that I need to look once in a time, and some information outsiders might find useful as well\. Please note that these won\'t be as up\-to\-date as looking to the code/config file directly, because of time & will restraints\.
+.SH "USAGE"
+Set like this in your \fB\.bashrc\fR: \fBsh export MANPATH="$MANPATH:$DOTFILES_DIR/man"\fR Where \fB$DOTFILES_DIR\fR is a bash variable pointing to the root dotfile directory\. Manpages are generated using \fBronn\-format\fR provided by the \fBrubygem\-ronn\-ng\fR under \fBFedora 36\fR\. Further reading: \- man ronn \fIhttps://rtomayko\.github\.io/ronn/ronn\.1\.html\fR \- man ronn\-format \fIhttps://rtomayko\.github\.io/ronn/ronn\-format\.7\.html\fR
+.SH "CATEGORIES"
+Categories are as follows (as per this manual \fIhttps://tldp\.org/HOWTO/Man\-Page/q2\.html\fR): 1) User commands that may be started by everyone\.^(\fI1\fR) 2) System calls, that is, functions provided by the kernel\. 3) Subroutines, that is, library functions\. 4) Devices, that is, special files in the /dev directory\. 5) File format descriptions, e\.g\. /etc/passwd\. 6) Games, self\-explanatory\. 7) Miscellaneous, e\.g\. macro packages, conventions\.^(\fI2\fR) 8) System administration tools that only root can execute\. 9) Another (Linux specific) place for kernel routine documentation\.
+.SH "AUTHOR"
+github \fIgithub\.com/gerelef/\fR
+.SH "SECURITY CONSIDERATIONS"
+I try to keep up to the latest security practices, however I do not hold these practices religiously, nor should you\. Some configuration files take security more seriously than others, and some do not take it into consideration at all\.
+.SH "SEE ALSO"
+dotfiles\-csgorc(7), dotfiles\-firefox(7), dotfiles(7), dotfiles\-rc(7)
+.IP "1." 4
+In this case, \fBman1\fR explains all \fBexported functions\fR provided by any bash file\.\~\fI↩\fR
+.IP "2." 4
+In this case, \fBman7\fR explains the dotfile directory structure\.\~\fI↩\fR
+.IP "" 0
+
