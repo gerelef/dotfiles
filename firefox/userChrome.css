@@ -1,24 +1,29 @@
-/* Option 2 */
 #TabsToolbar {
     visibility: collapse;
 }
 
 #sidebar-box {
-    max-width: none !important;
+    max-width: 306px !important;
     min-width: 306px !important;
 }
 
 #sidebar-splitter {
-    width: 1px !important;
+    width: 0px !important;
 }
 
 #sidebar-header {
     visibility: collapse !important;
 }
 
-/* TST Styling */
-@media (max-width: 1000px) {
-    #sidebar-box[sidebarcommand="treestyletab_piro_sakura_ne_jp-sidebar-action"] {
+@media (max-width: 900px) {
+    #sidebar-box {
+        max-width: 102px !important;
+        min-width: 102px !important;
+    }
+}
+
+@media (max-width: 700px) {
+    #sidebar-box {
         visibility: collapse;
     }
     
