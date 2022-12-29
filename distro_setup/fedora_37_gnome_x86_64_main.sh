@@ -9,7 +9,7 @@ dnf-install () (
     
     echo "-------------------DNF-INSTALL---------------- $*" | tr " " "\n"
     while : ; do
-        dnf install -y $@ && break
+        dnf install -y --best --allowerasing $@ && break
     done
     echo "Finished installing."
 )
