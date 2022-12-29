@@ -284,8 +284,9 @@ dnf-remove "$UNINSTALLABLE_BLOAT"
 dnf-install "$INSTALLABLE_PACKAGES"
 dnf-install "$INSTALLABLE_CODECS"
 dnf-install "$INSTALLABLE_BASHRC_DEPENDENCIES"
-while : ; do
-    dnf group upgrade -y --with-optional Multimedia || break
+dnf-install-group "Multimedia"
+while : ; do 
+    dnf group upgrade -y --with-optional Multimedia && break
 done
 
 case "btrfs" in
