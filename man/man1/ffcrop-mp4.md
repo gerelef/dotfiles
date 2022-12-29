@@ -1,12 +1,12 @@
-ffscale-mp4(1) -- scale mp4 video to resolution
+ffcrop-mp4(1) -- crop mp4 video sections from clip 
 ===========================================================
 
 ## RETURN VALUES
 2 on `Not enough, too few or too many arguments`
 
 ## SYNTAX
-Please note that width x height should not contain spaces.
-`ffscale-mp4 <path/to/file> <width x height>`
+Please note that both starting & ending width/height should not contain spaces.
+`ffscale-mp4 <path/to/file> <starting width x starting height> <ending width x ending height>`
 
 ## AUTHOR
 [github](github.com/gerelef/)
