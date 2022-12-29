@@ -23,6 +23,7 @@ require_bashrc () {
 
     local _UTILITY_DEBUG="$DOTFILES_DIR/rc/utils/debug.sh"
     local _UTILITY_FFMPEG="$DOTFILES_DIR/rc/utils/ffmpeg.sh"
+    local _UTILITY_YTDL="$DOTFILES_DIR/rc/utils/ytdl.sh"
     local _UTILITY_MATH="$DOTFILES_DIR/rc/utils/math.sh"
     local _UTILITY_LSS="$DOTFILES_DIR/rc/utils/lss.sh"
     local _UTILITY_PROMPT="$DOTFILES_DIR/rc/utils/__setprompt.sh"
@@ -33,6 +34,7 @@ require_bashrc () {
     # SOFT DEPENDENCIES
     [[ -f "$_UTILITY_DEBUG" ]] && . "$_UTILITY_DEBUG"
     [[ -f "$_UTILITY_FFMPEG" ]] && . "$_UTILITY_FFMPEG"
+    [[ -f "$_UTILITY_YTDL" ]] && . "$_UTILITY_YTDL"
     [[ -f "$_UTILITY_MATH" ]] && . "$_UTILITY_MATH"
 
     # HARD DEPENDENCIES

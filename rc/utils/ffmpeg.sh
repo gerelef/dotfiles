@@ -5,6 +5,16 @@ __hms () {
     echo "$1" | awk -F: '{ print ($1 * 60) + $2 }';
 }
 
+# convert (X,Y) coords with X delimiter instead of comma to ffmpeg format
+__xy_to_ffilter_coords () {
+    echo "$1" | awk -Fx '{ print $1":"$2 }';
+}
+
+# convert (X1,Y1) (X2,Y2) coords with X delimiter instead of comma to ffmpeg format (X2-X1,Y2-Y1)
+__xy_rp_to_ffilter_coords () {
+    echo "$@" | awk -F'[x ]' '{ print $3-$1":"$4-$2 }';
+}
+
 # ffmpeg concatenate multiple video files into one
 #  INPUTS: files >= 2
 ffconcat-video () {
@@ -63,6 +73,17 @@ ffextract-video-mp4 () {
     done
 }
 
+# ffmpeg crop section of a clip
+ffcrop-mp4 () {
+    [[ -z "$*" ]] && return 2
+    [[ "$#" -ne 3 ]] && return 2
+    # $1 input
+    # $2 starting position (starting from (0,0) on top left)
+    # $3 ending position (starting from (0,0) on top left)
+    local output=${1%.*}
+    ffmpeg -i "$1" -filter:v "crop=$(__xy_rp_to_ffilter_coords "$2" "$3"):$(__xy_to_ffilter_coords "$2")" "$output-cropped.mp4"
+}
+
 # ffmpeg scale video file to selected resolution
 ffscale-mp4 () {
     [[ -z "$*" ]] && return 2
@@ -70,7 +91,7 @@ ffscale-mp4 () {
     # $1 input
     # $2 width:height
     local output=${1%.*}
-    ffmpeg -i "$1" -vf scale="$2" -vcodec libx265 -crf 22 -vsync cfr -r 60 "$output-scaled.mp4"
+    ffmpeg -i "$1" -vf scale="$(__xy_to_ffilter_coords "$2")" -vcodec libx265 -crf 22 -vsync cfr -r 60 "$output-scaled.mp4"
 }
 
 # ffmpeg trim mp3 from start to end
@@ -121,6 +142,7 @@ export -f ffcompress-mp3
 export -f fftrim-mp4
 export -f fftrim-mp3
 export -f ffscale-mp4
+export -f ffcrop-mp4
 export -f ffextract-video-mp4
 export -f ffextract-audio-mp3
 export -f ffconvert-mp4

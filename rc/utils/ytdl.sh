@@ -9,7 +9,7 @@ ytdl-mp3 () {
 
 # yt-dlp download to mp4
 ytdl-mp4 () {
-    [[ -z "$*" ]] && return 2 
+    [[ -z "$*" ]] && return 2
     
     yt-dlp --format "bv*[ext=mp4]+ba[ext=m4a]/b[ext=mp4]" "$@"
 }
