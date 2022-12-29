@@ -284,10 +284,7 @@ dnf-remove "$UNINSTALLABLE_BLOAT"
 dnf-install "$INSTALLABLE_PACKAGES"
 dnf-install "$INSTALLABLE_CODECS"
 dnf-install "$INSTALLABLE_BASHRC_DEPENDENCIES"
-dnf-install-group "Multimedia"
-while : ; do 
-    dnf group upgrade -y --with-optional Multimedia && break
-done
+dnf-install-group "--with-optional Multimedia"
 
 case "btrfs" in
     "$ROOT_FS" | "$REAL_USER_HOME_FS" |  "$SCRIPT_DIR_FS")
