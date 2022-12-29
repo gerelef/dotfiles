@@ -1,14 +1,14 @@
 #!/usr/bin/env bash
 
-# convert Hours:Minutes:Seconds (colon seperated) to seconds 
-hms () {
-    echo "$1" | awk -F: '{ print ($1 * 3600) + ($2 * 60) + $3 }';
+# convert Hours:Minutes:Seconds (colon seperated) to seconds
+__hms () {
+    echo "$1" | awk -F: '{ print ($1 * 60) + $2 }';
 }
 
-# ffmpeg concatenate multiple video files into one 
+# ffmpeg concatenate multiple video files into one
 #  INPUTS: files >= 2
 ffconcat-video () {
-    [[ -z "$*" ]] && return 2 
+    [[ -z "$*" ]] && return 2
     
     local inputs=()
     local audio_video_ftracks=""
@@ -38,7 +38,7 @@ ffconvert-mp3 () {
 
 # ffmpeg convert video file to mp4
 ffconvert-mp4 () {
-    [[ -z "$*" ]] && return 2 
+    [[ -z "$*" ]] && return 2
     for arg in "$@"; do
         local output=${arg%.*}
         ffmpeg -i "$arg" -codec copy "$output-converted.mp4"
@@ -47,7 +47,7 @@ ffconvert-mp4 () {
 
 # ffmpeg extract audio from video with audio to mp3
 ffextract-audio-mp3 () {
-    [[ -z "$*" ]] && return 2 
+    [[ -z "$*" ]] && return 2
     for arg in "$@"; do
         local output=${arg%.*}
         ffmpeg -i "$arg" -vn "$output-audio.mp3"
@@ -56,16 +56,16 @@ ffextract-audio-mp3 () {
 
 # ffmpeg extract video from video with audio to mp3
 ffextract-video-mp4 () {
-    [[ -z "$*" ]] && return 2 
+    [[ -z "$*" ]] && return 2
     for arg in "$@"; do
         local output=${arg%.*}
         ffmpeg -i "$arg" -c copy -an "$output-video.mp4"
     done
 }
 
-# ffmpeg scale video file to selected resolution 
+# ffmpeg scale video file to selected resolution
 ffscale-mp4 () {
-    [[ -z "$*" ]] && return 2 
+    [[ -z "$*" ]] && return 2
     [[ "$#" -ne 2 ]] && return 2
     # $1 input
     # $2 width:height
@@ -81,7 +81,7 @@ fftrim-mp3 () {
     # $2 start (seconds)
     # $3 duration (seconds)
     local output=${1%.*}
-    ffmpeg -ss "$2" -t "$3" -i "$1" -acodec copy "$output-trimmed.mp3" 
+    ffmpeg -ss "$(__hms "$2")" -t "$(__hms "$3")" -i "$1" -acodec copy "$output-trimmed.mp3" 
 }
 
 # ffmpeg trim mp4 from start to end
@@ -92,7 +92,7 @@ fftrim-mp4 () {
     # $2 start (seconds)
     # $3 end   (seconds)
     local output=${1%.*}
-    ffmpeg -ss "$2" -to "$3" -i "$1" -codec copy "$output-trimmed.mp4"
+    ffmpeg -ss "$(__hms "$2")" -to "$(__hms "$3")" -i "$1" -codec copy "$output-trimmed.mp4"
 }
 
 # ffmpeg compress mp3 audio
@@ -126,4 +126,3 @@ export -f ffextract-audio-mp3
 export -f ffconvert-mp4
 export -f ffconvert-mp3
 export -f ffconcat-video
-export -f hms

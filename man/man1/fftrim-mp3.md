@@ -5,7 +5,7 @@ fftrim-mp3(1) -- trim mp3 file from start to end
 2 on `Not enough or too many arguments`
 
 ## SYNTAX
-Both start & end must be in seconds.
+Both start & end must be in Minutes:Seconds format.
 `fftrim-mp3 <path/to/file> <start> <end>`
 
 ## AUTHOR
