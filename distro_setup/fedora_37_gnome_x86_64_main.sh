@@ -40,24 +40,6 @@ dnf-remove () (
     echo "Finished removing."
 )
 
-dnf-copr-enable () (
-    [[ $# -eq 0 ]] && return 2
-    
-    echo "-------------------DNF-ENABLE---------------- $*" | tr " " "\n"
-    while : ; do
-        dnf copr enable -y "$*" && break
-    done
-    echo "Finished adding from copr."
-)
-
-dnf-copr-remove () (
-    [[ $# -eq 0 ]] && return 2
-    
-    echo "-------------------DNF-REMOVE---------------- $*" | tr " " "\n"
-    dnf copr remove -y --skip-broken "$*" && break
-    echo "Finished adding copr repositories."
-)
-
 flatpak-install () (
     [[ $# -eq 0 ]] && return 2
     [[ -z "$REAL_USER" ]] && return 2
@@ -267,7 +249,7 @@ xorg-x11-drv-nvidia-cuda \
 "
 
 COPR_REPOSITORIES_AVAILABLE="\
-nickavem/adw-gtk3\
+\
 "
 
 COPR_REPOSITORIES_REMOVABLE="\
@@ -276,8 +258,8 @@ phracek/PyCharm\
 
 #######################################################################################################
 
-dnf-copr-enable "$COPR_REPOSITORIES_AVAILABLE"
-dnf-copr-remove "$COPR_REPOSITORIES_REMOVABLE"
+dnf copr enable -y nickavem/adw-gtk3
+dnf copr remove -y --skip-broken phracek/PyCharm
 dnf-install "https://download1.rpmfusion.org/free/fedora/rpmfusion-free-release-$(rpm -E %fedora).noarch.rpm" # free rpmfusion
 dnf-install "https://download1.rpmfusion.org/nonfree/fedora/rpmfusion-nonfree-release-$(rpm -E %fedora).noarch.rpm" # nonfree rpmfusion
 
