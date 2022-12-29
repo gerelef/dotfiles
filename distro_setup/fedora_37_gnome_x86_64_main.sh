@@ -191,9 +191,6 @@ org.gtk.Gtk3theme.adw-gtk3 \
 org.gtk.Gtk3theme.adw-gtk3-dark \
 com.github.maoschanz.drawing \
 org.videolan.VLC \
-org.videolan.VLC.Plugin.makemkv \
-org.videolan.VLC.Plugin.bdj \
-org.videolan.VLC.Plugin.fdkaac \
 com.raggesilver.BlackBox \
 com.spotify.Client \
 com.discordapp.Discord \
