@@ -9,7 +9,7 @@ dnf-install () (
     
     echo "-------------------DNF-INSTALL---------------- $*" | tr " " "\n"
     while : ; do
-        dnf install -y "$@" && break
+        dnf install -y $@ && break
     done
     echo "Finished installing."
 )
@@ -19,7 +19,7 @@ dnf-install-group () (
     
     echo "-------------------DNF-GROUP-INSTALL---------------- $*" | tr " " "\n"
     while : ; do
-        dnf groupinstall -y --with-optional "$@" && break
+        dnf groupinstall -y --with-optional $@ && break
     done
     echo "Finished group-installing."
 )
@@ -36,7 +36,7 @@ dnf-remove () (
     [[ $# -eq 0 ]] && return 2
     
     echo "-------------------DNF-REMOVE---------------- $*" | tr " " "\n"
-    dnf remove -y --skip-broken "$@"
+    dnf remove -y --skip-broken $@
     echo "Finished removing."
 )
 
