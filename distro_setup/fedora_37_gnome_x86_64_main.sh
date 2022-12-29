@@ -1,5 +1,9 @@
 #!/usr/bin/env bash
 
+shopt -s globstar
+shopt -s dotglob
+shopt -s nullglob
+
 dnf-install () (
     [[ $# -eq 0 ]] && return 2
     
