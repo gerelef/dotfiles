@@ -9,7 +9,7 @@ dnf-install () (
     
     echo "-------------------DNF-INSTALL---------------- $*" | tr " " "\n"
     while : ; do
-        dnf install -y "$*" && break
+        dnf install -y "$@" && break
     done
     echo "Finished installing."
 )
@@ -19,7 +19,7 @@ dnf-install-group () (
     
     echo "-------------------DNF-GROUP-INSTALL---------------- $*" | tr " " "\n"
     while : ; do
-        dnf groupinstall -y --with-optional "$*" && break
+        dnf groupinstall -y --with-optional "$@" && break
     done
     echo "Finished group-installing."
 )
@@ -36,7 +36,7 @@ dnf-remove () (
     [[ $# -eq 0 ]] && return 2
     
     echo "-------------------DNF-REMOVE---------------- $*" | tr " " "\n"
-    dnf remove -y --skip-broken "$*"
+    dnf remove -y --skip-broken "$@"
     echo "Finished removing."
 )
 
@@ -46,7 +46,7 @@ flatpak-install () (
     
     echo "-------------------FLATPAK-INSTALL-SYSTEM---------------- $*" | tr " " "\n"
     while : ; do
-        su - "$REAL_USER" -c "flatpak install --system -y $*" && break
+        su - "$REAL_USER" -c "flatpak install --system -y $@" && break
     done
     echo "Finished flatpak-installing."
 )
@@ -55,16 +55,16 @@ change-ownership () (
     [[ $# -eq 0 ]] && return 2
     [[ -z "$REAL_USER" ]] && return 2
     
-    chown "$REAL_USER" "$*"
-    chmod 700 "$*"
+    chown "$REAL_USER" "$@"
+    chmod 700 "$@"
 )
 
 change-ownership-recursive () (
     [[ $# -eq 0 ]] && return 2
     [[ -z "$REAL_USER" ]] && return 2
     
-    chown -R "$REAL_USER" "$*"
-    chmod -R 700 "$*"
+    chown -R "$REAL_USER" "$@"
+    chmod -R 700 "$@"
 )
 
 # ref: https://askubuntu.com/a/30157/8698
@@ -248,14 +248,6 @@ akmod-nvidia \
 xorg-x11-drv-nvidia-cuda \
 "
 
-COPR_REPOSITORIES_AVAILABLE="\
-\
-"
-
-COPR_REPOSITORIES_REMOVABLE="\
-phracek/PyCharm\
-"
-
 #######################################################################################################
 
 dnf copr enable -y nickavem/adw-gtk3
@@ -321,10 +313,7 @@ fi
 
 #######################################################################################################
 
-
 flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
-dnf-copr-enable "$COPR_REPOSITORIES_AVAILABLE"
-dnf-copr-remove "$COPR_REPOSITORIES_REMOVABLE"
 
 #######################################################################################################
 
