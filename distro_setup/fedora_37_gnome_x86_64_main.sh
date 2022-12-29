@@ -166,7 +166,7 @@ openvpn \
 bat \
 lm_sensors \
 tldr \
-ffmpeg-free \
+ffmpeg \
 yt-dlp \
 yt-dlp-bash-completion \
 rubygem-ronn-ng \
