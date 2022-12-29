@@ -131,9 +131,9 @@ SCRIPT_DIR_FS=$(stat -f --format=%T "$SCRIPT_DIR")
 DISTRIBUTION_NAME="fedora"
 
 INSTALLABLE_PACKAGES="\
+flatpak \
 adw-gtk3 \
 git \
-flatpak \
 meson \
 curl \
 java-latest-openjdk \
@@ -275,6 +275,11 @@ phracek/PyCharm \
 
 #######################################################################################################
 
+dnf-copr-enable "$COPR_REPOSITORIES_AVAILABLE"
+dnf-copr-remove "$COPR_REPOSITORIES_REMOVABLE"
+
+#######################################################################################################
+
 # https://github.com/tommytran732/Linux-Setup-Scripts/blob/main/Fedora-Workstation-36.sh
 # Make home directory private
 change-ownership "$REAL_USER_HOME"
@@ -290,12 +295,6 @@ chown root "/etc/dnf/dnf.conf"
 chmod 644 "/etc/dnf/dnf.conf"
 
 echo "Finished copying dnf.conf"
-
-#######################################################################################################
-
-flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
-dnf-copr-enable "$COPR_REPOSITORIES_AVAILABLE"
-dnf-copr-remove "$COPR_REPOSITORIES_REMOVABLE"
 
 #######################################################################################################
 dnf-update-refresh
@@ -334,6 +333,15 @@ if [ ! -z "$GPU" ]; then
     mokutil --import /etc/pki/akmods/certs/public_key.der
     echo "Finished signing GPU drivers."
 fi
+
+#######################################################################################################
+
+
+flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
+dnf-copr-enable "$COPR_REPOSITORIES_AVAILABLE"
+dnf-copr-remove "$COPR_REPOSITORIES_REMOVABLE"
+
+#######################################################################################################
 
 echo "Switching to $REAL_USER to install flatpaks"
 echo "-------------------INSTALLING---------------- $INSTALLABLE_FLATPAKS $INSTALLABLE_OBS_STUDIO" | tr " " "\n"
