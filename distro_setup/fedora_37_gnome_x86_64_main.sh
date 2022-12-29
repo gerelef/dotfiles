@@ -15,7 +15,7 @@ dnf-install-group () (
     
     echo "-------------------DNF-GROUP-INSTALL---------------- $*" | tr " " "\n"
     while : ; do
-        dnf groupinstall -y --with-optional "$*"
+        dnf groupinstall -y --with-optional "$*" && break
     done
     echo "Finished group-installing."
 )
@@ -32,9 +32,7 @@ dnf-remove () (
     [[ $# -eq 0 ]] && return 2
     
     echo "-------------------DNF-REMOVE---------------- $*" | tr " " "\n"
-    while : ; do
-        dnf remove -y "$*" && break
-    done
+    dnf remove -y "$*"
     echo "Finished removing."
 )
 
@@ -43,7 +41,7 @@ dnf-copr-enable () (
     
     echo "-------------------DNF-ENABLE---------------- $*" | tr " " "\n"
     while : ; do
-        dnf copr enable -y "$*"
+        dnf copr enable -y "$*" && break
     done
     echo "Finished adding from copr."
 )
@@ -53,7 +51,7 @@ dnf-copr-remove () (
     
     echo "-------------------DNF-REMOVE---------------- $*" | tr " " "\n"
     while : ; do
-        dnf copr remove -y "$*"
+        dnf copr remove -y "$*" && break
     done
     echo "Finished adding copr repositories."
 )
@@ -266,17 +264,19 @@ xorg-x11-drv-nvidia-cuda \
 "
 
 COPR_REPOSITORIES_AVAILABLE="\
-nickavem/adw-gtk3 \
+nickavem/adw-gtk3\
 "
 
 COPR_REPOSITORIES_REMOVABLE="\
-phracek/PyCharm \
+phracek/PyCharm\
 "
 
 #######################################################################################################
 
 dnf-copr-enable "$COPR_REPOSITORIES_AVAILABLE"
 dnf-copr-remove "$COPR_REPOSITORIES_REMOVABLE"
+dnf-install "https://download1.rpmfusion.org/free/fedora/rpmfusion-free-release-$(rpm -E %fedora).noarch.rpm" # free rpmfusion
+dnf-install "https://download1.rpmfusion.org/nonfree/fedora/rpmfusion-nonfree-release-$(rpm -E %fedora).noarch.rpm" # nonfree rpmfusion
 
 #######################################################################################################
 
