@@ -151,7 +151,8 @@ steam \
 gnome-system-monitor \
 piper \
 qt5-qtbase \
-adwaita-qt* \
+adwaita-qt5 \
+adwaita-qt6 \
 setroubleshoot \
 setroubleshoot-plugins \
 vulkan \
