@@ -32,7 +32,7 @@ dnf-remove () (
     [[ $# -eq 0 ]] && return 2
     
     echo "-------------------DNF-REMOVE---------------- $*" | tr " " "\n"
-    dnf remove -y "$*"
+    dnf remove -y --skip-broken "$*"
     echo "Finished removing."
 )
 
@@ -50,9 +50,7 @@ dnf-copr-remove () (
     [[ $# -eq 0 ]] && return 2
     
     echo "-------------------DNF-REMOVE---------------- $*" | tr " " "\n"
-    while : ; do
-        dnf copr remove -y "$*" && break
-    done
+    dnf copr remove -y --skip-broken "$*" && break
     echo "Finished adding copr repositories."
 )
 
