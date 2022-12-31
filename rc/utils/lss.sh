@@ -1,136 +1,21 @@
 #!/usr/bin/env bash
 # This file is meant to be sourced into your bashrc & not ran standalone.
 
+if [[ -n "$__LSS_LOADED" ]]; then
+    return 0
+fi
+readonly __LSS_LOADED="__LOADED"
+
 DIR=$(dirname -- "$BASH_SOURCE")
 
 source "$DIR/math.sh"
 source "$DIR/_git-branch.sh"
+source "$DIR/colours.sh"
+source "$DIR/fcolour.sh"
 
 shopt -s globstar
 shopt -s dotglob
 shopt -s nullglob
-
-__BLUE="27m"
-__LIGHT_BLUE="39m"
-__GREEN="34m"
-__PALE_GREEN="42m"
-__MAGENTA="127m"
-__YELLOW="178m"
-__RED="124m"
-__WHITE="15m"
-__BLACK="0m"
-
-__PREFIX="\033["
-__FOREGROUND="38;"
-__BACKGROUND="48;"
-__INFIX="5;" # https://man7.org/linux/man-pages/man4/console_codes.4.html
-__PFI="$__PREFIX$__FOREGROUND$__INFIX"
-__PBI="$__PREFIX$__BACKGROUND$__INFIX"
-
-_NOCOLOUR="\033[0m"
-_UNDERLINE="\033[4m"
-_BOLD="\033[1m"
-_BLINK="\033[5m"
-_FBLUE="$__PFI$__BLUE"
-_BBLUE="$__PBI$__BLUE"
-_FLBLUE="$__PFI$__LIGHT_BLUE"
-_BLBLUE="$__PBI$__LIGHT_BLUE"
-_FGREEN="$__PFI$__GREEN"
-_BGREEN="$__PBI$__GREEN"
-_FPGREEN="$__PFI$__PALE_GREEN"
-_BPGREEN="$__PBI$__PALE_GREEN"
-_FMAGENTA="$__PFI$__MAGENTA"
-_BMAGENTA="$__PBI$__MAGENTA"
-_FYELLOW="$__PFI$__YELLOW"
-_BYELLOW="$__PBI$__YELLOW"
-_BRED="$__PBI$__RED"
-_FWHITE="$__PFI$__WHITE"
-_BWHITE="$__PBI$__WHITE"
-_FBLACK="$__PFI$__BLACK"
-
-__colour_dir () {
-    [[ -z "$*" ]] && return 2 
-    
-    local ffn="$1"
-    local bfn="$2"
-    
-    local ls_dir_sub=("$ffn/"*)
-    local ls_dir_sub_count=${#ls_dir_sub[@]}
-    
-    local coloured_dir="$_FLBLUE$bfn$_NOCOLOUR"
-    [[ $ls_dir_sub_count -gt 0 ]] && local coloured_dir="$_FBLUE$bfn$_NOCOLOUR"
-    if [[ -h "$ffn" ]]; then
-        local coloured_dir="$_BLBLUE$bfn$_NOCOLOUR"
-        [[ $ls_dir_sub_count -gt 0 ]] && local coloured_dir="$_BBLUE$_FWHITE$bfn$_NOCOLOUR"
-    fi
-    
-    echo "$coloured_dir"
-}
-
-__colour_file () {
-    [[ -z "$*" ]] && return 2 
-    
-    local ffn="$1"
-    local bfn="$2"
-    
-    local ext="${bfn#*.}"
-    local head=$(head -n 1 "$ffn" 2> /dev/null | tr -d '\0')
-    
-    local coloured_file="$bfn"
-    [[ -h "$ffn" ]] && local coloured_file="$_BWHITE$_FBLACK$bfn$_NOCOLOUR"
-    if [[ -x "$ffn" ]]; then
-        local coloured_file="$_FGREEN$bfn$_NOCOLOUR"
-        [[ -h "$ffn" ]] && local coloured_file="$_BGREEN$_FWHITE$bfn$_NOCOLOUR"
-    fi
-    
-    case "$head" in
-        "#!/usr/bin/env python"* | \
-        "#!/usr/bin/python"* | \
-        "#!python"*) 
-            local coloured_file="$_FYELLOW$bfn$_NOCOLOUR"
-            [[ -h "$ffn" ]] && local coloured_file="$_BYELLOW$_FWHITE$bfn$_NOCOLOUR"
-            ;;
-        "#!/usr/bin/env bash"* | \
-        "#!/bin/bash"* | \
-        "#!/bin/sh"* | \
-        "#/usr/local/bin/bash"* )
-            local coloured_file="$_FPGREEN$bfn$_NOCOLOUR"
-            [[ -h "$ffn" ]] && local coloured_file="$_BPGREEN$_FWHITE$bfn$_NOCOLOUR"
-            ;;
-    esac
-    
-    case "$ext" in
-        "py" | "pyc" | "pyo" | "pyd" )
-            local coloured_file="$_FYELLOW$bfn$_NOCOLOUR"
-            [[ -h "$ffn" ]] && local coloured_file="$_BYELLOW$_FWHITE$bfn$_NOCOLOUR"
-            ;; 
-        "sh")
-            local coloured_file="$_FPGREEN$bfn$_NOCOLOUR"
-            [[ -h "$ffn" ]] && local coloured_file="$_BPGREEN$_FWHITE$bfn$_NOCOLOUR"
-            ;;
-        "a" | ".ar" | "cpio" | "shar" | \
-        "LBR" | "iso" | "lbr" | "mar" | "sbx" | \
-        "tar" | "bz2" | "gz" | "lz" | "lz4" | \
-        "lzma" | "xz" | "7z" | "zip" | "rar" | \
-        "dmg" | "jar" | "pak" | "tar.gz" | "tgz" | \
-        "tar.Z" | "tar.bz2" | "tbz2" | "tar.lz" | "tlz" | \
-        "tar.xz" | "txz" | "tar.zst" | "xar" | "zipx" )
-            local coloured_file="$_FMAGENTA$bfn$_NOCOLOUR"
-            [[ -h "$ffn" ]] && local coloured_file="$_BMAGENTA$_FWHITE$bfn$_NOCOLOUR"
-            ;;
-    esac
-    
-    echo "$coloured_file"
-}
-
-__colour_symlink () {
-    [[ -z "$*" ]] && return 2
-    
-    local ffn="$1"
-    local bfn="$2"
-    
-    echo "$_BRED$_FWHITE$bfn$_NOCOLOUR"
-}
 
 __unicode_girder () {
     [[ -z "$*" ]] && return 2 

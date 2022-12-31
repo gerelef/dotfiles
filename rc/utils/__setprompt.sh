@@ -1,9 +1,15 @@
 #!/usr/bin/env bash
 # This file is meant to be sourced into your bashrc & not ran standalone.
 
+if [[ -n "$__PROMPT_LOADED" ]]; then
+    return 0
+fi
+readonly __PROMPT_LOADED="__LOADED"
+
 DIR=$(dirname -- "$BASH_SOURCE")
 
 source "$DIR/_git-branch.sh"
+source "$DIR/colours.sh"
 
 #################### zachbrowne ##########################
 # https://gist.github.com/zachbrowne/8bc414c9f30192067831fafebd14255c
@@ -15,22 +21,11 @@ function __setprompt
 {
 	local LAST_COMMAND=$? # Must come first!
 
-	# Define colors
-	local RED="\033[0;31m"
-	local LIGHTRED="\033[1;31m"
-	local YELLOW="\033[1;33m"
-	local GREEN="\033[0;32m"
-	local LIGHTGREEN="\033[1;32m"
-	local BROWN="\033[0;33m"
-	local BLUE="\033[0;34m"
-	local LIGHTMAGENTA="\033[1;35m"
-	local NOCOLOR="\033[0m"
-
 	PROMPT_DIRTRIM=2
 
 	# Show error exit code if there is one
 	if [[ $LAST_COMMAND != 0 ]]; then
-		PS1="\[${RED}\]Exit Code \[${LIGHTRED}\]${LAST_COMMAND}\[${NOCOLOR}\] \[${RED}\]"
+		PS1="\[${_FRED}\]Exit Code \[${_FLRED}\]${LAST_COMMAND}\[${_NOCOLOUR}\] \[${_FRED}\]"
 		if [[ $LAST_COMMAND == 1 ]]; then
 			PS1+="General error"
 		elif [ $LAST_COMMAND == 2 ]; then
@@ -67,32 +62,32 @@ function __setprompt
 		PS1=""
 	fi
 	
-	PS1+="\[${BLUE}\]\t\[${NOCOLOR}\]" # Time
-	# PS1+="\[${RED}\]\u\[${NOCOLOR}\]" # User
+	PS1+="\[${_FLBLUE}\]\t\[${_NOCOLOUR}\]" # Time
+	# PS1+="\[${_FRED}\]\u\[${_NOCOLOUR}\]" # User
     
 	# Current directory
-    PS1+=" \[${BROWN}\]\w\[${NOCOLOR}\]" # working directory
+    PS1+=" \[${_FYELLOW}\]\w\[${_NOCOLOUR}\]" # working directory
     
     # active branch
-    PS1+="\[${YELLOW}\]$(_git-branch 2> /dev/null)\[${NOCOLOR}\]"
+    PS1+="\[${_FORANGE}\]$(_git-branch 2> /dev/null)\[${_NOCOLOUR}\]"
 
 	# Skip to the next line
 	PS1+="\n"    
 	
     if [[ -n "$VIRTUAL_ENV" ]] ; then
-        PS1+="\[${LIGHTMAGENTA}\]>>> \[${NOCOLOR}\]"
+        PS1+="\[${_FLMAGENTA}\]>>> \[${_NOCOLOUR}\]"
     else
-        PS1+="\[${GREEN}\]\$\[${NOCOLOR}\] "
+        PS1+="\[${_FGREEN}\]\$\[${_NOCOLOUR}\] "
     fi
     
 	# PS2 is used to continue a command using the \ character
-	PS2="\[${LIGHTGREEN}\]>\[${NOCOLOR}\] "
+	PS2="\[${_FPGREEN}\]>\[${_NOCOLOUR}\] "
 
 	# PS3 is used to enter a number choice in a script
 	PS3='Please enter a number from above list: '
 
 	# PS4 is used for tracing a script in debug mode
-	PS4="\[${LIGHTRED}\]+\[${NOCOLOR}\] "
+	PS4="\[${_FLRED}\]+\[${_NOCOLOUR}\] "
 }
 
 export -f __setprompt

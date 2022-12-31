@@ -83,15 +83,12 @@ cd () {
     
     # if argument given, cd there
 	if [[ $# -eq 1 ]]; then
-	    builtin cd "$1"
-	    lss
-	    
+	    builtin cd "$1" && lss
 	    return
     fi
     
     # otherwise go to $HOME
-	builtin cd "$HOME"
-	lss
+	builtin cd "$HOME" && lss
 }
 
 venv-subshell () {
@@ -162,7 +159,7 @@ alias flatpak-checkout="flatpak update --commit="
 # convenience alias
 alias c="clear"
 alias venv="venv-subshell" # activate venv
-alias cvenv="-m venv venv" # create venv (pythonXX cvenv)
+alias cvenv="python -m venv" # create venv (pythonXX cvenv)
 
 alias restartpipewire="systemctl --user restart pipewire" # restart audio (pipewire)
 alias restartnetworkmanager="systemctl restart NetworkManager" # restart internet (networkmanager)

@@ -1,5 +1,10 @@
 #!/usr/bin/env bash
 
+if [[ -n "$__FFMPEG_WRAP_LOADED" ]]; then
+    return 0
+fi
+readonly __FFMPEG_WRAP_LOADED="__LOADED"
+
 # convert Hours:Minutes:Seconds (colon seperated) to seconds
 __hms () {
     echo "$1" | awk -F: '{ print ($1 * 60) + $2 }';

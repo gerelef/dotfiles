@@ -1,5 +1,10 @@
 #!/usr/bin/env bash
 
+if [[ -n "$__GIT_BRANCH_LOADED" ]]; then
+    return 0
+fi
+readonly __GIT_BRANCH_LOADED="__LOADED"
+
 # get current git branch in arg or current 
 _git-branch () {
     # if superfluous arguments return...

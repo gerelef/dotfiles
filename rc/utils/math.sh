@@ -1,5 +1,10 @@
 #!/usr/bin/env bash
 
+if [[ -n "$__MATH_LOADED" ]]; then
+    return 0
+fi
+readonly __MATH_LOADED="__LOADED"
+
 # echo max out of N integers
 max () {
     [[ -z "$*" ]] && return 2
