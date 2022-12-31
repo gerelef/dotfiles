@@ -7,7 +7,7 @@
     le = log --oneline --decorate
     dl = "!git ll -1"
     find = "!git ls-files | grep -i"
-    st = status
+    st = status -sb
     stv = "!git status -v | less -R"
     stvp = "!git status -v | grep -i ^+ | less -R"
     stvm = "!git status -v | grep -i ^- | less -R"
