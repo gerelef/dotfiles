@@ -25,7 +25,6 @@ require_bashrc () {
     local _UTILITY_FFMPEG="$DOTFILES_DIR/rc/utils/ffmpeg.sh"
     local _UTILITY_YTDL="$DOTFILES_DIR/rc/utils/ytdl.sh"
     local _UTILITY_MATH="$DOTFILES_DIR/rc/utils/math.sh"
-    local _UTILITY_LSS="$DOTFILES_DIR/rc/utils/lss.sh"
     local _UTILITY_PROMPT="$DOTFILES_DIR/rc/utils/__setprompt.sh"
     
     [[ -f "$_GLOBAL_BASHRC" ]] && . "$_GLOBAL_BASHRC" 
@@ -38,7 +37,6 @@ require_bashrc () {
     [[ -f "$_UTILITY_MATH" ]] && . "$_UTILITY_MATH"
 
     # HARD DEPENDENCIES
-    [[ -f "$_UTILITY_LSS" ]] && . "$_UTILITY_LSS"
     [[ -f "$_UTILITY_PROMPT" ]] && . "$_UTILITY_PROMPT"
 }
 
@@ -74,6 +72,10 @@ rn () {
     [[ $# -eq 2 ]] || return 2
     
     mv -vn "$1" "$2"
+}
+
+lss () {
+    $DOTFILES_DIR/rc/utils/lss.py
 }
 
 # Automatically do an ls after each cd
