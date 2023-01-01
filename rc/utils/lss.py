@@ -59,7 +59,10 @@ class Column:
         element_index = 0
         for i in range(rows):
             line = ""
-            line_overhead = 0
+            # this is essentially padding
+            #  I literally do not know why this is needed. It SHOULDN'T be required, but it is. I wish I could fix this right now
+            #  but I'd rather that writing lss be done for now, I am tired and it is not worth it anymore, not remotely.
+            line_overhead = -2 
 
             for j in range(columns):
                 if element_index < len(self.elements):
@@ -145,12 +148,3 @@ if __name__ == "__main__":
         if not row:
             exit(0)
         print(row[:term_cols + overhead])
-
-    # for line in output_column.get_line(max_cols=term_cols, max_lines=term_lines, wrap=True):
-    #     print(line[0])
-
-    # print(pcwd)
-    # print(colour(cwd))
-
-    #
-    #

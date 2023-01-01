@@ -74,8 +74,9 @@ rn () {
     mv -vn "$1" "$2"
 }
 
+# call lss py implementation
 lss () {
-    $DOTFILES_DIR/rc/utils/lss.py
+    $DOTFILES_DIR/rc/utils/lss.py "$@"
 }
 
 # Automatically do an ls after each cd
