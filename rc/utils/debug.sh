@@ -20,6 +20,9 @@ shellcheck-bash () {
 
 # https://stackoverflow.com/a/57313672/10007109
 timeit () {
+    [[ -z "$*" ]] && return 2
+    [[ "$#" -lt 3 ]] && echo "Usage: timeit <num> <script> [<args>]" >&2 && return 2
+    
     for i in `seq 1 $1`; do
         time "${@:2}"
     done 2>&1 |\
