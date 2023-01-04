@@ -98,6 +98,10 @@ venv-subshell () {
     bash --init-file <(echo ". \"$HOME/.bashrc\"; . ./venv/bin/activate")
 }
 
+update-mono-ff-theme () {
+    $DOTFILES_DIR/rc/utils/update-mono-ff-theme.py "$@"
+}
+
 # journalctl wrapper for ease of use
 _journalctl () {
     [[ $# -eq 0 ]] && command journalctl -e -n 2000 && return
@@ -161,6 +165,7 @@ alias flatpak-checkout="flatpak update --commit="
 
 # convenience alias
 alias c="clear"
+alias wget="\wget -c --read-timeout=5 --tries=0"
 alias venv="venv-subshell" # activate venv
 alias cvenv="python -m venv" # create venv (pythonXX cvenv)
 

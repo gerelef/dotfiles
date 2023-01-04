@@ -386,14 +386,8 @@ change-ownership "$REAL_USER_HOME/.vimrc" "$REAL_USER_HOME/.bashrc" "$REAL_USER_
 mkdir -p "$CLONED_ROOT/mono-firefox-theme"
 echo "Created $CLONED_ROOT/mono-firefox-theme/"
 RC_VIS_MZL_DIR="$CLONED_ROOT/mono-firefox-theme"
-while : ; do
-    # if something goes wrong, install the next version, otherwise break
-    wget --directory-prefix "$CLONED_ROOT/" "https://github.com/witalihirsch/Mono-firefox-theme/releases/download/0.4/mono-firefox-theme.tar.xz" && break
-    wget --directory-prefix "$CLONED_ROOT/" "https://github.com/witalihirsch/Mono-firefox-theme/releases/download/0.3/mono-firefox-theme.tar.xz" && break
-    wget --directory-prefix "$CLONED_ROOT/" "https://github.com/witalihirsch/Mono-firefox-theme/releases/download/0.2/mono-firefox-theme.tar.xz" && break
-    wget --directory-prefix "$CLONED_ROOT/" "https://github.com/witalihirsch/Mono-firefox-theme/releases/download/0.1/mono-firefox-theme.tar.xz"
-    break
-done
+# if something goes wrong, install the next version, otherwise break
+wget -c --read-timeout=5 --tries=0 --directory-prefix "$CLONED_ROOT/" "https://github.com/witalihirsch/Mono-firefox-theme/releases/download/0.5/mono-firefox-theme.tar.xz"
 tar -xf "$CLONED_ROOT/mono-firefox-theme.tar.xz" --directory="$RC_VIS_MZL_DIR"
 echo "Extracted $CLONED_ROOT/mono-firefox-theme.tar.xz"
 rm -vf "$CLONED_ROOT/mono-firefox-theme.tar.xz"
