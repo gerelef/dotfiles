@@ -1,6 +1,6 @@
 // enable stylesheets for mono ff
 user_pref("toolkit.legacyUserProfileCustomizations.stylesheets", true);
-user_pref("browser.quitShortcut.disabled", true);
+user_pref("gnomeTheme.hideSingleTab", true);
 
 // GENERIC
 user_pref("browser.bookmarks.restore_default_bookmarks", false);
@@ -20,6 +20,9 @@ user_pref("browser.firefox-view.view-count", 0);
 
 // Disable uitour
 user_pref("browser.uitour.enabled", false);
+
+// Disable CTRL+Q
+user_pref("browser.quitShortcut.disabled", true);
 
 // PRIVACY
 user_pref("geo.enabled", false); // might cause issue with specific sites; disable this if you get location issues
