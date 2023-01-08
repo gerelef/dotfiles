@@ -82,6 +82,17 @@ ffextract-video-mp4 () {
     done
 }
 
+ffvideofy () {
+    [[ -z "$*" ]] && return 2 
+    [[ "$#" -ne 2 ]] && return 2
+    # $1 image
+    # $2 audio
+    local output=$(basename -- "${1%.*}")
+    local output+=$(basename -- "${2%.*}")
+    
+    ffmpeg -loop 1 -y -i "$1" -i "$2" -vcodec libx265 -shortest "$PWD/$output.mp4"
+}
+
 # ffmpeg trim mp4 from start to end and convert to gif
 ffgiphify () {
     [[ -z "$*" ]] && return 2 
@@ -104,7 +115,7 @@ ffcrop-mp4 () {
     # $1 input
     # $2 starting position (starting from (0,0) on top left)
     # $3 ending position (starting from (0,0) on top left)
-    local output=$(basename -- "${arg%.*}")
+    local output=$(basename -- "${1%.*}")
     ffmpeg -i "$1" -filter:v "crop=$(__xy_rp_to_ffilter_coords "$2" "$3"):$(__xy_to_ffilter_coords "$2")" "$PWD/$output-cropped.mp4"
 }
 
@@ -114,7 +125,7 @@ ffscale-mp4 () {
     [[ "$#" -ne 2 ]] && return 2
     # $1 input
     # $2 width:height
-    local output=$(basename -- "${arg%.*}")
+    local output=$(basename -- "${1%.*}")
     ffmpeg -i "$1" -vf scale="$(__xy_to_ffilter_coords "$2")" -vcodec libx265 -crf 22 -vsync cfr -r 60 "$PWD/$output-scaled.mp4"
 }
 
@@ -125,7 +136,7 @@ fftrim-mp3 () {
     # $1 input
     # $2 start (seconds)
     # $3 duration (seconds)
-    local output=$(basename -- "${arg%.*}")
+    local output=$(basename -- "${1%.*}")
     ffmpeg -ss "$(__hms "$2")" -t "$(__hms "$3")" -i "$1" -acodec copy "$PWD/$output-trimmed.mp3" 
 }
 
@@ -136,7 +147,7 @@ fftrim-mp4 () {
     # $1 input
     # $2 start (seconds)
     # $3 end   (seconds)
-    local output=$(basename -- "${arg%.*}")
+    local output=$(basename -- "${1%.*}")
     ffmpeg -ss "$(__hms "$2")" -to "$(__hms "$3")" -i "$1" -codec copy "$PWD/$output-trimmed.mp4"
 }
 
@@ -146,7 +157,7 @@ ffcompress-mp3 () {
     [[ "$#" -ne 2 ]] && return 2
     # $1 input
     # $2 bitrate (e.g. 96k)
-    local output=$(basename -- "${arg%.*}")
+    local output=$(basename -- "${1%.*}")
     ffmpeg -i "$1" -map 0:a:0 -b:a "$2" "$PWD/output-compressed.mp3"
 }
 
@@ -157,7 +168,7 @@ ffcompress-mp4 () {
     # $1 input
     # $2 crf logarithmic value for x265
     #  good values are from 27 to 30
-    local output=$(basename -- "${arg%.*}")
+    local output=$(basename -- "${1%.*}")
     ffmpeg -i "$1" -vcodec libx265 -crf "$2" -vsync cfr -r 60 "$PWD/$output-compressed.mp4"
 }
 
@@ -165,6 +176,7 @@ export -f ffcompress-mp4
 export -f ffcompress-mp3
 export -f fftrim-mp4
 export -f fftrim-mp3
+export -f ffvideofy
 export -f ffgiphify
 export -f ffcrop-mp4
 export -f ffscale-mp4
