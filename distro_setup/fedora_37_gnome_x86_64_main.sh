@@ -301,6 +301,7 @@ if [ ! -z "$GPU" ]; then
     echo "Found NVIDIA GPU $GPU, installing drivers..."
     dnf-install "$INSTALLABLE_NVIDIA_DRIVERS"
     echo "Signing GPU drivers..."
+    # https://blog.monosoul.dev/2022/05/17/automatically-sign-nvidia-kernel-module-in-fedora-36/
     /usr/sbin/kmodgenca
     mokutil --import /etc/pki/akmods/certs/public_key.der
     echo "Finished signing GPU drivers."
