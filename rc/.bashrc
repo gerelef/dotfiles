@@ -80,18 +80,8 @@ lss () {
 }
 
 # Automatically do an ls after each cd
-cd () {
-    # if superfluous arguments...
-    [[ $# -gt 1 ]] && return 2 
-    
-    # if argument given, cd there
-	if [[ $# -eq 1 ]]; then
-	    builtin cd "$1" && lss
-	    return
-    fi
-    
-    # otherwise go to $HOME
-	builtin cd "$HOME" && lss
+cd () { 
+	builtin cd "$@" && lss
 }
 
 venv-subshell () {
@@ -120,8 +110,8 @@ _tldr () {
 require_bashrc
 PROMPT_COMMAND='__setprompt; history -a'
 
-shopt -s globstar
-shopt -s nullglob
+shopt -s autocd
+shopt -s cdspell
 shopt -s checkwinsize
 shopt -s histappend
 
