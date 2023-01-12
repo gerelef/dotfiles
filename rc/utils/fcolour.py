@@ -78,8 +78,6 @@ class Colours(str, Enum):
 
 def colour_string(text: str, colour: list[Colours: str], cleanup=True):
     s = f"{''.join(colour)}{text}"
-    if cleanup:
-        s += Colours.NOCOLOUR
     return s
 
 

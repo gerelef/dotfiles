@@ -3,7 +3,7 @@ from enum import Enum
 from sys import argv, stderr, exit
 from pathlib import PosixPath
 from subprocess import run
-from fcolour import colour
+from fcolour import colour, Colours
 from functools import reduce
 from math import floor
 import typing
@@ -65,14 +65,13 @@ class Column:
         for i in range(rows):
             line = ""
             # this is essentially padding
-            #  I literally do not know why this is needed. It SHOULDN'T be required, but it is. I wish I could fix this right now
-            #  but I'd rather that writing lss be done for now, I am tired and it is not worth it anymore, not remotely.
-            line_overhead = -2 
+            #  This is because we add Colours.NOCOLOUR to the mix, & then 
+            line_overhead = 1
 
             for j in range(columns):
                 if element_index < len(self.elements):
                     word, overhead = colour(self.elements[element_index])
-                    line += word + " " * (self.max - len(word) + overhead)
+                    line += word + Colours.NOCOLOUR + " " * (self.max - len(word) + overhead)
                     line_overhead += overhead
                     element_index += 1
                 else:
