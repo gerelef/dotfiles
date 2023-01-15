@@ -65,7 +65,7 @@ class Column:
         for i in range(rows):
             line = ""
             # this is essentially padding
-            #  This is because we add Colours.NOCOLOUR to the mix, & then 
+            #  This is because we add Colours.NOCOLOUR to the mix
             line_overhead = 1
 
             for j in range(columns):
@@ -76,15 +76,12 @@ class Column:
                     element_index += 1
                 else:
                     # pad the row if not enough elements to fill the column 
-                    line += " " * self.max 
+                    line += " " * self.max
 
             for subg in subgenerators:
-                try:
-                    word, overhead = next(subg)
-                    line_overhead += overhead
-                    line += word
-                except StopIteration:
-                    pass
+                word, overhead = next(subg)
+                line_overhead += overhead
+                line += word
 
             yield line, line_overhead
             
