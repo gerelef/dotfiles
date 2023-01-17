@@ -130,6 +130,7 @@ sqlitebrowser \
 lmms \
 lmms-vst \
 steam \
+heroic-games-launcher-bin \
 gnome-system-monitor \
 piper \
 qt5-qtbase \
@@ -247,6 +248,7 @@ xorg-x11-drv-nvidia-cuda \
 
 #######################################################################################################
 
+dnf copr enable atim/heroic-games-launcher
 dnf copr enable -y nickavem/adw-gtk3
 dnf copr remove -y --skip-broken phracek/PyCharm
 dnf-install "https://download1.rpmfusion.org/free/fedora/rpmfusion-free-release-$(rpm -E %fedora).noarch.rpm" # free rpmfusion
