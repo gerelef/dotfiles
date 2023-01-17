@@ -350,6 +350,10 @@ if [[ $REPLY =~ ^[Yy]$ ]]; then
     echo "-------------------INSTALLING JETBRAINS TOOLBOX----------------" 
     curl -fsSL https://raw.githubusercontent.com/nagygergo/jetbrains-toolbox-install/master/jetbrains-toolbox.sh | bash
     echo "Finished installing toolbox."
+    
+    echo "-------------------INSTALLING BLESS HEX EDITOR----------------" 
+    dnf-install "bless"
+    echo "Finished installing bless."
 fi
 
 #######################################################################################################
