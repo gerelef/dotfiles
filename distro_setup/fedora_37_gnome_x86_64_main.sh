@@ -222,6 +222,7 @@ com.obsproject.Studio.Plugin.waveform \
 "
 
 INSTALLABLE_EXTENSIONS="\
+xprop \
 gnome-shell-extension-pop-shell \
 gnome-shell-extension-pop-shell-shortcut-overrides \
 gnome-shell-extension-places-menu \
