@@ -226,7 +226,6 @@ gnome-shell-extension-pop-shell \
 gnome-shell-extension-pop-shell-shortcut-overrides \
 gnome-shell-extension-places-menu \
 gnome-shell-extension-appindicator \
-gnome-shell-extension-dash-to-panel \
 "
 
 INSTALLABLE_BTRFS_TOOLS="\
@@ -320,19 +319,6 @@ echo "-------------------INSTALLING---------------- $INSTALLABLE_FLATPAKS $INSTA
 flatpak-install "$INSTALLABLE_FLATPAKS"
 flatpak-install "$INSTALLABLE_OBS_STUDIO"
 echo "Continuing as $(whoami)"
-
-#######################################################################################################
-
-echo "-------------------INSTALLING----------------" | tr " " "\n"
-dnf group info "Development Tools"
-while : ; do
-    read -p "Are you sure you want to install Development Tools?[Y/n] " -n 1 -r
-    ! [[ $REPLY =~ ^[YyNn]$ ]] || break
-done
-echo ""
-if [[ $REPLY =~ ^[Yy]$ ]]; then
-    dnf-install-group "Development Tools"
-fi
 
 #######################################################################################################
 
