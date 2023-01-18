@@ -1,9 +1,9 @@
 #!/usr/bin/env -S python3 -S
-from enum import Enum
+from enum import StrEnum
 from pathlib import PosixPath
 
 
-class ColourCodes(str, Enum):
+class ColourCodes(StrEnum):
     BLACK = "0m"
     WHITE = "15m"
     BLUE = "27m"
@@ -24,7 +24,7 @@ class ColourCodes(str, Enum):
     LIGHT_RED = "196m"
 
 
-class EscapeCodes(str, Enum):
+class EscapeCodes(StrEnum):
     PREFIX = "\033["
     FOREGROUND = "38;"
     BACKGROUND = "48;"
@@ -33,7 +33,7 @@ class EscapeCodes(str, Enum):
     PBI = f"{PREFIX}{BACKGROUND}{INFIX}"
 
 
-class Colours(str, Enum):
+class Colours(StrEnum):
     NOCOLOUR = "\033[0m"
     BOLD = "\033[1m"
     UNDERLINE = "\033[4m"
