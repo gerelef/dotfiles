@@ -60,7 +60,6 @@ gsettings set org.gnome.settings-daemon.plugins.media-keys.custom-keybinding:/or
 /usr/bin/flatpak run --branch=stable --arch=x86_64 --command=gsettings com.raggesilver.BlackBox set com.raggesilver.BlackBox.terminal.search match-whole-words false
 /usr/bin/flatpak run --branch=stable --arch=x86_64 --command=gsettings com.raggesilver.BlackBox set com.raggesilver.BlackBox.terminal.search wrap-around true
 ############################################################################################################################################
-
 org.gnome.desktop.peripherals.mouse accel-profile 'flat'
 ############################################################################################################################################
 gsettings set org.gnome.TextEditor auto-indent true
