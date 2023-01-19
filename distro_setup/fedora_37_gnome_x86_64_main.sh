@@ -242,7 +242,11 @@ com.vscodium.codium \
 "
 
 INSTALLABLE_NVIDIA_DRIVERS="\
+kernel-headers \ 
+kernel-devel \
 akmod-nvidia \
+xorg-x11-drv-nvidia \
+xorg-x11-drv-nvidia-libs \
 xorg-x11-drv-nvidia-cuda \
 "
 
@@ -300,13 +304,21 @@ esac
 
 GPU=$(lspci | grep -i vga | grep NVIDIA)
 if [ ! -z "$GPU" ]; then
+    BIOS_MODE=$([ -d /sys/firmware/efi ] && echo UEFI || echo BIOS)
+    if [[ "$BIOS_MODE" -eq "UEFI" ]]; then
+        echo "Signing GPU drivers..."
+        # https://blog.monosoul.dev/2022/05/17/automatically-sign-nvidia-kernel-module-in-fedora-36/
+        kmodgenca -a
+        mokutil --import /etc/pki/akmods/certs/public_key.der
+        echo "Finished signing GPU drivers. Make sure you Enroll MOK when you restart."
+    else
+        echo "UEFI not found; please restart & use UEFI..."
+    fi
     echo "Found NVIDIA GPU $GPU, installing drivers..."
     dnf-install "$INSTALLABLE_NVIDIA_DRIVERS"
-    echo "Signing GPU drivers..."
-    # https://blog.monosoul.dev/2022/05/17/automatically-sign-nvidia-kernel-module-in-fedora-36/
-    /usr/sbin/kmodgenca
-    mokutil --import /etc/pki/akmods/certs/public_key.der
-    echo "Finished signing GPU drivers."
+    
+    akmods --force
+    dracut --force
 fi
 
 #######################################################################################################
