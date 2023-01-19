@@ -60,6 +60,9 @@ gsettings set org.gnome.settings-daemon.plugins.media-keys.custom-keybinding:/or
 /usr/bin/flatpak run --branch=stable --arch=x86_64 --command=gsettings com.raggesilver.BlackBox set com.raggesilver.BlackBox.terminal.search match-whole-words false
 /usr/bin/flatpak run --branch=stable --arch=x86_64 --command=gsettings com.raggesilver.BlackBox set com.raggesilver.BlackBox.terminal.search wrap-around true
 ############################################################################################################################################
+
+org.gnome.desktop.peripherals.mouse accel-profile 'flat'
+############################################################################################################################################
 gsettings set org.gnome.TextEditor auto-indent true
 gsettings set org.gnome.TextEditor highlight-current-line true
 gsettings set org.gnome.TextEditor indent-style 'space'
@@ -215,7 +218,7 @@ gsettings set org.gnome.desktop.wm.preferences action-right-click-titlebar 'menu
 gsettings set org.gnome.desktop.wm.preferences audible-bell true
 gsettings set org.gnome.desktop.wm.preferences auto-raise false
 gsettings set org.gnome.desktop.wm.preferences auto-raise-delay 500
-gsettings set org.gnome.desktop.wm.preferences button-layout ''
+gsettings set org.gnome.desktop.wm.preferences button-layout 'appmenu:close'
 gsettings set org.gnome.desktop.wm.preferences disable-workarounds false
 gsettings set org.gnome.desktop.wm.preferences focus-mode 'click'
 gsettings set org.gnome.desktop.wm.preferences focus-new-windows 'smart'
