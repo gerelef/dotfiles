@@ -175,6 +175,7 @@ rubygem-ronn-ng \
 
 UNINSTALLABLE_BLOAT="\
 rhythmbox* \
+totem \
 gnome-tour \
 gnome-terminal \
 gnome-terminal-* \
