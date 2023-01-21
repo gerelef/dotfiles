@@ -1,11 +1,13 @@
 #!/usr/bin/env -S python3 -S
 from enum import Enum
+from stat import filemode
 from sys import argv, stderr, exit
 from pathlib import PosixPath
 from subprocess import run
 from fcolour import colour, Colours
 from functools import reduce
 from math import floor
+import argparse as ap
 import typing
 
 
@@ -22,15 +24,19 @@ class UnicodeGirderChars(Enum):
 
 
 class Column:
-    def __init__(self, elements: list[PosixPath] = None, subcolumns: list = None):
+    def __init__(self, elements: list[PosixPath] = None, subcolumns: list = None, permissions = False):
         if subcolumns is None:
             subcolumns = []
         if elements is None:
             elements = []
         self.subcolumns: list = subcolumns
         self.elements: list[PosixPath] = elements
+        self.permissions = permissions
         self.max = 0
         for e in elements:
+            if permissions:
+                self.max = max(self.max, len(str(e.name)) + len(self.get_permission(e)))
+                continue
             self.max = max(self.max, len(str(e.name)))
 
     def get_col_indices(self) -> list[int]:
@@ -52,6 +58,9 @@ class Column:
         columns = floor(tr / ml) + 1
         rows = ml + (tr % columns)
         return columns, rows
+        
+    def get_permission(self, pp: PosixPath):
+        return filemode(pp.lstat().st_mode)
 
     def get_row_elements(self, max_cols, max_lines):
         total_rows = max(self.get_row_indices())
@@ -65,12 +74,16 @@ class Column:
         for i in range(rows):
             line = ""
             # this is essentially padding
-            #  This is because we add Colours.NOCOLOUR to the mix
             line_overhead = 1
 
             for j in range(columns):
+                word = ""
                 if element_index < len(self.elements):
-                    word, overhead = colour(self.elements[element_index])
+                    if self.permissions:
+                        word = self.get_permission(self.elements[element_index]) + " "
+                    word_temp, overhead = colour(self.elements[element_index])
+                    word += word_temp
+                    
                     line += word + Colours.NOCOLOUR + " " * (self.max - len(word) + overhead)
                     line_overhead += overhead
                     element_index += 1
@@ -128,9 +141,9 @@ def get_all_elements(directory: PosixPath) -> tuple[list[PosixPath], list[PosixP
 
 
 if __name__ == "__main__":
-    cwd = PosixPath.cwd()
-    if len(argv) > 1:
-        cwd = PosixPath(argv[1])
+    permissions = False
+    
+    cwd = PosixPath(argv[1]) if len(argv) > 1 else PosixPath.cwd() 
 
     pcwd = PosixPath(cwd)
     if not pcwd.is_dir():
@@ -142,9 +155,9 @@ if __name__ == "__main__":
     dirs.sort()
     files.sort()
 
-    dir_column = Column(elements=dirs)
-    files_column = Column(elements=files)
-    output_column = Column(subcolumns=[dir_column, files_column])
+    dir_column = Column(elements=dirs, permissions=permissions)
+    files_column = Column(elements=files, permissions=permissions)
+    output_column = Column(subcolumns=[dir_column, files_column], permissions=permissions)
 
     print(f"{len(dirs)} directories, {len(files)} files. {git_status(str(cwd))}")
     if len(dirs) == 0 and len(files) == 0:
