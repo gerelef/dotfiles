@@ -207,6 +207,7 @@ io.github.dummerle.rare \
 io.github.Foldex.AdwSteamGtk \
 com.github.Matoking.protontricks \
 net.openra.OpenRA \
+com.github.tchx84.Flatseal \
 "
 
 INSTALLABLE_OBS_STUDIO="\
