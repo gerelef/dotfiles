@@ -24,6 +24,10 @@ user_pref("browser.uitour.enabled", false);
 // Disable CTRL+Q
 user_pref("browser.quitShortcut.disabled", true);
 
+// Disable Firefox VPN ff >= 108
+user_pref("browser.vpn_promo.enabled", true);
+user_pref("browser.contentblocking.report.hide_vpn_banner", true);
+
 // PRIVACY
 user_pref("geo.enabled", false); // might cause issue with specific sites; disable this if you get location issues
 user_pref("dom.battery.enabled", false)
@@ -52,7 +56,7 @@ user_pref("intl.locale.matchOS", false);
 user_pref("javascript.use_us_english_locale", true);
 user_pref("network.manage-offline-status", false);
 user_pref("general.buildID.override", "20100101");
-user_pref("browser.startup.homepage_override.buildID", "20100101");
+user_pref("browser.startup.homepage_override.buildID", "20100101"); 
 
 user_pref("security.dialog_enable_delay", 1000);
 
