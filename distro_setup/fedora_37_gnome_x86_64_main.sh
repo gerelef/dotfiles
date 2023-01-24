@@ -436,6 +436,11 @@ change-ownership-recursive "$CLONED_ROOT" "$MZL_ROOT" "$SSH_ROOT" "$BIN_ROOT" "$
 
 #######################################################################################################
 
+echo 'GRUB_HIDDEN_TIMEOUT=0' >> /etc/default/grub
+echo 'GRUB_HIDDEN_TIMEOUT_QUIET=true' >> /etc/default/grub
+
+#######################################################################################################
+
 systemctl restart NetworkManager
 hostnamectl hostname "$DISTRIBUTION_NAME"
 
