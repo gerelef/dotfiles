@@ -189,16 +189,10 @@ gnome-maps* \
 INSTALLABLE_FLATPAKS="\
 org.gtk.Gtk3theme.adw-gtk3 \
 org.gtk.Gtk3theme.adw-gtk3-dark \
-com.github.maoschanz.drawing \
 org.videolan.VLC \
 com.raggesilver.BlackBox \
 com.spotify.Client \
-com.discordapp.Discord \
-com.teamspeak.TeamSpeak \
-com.vysp3r.ProtonPlus \
-fr.handbrake.ghb \
 net.cozic.joplin_desktop \
-com.teamspeak.TeamSpeak \
 com.skype.Client \
 us.zoom.Zoom \
 io.github.dummerle.rare \
@@ -452,11 +446,6 @@ echo "--------------------------- VISUDO ---------------------------"
 echo "Please sudo visudo and add:"
 echo "  Defaults env_reset, timestamp_timeout=120, pwfeedback"
 echo "--------------------------- THEMING ---------------------------"
-echo "Please install 'night theme switcher' using the Gnome Extensions website."
-echo "https://extensions.gnome.org/extension/2236/night-theme-switcher/"
-echo ""
-echo "Please run AdwSteamGtk to convert steam to the Adwaita theme."
-echo ""
 echo "Please go to firefox about:config and enable toolkit.legacyUserProfileCustomizations.stylesheets to true."
 echo "--------------------------- FSTAB ---------------------------"
 echo "Remember to add a permanent mount point for permanently mounted partitions."
