@@ -127,8 +127,6 @@ gimp \
 libreoffice \
 qbittorrent \
 sqlitebrowser \
-lmms \
-lmms-vst \
 gnome-system-monitor \
 piper \
 qt5-qtbase \
@@ -225,6 +223,21 @@ gnome-shell-extension-appindicator \
 INSTALLABLE_BTRFS_TOOLS="\
 btrfs-assistant \
 timeshift \
+"
+
+INSTALLABLE_EXTRAS="\
+lmms \
+lmms-vst \
+steam \
+heroic-games-launcher-bin \
+"
+
+INSTALLABLE_EXTRAS_FLATPAK="\
+fr.handbrake.ghb \
+io.github.Foldex.AdwSteamGtk \
+com.discordapp.Discord \
+com.teamspeak.TeamSpeak \
+com.vysp3r.ProtonPlus \
 "
 
 INSTALLABLE_IDE_FLATPAKS="\
@@ -326,6 +339,21 @@ flatpak-install "$INSTALLABLE_OBS_STUDIO"
 echo "Continuing as $(whoami)"
 
 #######################################################################################################
+
+echo "-------------------INSTALLING---------------- $INSTALLABLE_EXTRAS $INSTALLABLE_EXTRAS_FLATPAK" | tr " " "\n"
+while : ; do
+    read -p "Are you sure you want to install extras?[Y/n] " -n 1 -r
+    [[ ! $REPLY =~ ^[YyNn]$ ]] || break
+done
+
+echo ""
+if [[ $REPLY =~ ^[Yy]$ ]]; then
+    dnf copr enable atim/heroic-games-launcher
+    
+    dnf-install "$INSTALLABLE_EXTRAS"
+    flatpak-install "$INSTALLABLE_EXTRAS_FLATPAK"
+    echo "Finished installing extras."
+fi
 
 echo "-------------------INSTALLING---------------- $INSTALLABLE_IDE_FLATPAKS" | tr " " "\n"
 while : ; do
