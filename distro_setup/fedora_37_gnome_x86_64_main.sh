@@ -348,8 +348,8 @@ done
 
 echo ""
 if [[ $REPLY =~ ^[Yy]$ ]]; then
-    dnf copr enable atim/heroic-games-launcher
-    
+    dnf copr enable -y atim/heroic-games-launcher
+
     dnf-install "$INSTALLABLE_EXTRAS"
     flatpak-install "$INSTALLABLE_EXTRAS_FLATPAK"
     echo "Finished installing extras."
@@ -372,6 +372,9 @@ if [[ $REPLY =~ ^[Yy]$ ]]; then
     
     echo "-------------------INSTALLING BLESS HEX EDITOR----------------" 
     dnf-install "bless"
+    
+    dnf copr enable -y zeno/scrcpy
+    dnf-install scrcpy
     echo "Finished installing bless."
 fi
 
