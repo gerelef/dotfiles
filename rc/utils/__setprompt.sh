@@ -30,39 +30,30 @@ function __setprompt
             126) PS1+="Permission problem or command is not an executable";;
             127) PS1+="Possible problem with \$PATH or a typo";;
             128) PS1+="Invalid argument to exit" ;;
-            129) PS1="Fatal error signal SIGHUP";;
+            129) PS1+="Fatal error signal SIGHUP";;
             130) PS1+="Script terminated by Control-C";;
-            131) PS1="Fatal error signal SIGQUIT";;
-            132) PS1="Fatal error signal SIGILL";;
-            133) PS1="Fatal error signal SIGTRAP";;
-            134) PS1="Fatal error signal SIGABRT";;
-            135) PS1="Fatal error signal SIGBUS";;
-            136) PS1="Fatal error signal SIGFPE";;
-            137) PS1="Fatal error signal SIGKILL";;
-            139) PS1="Fatal error signal SIGSEGV";;
-            145) PS1="Fatal error signal SIGSTERM";;
+            131) PS1+="Fatal error signal SIGQUIT";;
+            132) PS1+="Fatal error signal SIGILL";;
+            133) PS1+="Fatal error signal SIGTRAP";;
+            134) PS1+="Fatal error signal SIGABRT";;
+            135) PS1+="Fatal error signal SIGBUS";;
+            136) PS1+="Fatal error signal SIGFPE";;
+            137) PS1+="Fatal error signal SIGKILL";;
+            139) PS1+="Fatal error signal SIGSEGV";;
+            145) PS1+="Fatal error signal SIGSTERM";;
             *) PS1+="Unknown error code $LAST_COMMAND";;
         esac
         PS1+="\[${_NOCOLOUR}\]\n"
     fi
     
     PS1+="\[${_FLBLUE}\]\t\[${_NOCOLOUR}\]" # Time
-    # PS1+="\[${_FRED}\]\u\[${_NOCOLOUR}\]" # User
-    
-    # Current directory
     PS1+=" \[${_FYELLOW}\]\w\[${_NOCOLOUR}\]" # working directory
+    PS1+="\[${_FORANGE}\]$(_git-branch 2> /dev/null)\[${_NOCOLOUR}\]" # active branch
+    PS1+="\n"
     
-    # active branch
-    PS1+="\[${_FORANGE}\]$(_git-branch 2> /dev/null)\[${_NOCOLOUR}\]"
-
-    # Skip to the next line
-    PS1+="\n"    
-    
-    if [[ -n "$VIRTUAL_ENV" ]] ; then
-        PS1+="\[${_FLMAGENTA}\]>>> \[${_NOCOLOUR}\]"
-    else
-        PS1+="\[${_FGREEN}\]\$\[${_NOCOLOUR}\] "
-    fi
+    VENV_STATUS="${VIRTUAL_ENV:-N/A}"
+    [[ "$VENV_STATUS" != "N/A" ]] && PS1+="\[${_FLMAGENTA}\]>>> \[${_NOCOLOUR}\]"
+    [[ "$VENV_STATUS" == "N/A" ]] && PS1+="\[${_FGREEN}\]\$\[${_NOCOLOUR}\] "
     
     # PS2 is used to continue a command using the \ character
     PS2="\[${_FPGREEN}\]>\[${_NOCOLOUR}\] "
