@@ -11,12 +11,9 @@ DIR=$(dirname -- "$BASH_SOURCE")
 source "$DIR/_git-branch.sh"
 source "$DIR/colours.sh"
 
-#################### zachbrowne ##########################
+# this __setprompt is based on zachbrowne
 # https://gist.github.com/zachbrowne/8bc414c9f30192067831fafebd14255c
 
-#######################################################
-# Set the ultimate amazing command prompt
-#######################################################
 function __setprompt
 {
 	local LAST_COMMAND=$? # Must come first!
@@ -91,6 +88,3 @@ function __setprompt
 }
 
 export -f __setprompt
-
-#################### zachbrowne ##########################
-##########################################################
