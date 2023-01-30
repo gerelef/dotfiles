@@ -19,44 +19,31 @@ function __setprompt
 	local LAST_COMMAND=$? # Must come first!
 
 	PROMPT_DIRTRIM=2
-
+    PS1=""
+    
 	# Show error exit code if there is one
 	if [[ $LAST_COMMAND != 0 ]]; then
-		PS1="\[${_FRED}\]Exit Code \[${_FLRED}\]${LAST_COMMAND}\[${_NOCOLOUR}\] \[${_FRED}\]"
-		if [[ $LAST_COMMAND == 1 ]]; then
-			PS1+="General error"
-		elif [ $LAST_COMMAND == 2 ]; then
-			PS1+="Missing keyword, command, or permission problem"
-		elif [ $LAST_COMMAND == 126 ]; then
-			PS1+="Permission problem or command is not an executable"
-		elif [ $LAST_COMMAND == 127 ]; then
-			PS1+="Command not found"
-		elif [ $LAST_COMMAND == 128 ]; then
-			PS1+="Invalid argument to exit"
-		elif [ $LAST_COMMAND == 129 ]; then
-			PS1+="Fatal error signal 1"
-		elif [ $LAST_COMMAND == 131 ]; then
-			PS1+="Fatal error signal 3"
-		elif [ $LAST_COMMAND == 132 ]; then
-			PS1+="Fatal error signal 4"
-		elif [ $LAST_COMMAND == 133 ]; then
-			PS1+="Fatal error signal 5"
-		elif [ $LAST_COMMAND == 134 ]; then
-			PS1+="Fatal error signal 6"
-		elif [ $LAST_COMMAND == 135 ]; then
-			PS1+="Fatal error signal 7"
-		elif [ $LAST_COMMAND == 136 ]; then
-			PS1+="Fatal error signal 8"
-		elif [ $LAST_COMMAND == 137 ]; then
-			PS1+="Fatal error signal 9"
-		elif [ $LAST_COMMAND -gt 255 ]; then
-			PS1+="Exit status out of range"
-		else
-			PS1+="Unknown error code"
-		fi
-		PS1+="\n"
-	else
-		PS1=""
+		PS1+="\[${_FRED}\]Exit Code \[${_FLRED}\]${LAST_COMMAND}\[${_NOCOLOUR}\] \[${_FRED}\]"
+		case $LAST_COMMAND in
+		    1) PS1+="General error";;
+		    2) PS1+="Missing keyword, command, or permission problem";;
+		    126) PS1+="Permission problem or command is not an executable";;
+		    127) PS1+="Possible problem with \$PATH or a typo";;
+		    128) PS1+="Invalid argument to exit" ;;
+		    129) PS1="Fatal error signal SIGHUP";;
+		    130) PS1+="Script terminated by Control-C";;
+		    131) PS1="Fatal error signal SIGQUIT";;
+		    132) PS1="Fatal error signal SIGILL";;
+		    133) PS1="Fatal error signal SIGTRAP";;
+		    134) PS1="Fatal error signal SIGABRT";;
+		    135) PS1="Fatal error signal SIGBUS";;
+		    136) PS1="Fatal error signal SIGFPE";;
+		    137) PS1="Fatal error signal SIGKILL";;
+		    139) PS1="Fatal error signal SIGSEGV";;
+		    145) PS1="Fatal error signal SIGSTERM";;
+		    *) PS1+="Unknown error code $LAST_COMMAND";;
+		    esac
+	    PS1+="\[${_NOCOLOUR}\]\n"
 	fi
 	
 	PS1+="\[${_FLBLUE}\]\t\[${_NOCOLOUR}\]" # Time
