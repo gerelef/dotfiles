@@ -5,7 +5,7 @@
 #   https://tldp.org/HOWTO/Man-Page/q2.html 
 
 DOTFILES_DIR="$HOME/dotfiles"
-REQUIRE_DEPENDENCIES+="tldr "
+REQUIRE_DEPENDENCIES+="tldr openssl bat "
 
 # EXPORTS
 # https://unix.stackexchange.com/questions/90759/where-should-i-install-manual-pages-in-user-directory

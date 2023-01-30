@@ -146,27 +146,13 @@ bridge-utils \
 libvirt \
 virt-install \
 qemu-kvm \
+openvpn \
 "
 
 INSTALLABLE_CODECS="\
 gstreamer1-plugins-* \
 gstreamer1-plugin-openh264 \
 gstreamer1-libav --exclude=gstreamer1-plugins-bad-free-devel \
-"
-
-INSTALLABLE_BASHRC_DEPENDENCIES="\
-ShellCheck \
-openssl \
-git \
-plocate \
-openvpn \
-bat \
-lm_sensors \
-tldr \
-ffmpeg \
-yt-dlp \
-yt-dlp-bash-completion \
-rubygem-ronn-ng \
 "
 
 UNINSTALLABLE_BLOAT="\
@@ -240,6 +226,11 @@ com.teamspeak.TeamSpeak \
 com.vysp3r.ProtonPlus \
 "
 
+INSTALLABLE_DEV_PKGS="\
+scrcpy \
+bless \
+"
+
 INSTALLABLE_IDE_FLATPAKS="\
 org.gnome.Builder \
 ar.xjuan.Cambalache \
@@ -290,11 +281,10 @@ fwupdmgr update -y
 
 #######################################################################################################
 
-echo "-------------------INSTALLING---------------- $INSTALLABLE_PACKAGES $INSTALLABLE_CODECS $INSTALLABLE_BASHRC_DEPENDENCIES" | tr " " "\n"
+echo "-------------------INSTALLING---------------- $INSTALLABLE_PACKAGES $INSTALLABLE_CODECS" | tr " " "\n"
 dnf-remove "$UNINSTALLABLE_BLOAT"
 dnf-install "$INSTALLABLE_PACKAGES"
 dnf-install "$INSTALLABLE_CODECS"
-dnf-install "$INSTALLABLE_BASHRC_DEPENDENCIES"
 dnf-install-group "--with-optional Multimedia"
 
 case "btrfs" in
@@ -336,7 +326,6 @@ echo "Switching to $REAL_USER to install flatpaks"
 echo "-------------------INSTALLING---------------- $INSTALLABLE_FLATPAKS $INSTALLABLE_OBS_STUDIO" | tr " " "\n"
 flatpak-install "$INSTALLABLE_FLATPAKS"
 flatpak-install "$INSTALLABLE_OBS_STUDIO"
-echo "Continuing as $(whoami)"
 
 #######################################################################################################
 
@@ -355,7 +344,7 @@ if [[ $REPLY =~ ^[Yy]$ ]]; then
     echo "Finished installing extras."
 fi
 
-echo "-------------------INSTALLING---------------- $INSTALLABLE_IDE_FLATPAKS" | tr " " "\n"
+echo "-------------------INSTALLING---------------- $INSTALLABLE_IDE_FLATPAKS $INSTALLABLE_DEV_PKGS" | tr " " "\n"
 while : ; do
     read -p "Are you sure you want to install Community IDEs & Jetbrains Toolbox?[Y/n] " -n 1 -r
     [[ ! $REPLY =~ ^[YyNn]$ ]] || break
@@ -365,17 +354,13 @@ echo ""
 if [[ $REPLY =~ ^[Yy]$ ]]; then
     flatpak-install "$INSTALLABLE_IDE_FLATPAKS"
     echo "Finished installing IDEs."
+    
+    dnf copr enable -y zeno/scrcpy
+    dnf-install "$INSTALLABLE_DEV_PKGS"
 
     echo "-------------------INSTALLING JETBRAINS TOOLBOX----------------" 
     curl -fsSL https://raw.githubusercontent.com/nagygergo/jetbrains-toolbox-install/master/jetbrains-toolbox.sh | bash
     echo "Finished installing toolbox."
-    
-    echo "-------------------INSTALLING BLESS HEX EDITOR----------------" 
-    dnf-install "bless"
-    
-    dnf copr enable -y zeno/scrcpy
-    dnf-install scrcpy
-    echo "Finished installing bless."
 fi
 
 #######################################################################################################
