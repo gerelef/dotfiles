@@ -42,7 +42,7 @@ function __setprompt
             139) PS1="Fatal error signal SIGSEGV";;
             145) PS1="Fatal error signal SIGSTERM";;
             *) PS1+="Unknown error code $LAST_COMMAND";;
-            esac
+        esac
         PS1+="\[${_NOCOLOUR}\]\n"
     fi
     
