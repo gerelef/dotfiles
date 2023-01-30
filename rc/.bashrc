@@ -5,6 +5,7 @@
 #   https://tldp.org/HOWTO/Man-Page/q2.html 
 
 DOTFILES_DIR="$HOME/dotfiles"
+REQUIRE_DEPENDENCIES+="tldr "
 
 # EXPORTS
 # https://unix.stackexchange.com/questions/90759/where-should-i-install-manual-pages-in-user-directory
@@ -16,7 +17,34 @@ export HISTCONTROL=erasedups:ignoredups:ignorespace
 
 #############################################################
 
-require_bashrc () {
+require-packages-bashrc () {
+    local HAS_RUN_FILE="$DOTFILES_DIR/.has-run"
+    [[ -f $HAS_RUN_FILE ]] && return 0
+    
+    local DNF_MANAGER="$(which dnf 2> /dev/null)"
+    local YUM_MANAGER="$(which yum 2> /dev/null)"
+    local ZYP_MANAGER="$(which zypper 2> /dev/null)"
+    local APT_MANAGER="$(which apt 2> /dev/null)"
+    
+    echo -e "Installing essential .bashrc packages: $_FRED"
+    echo -n "$REQUIRE_DEPENDENCIES" | tr " " "\n"
+    echo -ne "$_NOCOLOUR"
+    if [[ -n "$DNF_MANAGER" ]]; then
+        echo "using $DNF_MANAGER"
+        sudo $DNF_MANAGER install -y $REQUIRE_DEPENDENCIES && touch $HAS_RUN_FILE
+    elif [[ -n "$YUM_MANAGER" ]]; then
+        echo "using $YUM_MANAGER"
+        sudo $YUM_MANAGER install $REQUIRE_DEPENDENCIES && touch $HAS_RUN_FILE
+    elif [[ -n "$ZYP_MANAGER" ]]; then
+        echo "using $ZYP_MANAGER"
+        sudo $ZYP_MANAGER install $REQUIRE_DEPENDENCIES && touch $HAS_RUN_FILE
+    elif [[ -n "$APT_MANAGER" ]]; then
+        echo "using $APT_MANAGER"
+        sudo $APT_MANAGER install -y $REQUIRE_DEPENDENCIES && touch $HAS_RUN_FILE 
+    fi
+}
+
+require-bashrc () {
     # Source global & private definitions
     local _GLOBAL_BASHRC="/etc/bashrc"
     local _PRIVATE_BASHRC="$HOME/.bashrc_private"
@@ -38,14 +66,9 @@ require_bashrc () {
 
     # HARD DEPENDENCIES
     [[ -f "$_UTILITY_PROMPT" ]] && . "$_UTILITY_PROMPT"
-}
-
-hexcat () {
-    [[ -z "$*" ]] && return 2
     
-    for arg in "$@"; do
-        xxd < "$arg"
-    done
+    # PACKAGE DEPENDENCIES
+    require-packages-bashrc || return 1
 }
 
 # Get directory size 
@@ -107,7 +130,7 @@ _tldr () {
     command tldr "$@"
 }
 
-require_bashrc
+require-bashrc
 PROMPT_COMMAND='__setprompt; history -a'
 
 shopt -s autocd

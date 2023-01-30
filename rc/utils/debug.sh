@@ -4,6 +4,7 @@ if [[ -n "$__BDEBUG_LOADED" ]]; then
     return 0
 fi
 readonly __BDEBUG_LOADED="__LOADED"
+REQUIRE_DEPENDENCIES+="shellcheck "
 
 bash-debug-subshell () {
     [[ -z "$*" ]] && return 2

@@ -4,6 +4,7 @@ if [[ -n "$__YTDL_LOADED" ]]; then
     return 0
 fi
 readonly __YTDL_LOADED="__LOADED"
+REQUIRE_DEPENDENCIES+="yt-dlp "
 
 # yt-dlp download to mp3
 ytdl-mp3 () {

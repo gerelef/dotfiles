@@ -4,6 +4,7 @@ if [[ -n "$__GIT_BRANCH_LOADED" ]]; then
     return 0
 fi
 readonly __GIT_BRANCH_LOADED="__LOADED"
+REQUIRE_DEPENDENCIES+="git "
 
 # get current git branch in arg or current 
 _git-branch () {

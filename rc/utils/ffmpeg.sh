@@ -4,6 +4,7 @@ if [[ -n "$__FFMPEG_WRAP_LOADED" ]]; then
     return 0
 fi
 readonly __FFMPEG_WRAP_LOADED="__LOADED"
+REQUIRE_DEPENDENCIES+="ffmpeg "
 
 # convert Hours:Minutes:Seconds (colon seperated) to seconds
 __hms () {
