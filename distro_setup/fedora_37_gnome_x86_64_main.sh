@@ -223,7 +223,7 @@ fr.handbrake.ghb \
 io.github.Foldex.AdwSteamGtk \
 com.discordapp.Discord \
 com.teamspeak.TeamSpeak \
-com.vysp3r.ProtonPlus \
+net.davidotek.pupgui2 \
 "
 
 INSTALLABLE_DEV_PKGS="\

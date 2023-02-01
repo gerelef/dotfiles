@@ -28,7 +28,7 @@ function __setprompt
             1) PS1+="General error";;
             2) PS1+="Missing keyword, command, or permission problem";;
             126) PS1+="Permission problem or command is not an executable";;
-            127) PS1+='Possible problem with $PATH or a typo';;
+            127) PS1+='Possible problem with \$PATH or a typo';;
             128) PS1+="Invalid argument to exit" ;;
             129) PS1+="Fatal error signal SIGHUP";;
             130) PS1+="Script terminated by Control-C";;
