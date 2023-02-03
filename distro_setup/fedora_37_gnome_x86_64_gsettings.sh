@@ -265,7 +265,7 @@ gsettings set org.gnome.shell.extensions.appindicator icon-opacity 255
 gsettings set org.gnome.shell.extensions.appindicator icon-size 0
 gsettings set org.gnome.shell.extensions.appindicator icon-spacing 12
 gsettings set org.gnome.shell.extensions.appindicator tray-order 1
-gsettings set org.gnome.shell.extensions.appindicator tray-pos 'right'
+gsettings set org.gnome.shell.extensions.appindicator tray-pos 'left'
 gsettings set org.gnome.shell.extensions.pop-shell activate-launcher "[]"
 gsettings set org.gnome.shell.extensions.pop-shell active-hint true
 gsettings set org.gnome.shell.extensions.pop-shell column-size 64
