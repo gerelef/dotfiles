@@ -20,5 +20,12 @@ ytdl-mp4 () {
     yt-dlp --format "bv*[ext=mp4]+ba[ext=m4a]/b[ext=mp4]" "$@"
 }
 
+ytdl-thumbnail () {
+    [[ -z "$*" ]] && return 2
+    
+    yt-dlp --write-thumbnail --skip-download "$@"
+}
+
 export -f ytdl-mp3
 export -f ytdl-mp4
+export -f ytdl-thumbnail
