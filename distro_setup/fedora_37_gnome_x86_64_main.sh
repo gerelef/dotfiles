@@ -124,6 +124,7 @@ firefox \
 chromium \
 fedora-chromium-config \
 gimp \
+krita \
 libreoffice \
 qbittorrent \
 sqlitebrowser \
@@ -179,7 +180,6 @@ com.spotify.Client \
 net.cozic.joplin_desktop \
 com.skype.Client \
 us.zoom.Zoom \
-io.github.dummerle.rare \
 com.github.Matoking.protontricks \
 net.openra.OpenRA \
 com.github.tchx84.Flatseal \
@@ -215,7 +215,6 @@ INSTALLABLE_EXTRAS="\
 lmms \
 lmms-vst \
 steam \
-heroic-games-launcher-bin \
 "
 
 INSTALLABLE_EXTRAS_FLATPAK="\
@@ -223,6 +222,7 @@ fr.handbrake.ghb \
 io.github.Foldex.AdwSteamGtk \
 com.discordapp.Discord \
 com.teamspeak.TeamSpeak \
+io.github.dummerle.rare \
 net.davidotek.pupgui2 \
 "
 
@@ -337,8 +337,6 @@ done
 
 echo ""
 if [[ $REPLY =~ ^[Yy]$ ]]; then
-    dnf copr enable -y atim/heroic-games-launcher
-
     dnf-install "$INSTALLABLE_EXTRAS"
     flatpak-install "$INSTALLABLE_EXTRAS_FLATPAK"
     echo "Finished installing extras."
