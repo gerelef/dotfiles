@@ -4,8 +4,13 @@
 #   https://github.com/anordal/shellharden/blob/master/how_to_do_things_safely_in_bash.md
 #   https://tldp.org/HOWTO/Man-Page/q2.html 
 
-DOTFILES_DIR="$HOME/dotfiles"
 REQUIRE_DEPENDENCIES+="tldr openssl bat "
+
+#############################################################
+
+# GLOBAL CONSTANTS
+readonly DOTFILES_DIR="$HOME/dotfiles"
+readonly HAS_RUN_FILE="$DOTFILES_DIR/.has-run"
 
 # EXPORTS
 # https://unix.stackexchange.com/questions/90759/where-should-i-install-manual-pages-in-user-directory
@@ -18,30 +23,34 @@ export HISTCONTROL=erasedups:ignoredups:ignorespace
 #############################################################
 
 require-packages-bashrc () {
-    local HAS_RUN_FILE="$DOTFILES_DIR/.has-run"
     [[ -f $HAS_RUN_FILE ]] && return 0
     
-    local DNF_MANAGER="$(which dnf 2> /dev/null)"
-    local YUM_MANAGER="$(which yum 2> /dev/null)"
-    local ZYP_MANAGER="$(which zypper 2> /dev/null)"
-    local APT_MANAGER="$(which apt 2> /dev/null)"
-    
-    echo -e "Installing essential .bashrc packages: $_FRED"
+    echo -e "Installing essential .bashrc packages: $_FGREEN"
     echo -n "$REQUIRE_DEPENDENCIES" | tr " " "\n"
     echo -ne "$_NOCOLOUR"
-    if [[ -n "$DNF_MANAGER" ]]; then
-        echo "using $DNF_MANAGER"
-        sudo $DNF_MANAGER install -y $REQUIRE_DEPENDENCIES && touch $HAS_RUN_FILE
-    elif [[ -n "$YUM_MANAGER" ]]; then
-        echo "using $YUM_MANAGER"
-        sudo $YUM_MANAGER install $REQUIRE_DEPENDENCIES && touch $HAS_RUN_FILE
-    elif [[ -n "$ZYP_MANAGER" ]]; then
-        echo "using $ZYP_MANAGER"
-        sudo $ZYP_MANAGER install $REQUIRE_DEPENDENCIES && touch $HAS_RUN_FILE
-    elif [[ -n "$APT_MANAGER" ]]; then
-        echo "using $APT_MANAGER"
-        sudo $APT_MANAGER install -y $REQUIRE_DEPENDENCIES && touch $HAS_RUN_FILE 
-    fi
+    
+    while :; do
+        [[ -n "$(command -v dnf)" ]] && sudo dnf install $REQUIRE_DEPENDENCIES && touch $HAS_RUN_FILE && break
+        [[ -n "$(command -v zyp)" ]] && sudo zyp install $REQUIRE_DEPENDENCIES && touch $HAS_RUN_FILE && break
+        [[ -n "$(command -v yum)" ]] && sudo yum install $REQUIRE_DEPENDENCIES && touch $HAS_RUN_FILE && break
+        [[ -n "$(command -v apt)" ]] && sudo apt install $REQUIRE_DEPENDENCIES && touch $HAS_RUN_FILE && break
+        break
+    done
+}
+
+
+update-everything () {
+    while :; do
+        [[ -n "$(command -v dnf)" ]] && sudo dnf update -y && break
+        [[ -n "$(command -v zyp)" ]] && sudo zyp update -y && break
+        [[ -n "$(command -v pacman)" ]] && sudo pacman -Syu && break
+        [[ -n "$(command -v yum)" ]] && sudo yum update -y && break
+        [[ -n "$(command -v apt)" ]] && sudo apt update -y && break
+        break
+    done
+    [[ -n "$(command -v flatpak)" ]] && flatpak update -y
+    [[ -n "$(command -v snap)" ]] && snap update -y
+    return 0
 }
 
 require-bashrc () {
@@ -97,11 +106,6 @@ rn () {
     mv -vn "$1" "$2"
 }
 
-# call lss py implementation
-lss () {
-    $DOTFILES_DIR/rc/utils/lss.py "$@"
-}
-
 # Automatically do an ls after each cd
 cd () { 
 	builtin cd "$@" && lss
@@ -109,6 +113,11 @@ cd () {
 
 venv-subshell () {
     bash --init-file <(echo ". \"$HOME/.bashrc\"; . ./venv/bin/activate")
+}
+
+# call lss py implementation
+lss () {
+    $DOTFILES_DIR/rc/utils/lss.py "$@"
 }
 
 update-mono-ff-theme () {
