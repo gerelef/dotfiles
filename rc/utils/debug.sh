@@ -32,6 +32,14 @@ timeit () {
         awk '{sum += $1 * 60 + $2} END {print sum / NR}'
 }
 
+pid-of () {
+    [[ -z "$*" ]] && return 2
+    [[ "$#" -ne 1 ]] && echo "Only one argument." >&2 && return 2
+    
+    ps ax -e -o pid,comm | grep $1
+}
+
 export -f bash-debug-subshell
 export -f shellcheck-bash
 export -f timeit
+export -f pid-of

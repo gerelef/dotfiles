@@ -72,3 +72,13 @@ readonly _FWHITE="$__PFI$__WHITE"
 readonly _BWHITE="$__PBI$__WHITE"
 readonly _FBLACK="$__PFI$__BLACK"
 readonly _BBLACK="$__PBI$__BLACK"
+
+
+echo-colour-codes-256 () {
+    # https://betterprogramming.pub/25-awesome-linux-command-one-liners-9495f26f07fb
+    for code in {0..255}; do 
+        echo -e "\e[38;05;${code}m $code: Test"
+    done
+}
+
+export -f echo-colour-codes-256

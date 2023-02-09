@@ -38,18 +38,17 @@ require-packages-bashrc () {
     done
 }
 
-
 update-everything () {
     while :; do
         [[ -n "$(command -v dnf)" ]] && sudo dnf update -y && break
         [[ -n "$(command -v zyp)" ]] && sudo zyp update -y && break
         [[ -n "$(command -v pacman)" ]] && sudo pacman -Syu && break
         [[ -n "$(command -v yum)" ]] && sudo yum update -y && break
-        [[ -n "$(command -v apt)" ]] && sudo apt update -y && break
+        [[ -n "$(command -v apt)" ]] && sudo apt update -y && sudo apt full-upgrade -y && sudo apt autoremove -y && sudo apt clean -y && sudo apt autoclean -y && break
         break
     done
     [[ -n "$(command -v flatpak)" ]] && flatpak update -y
-    [[ -n "$(command -v snap)" ]] && snap update -y
+    [[ -n "$(command -v snap)" ]] && snap refresh -y
     return 0
 }
 
@@ -78,6 +77,11 @@ require-bashrc () {
     
     # PACKAGE DEPENDENCIES
     require-packages-bashrc || return 1
+}
+
+dnf-installed-packages-by-size () {
+    # https://forums.fedoraforum.org/showthread.php?314323-Useful-one-liners-feel-free-to-update&p=1787643
+    dnf -q --disablerepo=* info installed | sed -n 's/^Name[[:space:]]*: \|^Size[[:space:]]*: //p' | sed 'N;s/\n/ /;s/ \(.\)$/\1/' | sort -hr -k 2 | less
 }
 
 # Get directory size 
