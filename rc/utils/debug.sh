@@ -34,7 +34,7 @@ timeit () {
 
 pid-of () {
     [[ -z "$*" ]] && return 2
-    [[ "$#" -ne 1 ]] && echo "Only one argument." >&2 && return 2
+    [[ "$#" -ne 1 ]] && echo "Only one argument allowed." >&2 && return 2
     
     ps ax -e -o pid,comm | grep $1
 }
