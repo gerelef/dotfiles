@@ -24,11 +24,11 @@ export HISTCONTROL=erasedups:ignoredups:ignorespace
 
 require-packages-bashrc () {
     [[ -f $HAS_RUN_FILE ]] && return 0
-    
+
     echo -e "Installing essential .bashrc packages: $_FGREEN"
     echo -n "$REQUIRE_DEPENDENCIES" | tr " " "\n"
     echo -ne "$_NOCOLOUR"
-    
+
     while :; do
         [[ -n "$(command -v dnf)" ]] && sudo dnf install $REQUIRE_DEPENDENCIES && touch $HAS_RUN_FILE && break
         [[ -n "$(command -v zyp)" ]] && sudo zyp install $REQUIRE_DEPENDENCIES && touch $HAS_RUN_FILE && break
@@ -40,7 +40,7 @@ require-packages-bashrc () {
 
 update-everything () {
     while :; do
-        [[ -n "$(command -v dnf)" ]] && sudo dnf update -y && break
+        [[ -n "$(command -v dnf)" ]] && sudo dnf update -y --refresh && sudo dnf autoremove -y && break
         [[ -n "$(command -v zyp)" ]] && sudo zyp update -y && break
         [[ -n "$(command -v pacman)" ]] && sudo pacman -Syu && break
         [[ -n "$(command -v yum)" ]] && sudo yum update -y && break

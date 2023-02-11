@@ -204,6 +204,7 @@ gnome-shell-extension-pop-shell \
 gnome-shell-extension-pop-shell-shortcut-overrides \
 gnome-shell-extension-places-menu \
 gnome-shell-extension-appindicator \
+gnome-shell-extension-freon \
 "
 
 INSTALLABLE_BTRFS_TOOLS="\
