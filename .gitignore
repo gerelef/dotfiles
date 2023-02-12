@@ -2,4 +2,7 @@
 *venv*
 *.idea*
 .has-run
+.has-run-fsh
+.has-run-ksh
+.has-run-zsh
 bashrc-private.sh

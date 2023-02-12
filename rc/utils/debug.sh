@@ -39,6 +39,11 @@ pid-of () {
     ps ax -e -o pid,comm | grep $1
 }
 
+venv-subshell () {
+    bash --init-file <(echo ". \"$HOME/.bashrc\"; . ./venv/bin/activate")
+}
+
+export -f venv-subshell
 export -f bash-debug-subshell
 export -f shellcheck-bash
 export -f timeit

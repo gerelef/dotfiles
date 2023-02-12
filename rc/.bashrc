@@ -11,6 +11,9 @@ REQUIRE_DEPENDENCIES+="tldr openssl bat "
 # GLOBAL CONSTANTS
 readonly DOTFILES_DIR="$HOME/dotfiles"
 readonly HAS_RUN_FILE="$DOTFILES_DIR/.has-run"
+readonly HAS_RUN_ZSH_FILE="$DOTFILES_DIR/.has-run-zsh"
+readonly HAS_RUN_FSH_FILE="$DOTFILES_DIR/.has-run-fsh"
+readonly HAS_RUN_KSH_FILE="$DOTFILES_DIR/.has-run-ksh"
 
 # EXPORTS
 # https://unix.stackexchange.com/questions/90759/where-should-i-install-manual-pages-in-user-directory
@@ -21,19 +24,14 @@ export HISTSIZE=10000
 export HISTCONTROL=erasedups:ignoredups:ignorespace
 
 #############################################################
+# package management 
 
-require-packages-bashrc () {
-    [[ -f $HAS_RUN_FILE ]] && return 0
-
-    echo -e "Installing essential .bashrc packages: $_FGREEN"
-    echo -n "$REQUIRE_DEPENDENCIES" | tr " " "\n"
-    echo -ne "$_NOCOLOUR"
-
+install-system-pkg () {
     while :; do
-        [[ -n "$(command -v dnf)" ]] && sudo dnf install $REQUIRE_DEPENDENCIES && touch $HAS_RUN_FILE && break
-        [[ -n "$(command -v zyp)" ]] && sudo zyp install $REQUIRE_DEPENDENCIES && touch $HAS_RUN_FILE && break
-        [[ -n "$(command -v yum)" ]] && sudo yum install $REQUIRE_DEPENDENCIES && touch $HAS_RUN_FILE && break
-        [[ -n "$(command -v apt)" ]] && sudo apt install $REQUIRE_DEPENDENCIES && touch $HAS_RUN_FILE && break
+        [[ -n "$(command -v dnf)" ]] && if sudo dnf install -y "$@"; then break; else return $?; fi
+        [[ -n "$(command -v zyp)" ]] && if sudo zyp install -y "$@"; then break; else return $?; fi 
+        [[ -n "$(command -v yum)" ]] && if sudo yum install -y "$@"; then break; else return $?; fi 
+        [[ -n "$(command -v apt)" ]] && if sudo apt install -y "$@"; then break; else return $?; fi
         break
     done
 }
@@ -50,6 +48,16 @@ update-everything () {
     [[ -n "$(command -v flatpak)" ]] && flatpak update -y
     [[ -n "$(command -v snap)" ]] && snap refresh -y
     return 0
+}
+
+require-bashrc-packages () {
+    [[ -f $HAS_RUN_FILE ]] && return 0
+
+    echo -e "Installing essential .bashrc packages: $_FGREEN"
+    echo -n "$REQUIRE_DEPENDENCIES" | tr " " "\n"
+    echo -ne "$_NOCOLOUR"
+    
+    install-system-pkg $REQUIRE_DEPENDENCIES && touch $HAS_RUN_FILE && clear
 }
 
 require-bashrc () {
@@ -76,7 +84,7 @@ require-bashrc () {
     [[ -f "$_UTILITY_PROMPT" ]] && . "$_UTILITY_PROMPT"
     
     # PACKAGE DEPENDENCIES
-    require-packages-bashrc || return 1
+    require-bashrc-packages || return 1
 }
 
 dnf-installed-packages-by-size () {
@@ -84,6 +92,8 @@ dnf-installed-packages-by-size () {
     dnf -q --disablerepo=* info installed | sed -n 's/^Name[[:space:]]*: \|^Size[[:space:]]*: //p' | sed 'N;s/\n/ /;s/ \(.\)$/\1/' | sort -hr -k 2 | less
 }
 
+#############################################################
+# pure bash helpers 
 # Get directory size 
 gds () {
     if [[ -n "$*" ]]; then
@@ -110,14 +120,8 @@ rn () {
     mv -vn "$1" "$2"
 }
 
-# Automatically do an ls after each cd
-cd () { 
-	builtin cd "$@" && lss
-}
-
-venv-subshell () {
-    bash --init-file <(echo ". \"$HOME/.bashrc\"; . ./venv/bin/activate")
-}
+#############################################################
+# PYTHON SCRIPTS
 
 # call lss py implementation
 lss () {
@@ -127,6 +131,9 @@ lss () {
 update-mono-ff-theme () {
     $DOTFILES_DIR/rc/utils/update-mono-ff-theme.py "$@"
 }
+
+#############################################################
+# WRAPPERS TO BUILTINS OR PATH EXECUTABLES
 
 # journalctl wrapper for ease of use
 _journalctl () {
@@ -142,6 +149,62 @@ _tldr () {
     [[ $# -eq 1 ]] && (command tldr "$1") | less -R && return
     command tldr "$@"
 }
+
+# Automatically do an ls after each cd
+cd () { 
+	builtin cd "$@" && lss
+}
+
+#############################################################
+# DIFFERENT SHELLS
+
+require-ksh-packages () {
+    [[ -f $HAS_RUN_KSH_FILE ]] && return 0
+    
+    echo -ne "$_FBROWN"
+    echo -e "Installing ksh $_NOCOLOUR"
+    
+    install-system-pkg ksh && touch $HAS_RUN_KSH_FILE && clear
+}
+
+ksh () {
+    require-ksh-packages 
+    
+    /usr/bin/env ksh
+}
+
+require-fsh-packages () {
+    [[ -f $HAS_RUN_FSH_FILE ]] && return 0
+    
+    echo -ne "$_FBLUE"
+    echo -e "Installing fish $_NOCOLOUR"
+    
+    install-system-pkg fish && touch $HAS_RUN_FSH_FILE && clear
+}
+
+fsh () {
+    require-fsh-packages  
+    
+    /usr/bin/env fish
+}
+
+require-zsh-packages () {
+    [[ -f $HAS_RUN_ZSH_FILE ]] && return 0
+    
+    echo -ne "$_FYELLOW"
+    echo -e "Installing zsh $_NOCOLOUR"
+    
+    install-system-pkg zsh && touch $HAS_RUN_ZSH_FILE && clear
+}
+
+zsh () {
+    require-zsh-packages 
+    
+    /usr/bin/env zsh
+}
+
+#############################################################
+# BASH OPTIONS
 
 require-bashrc
 PROMPT_COMMAND='__setprompt; history -a'
@@ -192,7 +255,7 @@ alias flatpak-checkout="flatpak update --commit="
 # convenience alias
 alias c="clear"
 alias wget="\wget -c --read-timeout=5 --tries=0"
-alias venv="venv-subshell" # activate venv
+alias venv=". ./venv/bin/activate" # activate venv
 alias cvenv="python -m venv" # create venv (pythonXX cvenv)
 
 alias restartpipewire="systemctl --user restart pipewire" # restart audio (pipewire)
