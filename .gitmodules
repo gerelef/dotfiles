@@ -2,3 +2,7 @@
 	path = csgorc
 	url = git@github.com:gerelef/csgorc.git
 	branch = master
+[submodule "insurc"]
+	path = insurc
+	url = git@github.com:gerelef/insurc.git
+	branch = master
