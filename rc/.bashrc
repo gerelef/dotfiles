@@ -2,7 +2,7 @@
 #  Treat these tutorials like you would PEP8. Read in detail.
 #   https://github.com/bahamas10/bash-style-guide#bashisms
 #   https://github.com/anordal/shellharden/blob/master/how_to_do_things_safely_in_bash.md
-#   https://tldp.org/HOWTO/Man-Page/q2.html 
+#   https://tldp.org/HOWTO/Man-Page/q2.html
 
 REQUIRE_DEPENDENCIES+="tldr openssl bat "
 
@@ -22,7 +22,7 @@ export DOTNET_CLI_TELEMETRY_OPTOUT=1
 export HISTFILESIZE=100000
 export HISTSIZE=10000
 export HISTCONTROL=erasedups:ignoredups:ignorespace
-
+export SUDO_PROMPT="$(tput setaf 4)Root password:$(tput sgr0)"
 #############################################################
 # package management 
 
