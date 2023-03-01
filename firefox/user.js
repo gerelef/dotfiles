@@ -46,8 +46,9 @@ user_pref("dom.telephony.enabled", false);
 user_pref("media.webspeech.synth.enabled", false);
 user_pref("browser.send_pings.require_same_host", true);
 user_pref("dom.vr.enabled", false);
-user_pref("webgl.min_capability_mode", true);
-user_pref("webgl.disable-extensions", true);
+// enabled because of moovit
+//  user_pref("webgl.min_capability_mode", true);
+//  user_pref("webgl.disable-extensions", true);
 user_pref("webgl.enable-debug-renderer-info", false);
 user_pref("dom.maxHardwareConcurrency", 4);
 user_pref("camera.control.face_detection.enabled", false);
