@@ -15,14 +15,14 @@
     visibility: collapse !important;
 }
 
-@media (max-width: 900px) {
+@media (max-width: 1000px) {
     #sidebar-box {
         max-width: 102px !important;
         min-width: 102px !important;
     }
 }
 
-@media (max-width: 700px) {
+@media (max-width: 750px) {
     #sidebar-box {
         visibility: collapse;
     }
