@@ -148,6 +148,7 @@ libvirt \
 virt-install \
 qemu-kvm \
 openvpn \
+pulseeffects \
 "
 
 INSTALLABLE_CODECS="\
