@@ -11,18 +11,6 @@ import argparse as ap
 import typing
 
 
-class UnicodeGirderChars(Enum):
-    TOP_START_SYMBOL = "┌"
-    TOP_JOIN_SYMBOL = "┬"
-    TOP_END_SYMBOL = "┐"
-
-    ROW_SYMBOL = "─"
-
-    BOT_START_SYMBOL = "└"
-    BOT_JOIN_SYMBOL = "┴"
-    BOT_END_SYMBOL = "┘"
-
-
 class Column:
     def __init__(self, elements: list[PosixPath] = None, subcolumns: list = None, permissions=False):
         if subcolumns is None:
@@ -53,18 +41,18 @@ class Column:
 
     def size(self) -> int:
         return len(self.elements)
-    
+
     def get_ideal_rows_columns(self, mc, ml, tr) -> tuple[int, int]:
         columns = floor(tr / ml) + 1
         rows = ml + (tr % columns)
         return columns, rows
-        
+
     def get_permission(self, pp: PosixPath):
         return filemode(pp.lstat().st_mode)
 
     def get_row_elements(self, max_cols, max_lines):
         columns, rows = self.get_ideal_rows_columns(max_cols, max_lines, max(self.get_row_indices()))
-        
+
         subgenerators: Typing.Generator = []
         for sub in self.subcolumns:
             subgenerators.append(sub.get_row_elements(max_cols, max_lines))
@@ -82,12 +70,12 @@ class Column:
                         word = self.get_permission(self.elements[element_index]) + " "
                     word_temp, overhead = colour(self.elements[element_index])
                     word += word_temp
-                    
+
                     line += word + Colours.NOCOLOUR + " " * (self.max - len(word) + overhead)
                     line_overhead += overhead
                     element_index += 1
                 else:
-                    # pad the row if not enough elements to fill the column 
+                    # pad the row if not enough elements to fill the column
                     line += " " * self.max
 
             for subg in subgenerators:
@@ -96,7 +84,7 @@ class Column:
                 line += word
 
             yield line, line_overhead
-            
+
         # return only padded elements if they keep asking for more...
         while True:
             yield " " * self.max * columns, 0
@@ -112,7 +100,9 @@ def git_status(directory: str):
     toplevel = run_subshell(["git", "-C", directory, "rev-parse", "--show-toplevel"])[1]
 
     if toplevel:
-        status = run_subshell(["git", "-C", directory, "status", "-s", "--ignored=no"])[1] and "Uncommited changes."
+        has_changes = run_subshell(["git", "-C", directory, "status", "-s", "--ignored=no"])[1]
+        if has_changes:
+            status = "Uncommited changes."
 
     return status
 
@@ -139,7 +129,7 @@ def get_all_elements(directory: PosixPath) -> tuple[list[PosixPath], list[PosixP
 
 if __name__ == "__main__":
     permissions = False
-    
+
     cwd = PosixPath(argv[1]) if len(argv) > 1 else PosixPath(PosixPath.cwd())
 
     if not cwd.is_dir():
