@@ -1,6 +1,7 @@
-#!/usr/bin/env -S python3 -S
+#!/usr/bin/env -S python3 -S -OO
 from enum import StrEnum
 from pathlib import PosixPath
+from os import set_blocking
 
 
 class ColourCodes(StrEnum):
@@ -221,14 +222,19 @@ def colour(p: PosixPath):
 
     try:
         with open(p, "r", encoding="utf-8") as f:
-            head = f.readline()
+            set_blocking(f.fileno(), False)
+            head = f.readline(__shebang_max_length)
         return __shebang_colours[head](p)
+    except FileNotFoundError:
+        return colour_broken_symlink(p)
     except KeyError:
+        # couldn't find the appropriate shebang
+        pass
+    except OSError:
+        # generic error; could be permission issues or a trillion other things
         pass
     except UnicodeError:
         pass
-    except FileNotFoundError:
-        return colour_broken_symlink(p)
 
     return colour_default(p)
 
@@ -1682,3 +1688,5 @@ __shebang_colours = {
     "#!/bin/sh": colour_bash,
     "#/usr/local/bin/bash": colour_bash,
 }
+
+__shebang_max_length = len(max(__shebang_colours))

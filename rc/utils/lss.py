@@ -1,4 +1,4 @@
-#!/usr/bin/env -S python3 -S
+#!/usr/bin/env -S python3 -S -OO
 from enum import Enum
 from stat import filemode
 from sys import argv, stderr, exit
@@ -24,7 +24,7 @@ class UnicodeGirderChars(Enum):
 
 
 class Column:
-    def __init__(self, elements: list[PosixPath] = None, subcolumns: list = None, permissions = False):
+    def __init__(self, elements: list[PosixPath] = None, subcolumns: list = None, permissions=False):
         if subcolumns is None:
             subcolumns = []
         if elements is None:
@@ -63,7 +63,6 @@ class Column:
         return filemode(pp.lstat().st_mode)
 
     def get_row_elements(self, max_cols, max_lines):
-        total_rows = max(self.get_row_indices())
         columns, rows = self.get_ideal_rows_columns(max_cols, max_lines, max(self.get_row_indices()))
         
         subgenerators: Typing.Generator = []
@@ -109,21 +108,19 @@ def run_subshell(command: list[str]) -> tuple[int, str]:
 
 
 def git_status(directory: str):
-    git_status = ""
+    status = "Working tree clean."
     toplevel = run_subshell(["git", "-C", directory, "rev-parse", "--show-toplevel"])[1]
 
     if toplevel:
-        git_status = "Working tree clean."
-        changes = run_subshell(["git", "-C", directory, "status", "-s", "--ignored=no"])[1]
-        if changes:
-            git_status = "Uncommited changes."
+        status = run_subshell(["git", "-C", directory, "status", "-s", "--ignored=no"])[1] and "Uncommited changes."
 
-    return git_status
+    return status
 
 
 def term_size() -> tuple[int, int]:
-    lines = run(["tput", "lines"], capture_output=True, encoding="utf-8").stdout.replace("\n", "")
-    cols = run(["tput", "cols"], capture_output=True, encoding="utf-8").stdout.replace("\n", "")
+    # if for some reason the terminal tput cols/lines doesn't work, return 0, so we can at least *not* crash.
+    lines = run(["tput", "lines"], capture_output=True, encoding="utf-8").stdout.replace("\n", "") or 0
+    cols = run(["tput", "cols"], capture_output=True, encoding="utf-8").stdout.replace("\n", "") or 0
     return int(lines), int(cols)
 
 
@@ -143,10 +140,9 @@ def get_all_elements(directory: PosixPath) -> tuple[list[PosixPath], list[PosixP
 if __name__ == "__main__":
     permissions = False
     
-    cwd = PosixPath(argv[1]) if len(argv) > 1 else PosixPath.cwd() 
+    cwd = PosixPath(argv[1]) if len(argv) > 1 else PosixPath(PosixPath.cwd())
 
-    pcwd = PosixPath(cwd)
-    if not pcwd.is_dir():
+    if not cwd.is_dir():
         print(f"\"{cwd}\" is not a directory, or not enough permissions.", file=stderr)
         exit(2)
 
