@@ -169,14 +169,13 @@ bless \
 "
 
 readonly INSTALLABLE_IDE_FLATPAKS="\
-org.gnome.Builder \
 ar.xjuan.Cambalache \
 cc.arduino.IDE2 \
 com.vscodium.codium \
 "
 
 readonly INSTALLABLE_NVIDIA_DRIVERS="\
-kernel-headers \ 
+kernel-headers \
 kernel-devel \
 akmod-nvidia \
 xorg-x11-drv-nvidia \
