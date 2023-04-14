@@ -132,6 +132,10 @@ update-mono-ff-theme () {
     $DOTFILES_DIR/rc/utils/update-mono-ff-theme.py "$@"
 }
 
+update-proton-ge () {
+    $DOTFILES_DIR/rc/utils/update-proton-ge.py "$@"
+}
+
 #############################################################
 # WRAPPERS TO BUILTINS OR PATH EXECUTABLES
 
