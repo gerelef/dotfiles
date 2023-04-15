@@ -13,9 +13,9 @@ fi
 #gsettings set org.gnome.settings-daemon.plugins.media-keys.custom-keybinding:/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom0/ binding '<key_combination>'
 echo "-------------------GSETTINGS----------------"
 gsettings set org.gnome.desktop.interface cursor-theme 'Adwaita'
+gsettings set org.gnome.desktop.interface icon-theme 'Adwaita'
 gsettings set org.gnome.desktop.interface gtk-theme 'adw-gtk3-dark'
 gsettings set org.gnome.desktop.interface color-scheme 'prefer-dark'
-gsettings set org.gnome.desktop.interface icon-theme 'Adwaita'
 gsettings set org.gnome.settings-daemon.plugins.media-keys custom-keybindings "['/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom0/', '/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom1/']"
 gsettings set org.gnome.settings-daemon.plugins.media-keys.custom-keybinding:/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom0/ name 'blackbox'
 gsettings set org.gnome.settings-daemon.plugins.media-keys.custom-keybinding:/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom0/ command "/usr/bin/flatpak run --branch=stable --arch=x86_64 --command=blackbox com.raggesilver.BlackBox"
@@ -164,7 +164,22 @@ gsettings set org.gnome.desktop.wm.preferences visual-bell false
 gsettings set org.gnome.desktop.wm.preferences visual-bell-type 'fullscreen-flash'
 gsettings set org.gnome.desktop.wm.preferences workspace-names  "[]"
 ############################################################################################################################################
-org.gnome.desktop.peripherals.mouse accel-profile 'flat'
+gsettings set org.gnome.desktop.peripherals.mouse accel-profile 'flat'
+############################################################################################################################################
+gsettings set org.gnome.desktop.peripherals.touchpad accel-profile 'flat'
+gsettings set org.gnome.desktop.peripherals.touchpad click-method 'none'
+gsettings set org.gnome.desktop.peripherals.touchpad disable-while-typing false
+gsettings set org.gnome.desktop.peripherals.touchpad edge-scrolling-enabled false
+gsettings set org.gnome.desktop.peripherals.touchpad left-handed 'mouse'
+gsettings set org.gnome.desktop.peripherals.touchpad middle-click-emulation false
+gsettings set org.gnome.desktop.peripherals.touchpad natural-scroll true
+gsettings set org.gnome.desktop.peripherals.touchpad send-events 'enabled'
+gsettings set org.gnome.desktop.peripherals.touchpad speed 0.10000000000000001
+gsettings set org.gnome.desktop.peripherals.touchpad tap-and-drag false
+gsettings set org.gnome.desktop.peripherals.touchpad tap-and-drag-lock false
+gsettings set org.gnome.desktop.peripherals.touchpad tap-button-map 'default'
+gsettings set org.gnome.desktop.peripherals.touchpad tap-to-click false
+gsettings set org.gnome.desktop.peripherals.touchpad two-finger-scrolling-enabled true
 ############################################################################################################################################
 gsettings set org.gnome.TextEditor auto-indent true
 gsettings set org.gnome.TextEditor highlight-current-line true
