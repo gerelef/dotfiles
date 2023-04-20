@@ -390,7 +390,9 @@ if ! [ $? -eq 0 ]; then
 fi
 
 #######################################################################################################
-
+echo "--------------------------- GNOME ---------------------------"
+echo "Make sure to get the legacy (GTK3) Theme Auto Switcher"
+echo "https://extensions.gnome.org/extension/4998/legacy-gtk3-theme-scheme-auto-switcher/"
 echo "--------------------------- FSTAB ---------------------------"
 echo "Remember to add a permanent mount point for permanently mounted partitions."
 echo "Standard fstab USER mount arguments:"
