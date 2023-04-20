@@ -9,7 +9,7 @@ import subprocess as sp
 import argparse as ap
     
 def download(filename, url):
-    print(f"Downloading {filename}...")
+    print(f"Downloading {filename} from {url}...")
     with requests.get(url, verify=True, stream=True, allow_redirects=True) as req:
         btotal = int(req.headers.get('content-length'))
         bread = 0
@@ -70,27 +70,37 @@ if args.temporary:
 if args.version:
     VERSION = args.version
 
-with requests.get(PROTON_GE_GITHUB_RELEASES_URL, verify=True) as req:
-    if req.status_code != 200:
-        print(f"Got status code {req.status_code}", file=sys.stderr)
-        sys.exit(1)
-    releases_recvd = req.json()
-
-SHA512SUM_ASSET_INDEX = 0
-TAR_ASSET_INDEX = 1
-if not VERSION:
-    INDEX_MATCHING_VERSION_NUMBER = 0
-else:
-    INDEX_MATCHING_VERSION_NUMBER = None
-    for index, version_map in enumerate(releases_recvd):
-        if VERSION in version_map["tag_name"]:
-            INDEX_MATCHING_VERSION_NUMBER = index
+rlc = 1
+while True:
+    print(f"Requesting first {rlc*30} results...")
+    with requests.get(PROTON_GE_GITHUB_RELEASES_URL, verify=True) as req:
+        if req.status_code != 200:
+            print(f"Got status code {req.status_code}", file=sys.stderr)
+            sys.exit(1)
+        releases_recvd = req.json()
+        releases_links = req.links
+    SHA512SUM_ASSET_INDEX = 0
+    TAR_ASSET_INDEX = 1
+    if not VERSION:
+        INDEX_MATCHING_VERSION_NUMBER = 0
+        break
+    else:
+        INDEX_MATCHING_VERSION_NUMBER = None
+        for index, version_map in enumerate(releases_recvd):
+            if VERSION in version_map["tag_name"]:
+                INDEX_MATCHING_VERSION_NUMBER = index
+                break
+        
+        if INDEX_MATCHING_VERSION_NUMBER:
             break
-
-    if not INDEX_MATCHING_VERSION_NUMBER:
-        print(f"Couldn't find matching version number {VERSION} in latest 30 releases.")
-        sys.exit(1)
-
+            
+        rlc += 1
+        try:
+            PROTON_GE_GITHUB_RELEASES_URL = releases_links['next']['url']
+        except KeyError:
+            print("Ran out of results. Exiting...")
+            sys.exit(1)
+print("Found correct version. Please note versions BELOW  Proton-6.5-GE-2 are NOT supported.")
 # https://stackoverflow.com/questions/24346872/python-equivalent-of-a-given-wget-command
 fname = DOWNLOAD_DIR + "/" + releases_recvd[INDEX_MATCHING_VERSION_NUMBER]["assets"][TAR_ASSET_INDEX]["name"]
 tarball_url = releases_recvd[INDEX_MATCHING_VERSION_NUMBER]["assets"][TAR_ASSET_INDEX]["browser_download_url"]
