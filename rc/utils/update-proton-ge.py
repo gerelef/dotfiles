@@ -54,7 +54,7 @@ print("""
    | | '_ \/ __| __/ _` | | |/ _ \ '__|        
    | | | | \__ \ || (_| | | |  __/ |           
    |_|_| |_|___/\__\__,_|_|_|\___|_|           
-\033[0m 
+\033[0m
 """)
 
 if args.destination:
@@ -81,13 +81,13 @@ TAR_ASSET_INDEX = 1
 if not VERSION:
     INDEX_MATCHING_VERSION_NUMBER = 0
 else:
-    INDEX_MATCHING_VERSION_NUMBER = -1
+    INDEX_MATCHING_VERSION_NUMBER = None
     for index, version_map in enumerate(releases_recvd):
         if VERSION in version_map["tag_name"]:
             INDEX_MATCHING_VERSION_NUMBER = index
             break
-        
-    if INDEX_MATCHING_VERSION_NUMBER == -1:
+
+    if not INDEX_MATCHING_VERSION_NUMBER:
         print(f"Couldn't find matching version number {VERSION} in latest 30 releases.")
         sys.exit(1)
 
@@ -111,11 +111,11 @@ if (ret := sp.run(["sha512sum", "-c", fhashname], cwd=DOWNLOAD_DIR).returncode) 
     sys.exit(ret)
 
 # The default python module has a significant security vulnerability:
-#    see more: https://docs.python.org/3/library/tarfile.html
-#    to counter this, we're going to use the shell utility instead
+#  see more: https://docs.python.org/3/library/tarfile.html
 #with tarfile.open(fname, "r:gz") as tar:
 #    tar.extractall()
 #    tar.close()
+#  to counter this, we're going to use the shell utility instead
 
 print(f"Extracting {fname} ...")
 if (ret := sp.run(["tar", "-xPf", fname, f"--directory={INSTALL_DIR}"], cwd=DOWNLOAD_DIR).returncode) != 0:
