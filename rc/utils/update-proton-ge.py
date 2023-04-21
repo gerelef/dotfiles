@@ -68,7 +68,7 @@ parser = ap.ArgumentParser(description='Download & extract latest version of GE-
 parser.add_argument('-d','--destination', help="specify installation directory", required=False)
 parser.add_argument('-t','--temporary', help="specify temporary download directory", required=False)
 parser.add_argument('-k','--keep', help="keep downloaded files in download directory", required=False, action="store_true")
-parser.add_argument("version", help="specific version to install, with standard GE-Proton naming format e.g. 7-46", nargs='1', type=str, default=None) # positional version argument
+parser.add_argument("version", help="specific version to install, with standard GE-Proton naming format e.g. 7-46", nargs='?', type=str, default=None) # positional version argument
 subparser = parser.add_subparsers(dest="subcommands")
 ls_parser = subparser.add_parser("ls", help="print the currently installed versions, separated by newline")
 versions_parser = subparser.add_parser("versions", help="print all the GE-Proton released versions to date")
