@@ -7,7 +7,8 @@ import sys
 import os
 import subprocess as sp
 import argparse as ap
-    
+
+
 def download(filename, url):
     print(f"Downloading {filename} from {url}...")
     with requests.get(url, verify=True, stream=True, allow_redirects=True) as req:
@@ -24,20 +25,79 @@ def download(filename, url):
     print()
 
 
+def run_subprocess(cwd, commands, files): 
+    if (ret := sp.run(commands, cwd=cwd).returncode) != 0:
+        print(f"{' '.join(command)} exited with status != 0, aborting...")
+        for f in files:
+            os.remove(f)
+        exit(ret)
+
+
+def echo_installed():
+    dirs = os.listdir(path=INSTALL_DIR)
+    for d in dirs:
+        print(d)
+
+
+def echo_versions(link):
+    while True:
+        with requests.get(link, verify=True) as req:
+            if req.status_code != 200:
+                print(f"Got status code {req.status_code}", file=sys.stderr)
+                exit(1)
+            releases_recvd = req.json()
+            releases_links = req.links
+        
+        for index, version_map in enumerate(releases_recvd):
+            print(version_map["tag_name"])
+        try:
+            link = releases_links['next']['url']
+        except KeyError:
+            break
+
 if os.geteuid() == 0:
     print("Do NOT run this script as root.", file=sys.stderr)
-    sys.exit(2)
-    
-parser = ap.ArgumentParser(description='Download & extract latest version of proton-ge\n\thttps://github.com/GloriousEggroll/proton-ge-custom')
-parser.add_argument('-d','--destination', help="Installation directory.", required=False)
-parser.add_argument('-t','--temporary', help="Temporary download directory.", required=False)
-parser.add_argument("version", help="Specific version to install, with standard proton-ge naming format e.g. 7-46", nargs='?', type=str, default=None) # positional version argument
-args = parser.parse_args()
+    exit(2)
 
 DOWNLOAD_DIR = "/tmp/"
 PROTON_GE_GITHUB_RELEASES_URL = "https://api.github.com/repos/GloriousEggroll/proton-ge-custom/releases"
 INSTALL_DIR = os.path.expanduser("~/.local/share/Steam/compatibilitytools.d/")
 VERSION = None
+
+parser = ap.ArgumentParser(description='Download & extract latest version of GE-Proton\n\thttps://github.com/GloriousEggroll/proton-ge-custom')
+parser.add_argument('-d','--destination', help="specify installation directory", required=False)
+parser.add_argument('-t','--temporary', help="specify temporary download directory", required=False)
+parser.add_argument('-k','--keep', help="keep downloaded files in download directory", required=False, action="store_true")
+parser.add_argument("version", help="specific version to install, with standard GE-Proton naming format e.g. 7-46", nargs='1', type=str, default=None) # positional version argument
+subparser = parser.add_subparsers(dest="subcommands")
+ls_parser = subparser.add_parser("ls", help="print the currently installed versions, separated by newline")
+versions_parser = subparser.add_parser("versions", help="print all the GE-Proton released versions to date")
+args = parser.parse_args()
+
+if args.destination:
+    INSTALL_DIR = os.path.abspath(os.path.expanduser(args.destination))
+    if not os.path.exists(INSTALL_DIR):
+        os.makedirs(INSTALL_DIR)
+
+if args.temporary:
+    DOWNLOAD_DIR = os.path.abspath(os.path.expanduser(args.temporary))
+    if not os.path.exists(DOWNLOAD_DIR):
+        os.makedirs(DOWNLOAD_DIR)
+
+if args.version:
+    VERSION = args.version
+
+if args.subcommands:
+    match args.subcommands:
+        case "ls":
+            echo_installed()
+            exit(0)
+        case "versions":
+            echo_versions(PROTON_GE_GITHUB_RELEASES_URL)
+            exit(0)
+        case _:
+            print("Unknown subcommand, exiting...")
+            exit(1)
 
 print("""
 \033[5m
@@ -57,26 +117,13 @@ print("""
 \033[0m
 """)
 
-if args.destination:
-    INSTALL_DIR = os.path.abspath(os.path.expanduser(args.destination))
-    if not os.path.exists(INSTALL_DIR):
-        os.makedirs(INSTALL_DIR)
-
-if args.temporary:
-    DOWNLOAD_DIR = os.path.abspath(os.path.expanduser(args.temporary))
-    if not os.path.exists(DOWNLOAD_DIR):
-        os.makedirs(DOWNLOAD_DIR)
-
-if args.version:
-    VERSION = args.version
-
 rlc = 1
 while True:
     print(f"Requesting first {rlc*30} results...")
     with requests.get(PROTON_GE_GITHUB_RELEASES_URL, verify=True) as req:
         if req.status_code != 200:
             print(f"Got status code {req.status_code}", file=sys.stderr)
-            sys.exit(1)
+            exit(1)
         releases_recvd = req.json()
         releases_links = req.links
     SHA512SUM_ASSET_INDEX = 0
@@ -99,7 +146,7 @@ while True:
             PROTON_GE_GITHUB_RELEASES_URL = releases_links['next']['url']
         except KeyError:
             print("Ran out of results. Exiting...")
-            sys.exit(1)
+            exit(1)
 print("Found correct version. Please note versions BELOW  Proton-6.5-GE-2 are NOT supported.")
 # https://stackoverflow.com/questions/24346872/python-equivalent-of-a-given-wget-command
 fname = DOWNLOAD_DIR + "/" + releases_recvd[INDEX_MATCHING_VERSION_NUMBER]["assets"][TAR_ASSET_INDEX]["name"]
@@ -114,11 +161,7 @@ print("Done.")
 
 sys.stdout.write("sha512sum status: ")
 sys.stdout.flush()
-if (ret := sp.run(["sha512sum", "-c", fhashname], cwd=DOWNLOAD_DIR).returncode) != 0:
-    print(f"sha512sum -c {fhashname} exited with status != 0, aborting...")
-    os.remove(fhashname)
-    os.remove(fname)
-    sys.exit(ret)
+run_subprocess(DOWNLOAD_DIR, ["sha512sum", "-c", fhashname], [fhashname, fname])
 
 # The default python module has a significant security vulnerability:
 #  see more: https://docs.python.org/3/library/tarfile.html
@@ -128,15 +171,12 @@ if (ret := sp.run(["sha512sum", "-c", fhashname], cwd=DOWNLOAD_DIR).returncode) 
 #  to counter this, we're going to use the shell utility instead
 
 print(f"Extracting {fname} ...")
-if (ret := sp.run(["tar", "-xPf", fname, f"--directory={INSTALL_DIR}"], cwd=DOWNLOAD_DIR).returncode) != 0:
-    print(f"tar -xvPf {fname} exited with status != 0, aborting...")
-    os.remove(fhashname)
+run_subprocess(DOWNLOAD_DIR, ["tar", "-xPf", fname, f"--directory={INSTALL_DIR}"], [fhashname, fname])
+
+if not args.keep:
     os.remove(fname)
-    sys.exit(ret)
-
-os.remove(fname)
-os.remove(fhashname)
-print(f"Removed {DOWNLOAD_DIR} files {fname} & {fhashname}")
+    os.remove(fhashname)
+    print(f"Removed {DOWNLOAD_DIR} files {fname} & {fhashname}")
+    
 print(f"New contents are at {INSTALL_DIR}")
-
 print("Done.")
