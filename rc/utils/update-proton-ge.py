@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-from pathlib import Path
+from dataclasses import dataclass
 import requests
 import urllib.request
 import json
@@ -7,6 +7,18 @@ import sys
 import os
 import subprocess as sp
 import argparse as ap
+
+
+@dataclass
+class GoldenEggRelease:
+    date: str
+    release_name: str
+    tag_name: str
+    body: str
+    sha512_name: str
+    sha512_url: str
+    tarball_name: str
+    tarball_url: str
 
 
 def download(filename, url):
@@ -33,13 +45,24 @@ def run_subprocess(cwd, commands, files):
         exit(ret)
 
 
-def echo_installed():
-    dirs = os.listdir(path=INSTALL_DIR)
+def echo_installed(path):
+    dirs = os.listdir(path=path)
     for d in dirs:
         print(d)
 
 
-def echo_versions(link):
+def echo_versions(link, verbose=False):
+    releases = download_supported_ge_releases(link)
+    print(f"Found {len(releases)} valid releases.")
+    for release in releases:
+        print(f"{release.date.split('T')[0]}{release.release_name}")
+        if verbose:
+            print(f"\f{release.body}")
+            print("---")
+
+
+def download_supported_ge_releases(link):
+    releases: list[GoldenEggRelease] = []
     while True:
         with requests.get(link, verify=True) as req:
             if req.status_code != 200:
@@ -48,12 +71,45 @@ def echo_versions(link):
             releases_recvd = req.json()
             releases_links = req.links
         
-        for index, version_map in enumerate(releases_recvd):
-            print(version_map["tag_name"])
+        for version in releases_recvd:
+            try:
+                releases.append(
+                    GoldenEggRelease(
+                        version["published_at"],
+                        version["name"],
+                        version["tag_name"],
+                        version["body"],
+                        version["assets"][0]["name"],
+                        version["assets"][0]["browser_download_url"],
+                        version["assets"][1]["name"],
+                        version["assets"][1]["browser_download_url"]
+                    )
+                )
+            except IndexError:
+                # skip unsupported releases (those that do not have a hash and tarball)
+                pass
+        
         try:
             link = releases_links['next']['url']
         except KeyError:
+            # if either next links don't exist, or the release format is not supported, stop here 
             break
+    
+    return releases
+
+
+def match_correct_release(link, title_match=None):
+    releases = download_supported_ge_releases(link)
+    print(f"Found {len(releases)} valid releases.")
+    if not title_match:
+        return releases[0]
+        
+    for release in releases:
+        if title_match in release.tag_name.lower():
+            return release
+    
+    return None
+
 
 if os.geteuid() == 0:
     print("Do NOT run this script as root.", file=sys.stderr)
@@ -90,14 +146,14 @@ if args.version:
 if args.subcommands:
     match args.subcommands:
         case "ls":
-            echo_installed()
+            echo_installed(INSTALL_DIR)
             exit(0)
         case "versions":
             echo_versions(PROTON_GE_GITHUB_RELEASES_URL)
             exit(0)
         case _:
             print("Unknown subcommand, exiting...")
-            exit(1)
+            exit(2)
 
 print("""
 \033[5m
@@ -117,66 +173,37 @@ print("""
 \033[0m
 """)
 
-rlc = 1
-while True:
-    print(f"Requesting first {rlc*30} results...")
-    with requests.get(PROTON_GE_GITHUB_RELEASES_URL, verify=True) as req:
-        if req.status_code != 200:
-            print(f"Got status code {req.status_code}", file=sys.stderr)
-            exit(1)
-        releases_recvd = req.json()
-        releases_links = req.links
-    SHA512SUM_ASSET_INDEX = 0
-    TAR_ASSET_INDEX = 1
-    if not VERSION:
-        INDEX_MATCHING_VERSION_NUMBER = 0
-        break
-    else:
-        INDEX_MATCHING_VERSION_NUMBER = None
-        for index, version_map in enumerate(releases_recvd):
-            if VERSION in version_map["tag_name"]:
-                INDEX_MATCHING_VERSION_NUMBER = index
-                break
-        
-        if INDEX_MATCHING_VERSION_NUMBER:
-            break
-            
-        rlc += 1
-        try:
-            PROTON_GE_GITHUB_RELEASES_URL = releases_links['next']['url']
-        except KeyError:
-            print("Ran out of results. Exiting...")
-            exit(1)
-print("Found correct version. Please note versions BELOW  Proton-6.5-GE-2 are NOT supported.")
-# https://stackoverflow.com/questions/24346872/python-equivalent-of-a-given-wget-command
-fname = DOWNLOAD_DIR + "/" + releases_recvd[INDEX_MATCHING_VERSION_NUMBER]["assets"][TAR_ASSET_INDEX]["name"]
-tarball_url = releases_recvd[INDEX_MATCHING_VERSION_NUMBER]["assets"][TAR_ASSET_INDEX]["browser_download_url"]
-download(fname, tarball_url)
+release = match_correct_release(version=VERSION)
+if not release:
+    print(f"Couldn't match any release for version {VERSION}")
+    exit(1)
+print(f"Found correct version {release.tag_name}")
 
-fhashname = DOWNLOAD_DIR + "/" + releases_recvd[INDEX_MATCHING_VERSION_NUMBER]["assets"][SHA512SUM_ASSET_INDEX]["name"]
-sha512sum_url = releases_recvd[INDEX_MATCHING_VERSION_NUMBER]["assets"][SHA512SUM_ASSET_INDEX]["browser_download_url"]
-download(fhashname, sha512sum_url)
+fhashname = DOWNLOAD_DIR + "/" + release.sha512_name
+download(fhashname, release.sha512_url)
+print(f"Downloaded {release.sha512_name}")
 
-print("Done.")
+ftarballname = DOWNLOAD_DIR + "/" + release.tarball_name
+download(ftarballname, release.tarball_url)
+print(f"Downloaded {release.tarball_name}")
 
 sys.stdout.write("sha512sum status: ")
-sys.stdout.flush()
-run_subprocess(DOWNLOAD_DIR, ["sha512sum", "-c", fhashname], [fhashname, fname])
+run_subprocess(DOWNLOAD_DIR, ["sha512sum", "-c", fhashname], [fhashname, ftarballname])
+
+print(f"Extracting {ftarballname} ...")
+run_subprocess(DOWNLOAD_DIR, ["tar", "-xPf", ftarballname, f"--directory={INSTALL_DIR}"], [fhashname, ftarballname])
 
 # The default python module has a significant security vulnerability:
 #  see more: https://docs.python.org/3/library/tarfile.html
-#with tarfile.open(fname, "r:gz") as tar:
+#with tarfile.open(ftarballname, "r:gz") as tar:
 #    tar.extractall()
 #    tar.close()
-#  to counter this, we're going to use the shell utility instead
-
-print(f"Extracting {fname} ...")
-run_subprocess(DOWNLOAD_DIR, ["tar", "-xPf", fname, f"--directory={INSTALL_DIR}"], [fhashname, fname])
+#  to counter this, we used the shell utility instead
 
 if not args.keep:
-    os.remove(fname)
+    os.remove(ftarballname)
     os.remove(fhashname)
-    print(f"Removed {DOWNLOAD_DIR} files {fname} & {fhashname}")
+    print(f"Removed {DOWNLOAD_DIR} files {ftarballname} & {fhashname}")
     
 print(f"New contents are at {INSTALL_DIR}")
 print("Done.")
