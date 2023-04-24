@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 from dataclasses import dataclass
+from datetime import datetime
 import requests
 import urllib.request
 import json
@@ -55,7 +56,7 @@ def echo_versions(link, verbose=False):
     releases = download_supported_ge_releases(link)
     print(f"Found {len(releases)} valid releases.")
     for release in releases:
-        print(f"{release.date.split('T')[0]}{release.release_name}")
+        print(f"{release.date} {release.release_name if release.release_name else 'Unknown Release Name'}")
         if verbose:
             print(f"\f{release.body}")
             print("---")
@@ -75,8 +76,9 @@ def download_supported_ge_releases(link):
             try:
                 releases.append(
                     GoldenEggRelease(
-                        version["published_at"],
-                        version["name"],
+                        # https://stackoverflow.com/a/36236080/10007109
+                        datetime.strptime(version["published_at"], "%Y-%m-%dT%H:%M:%SZ"),
+                        version["name"].strip(),
                         version["tag_name"],
                         version["body"],
                         version["assets"][0]["name"],
