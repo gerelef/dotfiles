@@ -6,7 +6,7 @@ fi
 readonly __FFMPEG_WRAP_LOADED="__LOADED"
 REQUIRE_DEPENDENCIES+="ffmpeg "
 
-# convert Hours:Minutes:Seconds (colon seperated) to seconds
+# convert Minutes:Seconds (colon seperated) to seconds
 __hms () {
     echo "$1" | awk -F: '{ print ($1 * 60) + $2 }';
 }
@@ -138,7 +138,7 @@ fftrim-mp3 () {
     # $2 start (seconds)
     # $3 duration (seconds)
     local output=$(basename -- "${1%.*}")
-    ffmpeg -ss "$(__hms "$2")" -t "$(__hms "$3")" -i "$1" -acodec copy "$PWD/$output-trimmed.mp3" 
+    ffmpeg -ss "$(__hms "$2")" -to "$(__hms "$3")" -i "$1" -acodec copy "$PWD/$output-trimmed.mp3" 
 }
 
 # ffmpeg trim mp4 from start to end
