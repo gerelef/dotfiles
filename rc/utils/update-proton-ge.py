@@ -100,14 +100,14 @@ def download_supported_ge_releases(link):
     return releases
 
 
-def match_correct_release(link, title_match=None):
+def match_correct_release(link, title=None):
     releases = download_supported_ge_releases(link)
     print(f"Found {len(releases)} valid releases.")
-    if not title_match:
+    if not title:
         return releases[0]
         
     for release in releases:
-        if title_match in release.tag_name.lower():
+        if title in release.tag_name.lower():
             return release
     
     return None
@@ -175,7 +175,7 @@ print("""
 \033[0m
 """)
 
-release = match_correct_release(version=VERSION)
+release = match_correct_release(PROTON_GE_GITHUB_RELEASES_URL, title=VERSION)
 if not release:
     print(f"Couldn't match any release for version {VERSION}")
     exit(1)
