@@ -189,11 +189,13 @@ ftarballname = DOWNLOAD_DIR + os.sep + release.tarball_name
 download(ftarballname, release.tarball_url)
 print(f"Downloaded {release.tarball_name}")
 
-run_subprocess(DOWNLOAD_DIR, ["sha512sum", "-c", fhashname], [fhashname, ftarballname])
+downloaded_files = [fhashname, ftarballname] if not args.keep else []
+
+run_subprocess(DOWNLOAD_DIR, ["sha512sum", "-c", fhashname], downloaded_files)
 print("sha512sum status OK.")
 
 print(f"Extracting {ftarballname} ...")
-run_subprocess(DOWNLOAD_DIR, ["tar", "-xPf", ftarballname, f"--directory={INSTALL_DIR}"], [fhashname, ftarballname])
+run_subprocess(DOWNLOAD_DIR, ["tar", "-xPf", ftarballname, f"--directory={INSTALL_DIR}"], downloaded_files)
 
 # The default python module has a significant security vulnerability:
 #  see more: https://docs.python.org/3/library/tarfile.html
