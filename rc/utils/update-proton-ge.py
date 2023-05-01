@@ -40,7 +40,7 @@ def download(filename, url):
 
 def run_subprocess(cwd, commands, files): 
     if (ret := sp.run(commands, cwd=cwd).returncode) != 0:
-        print(f"{' '.join(command)} exited with status != 0, aborting...")
+        print(f"{' '.join(commands)} exited with status != 0, aborting...")
         for f in files:
             os.remove(f)
         exit(ret)
@@ -126,8 +126,8 @@ parser = ap.ArgumentParser(description='Download & extract latest version of GE-
 parser.add_argument('-d','--destination', help="specify installation directory", required=False)
 parser.add_argument('-t','--temporary', help="specify temporary download directory", required=False)
 parser.add_argument('-k','--keep', help="keep downloaded files in download directory", required=False, action="store_true")
-parser.add_argument("version", help="specific version to install, with standard GE-Proton naming format e.g. 7-46", nargs='?', type=str, default=None) # positional version argument
-subparser = parser.add_subparsers(dest="subcommands")
+parser.add_argument('-v','--version', help="specific version to install, with standard GE-Proton naming format e.g. 7-46", required=False, default=None)
+subparser = parser.add_subparsers(dest="subcommand", required=False)
 ls_parser = subparser.add_parser("ls", help="print the currently installed versions, separated by newline")
 versions_parser = subparser.add_parser("versions", help="print all the GE-Proton released versions to date")
 args = parser.parse_args()
@@ -145,8 +145,8 @@ if args.temporary:
 if args.version:
     VERSION = args.version
 
-if args.subcommands:
-    match args.subcommands:
+if args.subcommand:
+    match args.subcommand:
         case "ls":
             echo_installed(INSTALL_DIR)
             exit(0)
