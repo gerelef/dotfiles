@@ -181,16 +181,16 @@ if not release:
     exit(1)
 print(f"Found correct version {release.tag_name}")
 
-fhashname = DOWNLOAD_DIR + "/" + release.sha512_name
+fhashname = DOWNLOAD_DIR + os.sep + release.sha512_name
 download(fhashname, release.sha512_url)
 print(f"Downloaded {release.sha512_name}")
 
-ftarballname = DOWNLOAD_DIR + "/" + release.tarball_name
+ftarballname = DOWNLOAD_DIR + os.sep + release.tarball_name
 download(ftarballname, release.tarball_url)
 print(f"Downloaded {release.tarball_name}")
 
-sys.stdout.write("sha512sum status: ")
 run_subprocess(DOWNLOAD_DIR, ["sha512sum", "-c", fhashname], [fhashname, ftarballname])
+print("sha512sum status OK.")
 
 print(f"Extracting {ftarballname} ...")
 run_subprocess(DOWNLOAD_DIR, ["tar", "-xPf", ftarballname, f"--directory={INSTALL_DIR}"], [fhashname, ftarballname])
