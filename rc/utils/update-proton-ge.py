@@ -30,7 +30,8 @@ def download(filename, url):
         print(f"Size: {round((btotal/1024)/1024, 3)} MiB")
         with open(filename, 'wb') as out:
             print(f"Writing {filename} from url {url}")
-            for data in req.iter_content(chunk_size=4096):
+            # 1 megabyte per request
+            for data in req.iter_content(chunk_size=1024*1024):
                 bread += len(data)
                 out.write(data)
                 sys.stdout.write(f"\r{round((bread/btotal)*100, 2)}%")
