@@ -251,6 +251,7 @@ alias ....='cd ../../..'
 alias .....='cd ../../../..'
 
 # substitutes for commands
+alias ftrim="fstrim -v"
 alias journalctl="_journalctl"
 alias tldr="_tldr"
 alias flatpak-log="flatpak remote-info --log flathub"
