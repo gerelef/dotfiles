@@ -26,7 +26,7 @@ export SUDO_PROMPT="$(tput setaf 4)Root password:$(tput sgr0)"
 #############################################################
 # package management 
 
-install-system-pkg () {
+install-system-pkg () (
     while :; do
         [[ -n "$(command -v dnf)" ]] && if sudo dnf install -y "$@"; then break; else return $?; fi
         [[ -n "$(command -v zyp)" ]] && if sudo zyp install -y "$@"; then break; else return $?; fi 
@@ -34,9 +34,9 @@ install-system-pkg () {
         [[ -n "$(command -v apt)" ]] && if sudo apt install -y "$@"; then break; else return $?; fi
         break
     done
-}
+)
 
-update-everything () {
+update-everything () (
     while :; do
         [[ -n "$(command -v dnf)" ]] && sudo dnf update -y --refresh && sudo dnf autoremove -y && break
         [[ -n "$(command -v zyp)" ]] && sudo zyp update -y && break
@@ -48,9 +48,9 @@ update-everything () {
     [[ -n "$(command -v flatpak)" ]] && flatpak update -y
     [[ -n "$(command -v snap)" ]] && snap refresh -y
     return 0
-}
+)
 
-require-bashrc-packages () {
+require-bashrc-packages () (
     [[ -f $HAS_RUN_FILE ]] && return 0
 
     echo -e "Installing essential .bashrc packages: $_FGREEN"
@@ -58,7 +58,7 @@ require-bashrc-packages () {
     echo -ne "$_NOCOLOUR"
     
     install-system-pkg $REQUIRE_DEPENDENCIES && touch $HAS_RUN_FILE && clear
-}
+)
 
 require-bashrc () {
     # Source global & private definitions
@@ -87,15 +87,15 @@ require-bashrc () {
     require-bashrc-packages || return 1
 }
 
-dnf-installed-packages-by-size () {
+dnf-installed-packages-by-size () (
     # https://forums.fedoraforum.org/showthread.php?314323-Useful-one-liners-feel-free-to-update&p=1787643
     dnf -q --disablerepo=* info installed | sed -n 's/^Name[[:space:]]*: \|^Size[[:space:]]*: //p' | sed 'N;s/\n/ /;s/ \(.\)$/\1/' | sort -hr -k 2 | less
-}
+)
 
 #############################################################
 # pure bash helpers 
 # Get directory size 
-gds () {
+gds () (
     if [[ -n "$*" ]]; then
         for arg in "$@"; do
             du -sh --apparent-size "$arg"
@@ -103,56 +103,56 @@ gds () {
     else
         du -sh --apparent-size .
     fi
-}
+)
 
 # Highlight (and not filter) text with grep
-highlight () {
+highlight () (
     [[ -z "$*" ]] && return 2
     
     grep --color=always -iE "$1|\$"
-}
+)
 
 # Rename
-rn () {
+rn () (
     [[ -z "$*" ]] && return 2
     [[ $# -eq 2 ]] || return 2
     
     mv -vn "$1" "$2"
-}
+)
 
 #############################################################
 # PYTHON SCRIPTS
 
 # call lss py implementation
-lss () {
+lss () (
     $DOTFILES_DIR/rc/utils/lss.py "$@"
-}
+)
 
-update-mono-ff-theme () {
+update-mono-ff-theme () (
     $DOTFILES_DIR/rc/utils/update-mono-ff-theme.py "$@"
-}
+)
 
-update-proton-ge () {
+update-proton-ge () (
     $DOTFILES_DIR/rc/utils/update-proton-ge.py "$@"
-}
+)
 
 #############################################################
 # WRAPPERS TO BUILTINS OR PATH EXECUTABLES
 
 # journalctl wrapper for ease of use
-_journalctl () {
+_journalctl () (
     [[ $# -eq 0 ]] && command journalctl -e -n 2000 && return
     # called with just a service name (-u)
     [[ $# -eq 1 ]] &&  command journalctl -e -n 5000 -u "$1" && return
     command journalctl "$@"
-}
+)
 
 # tldr wrapper for ease of use
-_tldr () {
+_tldr () (
     [[ $# -eq 0 ]] && (command tldr tldr) | less -R && return    
     [[ $# -eq 1 ]] && (command tldr "$1") | less -R && return
     command tldr "$@"
-}
+)
 
 # Automatically do an ls after each cd
 cd () { 
@@ -162,50 +162,50 @@ cd () {
 #############################################################
 # DIFFERENT SHELLS
 
-require-ksh-packages () {
+require-ksh-packages () (
     [[ -f $HAS_RUN_KSH_FILE ]] && return 0
     
     echo -ne "$_FBROWN"
     echo -e "Installing ksh $_NOCOLOUR"
     
     install-system-pkg ksh && touch $HAS_RUN_KSH_FILE && clear
-}
+)
 
-ksh () {
+ksh () (
     require-ksh-packages 
     
     /usr/bin/env ksh
-}
+)
 
-require-fsh-packages () {
+require-fsh-packages () (
     [[ -f $HAS_RUN_FSH_FILE ]] && return 0
     
     echo -ne "$_FBLUE"
     echo -e "Installing fish $_NOCOLOUR"
     
     install-system-pkg fish && touch $HAS_RUN_FSH_FILE && clear
-}
+)
 
-fsh () {
+fsh () (
     require-fsh-packages  
     
     /usr/bin/env fish
-}
+)
 
-require-zsh-packages () {
+require-zsh-packages () (
     [[ -f $HAS_RUN_ZSH_FILE ]] && return 0
     
     echo -ne "$_FYELLOW"
     echo -e "Installing zsh $_NOCOLOUR"
     
     install-system-pkg zsh && touch $HAS_RUN_ZSH_FILE && clear
-}
+)
 
-zsh () {
+zsh () (
     require-zsh-packages 
     
     /usr/bin/env zsh
-}
+)
 
 #############################################################
 # BASH OPTIONS
