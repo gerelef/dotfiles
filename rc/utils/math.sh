@@ -6,7 +6,7 @@ fi
 readonly __MATH_LOADED="__LOADED"
 
 # echo max out of N integers
-max () {
+max () (
     [[ -z "$*" ]] && return 2
     
     local m=0
@@ -14,10 +14,10 @@ max () {
         [[ $i -gt $m ]] && local m="$i"
     done
     echo "$m"
-}
+)
 
 # echo min out of N integers
-min () {
+min () (
     [[ -z "$*" ]] && return 2
 
     # bash uses 64 bit integers, this *should* be the maximum value for it
@@ -26,23 +26,23 @@ min () {
         [[ $i -lt $m ]] && local m="$i"
     done
     echo "$m"
-}
+)
 
 # checks if $1 is odd, echoes the mod result
-is-odd () {
+is-odd () (
     [[ -z "$*" ]] && return 2
     [[ "$#" -ne 1 ]] && return 2
     
     echo "$(($1 % 2))"
-}
+)
 
 # checks that $1 is factor of $2, returns 0 on success, and anything else returns !=
-is-factor () {
+is-factor () (
     [[ -z "$*" ]] && return 2
     [[ "$#" -ne 2 ]] && return 2
     
     echo "$(($2 % $1))"
-}
+)
 
 export -f max
 export -f min
