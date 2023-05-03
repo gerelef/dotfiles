@@ -13,14 +13,14 @@ bash-debug-subshell () {
     bash --norc <(echo "set -euxo pipefail; $@; exit 0")
 }
 
-shellcheck-bash () {
+shellcheck-bash () (
     [[ -z "$*" ]] && return 2
     
     \shellcheck --enable='add-default-case|avoid-nullary-conditions|check-unassigned-uppercase|deprecate-which|quote-safe-variables|require-variable-braces' --format tty --color=always --check-sourced -x --shell bash "$@"
-}
+)
 
 # https://stackoverflow.com/a/57313672/10007109
-timeit () {
+timeit () (
     [[ -z "$*" ]] && return 2
     [[ "$#" -lt 2 ]] && echo "Usage: timeit <num> <script> [<args>]" >&2 && return 2
     
@@ -30,14 +30,14 @@ timeit () {
         grep ^real |\
         sed -r -e "s/.*real\t([[:digit:]]+)m([[:digit:]]+\.[[:digit:]]+)s/\1 \2/" |\
         awk '{sum += $1 * 60 + $2} END {print sum / NR}'
-}
+)
 
-pid-of () {
+pid-of () (
     [[ -z "$*" ]] && return 2
     [[ "$#" -ne 1 ]] && echo "Only one argument allowed." >&2 && return 2
     
     ps ax -e -o pid,comm | grep $1
-}
+)
 
 venv-subshell () {
     bash --init-file <(echo ". \"$HOME/.bashrc\"; . ./venv/bin/activate")
