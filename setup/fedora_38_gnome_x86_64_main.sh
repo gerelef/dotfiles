@@ -292,7 +292,13 @@ if [[ $REPLY =~ ^[Yy]$ ]]; then
     dnf-install "$INSTALLABLE_DEV_PKGS"
 
     echo "-------------------INSTALLING JETBRAINS TOOLBOX----------------" 
-    curl -fsSL https://raw.githubusercontent.com/nagygergo/jetbrains-toolbox-install/master/jetbrains-toolbox.sh | bash
+    readonly curlsum=$(curl -fsSL https://raw.githubusercontent.com/nagygergo/jetbrains-toolbox-install/master/jetbrains-toolbox.sh | sha512sum -)
+    readonly validsum="9f7b643574de3990ad9afc50d1f82e731c6712c56b7adc91573b639f9322346aa217bdd0005724bc70164274202d617a289f0c7a74be3bd3f5a89d0b2fef3cb7  -"
+    if [[ "$validsum" == "$curlsum" ]]; then
+        curl -fsSL https://raw.githubusercontent.com/nagygergo/jetbrains-toolbox-install/master/jetbrains-toolbox.sh | bash
+    else
+        echo "sha512sum mismatch"        
+    fi
     echo "Finished installing toolbox."
 fi
 
