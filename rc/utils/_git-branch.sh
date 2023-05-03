@@ -7,7 +7,7 @@ readonly __GIT_BRANCH_LOADED="__LOADED"
 REQUIRE_DEPENDENCIES+="git "
 
 # get current git branch in arg or current 
-_git-branch () {
+_git-branch () (
     # if superfluous arguments return...
     [[ $# -gt 1 ]] && return 2
     
@@ -17,6 +17,6 @@ _git-branch () {
         return
     fi
     git branch 2> /dev/null | sed -e '/^[^*]/d' -e 's/* \(.*\)/ (\1)/'
-}
+)
 
 export -f _git-branch
