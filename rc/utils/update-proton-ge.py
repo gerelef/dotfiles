@@ -78,7 +78,7 @@ if args.subcommand:
             exit(0)
         case "versions":
             for v in utils.get_github_releases(PROTON_GE_GITHUB_RELEASES_URL, recurse=True):
-                print(v)
+                print(v.tag_name)
             exit(0)
         case _:
             print("Unknown subcommand, exiting...")
