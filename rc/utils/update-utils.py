@@ -78,8 +78,8 @@ class __Release:
     name: str
 
     body: str
-    isDraft: bool
-    isPrerelease: bool
+    is_draft: bool
+    is_prerelease: bool
     created_at: str
     published_at: str
 
@@ -122,8 +122,8 @@ def get_github_releases(url, recurse=False) -> list[__Release] | None:
                             tag_name=version["tag_name"],
                             name=version["name"],
                             body=version["body"],
-                            isDraft=bool(version["draft"]),
-                            isPrerelease=bool(version["prerelease"]),
+                            is_draft=bool(version["draft"]),
+                            is_prerelease=bool(version["prerelease"]),
                             # https://stackoverflow.com/a/36236080/10007109
                             created_at=datetime.strptime(version["created_at"], "%Y-%m-%dT%H:%M:%SZ"),
                             published_at=datetime.strptime(version["published_at"], "%Y-%m-%dT%H:%M:%SZ"),
