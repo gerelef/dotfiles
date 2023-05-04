@@ -141,7 +141,7 @@ def get_github_releases(url, recurse=False) -> list[__Release] | None:
             # if either next links don't exist, we're done
             break
         except requests.exceptions.JSONDecodeError:
-            # if the json has errored return None
+            # if the json has errored return None to indicate error
             return None
 
     return releases

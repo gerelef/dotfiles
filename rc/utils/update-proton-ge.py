@@ -1,120 +1,29 @@
 #!/usr/bin/env python3
-from dataclasses import dataclass
-from datetime import datetime
-import requests
-import urllib.request
-import json
-import sys
 import os
-import subprocess as sp
+import sys
+import time
 import argparse as ap
-
-
-@dataclass
-class GoldenEggRelease:
-    date: str
-    release_name: str
-    tag_name: str
-    body: str
-    sha512_name: str
-    sha512_url: str
-    tarball_name: str
-    tarball_url: str
-
-
-def download(filename, url):
-    print(f"Downloading {filename} from {url}...")
-    with requests.get(url, verify=True, stream=True, allow_redirects=True) as req:
-        btotal = int(req.headers.get('content-length'))
-        bread = 0
-        print(f"Size: {round((btotal/1024)/1024, 3)} MiB")
-        with open(filename, 'wb') as out:
-            print(f"Writing {filename} from url {url}")
-            # 1 megabyte per request
-            for data in req.iter_content(chunk_size=1024*1024):
-                bread += len(data)
-                out.write(data)
-                sys.stdout.write(f"\r{round((bread/btotal)*100, 2)}%")
-                sys.stdout.flush()
-    print()
-
-
-def run_subprocess(cwd, commands, files): 
-    if (ret := sp.run(commands, cwd=cwd).returncode) != 0:
-        print(f"{' '.join(commands)} exited with status != 0, aborting...")
-        for f in files:
-            os.remove(f)
-        exit(ret)
-
-
-def echo_installed(path):
-    dirs = os.listdir(path=path)
-    for d in dirs:
-        print(d)
-
-
-def echo_versions(link, verbose=False):
-    releases = download_supported_ge_releases(link)
-    print(f"Found {len(releases)} valid releases.")
-    for release in releases:
-        print(f"{release.date} {release.release_name if release.release_name else 'Unknown Release Name'}")
-        if verbose:
-            print(f"\f{release.body}")
-            print("---")
-
-
-def download_supported_ge_releases(link):
-    releases: list[GoldenEggRelease] = []
-    while True:
-        with requests.get(link, verify=True) as req:
-            if req.status_code != 200:
-                print(f"Got status code {req.status_code}", file=sys.stderr)
-                exit(1)
-            releases_recvd = req.json()
-            releases_links = req.links
-        
-        for version in releases_recvd:
-            try:
-                releases.append(
-                    GoldenEggRelease(
-                        # https://stackoverflow.com/a/36236080/10007109
-                        datetime.strptime(version["published_at"], "%Y-%m-%dT%H:%M:%SZ"),
-                        version["name"].strip(),
-                        version["tag_name"],
-                        version["body"],
-                        version["assets"][0]["name"],
-                        version["assets"][0]["browser_download_url"],
-                        version["assets"][1]["name"],
-                        version["assets"][1]["browser_download_url"]
-                    )
-                )
-            except IndexError:
-                # skip unsupported releases (those that do not have a hash and tarball)
-                pass
-        
-        try:
-            link = releases_links['next']['url']
-        except KeyError:
-            # if either next links don't exist, or the release format is not supported, stop here 
-            break
-    
-    return releases
+import update_utils as utils
 
 
 def match_correct_release(link, title=None):
-    releases = download_supported_ge_releases(link)
+    releases = utils.get_github_releases(link, recurse=False if not title else True)
+    if not releases:
+        print(f"Unknown error, couldn't get all github releases for {link}")
+        exit(1)
+
     print(f"Found {len(releases)} valid releases.")
     if not title:
         return releases[0]
-        
+
     for release in releases:
         if title in release.tag_name.lower():
             return release
-    
+
     return None
 
 
-if os.geteuid() == 0:
+if utils.is_root():
     print("Do NOT run this script as root.", file=sys.stderr)
     exit(2)
 
@@ -123,11 +32,25 @@ PROTON_GE_GITHUB_RELEASES_URL = "https://api.github.com/repos/GloriousEggroll/pr
 INSTALL_DIR = os.path.expanduser("~/.local/share/Steam/compatibilitytools.d/")
 VERSION = None
 
-parser = ap.ArgumentParser(description='Download & extract latest version of GE-Proton\n\thttps://github.com/GloriousEggroll/proton-ge-custom')
-parser.add_argument('-d','--destination', help="specify installation directory", required=False)
-parser.add_argument('-t','--temporary', help="specify temporary download directory", required=False)
-parser.add_argument('-k','--keep', help="keep downloaded files in download directory", required=False, action="store_true")
-parser.add_argument('-v','--version', help="specific version to install, with standard GE-Proton naming format e.g. 7-46", required=False, default=None)
+parser = ap.ArgumentParser(
+    description="Download & extract latest version of GE-Proton\n\thttps://github.com/GloriousEggroll/proton-ge-custom"
+)
+parser.add_argument("-d", "--destination", help="specify installation directory", required=False)
+parser.add_argument("-t", "--temporary", help="specify temporary download directory", required=False)
+parser.add_argument(
+    "-k", "--keep",
+    help="keep downloaded files in download directory",
+    required=False,
+    action="store_true"
+)
+parser.add_argument("-l", "--logo", help="do not print the utility logo", required=False, action="store_true")
+parser.add_argument(
+    "-v",
+    "--version",
+    help="specific version to install, with standard GE-Proton naming format e.g. 7-46",
+    required=False,
+    default=None
+)
 subparser = parser.add_subparsers(dest="subcommand", required=False)
 ls_parser = subparser.add_parser("ls", help="print the currently installed versions, separated by newline")
 versions_parser = subparser.add_parser("versions", help="print all the GE-Proton released versions to date")
@@ -149,58 +72,92 @@ if args.version:
 if args.subcommand:
     match args.subcommand:
         case "ls":
-            echo_installed(INSTALL_DIR)
+            dirs = utils.get_all_subdirectories(INSTALL_DIR)
+            for d in dirs:
+                print(d)
             exit(0)
         case "versions":
-            echo_versions(PROTON_GE_GITHUB_RELEASES_URL)
+            for v in utils.get_github_releases(PROTON_GE_GITHUB_RELEASES_URL, recurse=True):
+                print(v)
             exit(0)
         case _:
             print("Unknown subcommand, exiting...")
             exit(2)
 
-print("""
-\033[5m
- _____  _____                   _              
-|  __ \|  ___|                 | |             
-| |  \/| |__    _ __  _ __ ___ | |_ ___  _ __  
-| | __ |  __|  | '_ \| '__/ _ \| __/ _ \| '_ \ 
-| |_\ \| |___  | |_) | | | (_) | || (_) | | | |
- \____/\____/  | .__/|_|  \___/ \__\___/|_| |_|
-         ______| |______ ______ ______ ______  
-    _   |______|_|______|______|______|______| 
-   (_)         | |      | | |                  
-    _ _ __  ___| |_ __ _| | | ___ _ __         
-   | | '_ \/ __| __/ _` | | |/ _ \ '__|        
-   | | | | \__ \ || (_| | | |  __/ |           
-   |_|_| |_|___/\__\__,_|_|_|\___|_|           
-\033[0m
-""")
+if not args.logo:
+    print("""
+    \033[5m
+     _____  _____                   _              
+    |  __ \|  ___|                 | |             
+    | |  \/| |__    _ __  _ __ ___ | |_ ___  _ __  
+    | | __ |  __|  | '_ \| '__/ _ \| __/ _ \| '_ \ 
+    | |_\ \| |___  | |_) | | | (_) | || (_) | | | |
+     \____/\____/  | .__/|_|  \___/ \__\___/|_| |_|
+             ______| |______ ______ ______ ______  
+        _   |______|_|______|______|______|______| 
+       (_)         | |      | | |                  
+        _ _ __  ___| |_ __ _| | | ___ _ __         
+       | | '_ \/ __| __/ _` | | |/ _ \ '__|        
+       | | | | \__ \ || (_| | | |  __/ |           
+       |_|_| |_|___/\__\__,_|_|_|\___|_|           
+    \033[0m
+    """)
 
 release = match_correct_release(PROTON_GE_GITHUB_RELEASES_URL, title=VERSION)
 if not release:
     print(f"Couldn't match any release for version {VERSION}")
     exit(1)
 print(f"Found correct version {release.tag_name}")
+ftarballname = None
+ftarballurl = None
+fhashname = None
+fhashurl = None
+for n, l in release.assets.items():
+    if "tar.gz" in n:
+        ftarballname = DOWNLOAD_DIR + os.sep + n
+        ftarballurl = l
+    if "sha512sum" in n:
+        fhashname = DOWNLOAD_DIR + os.sep + n
+        fhashurl = l
 
-fhashname = DOWNLOAD_DIR + os.sep + release.sha512_name
-download(fhashname, release.sha512_url)
-print(f"Downloaded {release.sha512_name}")
+if not fhashname or not ftarballname:
+    print(f"Couldn't find a sha512sum or tarball for version {release.tag_name}")
+    exit(1)
 
-ftarballname = DOWNLOAD_DIR + os.sep + release.tarball_name
-download(ftarballname, release.tarball_url)
-print(f"Downloaded {release.tarball_name}")
+# download sha512sum
+with open(fhashname, "wb") as out:
+    print(f"Writing {fhashname} from url {fhashurl}")
+    for bread, btotal, data in utils.download(fhashurl):
+        out.write(data)
+        utils.echo_progress_bar_complex(bread, btotal, sys.stdout, 30)
+print(f"\nDownloaded {fhashname}")
 
-downloaded_files = [fhashname, ftarballname] if not args.keep else []
+# download tarball
+with open(ftarballname, "wb") as out:
+    print(f"Writing {ftarballname} from url {ftarballurl}")
+    for bread, btotal, data in utils.download(ftarballurl):
+        out.write(data)
+        utils.echo_progress_bar_complex(bread, btotal, sys.stdout, 30)
+print(f"\nDownloaded {ftarballname}")
 
-run_subprocess(DOWNLOAD_DIR, ["sha512sum", "-c", fhashname], downloaded_files)
-print("sha512sum status OK.")
+if not utils.run_subprocess(["sha512sum", "-c", fhashname], DOWNLOAD_DIR):
+    if not args.keep:
+        os.remove(fhashname)
+        os.remove(ftarballname)
+    exit(1)
 
-print(f"Extracting {ftarballname} ...")
-run_subprocess(DOWNLOAD_DIR, ["tar", "-xPf", ftarballname, f"--directory={INSTALL_DIR}"], downloaded_files)
+time.sleep(1)
+
+if not utils.run_subprocess(["tar", "-xPf", ftarballname, f"--directory={INSTALL_DIR}"], DOWNLOAD_DIR):
+    if not args.keep:
+        os.remove(fhashname)
+        os.remove(ftarballname)
+    exit(1)
+print(f"Extracted {ftarballname}")
 
 # The default python module has a significant security vulnerability:
 #  see more: https://docs.python.org/3/library/tarfile.html
-#with tarfile.open(ftarballname, "r:gz") as tar:
+# with tarfile.open(ftarballname, "r:gz") as tar:
 #    tar.extractall()
 #    tar.close()
 #  to counter this, we used the shell utility instead
@@ -209,6 +166,6 @@ if not args.keep:
     os.remove(ftarballname)
     os.remove(fhashname)
     print(f"Removed {DOWNLOAD_DIR} files {ftarballname} & {fhashname}")
-    
+
 print(f"New contents are at {INSTALL_DIR}")
 print("Done.")
