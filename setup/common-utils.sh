@@ -19,7 +19,7 @@ dnf-install-group () (
     
     echo "-------------------DNF-GROUP-INSTALL---------------- $*" | tr " " "\n"
     while : ; do
-        dnf groupinstall -y --with-optional $@ && break
+        dnf groupinstall -y --best --allowerasing $@ && break
     done
     echo "Finished group-installing."
 )

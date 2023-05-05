@@ -155,12 +155,9 @@ steam \
 "
 
 readonly INSTALLABLE_EXTRAS_FLATPAK="\
-fr.handbrake.ghb \
-io.github.Foldex.AdwSteamGtk \
 com.discordapp.Discord \
 com.teamspeak.TeamSpeak \
 io.github.dummerle.rare \
-net.davidotek.pupgui2 \
 "
 
 readonly INSTALLABLE_DEV_PKGS="\
@@ -186,7 +183,7 @@ xorg-x11-drv-nvidia-cuda \
 #######################################################################################################
 
 dnf copr enable -y nickavem/adw-gtk3
-dnf copr remove -y --skip-broken phracek/PyCharm # TODO: check if this is required in f38
+dnf copr remove -y --skip-broken phracek/PyCharm
 dnf-install "https://download1.rpmfusion.org/free/fedora/rpmfusion-free-release-$(rpm -E %fedora).noarch.rpm" # free rpmfusion
 dnf-install "https://download1.rpmfusion.org/nonfree/fedora/rpmfusion-nonfree-release-$(rpm -E %fedora).noarch.rpm" # nonfree rpmfusion
 
@@ -398,7 +395,9 @@ fi
 #######################################################################################################
 echo "--------------------------- GNOME ---------------------------"
 echo "Make sure to get the legacy (GTK3) Theme Auto Switcher"
-echo "https://extensions.gnome.org/extension/4998/legacy-gtk3-theme-scheme-auto-switcher/"
+echo "  https://extensions.gnome.org/extension/4998/legacy-gtk3-theme-scheme-auto-switcher/"
+echo "Make sure to get Dash to Panel"
+echo "  https://extensions.gnome.org/extension/1160/dash-to-panel/"
 echo "--------------------------- FSTAB ---------------------------"
 echo "Remember to add a permanent mount point for permanently mounted partitions."
 echo "Standard fstab USER mount arguments:"
