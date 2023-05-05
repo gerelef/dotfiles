@@ -314,8 +314,12 @@ fi
 
 #######################################################################################################
 
-echo "Running firefox as user to create it's configuration directories; let it load fully, then close it..."
-su - "$REAL_USER" -c "firefox"
+
+echo "https://www.suse.com/support/kb/doc/?id=000017060"
+while : ; do
+    read -p "Please run firefox as a user to create it's configuration directories; let it load fully, then close it.[Y/n] " -n 1 -r
+    [[ ! $REPLY =~ ^[YyNn]$ ]] || break
+done
 
 #######################################################################################################
 
