@@ -103,7 +103,6 @@ gnome-terminal-* \
 gnome-boxes* \
 gnome-calculator* \
 gnome-calendar* \
-gnome-clocks* \
 gnome-color-manager* \
 gnome-contacts* \
 gnome-maps* \
@@ -113,6 +112,7 @@ readonly INSTALLABLE_FLATPAKS="\
 org.gtk.Gtk3theme.adw-gtk3 \
 org.gtk.Gtk3theme.adw-gtk3-dark \
 org.videolan.VLC \
+io.gitlab.theevilskeleton.Upscaler \
 com.raggesilver.BlackBox \
 com.spotify.Client \
 net.cozic.joplin_desktop \
