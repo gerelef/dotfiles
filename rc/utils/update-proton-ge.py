@@ -125,20 +125,28 @@ if not fhashname or not ftarballname:
     exit(1)
 
 # download sha512sum
-with open(fhashname, "wb") as out:
-    print(f"Writing {fhashname} from url {fhashurl}")
-    for bread, btotal, data in utils.download(fhashurl):
-        out.write(data)
-        utils.echo_progress_bar_complex(bread, btotal, sys.stdout, 30)
-print(f"\nDownloaded {fhashname}")
+try:
+    with open(fhashname, "wb") as out:
+        print(f"Writing {fhashname} from url {fhashurl}")
+        for bread, btotal, data in utils.download(fhashurl):
+            out.write(data)
+            utils.echo_progress_bar_complex(bread, btotal, sys.stdout, os.get_terminal_size().columns)
+    print(f"\nDownloaded {fhashname}")
+except Exception as e:
+    print(e, out=sys.stderr)
+    exit(1)
 
 # download tarball
-with open(ftarballname, "wb") as out:
-    print(f"Writing {ftarballname} from url {ftarballurl}")
-    for bread, btotal, data in utils.download(ftarballurl):
-        out.write(data)
-        utils.echo_progress_bar_complex(bread, btotal, sys.stdout, 30)
-print(f"\nDownloaded {ftarballname}")
+try:
+    with open(ftarballname, "wb") as out:
+        print(f"Writing {ftarballname} from url {ftarballurl}")
+        for bread, btotal, data in utils.download(ftarballurl):
+            out.write(data)
+            utils.echo_progress_bar_complex(bread, btotal, sys.stdout, os.get_terminal_size().columns)
+    print(f"\nDownloaded {ftarballname}")
+except Exception as e:
+    print(e, out=sys.stderr)
+    exit(1)
 
 if not utils.run_subprocess(["sha512sum", "-c", fhashname], DOWNLOAD_DIR):
     if not args.keep:

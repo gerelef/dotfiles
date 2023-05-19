@@ -174,8 +174,9 @@ def echo_progress_bar_complex(current, total, stream, max_columns, use_ascii=Fal
     filled_space = "-" if use_ascii else "\033[1m\033[38;5;34m―\033[0m"  # bold, green & clean_colour
     # total bar length: we're going to use the max columns with a padding of 6 characters
     #  for the "[" "]" "999%" pads.
-    bar_length = max_columns - 6
-    bar = ["\r", "["] + [empty_space] * bar_length + ["]"] + list(f"\033[1m\033[38;5;34m{round((current / total) * 100, 1)}%\033[0m")
+    percentage_str = f"{round((current / total) * 100, 1)}%"
+    bar_length = max_columns - len(percentage_str) - 2 # 2 for safety, sometimes tput cols overshoots this. 
+    bar = ["\r", "["] + [empty_space] * bar_length + ["]"] + list(f"\033[1m\033[38;5;34m{percentage_str}\033[0m")
     for i in range(2, bar_length + 2):
         if round(i / (bar_length + 1), 2) <= round(current / total, 2):
             bar[i] = filled_space
