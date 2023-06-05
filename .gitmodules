@@ -1,8 +1,9 @@
-[submodule "csgorc"]
-	path = .csgo
+
+[submodule ".csgorc"]
+	path = .csgorc
 	url = git@github.com:gerelef/csgorc.git
 	branch = master
-[submodule "insurc"]
-	path = .insu
+[submodule ".insurc"]
+	path = .insurc
 	url = git@github.com:gerelef/insurc.git
-	branch = master
+    branch = master
