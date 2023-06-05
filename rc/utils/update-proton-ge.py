@@ -58,8 +58,6 @@ args = parser.parse_args()
 
 if args.destination:
     INSTALL_DIR = os.path.abspath(os.path.expanduser(args.destination))
-    if not os.path.exists(INSTALL_DIR):
-        os.makedirs(INSTALL_DIR)
 
 if args.temporary:
     DOWNLOAD_DIR = os.path.abspath(os.path.expanduser(args.temporary))
@@ -102,6 +100,9 @@ if not args.logo:
        |_|_| |_|___/\__\__,_|_|_|\___|_|           
     \033[0m
     """)
+
+if not os.path.exists(INSTALL_DIR):
+    os.makedirs(INSTALL_DIR)
 
 release = match_correct_release(PROTON_GE_GITHUB_RELEASES_URL, title=VERSION)
 if not release:

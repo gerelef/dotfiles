@@ -114,6 +114,7 @@ org.gtk.Gtk3theme.adw-gtk3-dark \
 org.videolan.VLC \
 io.gitlab.theevilskeleton.Upscaler \
 page.codeberg.Imaginer.Imaginer \
+io.github.tfuxu.Halftone \
 com.raggesilver.BlackBox \
 com.spotify.Client \
 net.cozic.joplin_desktop \
