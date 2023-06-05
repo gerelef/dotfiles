@@ -39,7 +39,7 @@ gsettings set org.gnome.settings-daemon.plugins.media-keys.custom-keybinding:/or
 /usr/bin/flatpak run --branch=stable --arch=x86_64 --command=gsettings com.raggesilver.BlackBox set com.raggesilver.BlackBox pixel-scrolling false
 /usr/bin/flatpak run --branch=stable --arch=x86_64 --command=gsettings com.raggesilver.BlackBox set com.raggesilver.BlackBox pretty true
 /usr/bin/flatpak run --branch=stable --arch=x86_64 --command=gsettings com.raggesilver.BlackBox set com.raggesilver.BlackBox remember-window-size false
-/usr/bin/flatpak run --branch=stable --arch=x86_64 --command=gsettings com.raggesilver.BlackBox set com.raggesilver.BlackBox scrollback-lines 100000
+/usr/bin/flatpak run --branch=stable --arch=x86_64 --command=gsettings com.raggesilver.BlackBox set com.raggesilver.BlackBox scrollback-mode uint32 1
 /usr/bin/flatpak run --branch=stable --arch=x86_64 --command=gsettings com.raggesilver.BlackBox set com.raggesilver.BlackBox show-headerbar true
 /usr/bin/flatpak run --branch=stable --arch=x86_64 --command=gsettings com.raggesilver.BlackBox set com.raggesilver.BlackBox show-menu-button true
 /usr/bin/flatpak run --branch=stable --arch=x86_64 --command=gsettings com.raggesilver.BlackBox set com.raggesilver.BlackBox show-scrollbars true
@@ -50,7 +50,6 @@ gsettings set org.gnome.settings-daemon.plugins.media-keys.custom-keybinding:/or
 /usr/bin/flatpak run --branch=stable --arch=x86_64 --command=gsettings com.raggesilver.BlackBox set com.raggesilver.BlackBox theme-dark 'One Dark'
 /usr/bin/flatpak run --branch=stable --arch=x86_64 --command=gsettings com.raggesilver.BlackBox set com.raggesilver.BlackBox theme-light 'Tomorrow'
 /usr/bin/flatpak run --branch=stable --arch=x86_64 --command=gsettings com.raggesilver.BlackBox set com.raggesilver.BlackBox use-custom-command false
-/usr/bin/flatpak run --branch=stable --arch=x86_64 --command=gsettings com.raggesilver.BlackBox set com.raggesilver.BlackBox use-custom-scrollback true
 /usr/bin/flatpak run --branch=stable --arch=x86_64 --command=gsettings com.raggesilver.BlackBox set com.raggesilver.BlackBox use-overlay-scrolling true
 /usr/bin/flatpak run --branch=stable --arch=x86_64 --command=gsettings com.raggesilver.BlackBox set com.raggesilver.BlackBox window-show-borders true
 /usr/bin/flatpak run --branch=stable --arch=x86_64 --command=gsettings com.raggesilver.BlackBox set com.raggesilver.BlackBox window-width 1280
@@ -194,6 +193,13 @@ gsettings set org.gnome.TextEditor tab-width 4
 gsettings set org.gnome.TextEditor use-system-font true
 gsettings set org.gnome.TextEditor wrap-text true
 ############################################################################################################################################
+gsettings set org.gnome.shell.extensions.pop-shell activate-launcher "[]"
+gsettings set org.gnome.shell.extensions.pop-shell active-hint true
+gsettings set org.gnome.shell.extensions.pop-shell active-hint-border-radius 0
+gsettings set org.gnome.shell.extensions.pop-shell hint-color-rgba 'rgb(19,70,147)'
+gsettings set org.gnome.shell.extensions.pop-shell gap-inner 0
+gsettings set org.gnome.shell.extensions.pop-shell gap-outer 0
+############################################################################################################################################
 gsettings set org.gnome.desktop.interface clock-format '24h'
 gsettings set org.gnome.desktop.interface clock-show-date false
 gsettings set org.gnome.desktop.interface clock-show-seconds true
@@ -244,11 +250,6 @@ gsettings set org.gnome.mutter attach-modal-dialogs true
 gsettings set org.gnome.mutter auto-maximize true
 gsettings set org.gnome.mutter center-new-windows true
 gsettings set org.gnome.mutter check-alive-timeout 15000
-gsettings set org.gnome.shell.overrides attach-modal-dialogs true
-gsettings set org.gnome.shell.overrides dynamic-workspaces true
-gsettings set org.gnome.shell.overrides edge-tiling false
-gsettings set org.gnome.shell.overrides focus-change-on-pointer-rest true
-gsettings set org.gnome.shell.overrides workspaces-only-on-primary false
 gsettings set org.gnome.shell.weather automatic-location true
 gsettings set org.gnome.software allow-updates true
 gsettings set org.gnome.software download-updates true
