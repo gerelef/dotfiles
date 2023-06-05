@@ -27,8 +27,9 @@ readonly REAL_USER_HOME=$(eval echo "~$REAL_USER")
 # dotfiles directories
 # https://stackoverflow.com/questions/59895/how-do-i-get-the-directory-where-a-bash-script-is-located-from-within-the-script
 readonly SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
-readonly RC_DIR="$SCRIPT_DIR/../rc"
-readonly RC_MZL_DIR="$SCRIPT_DIR/../firefox"
+readonly RC_DIR="$SCRIPT_DIR/.."
+readonly CONFIG_DIR="$SCRIPT_DIR/../../.config"
+readonly RC_MZL_DIR="$CONFIG_DIR/mozilla"
 
 # home directories to create
 readonly CLONED_ROOT="$REAL_USER_HOME/cloned"
@@ -201,7 +202,7 @@ systemctl enable fstrim.timer
 echo "-------------------DNF.CONF----------------"
 echo "Setting up dnf.conf..."
 
-command cp -r "$RC_DIR/dnf.conf" "/etc/dnf/dnf.conf"
+command cp -r "$CONFIG_DIR/dnf.conf" "/etc/dnf/dnf.conf"
 chown root "/etc/dnf/dnf.conf"
 chmod 644 "/etc/dnf/dnf.conf"
 
@@ -327,16 +328,13 @@ done
 
 echo "-------------------INSTALLING RC FILES----------------"
 
-cat "$RC_DIR/mimeapps.list" >> "$REAL_USER_HOME/.config/mimeapps.list"
-change-ownership "$REAL_USER_HOME/.config/mimeapps.list"
-
 touch "$REAL_USER_HOME/.bashrc_private"
 change-ownership "$REAL_USER_HOME/.bashrc_private"
 
 ln -sf "$RC_DIR/.vimrc" "$REAL_USER_HOME/.vimrc"
 ln -sf "$RC_DIR/.bashrc" "$REAL_USER_HOME/.bashrc"
 ln -sf "$RC_DIR/.nanorc" "$REAL_USER_HOME/.nanorc"
-ln -sf "$RC_DIR/.gitconfig" "$REAL_USER_HOME/.gitconfig"
+ln -sf "$CONFIG_DIR/.gitconfig" "$REAL_USER_HOME/.gitconfig"
 change-ownership "$REAL_USER_HOME/.vimrc" "$REAL_USER_HOME/.bashrc" "$REAL_USER_HOME/.nanorc" "$REAL_USER_HOME/.gitconfig"
 
 mkdir -p "$CLONED_ROOT/mono-firefox-theme"

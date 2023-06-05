@@ -39,7 +39,7 @@ if os.geteuid() == 0:
 
 MONO_FF_GITHUB_RELEASES_URL = "https://api.github.com/repos/witalihirsch/Mono-firefox-theme/releases"
 VIS_ROOT_DIR = os.path.expanduser("~/cloned/mono-firefox-theme")
-DOT_ROOT_DIR = os.path.expanduser("~/dotfiles/firefox")
+DOT_ROOT_DIR = os.path.expanduser("~/dotfiles/.config/mozilla")
 
 parser = ap.ArgumentParser(description='Download & extract latest version of mono-firefox-theme (https://github.com/witalihirsch/Mono-firefox-theme)')
 parser.add_argument('-s','--source', help='Source of dotfile to copy into new mono-ff-theme userchrome.css', required=False)

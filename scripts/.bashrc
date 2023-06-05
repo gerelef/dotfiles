@@ -65,11 +65,11 @@ require-bashrc () {
     local _GLOBAL_BASHRC="/etc/bashrc"
     local _PRIVATE_BASHRC="$HOME/.bashrc_private"
 
-    local _UTILITY_DEBUG="$DOTFILES_DIR/rc/utils/debug.sh"
-    local _UTILITY_FFMPEG="$DOTFILES_DIR/rc/utils/ffmpeg.sh"
-    local _UTILITY_YTDL="$DOTFILES_DIR/rc/utils/ytdl.sh"
-    local _UTILITY_MATH="$DOTFILES_DIR/rc/utils/math.sh"
-    local _UTILITY_PROMPT="$DOTFILES_DIR/rc/utils/__setprompt.sh"
+    local _UTILITY_DEBUG="$DOTFILES_DIR/scripts/utils/debug.sh"
+    local _UTILITY_FFMPEG="$DOTFILES_DIR/scripts/utils/ffmpeg.sh"
+    local _UTILITY_YTDL="$DOTFILES_DIR/scripts/utils/ytdl.sh"
+    local _UTILITY_MATH="$DOTFILES_DIR/scripts/utils/math.sh"
+    local _UTILITY_PROMPT="$DOTFILES_DIR/scripts/utils/__setprompt.sh"
     
     [[ -f "$_GLOBAL_BASHRC" ]] && . "$_GLOBAL_BASHRC" 
     [[ -f "$_PRIVATE_BASHRC" ]] && . "$_PRIVATE_BASHRC"
@@ -125,15 +125,15 @@ rn () (
 
 # call lss py implementation
 lss () (
-    $DOTFILES_DIR/rc/utils/lss.py "$@"
+    $DOTFILES_DIR/scripts/utils/lss.py "$@"
 )
 
 update-mono-ff-theme () (
-    $DOTFILES_DIR/rc/utils/update-mono-ff-theme.py "$@"
+    $DOTFILES_DIR/scripts/utils/update-mono-ff-theme.py "$@"
 )
 
 update-proton-ge () (
-    $DOTFILES_DIR/rc/utils/update-proton-ge.py "$@"
+    $DOTFILES_DIR/scripts/utils/update-proton-ge.py "$@"
 )
 
 #############################################################
