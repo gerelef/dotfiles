@@ -257,3 +257,9 @@ gsettings set org.gnome.software download-updates-notify true
 gsettings set org.gnome.software enable-repos-dialog true
 gsettings set org.gnome.software show-nonfree-ui true
 gsettings set org.gnome.software show-ratings true
+############################################################################################################################################
+gsettings set org.gnome.settings-daemon.plugins.color night-light-enabled true
+gsettings set org.gnome.settings-daemon.plugins.color night-light-schedule-automatic false
+gsettings set org.gnome.settings-daemon.plugins.color night-light-schedule-from 0.0
+gsettings set org.gnome.settings-daemon.plugins.color night-light-schedule-to 6.0
+
