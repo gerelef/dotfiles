@@ -1,4 +1,4 @@
-## Manpage directory for dotfiles
+## Manpages
 Set like this in your `.bashrc`:
 ```sh
 export MANPATH="$MANPATH:$DOTFILES_DIR/man"
