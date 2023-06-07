@@ -196,7 +196,7 @@ gsettings set org.gnome.TextEditor wrap-text true
 gsettings set org.gnome.shell.extensions.pop-shell activate-launcher "[]"
 gsettings set org.gnome.shell.extensions.pop-shell active-hint true
 gsettings set org.gnome.shell.extensions.pop-shell active-hint-border-radius 0
-gsettings set org.gnome.shell.extensions.pop-shell hint-color-rgba 'rgb(19,70,147)'
+gsettings set org.gnome.shell.extensions.pop-shell hint-color-rgba 'rgb(57,57,57)'
 gsettings set org.gnome.shell.extensions.pop-shell gap-inner 0
 gsettings set org.gnome.shell.extensions.pop-shell gap-outer 0
 ############################################################################################################################################
