@@ -26,7 +26,7 @@ readonly DISTRIBUTION_NAME="fedora"
 
 readonly INSTALLABLE_PACKAGES="\
 flatpak \
-adw-gtk3 \
+adw-gtk3-theme \
 git \
 meson \
 curl \
@@ -159,7 +159,6 @@ xorg-x11-drv-nvidia-cuda \
 
 #######################################################################################################
 
-dnf copr enable -y nickavem/adw-gtk3
 dnf copr remove -y --skip-broken phracek/PyCharm
 dnf-install "https://download1.rpmfusion.org/free/fedora/rpmfusion-free-release-$(rpm -E %fedora).noarch.rpm" # free rpmfusion
 dnf-install "https://download1.rpmfusion.org/nonfree/fedora/rpmfusion-nonfree-release-$(rpm -E %fedora).noarch.rpm" # nonfree rpmfusion
