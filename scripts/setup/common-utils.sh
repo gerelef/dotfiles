@@ -20,8 +20,8 @@ readonly REAL_USER_HOME=$(eval echo "~$REAL_USER")
 # dotfiles directories
 # https://stackoverflow.com/questions/59895/how-do-i-get-the-directory-where-a-bash-script-is-located-from-within-the-script
 readonly SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
-readonly RC_DIR="$SCRIPT_DIR/.."
-readonly CONFIG_DIR="$SCRIPT_DIR/../../.config"
+readonly RC_DIR=$(realpath -s "$SCRIPT_DIR/..")
+readonly CONFIG_DIR=$(realpath -s "$SCRIPT_DIR/../../.config")
 readonly RC_MZL_DIR="$CONFIG_DIR/mozilla"
 
 # home directories to create
