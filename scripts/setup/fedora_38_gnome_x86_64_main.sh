@@ -128,6 +128,7 @@ timeshift \
 readonly INSTALLABLE_EXTRAS="\
 lmms \
 lmms-vst \
+mixxx \
 steam \
 "
 
