@@ -120,6 +120,14 @@ rn () (
     mv -vn "$1" "$2"
 )
 
+restart-pipewire () (
+    systemctl --user restart pipewire
+)
+
+restart-network-manager () (
+    systemctl restart NetworkManager
+)
+
 #############################################################
 # PYTHON SCRIPTS
 
@@ -262,9 +270,6 @@ alias c="clear"
 alias wget="\wget -c --read-timeout=5 --tries=0"
 alias venv=". ./venv/bin/activate" # activate venv
 alias cvenv="python -m venv" # create venv (pythonXX cvenv)
-
-alias restartpipewire="systemctl --user restart pipewire" # restart audio (pipewire)
-alias restartnetworkmanager="systemctl restart NetworkManager" # restart internet (networkmanager)
 
 alias reverse="tac"
 alias palindrome="rev"
