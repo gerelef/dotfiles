@@ -132,8 +132,8 @@ update-mono-ff-theme () (
     $DOTFILES_DIR/scripts/utils/update-mono-ff-theme.py "$@"
 )
 
-update-proton-ge () (
-    $DOTFILES_DIR/scripts/utils/update-proton-ge.py "$@"
+update-compat-layers () (
+    $DOTFILES_DIR/scripts/utils/update-compat-layers.py "$@"
 )
 
 #############################################################
