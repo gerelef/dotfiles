@@ -9,7 +9,7 @@ shopt -s globstar
 shopt -s dotglob
 shopt -s nullglob
 
-if [ $SUDO_USER ]; then
+if [[ -n "$SUDO_USER" ]]; then
     REAL_USER="$SUDO_USER"
 else
     REAL_USER="$(whoami)"
