@@ -102,6 +102,46 @@ copy-dnf () (
     chmod 644 "/etc/dnf/dnf.conf"
 )
 
+# man 5 sysctl.d
+#    CONFIGURATION DIRECTORIES AND PRECEDENCE
+#    ...
+#    All configuration files are sorted by their filename in lexicographic order, regardless of which of the directories they reside in. 
+#    If multiple files specify the same option, the entry in the file with the lexicographically latest name will take precedence. 
+#    It is recommended to prefix all filenames with a two-digit number and a dash, to simplify the ordering of the files.
+
+lower-swappiness () (
+    echo "vm.swappiness = 10" > "/etc/sysctl.d/90-swappiness.conf"
+)
+
+raise-user-watches () (
+    echo "fs.inotify.max_user_watches = 600000" > "/etc/sysctl.d/90-max_user_watches.conf"
+)
+
+raise-memory-map-counts () (
+    # Increase the number of memory map areas a process may have. No need for it in fedora 39 or higher. Relevant links:
+    # https://fedoraproject.org/wiki/Changes/IncreaseVmMaxMapCount
+    # https://wiki.archlinux.org/title/gaming
+    # https://kernel.org/doc/Documentation/sysctl/vm.txt
+    echo "vm.max_map_count=2147483642" > "/etc/sysctl.d/90-max_map_count.conf"
+)
+
+cap-nproc-count () (
+    [[ -z "$REAL_USER" ]] && return 0;
+    
+    echo "$REAL_USER hard nproc 10000" > "/etc/security/limits.d/90-nproc.conf"
+)
+
+cap-max-logins-system () (
+    echo "* - maxsyslogins 5" > "/etc/security/limits.d/90-maxsyslogins.conf"
+)
+
+create-convenience-sudoers () (
+    local fname="/etc/sudoers.d/convenience-defaults"
+    
+    echo "Defaults timestamp_timeout=120, pwfeedback" > "$fname"
+    chmod 440 "$fname" # 440 is the default rights of /etc/sudoers file, so we're copying the rights just in case (even though visudo -f /etc/sudoers.d/test creates the file with 640)
+)
+
 create-private-bashrc () (
     touch "$REAL_USER_HOME/.bashrc_private"
     change-ownership "$REAL_USER_HOME/.bashrc_private"

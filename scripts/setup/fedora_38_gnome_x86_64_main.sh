@@ -159,6 +159,15 @@ xorg-x11-drv-nvidia-cuda \
 
 #######################################################################################################
 
+echo "-------------------DNF.CONF----------------"
+echo "Setting up dnf.conf..."
+
+copy-dnf 
+
+echo "Done."
+
+#######################################################################################################
+
 dnf copr remove -y --skip-broken phracek/PyCharm
 dnf-install "https://download1.rpmfusion.org/free/fedora/rpmfusion-free-release-$(rpm -E %fedora).noarch.rpm" # free rpmfusion
 dnf-install "https://download1.rpmfusion.org/nonfree/fedora/rpmfusion-nonfree-release-$(rpm -E %fedora).noarch.rpm" # nonfree rpmfusion
@@ -169,15 +178,6 @@ dnf-install "https://download1.rpmfusion.org/nonfree/fedora/rpmfusion-nonfree-re
 # Make home directory private
 change-ownership "$REAL_USER_HOME"
 systemctl enable fstrim.timer
-
-#######################################################################################################
-
-echo "-------------------DNF.CONF----------------"
-echo "Setting up dnf.conf..."
-
-copy-dnf 
-
-echo "Finished copying dnf.conf"
 
 #######################################################################################################
 dnf-update-refresh
@@ -223,6 +223,7 @@ if [ ! -z "$GPU" ]; then
     dracut --force
 fi
 
+echo "Done."
 #######################################################################################################
 # no requirement to add flathub ourselves anymore in f38; it should be enabled by default. however, it may not be, most likely by accident, so this is a failsafe
 flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
@@ -232,6 +233,8 @@ flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flat
 echo "-------------------INSTALLING---------------- $INSTALLABLE_FLATPAKS $INSTALLABLE_OBS_STUDIO" | tr " " "\n"
 flatpak-install "$INSTALLABLE_FLATPAKS"
 flatpak-install "$INSTALLABLE_OBS_STUDIO"
+
+echo "Done."
 
 #######################################################################################################
 
@@ -245,7 +248,7 @@ echo ""
 if [[ $REPLY =~ ^[Yy]$ ]]; then
     dnf-install "$INSTALLABLE_EXTRAS"
     flatpak-install "$INSTALLABLE_EXTRAS_FLATPAK"
-    echo "Finished installing extras."
+    echo "Done."
 fi
 
 echo "-------------------INSTALLING---------------- $INSTALLABLE_IDE_FLATPAKS $INSTALLABLE_DEV_PKGS" | tr " " "\n"
@@ -270,7 +273,7 @@ if [[ $REPLY =~ ^[Yy]$ ]]; then
     else
         echo "sha512sum mismatch"        
     fi
-    echo "Finished installing toolbox."
+    echo "Done."
 fi
 
 #######################################################################################################
@@ -284,6 +287,7 @@ echo ""
 
 if [[ $REPLY =~ ^[Yy]$ ]]; then
     dnf-install "$INSTALLABLE_EXTENSIONS"
+    echo "Done."
 fi
 
 #######################################################################################################
@@ -300,10 +304,27 @@ done
 echo "-------------------INSTALLING RC FILES----------------"
 
 create-private-bashrc
-
 copy-rc-files
-
 copy-ff-rc-files
+
+echo "Done."
+
+echo "-------------------SETTING UP SYSTEM DEFAULTS----------------"
+
+lower-swappiness
+echo "Lowered swappiness."
+raise-user-watches
+echo "Raised user watches."
+raise-memory-map-counts
+echo "Raised memory map counts."
+cap-nproc-count
+echo "Capped maximum number of processes."
+cap-max-logins-system
+echo "Capped max system logins."
+create-convenience-sudoers
+echo "Created sudoers.d convenience defaults."
+
+echo "Done."
 
 #######################################################################################################
 
@@ -342,14 +363,6 @@ echo "Standard fstab USER mount arguments:"
 echo "  rw,user,exec,nosuid,nodev,nofail,auto,x-gvfs-show"
 echo "Standard fstab ROOT mount arguments:"
 echo "  nouser,nosuid,nodev,nofail,x-gvfs-show,x-udisks-auth"
-echo "--------------------------- VISUDO ---------------------------"
-echo "Please sudo visudo and add:"
-echo "  Defaults env_reset, timestamp_timeout=120, pwfeedback"
-echo "--------------------------- LIMITS ---------------------------"
-echo "sudo nano /etc/security/limits.conf"
-echo "$REAL_USER hard nproc 10000"
-echo "$REAL_USER hard maxlogins 2"
-echo "* - maxsyslogins 4"
 echo "--------------------------- SWAP ---------------------------"
 echo "If using ext4 in /, create a swapfile with these commands:"
 echo "16GB:"
@@ -364,12 +377,4 @@ echo "  sudo swapon --show"
 echo "If this is the case, make permanent by appending this line in /etc/fstab:"
 echo "  /swapfile swap swap defaults 0 0"
 echo "------------------------------------------------------"
-echo "Increase the number of memory map areas a process may have. No need for it in fedora 39 or higher. Relevant links:"
-echo "  https://fedoraproject.org/wiki/Changes/IncreaseVmMaxMapCount"
-echo "  https://kernel.org/doc/Documentation/sysctl/vm.txt"
-echo "To modify, sudo nano /etc/sysctl.conf and append this line: "
-echo "  vm.max_map_count=2147483642"
-echo "Verify with sysctl vm.max_map_count"
-echo "------------------------------------------------------"
 echo "Make sure to restart your PC after making all the necessary adjustments."
-echo "------------------------------------------------------"
