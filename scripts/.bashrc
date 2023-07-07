@@ -42,7 +42,7 @@ update-everything () (
         [[ -n "$(command -v zyp)" ]] && sudo zyp update -y && break
         [[ -n "$(command -v pacman)" ]] && sudo pacman -Syu && break
         [[ -n "$(command -v yum)" ]] && sudo yum update -y && break
-        [[ -n "$(command -v apt)" ]] && sudo apt update -y && sudo apt full-upgrade -y && sudo apt autoremove -y && sudo apt clean -y && sudo apt autoclean -y && break
+        [[ -n "$(command -v apt)" ]] && sudo apt update -y && sudo apt autoremove -y && sudo apt clean -y && sudo apt autoclean -y && break
         break
     done
     [[ -n "$(command -v flatpak)" ]] && flatpak update -y
