@@ -71,17 +71,17 @@ require-bashrc () {
     local _UTILITY_MATH="$DOTFILES_DIR/scripts/utils/math.sh"
     local _UTILITY_PROMPT="$DOTFILES_DIR/scripts/utils/__setprompt.sh"
     
-    [[ -f "$_GLOBAL_BASHRC" ]] && . "$_GLOBAL_BASHRC" 
-    [[ -f "$_PRIVATE_BASHRC" ]] && . "$_PRIVATE_BASHRC"
+    [[ -f "$_GLOBAL_BASHRC" ]] && source "$_GLOBAL_BASHRC" 
+    [[ -f "$_PRIVATE_BASHRC" ]] && source "$_PRIVATE_BASHRC"
 
     # SOFT DEPENDENCIES
-    [[ -f "$_UTILITY_DEBUG" ]] && . "$_UTILITY_DEBUG"
-    [[ -f "$_UTILITY_FFMPEG" ]] && . "$_UTILITY_FFMPEG"
-    [[ -f "$_UTILITY_YTDL" ]] && . "$_UTILITY_YTDL"
-    [[ -f "$_UTILITY_MATH" ]] && . "$_UTILITY_MATH"
+    [[ -f "$_UTILITY_DEBUG" ]] && source "$_UTILITY_DEBUG"
+    [[ -f "$_UTILITY_FFMPEG" ]] && source "$_UTILITY_FFMPEG"
+    [[ -f "$_UTILITY_YTDL" ]] && source "$_UTILITY_YTDL"
+    [[ -f "$_UTILITY_MATH" ]] && source "$_UTILITY_MATH"
 
     # HARD DEPENDENCIES
-    [[ -f "$_UTILITY_PROMPT" ]] && . "$_UTILITY_PROMPT"
+    [[ -f "$_UTILITY_PROMPT" ]] && source "$_UTILITY_PROMPT"
     
     # PACKAGE DEPENDENCIES
     require-bashrc-packages || return 1
@@ -216,6 +216,77 @@ zsh () (
 )
 
 #############################################################
+# PYTHON VENV(s)
+
+# goal: we want to create alot of different vipN () (...) functions to call
+#  for every different virtual environment that we have; e.g. python3.11 will have vip3.11
+#  which calls for the activation of the virtual environment of python3.11 stored somewhere on the system
+#  to do that, we're going to (1) create a mock file (2) dump all these different functions in it
+#  (3) source it (4) then promptly delete it so we don't create garbage files & for (perhaps) obscure security reasons
+#    these functions (which only differ by the python version they're calling) should:
+#      (1) check if a venv (for this specific version) exists in the venv directory. If it doesn't, 
+#        (1a) create a new venv for this specific version
+#      (2) source the activation script (and enter the venv)
+
+# important note: the statement pythonX.x -m venv \"\$venv_dir\" won't work with 2.7 or lower,
+#  for that, we need the virtualenv module
+prepare-pip () (
+    local vip_fname="/tmp/vip-temp-$(date +%s%N).sh"
+    local venv_dir="$HOME/.vpip"
+    local python_versions=()
+    
+    # get all the appropriate versions from the filesystem 
+    # https://stackoverflow.com/a/57485303
+    for pv in "$(ls -1 /usr/bin/python* | grep '.*[0-9]\.\([0-9]\+\)\?$')"; do
+        python_versions+=("$pv")
+    done
+    
+    # create mock functions
+    for python_version in $python_versions; do 
+        # sanitize the filename and keep only the numbers at the end
+        local python_version_number="$(echo $python_version | tr -d -c 0-9.)"
+        
+        local virtual_group="vip$python_version_number () {
+            [[ \"\$EUID\" -eq 0 ]] && echo \"Do NOT run as root.\" && return 2; 
+            [[ ! -d \"$venv_dir\" ]] && mkdir -p \"$venv_dir\" # create root dir if doesn't exist
+            local venv_dir=\"$venv_dir/dvip$python_version_number\"
+            
+            # if venv dir doesn't exist for our version create it
+            [[ ! -d \"\$venv_dir\" ]] && $python_version -m venv \"\$venv_dir\"
+            
+            source \"\$venv_dir/bin/activate\"
+        }"
+        
+        local virtual_group_subshell="vip$python_version_number-subshell () {
+            [[ \"\$EUID\" -eq 0 ]] && echo \"Do NOT run as root.\" && return 2; 
+            [[ ! -d \"$venv_dir\" ]] && mkdir -p \"$venv_dir\" # create root dir if doesn't exist
+            local venv_dir=\"$venv_dir/dvip$python_version_number\"
+            
+            # if venv dir doesn't exist for our version create it
+            [[ ! -d \"\$venv_dir\" ]] && $python_version -m venv \"\$venv_dir\"
+            
+            bash --init-file <(echo \"source \\\"$HOME/.bashrc\\\"; source \$venv_dir/bin/activate\")
+        }"
+        
+        # append to the file
+        echo "$virtual_group" >> $vip_fname
+        echo "$virtual_group_subshell" >> $vip_fname
+    done 
+    
+    echo $vip_fname
+)
+
+require-pip () {
+    local vip_fname="$(prepare-pip)"
+
+    # source the file & delete
+    source "$vip_fname"
+    rm "$vip_fname"
+}
+
+require-pip
+
+#############################################################
 # BASH OPTIONS
 
 require-bashrc
@@ -269,7 +340,7 @@ alias flatpak-checkout="flatpak update --commit="
 alias c="clear"
 alias wget="\wget -c --read-timeout=5 --tries=0"
 alias venv=". ./venv/bin/activate" # activate venv
-alias cvenv="python -m venv" # create venv (pythonXX cvenv)
+alias cvenv="python -m venv venv" # create venv (pythonXX cvenv)
 
 alias reverse="tac"
 alias palindrome="rev"
