@@ -63,7 +63,7 @@ require-bashrc-packages () (
 require-bashrc () {
     # Source global & private definitions
     local _GLOBAL_BASHRC="/etc/bashrc"
-    local _PRIVATE_BASHRC="$HOME/.bashrc_private"
+    local _PRIVATE_BASHRC="$HOME/.bashrc-private"
 
     local _UTILITY_DEBUG="$DOTFILES_DIR/scripts/utils/debug.sh"
     local _UTILITY_FFMPEG="$DOTFILES_DIR/scripts/utils/ffmpeg.sh"

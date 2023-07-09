@@ -304,6 +304,7 @@ done
 echo "-------------------INSTALLING RC FILES----------------"
 
 create-private-bashrc
+create-private-gitconfig
 copy-rc-files
 copy-ff-rc-files
 

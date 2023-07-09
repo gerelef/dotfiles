@@ -143,8 +143,18 @@ create-convenience-sudoers () (
 )
 
 create-private-bashrc () (
-    touch "$REAL_USER_HOME/.bashrc_private"
-    change-ownership "$REAL_USER_HOME/.bashrc_private"
+    touch "$REAL_USER_HOME/.bashrc-private"
+    change-ownership "$REAL_USER_HOME/.bashrc-private"
+)
+
+create-private-gitconfig () (
+    touch "$REAL_USER_HOME/.gitconfig-github"
+    touch "$REAL_USER_HOME/.gitconfig-gitlab"
+    touch "$REAL_USER_HOME/.gitconfig-gnome"
+    
+    change-ownership "$REAL_USER_HOME/.gitconfig-github"
+    change-ownership "$REAL_USER_HOME/.gitconfig-gitlab"
+    change-ownership "$REAL_USER_HOME/.gitconfig-gnome"
 )
 
 copy-rc-files () (
