@@ -138,6 +138,11 @@ io.github.dummerle.rare \
 "
 
 readonly INSTALLABLE_DEV_PKGS="\
+cmake \
+ninja-build \
+meson \
+gcc \
+clang \
 scrcpy \
 bless \
 "
