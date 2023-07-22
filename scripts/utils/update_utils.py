@@ -160,6 +160,23 @@ def download(url, chunk_size=1024 * 1024) -> Generator[int, int, bin]:
     return
 
 
+def match_correct_release(link, title=None):
+    releases = get_github_releases(link, recurse=False if not title else True)
+    if not releases:
+        print(f"Unknown error, couldn't get all github releases for {link}")
+        exit(1)
+
+    print(f"Found {len(releases)} valid releases.")
+    if not title:
+        return releases[0]
+
+    for release in releases:
+        if title in release.tag_name.lower():
+            return release
+
+    return None
+
+
 def echo_progress_bar_simple(current, total, stream):
     """Echo a simple percentage in the stream. Stream must be a stream of type TextIOWrapper, or any other class that
     has a .write(str) and .flush() method."""
