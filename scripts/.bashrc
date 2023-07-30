@@ -251,7 +251,8 @@ prepare-pip () (
             [[ ! -d \"$venv_dir\" ]] && mkdir -p \"$venv_dir\" # create root dir if doesn't exist
             local venv_dir=\"$venv_dir/dvip$python_version_number\"
             
-            # if venv dir doesn't exist for our version create it
+            # if venv dir doesn't exist for our version notify and create it
+            [[ ! -d \"\$venv_dir\" ]] && echo \"\$venv_dir doesn't exist; creating venv for $python_version\"
             [[ ! -d \"\$venv_dir\" ]] && $python_version -m venv \"\$venv_dir\"
             
             source \"\$venv_dir/bin/activate\"
@@ -263,6 +264,7 @@ prepare-pip () (
             local venv_dir=\"$venv_dir/dvip$python_version_number\"
             
             # if venv dir doesn't exist for our version create it
+            [[ ! -d \"\$venv_dir\" ]] && echo \"\$venv_dir doesn't exist; creating venv for $python_version\"
             [[ ! -d \"\$venv_dir\" ]] && $python_version -m venv \"\$venv_dir\"
             
             bash --init-file <(echo \"source \\\"$HOME/.bashrc\\\"; source \$venv_dir/bin/activate\")
