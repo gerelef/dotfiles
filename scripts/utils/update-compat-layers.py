@@ -148,61 +148,54 @@ if __name__ == "__main__":
         print(f"Couldn't find a tarball for version {release.tag_name}")
         exit(1)
 
-    # download sha512sum
-    if not args.unsafe:
-        try:
+    try:
+        # download sha512sum
+        if not args.unsafe:
             with open(fhashname, "wb") as out:
                 print(f"Writing {fhashname} from url {fhashurl}")
                 for bread, btotal, data in utils.download(fhashurl):
                     out.write(data)
                     utils.echo_progress_bar_complex(bread, btotal, sys.stdout, os.get_terminal_size().columns)
-            print(f"\nDownloaded {fhashname}")
-        except Exception as e:
-            print(e, out=sys.stderr)
-            exit(1)
-
-    # download tarball
-    try:
+                print(f"\nDownloaded {fhashname}")
+        
+        # download tarball
         with open(ftarballname, "wb") as out:
             print(f"Writing {ftarballname} from url {ftarballurl}")
             for bread, btotal, data in utils.download(ftarballurl):
                 out.write(data)
                 utils.echo_progress_bar_complex(bread, btotal, sys.stdout, os.get_terminal_size().columns)
         print(f"\nDownloaded {ftarballname}")
+    except KeyboardInterrupt:
+        print("Interrupted by user.")
+        exit(0)
     except Exception as e:
-        print(e, out=sys.stderr)
+        print(f"Unknown exception {e}", out=sys.stderr)
         exit(1)
-
-    # there's no sha512sum to download in luxtorpeda (as of writing)
-    if not args.unsafe:
-        if not utils.run_subprocess(["sha512sum", "-c", fhashname], DOWNLOAD_DIR):
-            if not args.keep:
-                os.remove(fhashname)
-                os.remove(ftarballname)
+    
+    try:
+        # there's no sha512sum to download in luxtorpeda (as of writing)
+        if not args.unsafe and not utils.run_subprocess(["sha512sum", "-c", fhashname], DOWNLOAD_DIR):
             exit(1)
 
-    time.sleep(1)
+        if not utils.run_subprocess(["tar", "-xPf", ftarballname, f"--directory={INSTALL_DIR}"], DOWNLOAD_DIR):
+            exit(1)
+        print(f"Extracted {ftarballname}")
 
-    if not utils.run_subprocess(["tar", "-xPf", ftarballname, f"--directory={INSTALL_DIR}"], DOWNLOAD_DIR):
+        # The default python module has a significant security vulnerability:
+        #  see more: https://docs.python.org/3/library/tarfile.html
+        # with tarfile.open(ftarballname, "r:gz") as tar:
+        #    tar.extractall()
+        #    tar.close()
+        #  to counter this, we used the shell utility instead
+    except KeyboardInterrupt:
+        print("Interrupted by user.")
+        exit(0)
+    finally:
         if not args.keep:
-            if not args.unsafe:
+            if fhashname:
                 os.remove(fhashname)
-            os.remove(ftarballname)
-        exit(1)
-    print(f"Extracted {ftarballname}")
-
-    # The default python module has a significant security vulnerability:
-    #  see more: https://docs.python.org/3/library/tarfile.html
-    # with tarfile.open(ftarballname, "r:gz") as tar:
-    #    tar.extractall()
-    #    tar.close()
-    #  to counter this, we used the shell utility instead
-
-    if not args.keep:
-        os.remove(ftarballname)
-        if not args.unsafe:
-            os.remove(fhashname)
-        print(f"Removed {DOWNLOAD_DIR} files.")
-
+            if ftarballname:
+                os.remove(ftarballname)
+            print(f"Removed {DOWNLOAD_DIR} files.")
     print(f"New contents are at {INSTALL_DIR}")
     print("Done.")
