@@ -86,7 +86,7 @@ gnome-maps* \
 readonly INSTALLABLE_FLATPAKS="\
 org.gtk.Gtk3theme.adw-gtk3 \
 org.gtk.Gtk3theme.adw-gtk3-dark \
-org.videolan.VLC \
+io.gitlab.daikhan.stable \
 io.gitlab.theevilskeleton.Upscaler \
 page.codeberg.Imaginer.Imaginer \
 io.github.tfuxu.Halftone \
