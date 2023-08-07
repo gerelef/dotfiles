@@ -2,8 +2,8 @@
 import os
 import sys
 import time
-import argparse as ap
 import update_utils as utils
+import argparse as ap
 
 
 def create_argparser() -> ap.ArgumentParser:
@@ -11,14 +11,26 @@ def create_argparser() -> ap.ArgumentParser:
         description="Download & extract latest version of GE-Proton\n\thttps://github.com/GloriousEggroll/proton-ge-custom"
     )
     parser.add_argument(
-        "-l", "--luxtorpeda", 
+        "--luxtorpeda", 
         help="Download & extract latest version of Luxtorpeda\n\thttps://github.com/luxtorpeda-dev/luxtorpeda", 
         required=False, 
         action="store_true"
     )
     parser.add_argument(
+        "--league", 
+        help="Download & extract latest version of Lutris-GE-X.x.x-LoL\n\thttps://github.com/gloriouseggroll/wine-ge-custom", 
+        required=False, 
+        action="store_true"
+    )
+    parser.add_argument(
+        "--wine", 
+        help="Download & extract latest version of Wine-GE-ProtonX-x\n\thttps://github.com/gloriouseggroll/wine-ge-custom", 
+        required=False, 
+        action="store_true"
+    )
+    parser.add_argument(
         "-u", "--unsafe",
-        help="do not check (verify) hash download contents with sha512sum",
+        help="do not check (verify) download contents with sha512sum",
         required=False,
         action="store_true"
     )
@@ -51,7 +63,18 @@ def create_argparser() -> ap.ArgumentParser:
 
 
 def setup_argument_options(argparser_output) -> None:
-    global DOWNLOAD_DIR, COMPATIBILITY_LAYER_URL, INSTALL_DIR, VERSION
+    global DOWNLOAD_DIR, COMPATIBILITY_LAYER_URL, INSTALL_DIR, VERSION, RELEASE_FILTER
+    
+    if args.luxtorpeda:
+        args.unsafe = True # as of writing, luxtorpeda doesn't have a sha512sum in their assets.
+        COMPATIBILITY_LAYER_URL = LUXTORPEDA_GITHUB_RELEASES_URL
+    
+    if args.league or args.wine:
+        RELEASE_FILTER = lambda s: "proton" in s
+        if args.league:
+            RELEASE_FILTER = lambda s: "lol" in s
+        INSTALL_DIR = os.path.expanduser("~/.local/share/lutris/runners/wine/")
+        COMPATIBILITY_LAYER_URL = WINE_GE_GITHUB_RELEASES_URL
     
     if args.destination:
         INSTALL_DIR = os.path.abspath(os.path.expanduser(args.destination))
@@ -64,10 +87,6 @@ def setup_argument_options(argparser_output) -> None:
     if args.version:
         VERSION = args.version
 
-    if args.luxtorpeda:
-        args.unsafe = True # as of writing, luxtorpeda doesn't have a sha512sum in their assets.
-        COMPATIBILITY_LAYER_URL = LUXTORPEDA_GITHUB_RELEASES_URL
-
     if args.subcommand:
         match args.subcommand:
             case "ls":
@@ -77,6 +96,8 @@ def setup_argument_options(argparser_output) -> None:
                 exit(0)
             case "versions":            
                 for v in utils.get_github_releases(COMPATIBILITY_LAYER_URL, recurse=True):
+                    if RELEASE_FILTER and not RELEASE_FILTER(v.tag_name.lower()):
+                        continue
                     print(v.tag_name)
                 exit(0)
             case _:
@@ -90,10 +111,12 @@ if utils.is_root():
 
 DOWNLOAD_DIR = "/tmp/"
 PROTON_GE_GITHUB_RELEASES_URL = "https://api.github.com/repos/GloriousEggroll/proton-ge-custom/releases"
+WINE_GE_GITHUB_RELEASES_URL = "https://api.github.com/repos/gloriouseggroll/wine-ge-custom/releases"
 LUXTORPEDA_GITHUB_RELEASES_URL = "https://api.github.com/repos/luxtorpeda-dev/luxtorpeda/releases"
 COMPATIBILITY_LAYER_URL = PROTON_GE_GITHUB_RELEASES_URL # default compat layer to install 
 INSTALL_DIR = os.path.expanduser("~/.local/share/Steam/compatibilitytools.d/")
 VERSION = None
+RELEASE_FILTER = None
 
 if __name__ == "__main__":
     parser = create_argparser()
@@ -103,7 +126,7 @@ if __name__ == "__main__":
     if not os.path.exists(INSTALL_DIR):
         os.makedirs(INSTALL_DIR)
 
-    release = utils.match_correct_release(COMPATIBILITY_LAYER_URL, title=VERSION)
+    release = utils.match_correct_release(COMPATIBILITY_LAYER_URL, title=VERSION, _filter=RELEASE_FILTER)
     if not release:
         print(f"Couldn't match any release for version {VERSION}")
         exit(1)

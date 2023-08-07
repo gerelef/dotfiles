@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 from dataclasses import dataclass
-from typing import Generator, List
+from typing import Generator, List, Callable
 
 
 # Writing boilerplate code to avoid writing boilerplate code!
@@ -160,7 +160,11 @@ def download(url, chunk_size=1024 * 1024) -> Generator[int, int, bin]:
     return
 
 
-def match_correct_release(link, title=None):
+def match_correct_release(link: str, title: str=None, _filter: Callable[str, ...]=None):
+    """
+    Match correct release by checking if substring title is inside release.tag_name.lower().
+    Releases that return false on _filter (if provided) release.tag_name.lower() are not considered.
+    """
     releases = get_github_releases(link, recurse=False if not title else True)
     if not releases:
         print(f"Unknown error, couldn't get all github releases for {link}")
@@ -171,6 +175,9 @@ def match_correct_release(link, title=None):
         return releases[0]
 
     for release in releases:
+        # if we have a filter, and the results it False, continue to the next result
+        if _filter and not _filter(release.tag_name.lower()):
+            continue
         if title in release.tag_name.lower():
             return release
 
