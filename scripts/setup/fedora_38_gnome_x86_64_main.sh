@@ -16,8 +16,8 @@ if ! ping -q -c 1 -W 1 google.com > /dev/null; then
     exit 1
 fi
 
-# there should be a matching change-ownership-recursive after everything's done in the script 
-mkdir -p "$CLONED_ROOT" "$MZL_ROOT" "$SSH_ROOT" "$BIN_ROOT" "$WRK_ROOT" "$SMR_ROOT" "$RND_ROOT" 
+# there should be a matching change-ownership-recursive after everything's done in the script
+mkdir -p "$CLONED_ROOT" "$MZL_ROOT" "$SSH_ROOT" "$BIN_ROOT" "$WRK_ROOT" "$SMR_ROOT" "$RND_ROOT"
 
 # fs thingies
 readonly ROOT_FS=$(stat -f --format=%T /)
@@ -95,7 +95,6 @@ com.spotify.Client.stable \
 net.cozic.joplin_desktop.stable \
 com.skype.Client.stable \
 us.zoom.Zoom.stable \
-com.github.Matoking.protontricks.stable \
 net.openra.OpenRA.stable \
 com.github.tchx84.Flatseal.stable \
 "
@@ -140,8 +139,6 @@ io.github.dummerle.rare.stable \
 readonly INSTALLABLE_DEV_PKGS="\
 cmake \
 ninja-build \
-meson \
-gcc \
 clang \
 scrcpy \
 bless \
@@ -162,12 +159,20 @@ xorg-x11-drv-nvidia-libs \
 xorg-x11-drv-nvidia-cuda \
 "
 
+readonly INSTALLABLE_WINE_GE_CUSTOM_PKGS="\
+wine \
+winetricks \
+protontricks \
+vulkan-loader \
+vulkan-loader.i686 \
+"
+
 #######################################################################################################
 
 echo "-------------------DNF.CONF----------------"
 echo "Setting up dnf.conf..."
 
-copy-dnf 
+copy-dnf
 
 echo "Done."
 
@@ -223,7 +228,7 @@ if [ ! -z "$GPU" ]; then
     fi
     echo "Found NVIDIA GPU $GPU, installing drivers..."
     dnf-install "$INSTALLABLE_NVIDIA_DRIVERS"
-    
+
     akmods --force
     dracut --force
 fi
@@ -256,6 +261,21 @@ if [[ $REPLY =~ ^[Yy]$ ]]; then
     echo "Done."
 fi
 
+echo "-------------------INSTALLING---------------- $INSTALLABLE_WINE_GE_CUSTOM_PKGS" | tr " " "\n"
+while : ; do
+    read -p "Are you sure you want to install the Wine Compatibility layer?[Y/n] " -n 1 -r
+    [[ ! $REPLY =~ ^[YyNn]$ ]] || break
+done
+
+echo ""
+if [[ $REPLY =~ ^[Yy]$ ]]; then
+    echo "Installing tools for Wine..."
+    dnf-install "$INSTALLABLE_WINE_GE_CUSTOM_PKGS"
+    dnf-install-group "C Development Tools and Libraries"
+    dnf-install-group "Development Tools"
+    echo "Done."
+fi
+
 echo "-------------------INSTALLING---------------- $INSTALLABLE_IDE_FLATPAKS $INSTALLABLE_DEV_PKGS" | tr " " "\n"
 while : ; do
     read -p "Are you sure you want to install Community IDEs & Jetbrains Toolbox?[Y/n] " -n 1 -r
@@ -266,17 +286,19 @@ echo ""
 if [[ $REPLY =~ ^[Yy]$ ]]; then
     flatpak-install "$INSTALLABLE_IDE_FLATPAKS"
     echo "Finished installing IDEs."
-    
+
     dnf copr enable -y zeno/scrcpy
     dnf-install "$INSTALLABLE_DEV_PKGS"
 
-    echo "-------------------INSTALLING JETBRAINS TOOLBOX----------------" 
+    dnf-install-group "C Development Tools and Libraries"
+    dnf-install-group "Development Tools"
+    echo "-------------------INSTALLING JETBRAINS TOOLBOX----------------"
     readonly curlsum=$(curl -fsSL https://raw.githubusercontent.com/nagygergo/jetbrains-toolbox-install/master/jetbrains-toolbox.sh | sha512sum -)
     readonly validsum="9f7b643574de3990ad9afc50d1f82e731c6712c56b7adc91573b639f9322346aa217bdd0005724bc70164274202d617a289f0c7a74be3bd3f5a89d0b2fef3cb7  -"
     if [[ "$validsum" == "$curlsum" ]]; then
         curl -fsSL https://raw.githubusercontent.com/nagygergo/jetbrains-toolbox-install/master/jetbrains-toolbox.sh | bash
     else
-        echo "sha512sum mismatch"        
+        echo "sha512sum mismatch"
     fi
     echo "Done."
 fi
