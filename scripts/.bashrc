@@ -28,21 +28,19 @@ export SUDO_PROMPT="$(tput setaf 4)Root password:$(tput sgr0)"
 
 install-system-pkg () (
     while :; do
-        [[ -n "$(command -v dnf)" ]] && if sudo dnf install -y "$@"; then break; else return $?; fi
-        [[ -n "$(command -v zyp)" ]] && if sudo zyp install -y "$@"; then break; else return $?; fi 
-        [[ -n "$(command -v yum)" ]] && if sudo yum install -y "$@"; then break; else return $?; fi 
-        [[ -n "$(command -v apt)" ]] && if sudo apt install -y "$@"; then break; else return $?; fi
+        [[ -n "$(command -v dnf)" ]] && (sudo dnf install -y "$@"; break)
+        [[ -n "$(command -v yum)" ]] && (sudo yum install -y "$@"; break)
+        [[ -n "$(command -v apt)" ]] && (sudo apt install -y "$@"; break)
         break
     done
 )
 
 update-everything () (
     while :; do
-        [[ -n "$(command -v dnf)" ]] && sudo dnf update -y --refresh && sudo dnf autoremove -y && break
-        [[ -n "$(command -v zyp)" ]] && sudo zyp update -y && break
-        [[ -n "$(command -v pacman)" ]] && sudo pacman -Syu && break
-        [[ -n "$(command -v yum)" ]] && sudo yum update -y && break
-        [[ -n "$(command -v apt)" ]] && sudo apt update -y && sudo apt autoremove -y && sudo apt clean -y && sudo apt autoclean -y && break
+        [[ -n "$(command -v dnf)" ]] && (sudo dnf update -y --refresh && sudo dnf autoremove -y; break)
+        [[ -n "$(command -v pacman)" ]] && (sudo pacman -Syu; break)
+        [[ -n "$(command -v yum)" ]] && (sudo yum update -y; break)
+        [[ -n "$(command -v apt)" ]] && (sudo apt update -y && sudo apt autoremove -y && sudo apt clean -y && sudo apt autoclean -y; break)
         break
     done
     [[ -n "$(command -v flatpak)" ]] && flatpak update -y
