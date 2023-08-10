@@ -174,15 +174,28 @@ ffcompress-mp4 () (
 )
 
 export -f ffcompress-mp4
+complete -A file ffcompress-mp4
 export -f ffcompress-mp3
+complete -A file ffcompress-mp3
 export -f fftrim-mp4
+complete -A file fftrim-mp4
 export -f fftrim-mp3
+complete -A file fftrim-mp3
 export -f ffvideofy
+complete -A file ffvideofy
 export -f ffgiphify
+complete -A file ffgiphify
 export -f ffcrop-mp4
+complete -A file ffcrop-mp4
 export -f ffscale-mp4
+complete -A file ffscale-mp4
 export -f ffextract-video-mp4
+complete -A file ffextract-video-mp4
 export -f ffextract-audio-mp3
+complete -A file ffextract-audio-mp3
 export -f ffconvert-mp4
+complete -A file ffconvert-mp4
 export -f ffconvert-mp3
+complete -A file ffconvert-mp3
 export -f ffconcat-video
+complete -A file ffconcat-video

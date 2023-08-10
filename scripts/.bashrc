@@ -90,6 +90,12 @@ dnf-installed-packages-by-size () (
     dnf -q --disablerepo=* info installed | sed -n 's/^Name[[:space:]]*: \|^Size[[:space:]]*: //p' | sed 'N;s/\n/ /;s/ \(.\)$/\1/' | sort -hr -k 2 | less
 )
 
+_dnf-installed-packages-by-size_completions () {
+    COMPREPLY=()
+}
+
+complete -F _dnf-installed-packages-by-size_completions dnf-installed-packages-by-size
+
 #############################################################
 # pure bash helpers 
 # Get directory size 
@@ -102,6 +108,8 @@ gds () (
         du -sh --apparent-size .
     fi
 )
+
+complete -A directory gds
 
 # Highlight (and not filter) text with grep
 highlight () (
@@ -122,9 +130,21 @@ restart-pipewire () (
     systemctl --user restart pipewire
 )
 
+_restart-pipewire_completions () {
+    COMPREPLY=()
+}
+
+complete -F _restart-pipewire_completions restart-pipewire
+
 restart-network-manager () (
     systemctl restart NetworkManager
 )
+
+_restart-network-manager_completions () {
+    COMPREPLY=()
+}
+
+complete -F _restart-network-manager_completions restart-network-manager
 
 #############################################################
 # PYTHON SCRIPTS
@@ -133,6 +153,8 @@ restart-network-manager () (
 lss () (
     $DOTFILES_DIR/scripts/utils/lss.py "$@"
 )
+
+complete -A directory lss
 
 update-mono-ff-theme () (
     $DOTFILES_DIR/scripts/utils/update-mono-ff-theme.py "$@"
@@ -153,12 +175,18 @@ _journalctl () (
     command journalctl "$@"
 )
 
+alias journalctl="_journalctl"
+complete -A service journalctl
+
 # tldr wrapper for ease of use
 _tldr () (
     [[ $# -eq 0 ]] && (command tldr tldr) | less -R && return    
     [[ $# -eq 1 ]] && (command tldr "$1") | less -R && return
     command tldr "$@"
 )
+
+alias tldr="_tldr"
+complete -A command tldr
 
 # Automatically do an ls after each cd
 cd () { 
@@ -331,16 +359,13 @@ alias .....='cd ../../../..'
 
 # substitutes for commands
 alias ftrim="fstrim -v"
-alias journalctl="_journalctl"
-alias tldr="_tldr"
 alias flatpak-log="flatpak remote-info --log flathub"
 alias flatpak-checkout="flatpak update --commit="
 
 # convenience alias
 alias c="clear"
 alias wget="\wget -c --read-timeout=5 --tries=0"
-alias venv=". ./venv/bin/activate" # activate venv
-alias cvenv="python -m venv venv" # create venv (pythonXX cvenv)
+alias mkvenv="python -m venv venv" # create venv (pythonXX cvenv)
 
 alias reverse="tac"
 alias palindrome="rev"

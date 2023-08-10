@@ -26,6 +26,21 @@ ytdl-thumbnail () (
     yt-dlp --write-thumbnail --skip-download "$@"
 )
 
+_ytdl-mp3_completions () {
+    COMPREPLY=()
+}
+
+_ytdl-mp4_completions () {
+    COMPREPLY=()
+}
+
+_ytdl-thumbnail_completions () {
+    COMPREPLY=()
+}
+
 export -f ytdl-mp3
+complete -F _ytdl-mp3_completions ytdl-mp3
 export -f ytdl-mp4
+complete -F _ytdl-mp4_completions ytdl-mp4
 export -f ytdl-thumbnail
+complete -F _ytdl-thumbnail_completions ytdl-thumbnail

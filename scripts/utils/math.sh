@@ -44,7 +44,29 @@ is-factor () (
     echo "$(($2 % $1))"
 )
 
+_max_completions () {
+    COMPREPLY=()
+}
+
+_min_completions () {
+    COMPREPLY=()
+}
+
+_is-odd_completions () {
+    COMPREPLY=()
+}
+
+_is-factor_completions () {
+    COMPREPLY=()
+}
+
 export -f max
+complete -F _max_completions max
 export -f min
+complete -F _min_completions min
 export -f is-odd
+complete -F _is-odd_completions is-odd
 export -f is-factor
+complete -F _is-factor_completions is-factor
+
+

@@ -73,7 +73,6 @@ readonly _BWHITE="$__PBI$__WHITE"
 readonly _FBLACK="$__PFI$__BLACK"
 readonly _BBLACK="$__PBI$__BLACK"
 
-
 echo-colour-codes-256 () (
     # https://betterprogramming.pub/25-awesome-linux-command-one-liners-9495f26f07fb
     for code in {0..255}; do 
@@ -81,4 +80,9 @@ echo-colour-codes-256 () (
     done
 )
 
+_echo-colour-codes-256_completions () {
+    COMPREPLY=()
+}
+
 export -f echo-colour-codes-256
+complete -F _echo-colour-codes-256_completions echo-colour-codes-256

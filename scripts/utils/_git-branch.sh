@@ -8,7 +8,7 @@ REQUIRE_DEPENDENCIES+="git "
 
 # get current git branch in arg or current 
 _git-branch () (
-    # if superfluous arguments return...
+    # if superfluous arguments return to prevent misuse
     [[ $# -gt 1 ]] && return 2
     
     # these two commands are somewhat copy pasted from stack overflow... I can't find the exact link, it's been very long ago
@@ -20,3 +20,4 @@ _git-branch () (
 )
 
 export -f _git-branch
+complete -A directory _git-branch
