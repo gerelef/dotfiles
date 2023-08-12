@@ -37,10 +37,10 @@ install-system-pkg () (
 
 update-everything () (
     while :; do
-        [[ -n "$(command -v dnf)" ]] && (sudo dnf update -y --refresh && sudo dnf autoremove -y; break)
-        [[ -n "$(command -v pacman)" ]] && (sudo pacman -Syu; break)
-        [[ -n "$(command -v yum)" ]] && (sudo yum update -y; break)
-        [[ -n "$(command -v apt)" ]] && (sudo apt update -y && sudo apt autoremove -y && sudo apt clean -y && sudo apt autoclean -y; break)
+        [[ -n "$(command -v dnf)" ]] && sudo dnf update -y --refresh && sudo dnf autoremove -y;
+        [[ -n "$(command -v pacman)" ]] && sudo pacman -Syu;
+        [[ -n "$(command -v yum)" ]] && sudo yum update -y;
+        [[ -n "$(command -v apt)" ]] && sudo apt update -y && sudo apt autoremove -y && sudo apt clean -y && sudo apt autoclean -y;
         break
     done
     [[ -n "$(command -v flatpak)" ]] && flatpak update -y
