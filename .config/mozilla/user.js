@@ -1,5 +1,6 @@
 // enable stylesheets for mono ff
 user_pref("toolkit.legacyUserProfileCustomizations.stylesheets", true);
+user_pref("svg.context-properties.content.enabled", true);
 user_pref("gnomeTheme.hideSingleTab", true);
 
 // GENERIC
