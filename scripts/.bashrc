@@ -156,8 +156,8 @@ lss () (
 
 complete -A directory lss
 
-update-mono-ff-theme () (
-    $DOTFILES_DIR/scripts/utils/update-mono-ff-theme.py "$@"
+update-ff-theme () (
+    $DOTFILES_DIR/scripts/utils/update-ff-theme.py "$@"
 )
 
 update-compat-layers () (
