@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
+from abc import ABC, abstractmethod
 from dataclasses import dataclass
-from typing import Generator, List, Callable
+from typing import Generator, List, Callable, Optional, TypeAlias
 
 
 # Writing boilerplate code to avoid writing boilerplate code!
@@ -70,7 +71,7 @@ def auto_hash(cls):
 @auto_str
 @auto_eq
 @dataclass
-class __Release:
+class Release:
     id: int
     author_login: str
 
@@ -78,12 +79,72 @@ class __Release:
     name: str
 
     body: str
-    is_draft: bool
-    is_prerelease: bool
     created_at: str
     published_at: str
 
+    is_draft: Optional[bool] = None
+    is_prerelease: Optional[bool] = None
+
     assets: dict[str, str]  # filename, link
+
+Filename: TypeAlias = str
+URL: TypeAlias = str
+Downloaded: TypeAlias = set(Filename)
+Filter: TypeAlias = Callable[Release]
+
+class Manager(ABC):
+    # TODO: add documentation with reST for EVERYTHING. This is SUPER important, so I can remember down the line.
+    # """
+    # This is a reST style.
+    # :param param1: this is a first param
+    # :param param2: this is a second param
+    # :returns: this is a description of what is returned
+    # :raises keyError: raises an exception
+    # """
+    import sys
+    import enum
+    class __Provider(enum.Enum):
+        GITHUB_API = "api.github.com/"
+        # (api\.github\.com\/)+ regexr
+        GITLAB_API = "gitlab.com/api/"
+        # (gitlab\.com\/api\/)+ regexr
+    
+    @abstractmethod
+    def __init__(self):
+        #FIXME needs more work. How will a .run() know which functions etc. to call based on this? The ideal scenario for an implenentor is to just define the abstract methods and nothing else other than configuration parameters.
+        pass
+    
+    def run() -> None:
+        pass
+    
+    def __recv_releases(self, url) -> Generator[Release]:
+        pass
+    
+    @abstractmethod
+    def filter(self, release: Release) -> bool:
+        pass
+    
+    def match(self, url: URL, _filter: Filter) -> dict[Filename, URL]:
+        pass
+    
+    @abstractmethod
+    def writer(self, fname: Filename) -> None:
+        pass
+    
+    def download(self, url_to_filenames: dict[Filename, URL], output_stream=sys.stdout) -> list[Filenames]:
+        pass
+    
+    @abstractmethod
+    def verify(self, files_to_hash: dict[Filename, Filename]) -> bool:
+        pass
+    
+    @abstractmethod
+    def install(self, files: list[Filename]) -> list[Filename]:
+        pass
+    
+    @abstractmethod
+    def cleanup(self, files: list[Filename]):
+        pass
 
 
 def run_subprocess(commands, cwd) -> bool:
@@ -93,13 +154,13 @@ def run_subprocess(commands, cwd) -> bool:
     return subprocess.run(commands, cwd=path.expanduser(cwd)).returncode == 0
 
 
-def get_github_releases(url, recurse=False) -> list[__Release] | None:
+def get_github_releases(url, recurse=False) -> list[Release] | None:
     """Gets all the GitHub releases for a given match, and return a list of Release class. Can use GitHub release
     paging to find all compatible releases."""
     from datetime import datetime
     import requests
 
-    releases: list[__Release] = []
+    releases: list[Release] = []
     while True:
         try:
             with requests.get(url, verify=True) as req:
@@ -116,7 +177,7 @@ def get_github_releases(url, recurse=False) -> list[__Release] | None:
                         assets[asset["name"]] = asset["browser_download_url"]
 
                     releases.append(
-                        __Release(
+                        Release(
                             id=int(version["id"]),
                             author_login=version["author"]["login"],
                             tag_name=version["tag_name"],
