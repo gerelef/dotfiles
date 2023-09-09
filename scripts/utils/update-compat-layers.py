@@ -2,8 +2,8 @@
 import os
 import sys
 import time
-import update_utils as utils
 import argparse as ap
+import update_utils as utils
 
 
 def create_argparser() -> ap.ArgumentParser:
