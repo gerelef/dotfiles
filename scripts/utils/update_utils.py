@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
+import enum
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
-from typing import Generator, List, Callable, Optional, TypeAlias
+from typing import Generator, Sequence, TextIO, Callable, Optional, TypeAlias
 
 
 # Writing boilerplate code to avoid writing boilerplate code!
@@ -68,6 +69,10 @@ def auto_hash(cls):
     return cls
 
 
+Filename: TypeAlias = str
+URL: TypeAlias = str
+
+
 @auto_str
 @auto_eq
 @dataclass
@@ -82,102 +87,151 @@ class Release:
     created_at: str
     published_at: str
 
+    assets: dict[Filename, URL]
+    src: Optional[list[URL]]
+
     is_draft: Optional[bool] = None
     is_prerelease: Optional[bool] = None
 
-    assets: dict[str, str]  # filename, link
 
-Filename: TypeAlias = str
-URL: TypeAlias = str
-Downloaded: TypeAlias = set(Filename)
-Filter: TypeAlias = Callable[Release]
+class HTTPStatus(enum.Enum):
+    """
+    Group HTTP Status classes.
+    """
+    INFORMATIONAL = 99  # starts at > 100
+    SUCCESS = 199  # starts at > 200
+    REDIRECTION = 299  # starts at > 300
+    CLIENT_ERROR = 399  # starts at > 400
+    SERVER_ERROR = 499  # starts at > 500
 
-class Manager(ABC):
-    # TODO: add documentation with reST for EVERYTHING. This is SUPER important, so I can remember down the line.
-    # """
-    # This is a reST style.
-    # :param param1: this is a first param
-    # :param param2: this is a second param
-    # :returns: this is a description of what is returned
-    # :raises keyError: raises an exception
-    # """
-    import sys
+    @staticmethod
+    def create(code: int) -> Status:
+        """
+        :param code: HTTP Status Code.
+        :returns: Group Status Class. For more information:
+        https://developer.mozilla.org/en-US/docs/Web/HTTP/Status
+        """
+        if code > HTTPStatus.SERVER_ERROR.value:
+            return HTTPStatus.SERVER_ERROR
+        if code > HTTPStatus.CLIENT_ERROR.value:
+            return HTTPStatus.CLIENT_ERROR
+        if code > HTTPStatus.REDIRECTION.value:
+            return HTTPStatus.REDIRECTION
+        if code > HTTPStatus.SUCCESS.value:
+            return HTTPStatus.SUCCESS
+        if code > HTTPStatus.INFORMATIONAL.value:
+            return HTTPStatus.INFORMATIONAL
+
+
+class ProviderFactory:
     import enum
-    class __Provider(enum.Enum):
+
+    class Exceptions(Exception):
+        class UnknownProviderException(Manager.Exceptions):
+            pass
+
+    class SupportedAPI(enum.Enum):
+        """
+        Supported Git providers.
+        """
         GITHUB_API = "api.github.com/"
-        # (api\.github\.com\/)+ regexr
-        GITLAB_API = "gitlab.com/api/"
-        # (gitlab\.com\/api\/)+ regexr
-    
-    @abstractmethod
+        # GITLAB_API = "gitlab.com/api/" NOT SUPPORTED YET
+        GITHUB_API_REGEXR = r"(api\.github\.com\/)+"
+
+        # GITLAB_API_REGEXR = r"(gitlab[\.a-zA-Z]*\.com\/api\/)+" NOT SUPPORTED YET
+
+        @staticmethod
+        def match(url: URL) -> Provider | None:
+            """
+            Match a URL to a provider.
+            :returns: the supported Provider, or None if there are no matches.
+            """
+            from re import search as regex_search
+            if regex_search(Provider.GITHUB_API_REGEXR, url):
+                return Provider.GITHUB_API
+
+            return None
+
     def __init__(self):
-        #FIXME needs more work. How will a .run() know which functions etc. to call based on this? The ideal scenario for an implenentor is to just define the abstract methods and nothing else other than configuration parameters.
-        pass
-    
-    def run() -> None:
-        pass
-    
-    def __recv_releases(self, url) -> Generator[Release]:
-        pass
-    
+        raise RuntimeError("Cannot instantiate static factory!")
+
+    @staticmethod
+    def create(url) -> Provider:
+        match (ProviderFactory.SupportedAPI.match(url)):
+            case ProviderFactory.SupportedAPI.GITHUB_API:
+                return GitHubProvider(url=url)
+            case _:
+                raise ProviderFactory.Exceptions.UnknownProviderException(
+                    f"Couldn't match repository URL to any supported provider!"
+                )
+
+
+Filter: TypeAlias = Callable[[Release], bool]
+
+
+class Provider:
+    """
+    Wrapper/Facade for Git API endpoints.
+    """
+
+    def __init__(self, url: URL):
+        """
+        :param url: git project endpoint to use
+        :raises ProviderFactory.Exceptions.UnknownProviderException:
+        raised if the repository provider is not supported
+        """
+        self.repository = url
+
     @abstractmethod
-    def filter(self, release: Release) -> bool:
+    def __recurse_releases(self, url: URL) -> Generator[Status, Release | None]:
+        """
+        Generator to get all GitHub releases for a given project.
+        :param url: project endpoint
+        :returns: Generator[Status, Release]
+        :raises requests.exceptions.JSONDecodeError: Raised if unable to decode Json due to mangled data
+        """
         pass
-    
-    def match(self, url: URL, _filter: Filter) -> dict[Filename, URL]:
-        pass
-    
+
     @abstractmethod
-    def writer(self, fname: Filename) -> None:
+    def download(self, url: URL, chunk_size=1024 * 1024) -> Generator[Status, int, int, bytes] | None:
+        """
+        Downloads a packet of size chunk_size from URL, which belongs to the provider defined previously.
+        Generator that returns a binary data packet of size chunk_size, iteratively requested from url.
+        :returns: Generator[Status, CurrentBytesRead, TotalBytesToRead, Data]
+        :raises requests.ConnectionError:
+        :raises requests.Timeout:
+        :raises requests.TooManyRedirects:
+        """
         pass
-    
-    def download(self, url_to_filenames: dict[Filename, URL], output_stream=sys.stdout) -> list[Filenames]:
-        pass
-    
-    @abstractmethod
-    def verify(self, files_to_hash: dict[Filename, Filename]) -> bool:
-        pass
-    
-    @abstractmethod
-    def install(self, files: list[Filename]) -> list[Filename]:
-        pass
-    
-    @abstractmethod
-    def cleanup(self, files: list[Filename]):
+
+    def get_release(self, f: Filter) -> Release | None:
+        # TODO
         pass
 
 
-def run_subprocess(commands, cwd) -> bool:
-    """Runs a number of Commands in  the Currently Working Directory"""
-    import subprocess
-    from os import path
-    return subprocess.run(commands, cwd=path.expanduser(cwd)).returncode == 0
-
-
-def get_github_releases(url, recurse=False) -> list[Release] | None:
-    """Gets all the GitHub releases for a given match, and return a list of Release class. Can use GitHub release
-    paging to find all compatible releases."""
-    from datetime import datetime
+class GitHubProvider(Provider):
+    import datetime
     import requests
 
-    releases: list[Release] = []
-    while True:
-        try:
-            with requests.get(url, verify=True) as req:
-                if req.status_code != 200:
-                    print(f"Got status code {req.status_code}", file=sys.stderr)
-                    exit(1)
-                releases_recvd = req.json()
-                releases_links = req.links
+    # noinspection PyMethodMayBeStatic
+    def __recurse_releases(self, url: URL) -> Generator[Status, Release | None]:
+        while True:
+            try:
+                with requests.get(url, allow_redirects=True, verify=True) as req:
+                    status = HTTPStatus.create(req.status_code)
+                    if HTTPStatus.create(req.status_code) != HTTPStatus.SUCCESS:
+                        yield status, None
+                        continue
+                    json = req.json()
+                    header_links = req.links
 
-            for version in releases_recvd:
-                try:
-                    assets = {}
-                    for asset in version["assets"]:
-                        assets[asset["name"]] = asset["browser_download_url"]
+                for version in json:
+                    try:
+                        downloadables = {}
+                        for asset in version["assets"]:
+                            downloadables[asset["name"]] = asset["browser_download_url"]
 
-                    releases.append(
-                        Release(
+                        yield status, Release(
                             id=int(version["id"]),
                             author_login=version["author"]["login"],
                             tag_name=version["tag_name"],
@@ -186,87 +240,138 @@ def get_github_releases(url, recurse=False) -> list[Release] | None:
                             is_draft=bool(version["draft"]),
                             is_prerelease=bool(version["prerelease"]),
                             # https://stackoverflow.com/a/36236080/10007109
-                            created_at=datetime.strptime(version["created_at"], "%Y-%m-%dT%H:%M:%SZ"),
-                            published_at=datetime.strptime(version["published_at"], "%Y-%m-%dT%H:%M:%SZ"),
-                            assets=assets
+                            created_at=datetime.datetime.strptime(version["created_at"], "%Y-%m-%dT%H:%M:%SZ"),
+                            published_at=datetime.datetime.strptime(version["published_at"], "%Y-%m-%dT%H:%M:%SZ"),
+                            assets=downloadables,
+                            src=[version["tarball_url"], version["zipball_url"]]
                         )
-                    )
-                except IndexError:
-                    pass
+                    except IndexError:
+                        pass
 
-            if not recurse:
+                url = header_links['next']['url']
+            except KeyError:
+                # if either next links don't exist, we're done
                 break
 
-            url = releases_links['next']['url']
-        except KeyError:
-            # if either next links don't exist, we're done
-            break
-        except requests.exceptions.JSONDecodeError:
-            # if the json has errored return None to indicate error
-            return None
+        return
 
-    return releases
-
-
-def download(url, chunk_size=1024 * 1024) -> Generator[int, int, bin]:
-    """Generator that returns a binary data packet of size chunk_size, requested from url. First returnee is the
-    currently read bytes, second is the total read bytes, and the third is the actual data itself."""
-    import requests
-    with requests.get(url, verify=True, stream=True, allow_redirects=True) as req:
-        btotal = int(req.headers.get('content-length'))
-        bread = 0
-        for data in req.iter_content(chunk_size=chunk_size):
-            bread += len(data)
-            yield bread, btotal, data
-    return
+    def download(self, url: URL, chunk_size=1024 * 1024) -> Generator[Status, int, int, bytes] | None:
+        with requests.get(url, verify=True, stream=True, allow_redirects=True) as req:
+            if HTTPStatus.create(req.status_code) != HTTPStatus.SUCCESS:
+                yield HTTPStatus.create(req.status_code), -1, -1, None
+            total_bytes_read = int(req.headers.get('content-length'))
+            bread = 0
+            for data in req.iter_content(chunk_size=chunk_size):
+                bread += len(data)
+                yield HTTPStatus.create(req.status_code), bread, total_bytes_read, data
+        return
 
 
-def match_correct_release(link: str, title: str=None, _filter: Callable[str, ...]=None):
+@auto_str
+@auto_eq
+class Manager(ABC):
+    import sys
+    import os
+
+    class Checksum(enum.Enum):
+        MD5SUM = "md5"
+        SHA1SUM = "sha1"
+        SHA256SUM = "sha256"
+        SHA384SUM = "sha384"
+        SHA512SUM = "sha512"
+
+        @staticmethod
+        def match(filename: Filename) -> Checksum:
+            # last part *should* always be the file type
+            fn_sanitized = filename.lower().split(".")[-1]
+            if Checksum.MD5SUM in fn_sanitized:
+                return Checksum.MD5SUM
+            if Checksum.SHA1SUM in fn_sanitized:
+                return Checksum.SHA1SUM
+            if Checksum.SHA256SUM in fn_sanitized:
+                return Checksum.SHA256SUM
+            if Checksum.SHA384SUM in fn_sanitized:
+                return Checksum.SHA384SUM
+            if Checksum.SHA512SUM in fn_sanitized:
+                return Checksum.SHA512SUM
+
+    @abstractmethod
+    def __init__(self, repository: URL, download_dir: Filename = "/tmp"):
+        """
+        :param repository: direct URL to the repository to make requests
+        :param download_dir: download directory path
+        :raises Provider.Exceptions.UnknownProviderException: raised if the repository provider is not supported
+        :raises FileNotFoundError: raised if download_dir doesn't exist, or not enough permissions to execute os.stat(d)
+        """
+        self.repository = repository
+        self.provider = ProviderFactory.create(self.repository)
+
+        self.directory = download_dir
+        if not os.path.exists(self.directory):
+            raise FileNotFoundError(f"Couldn't find, or not enough permissions to use os.stat(), on {self.directory}")
+
+    def run(self) -> None:
+        # FIXME not finished yet
+        files: list[Filename] = []
+        try:
+            r = self.match()
+            downloadables = self.get_downloads(r)
+            for fn, url in downloadables.items():
+                self.download(f"{self.directory}/{fn}", url)
+            self.verify(files)
+            self.install(files)
+        finally:
+            self.cleanup(files)
+
+    @abstractmethod
+    def filter(self, release: Release) -> bool:
+        # TODO
+        pass
+
+    def match(self) -> Release:
+        # TODO
+        # the filter to use is self.filter()
+        pass
+
+    @abstractmethod
+    def get_downloads(self, r: Release) -> dict[Filename, URL]:
+        """
+        Get the assets that we'll download from a specific Release.
+        """
+        pass
+
+    def download(self, filename: Filename, url: URL) -> Status:
+        # TODO use self.provider.download
+        pass
+
+    @abstractmethod
+    def verify(self, files: list[Filename]) -> bool:
+        # hashfile used by md5sum and sha*sum tools format is: checksum filename.ext, 1 file per line.
+        pass
+
+    @abstractmethod
+    def install(self, files: list[Filename]) -> list[Filename]:
+        # if this function ever errors, before dying this function should add all the files that were installed
+        #  to the list of files
+        pass
+
+    @abstractmethod
+    def cleanup(self, files: list[Filename]):
+        pass
+
+    @abstractmethod
+    def log(self, msg: str):
+        pass
+
+
+def run_subprocess(commands: Sequence[str] | str, cwd: Filename) -> bool:
     """
-    Match correct release by checking if substring title is inside release.tag_name.lower().
-    Releases that return false on _filter (if provided) release.tag_name.lower() are not considered.
+    :param commands: commands to run in subshell, sequence of or singular string(s)
+    :parm cwd: working directory for subshell
     """
-    releases = get_github_releases(link, recurse=False if not title else True)
-    if not releases:
-        print(f"Unknown error, couldn't get all github releases for {link}")
-        exit(1)
-
-    print(f"Found {len(releases)} valid releases.")
-    if not title:
-        return releases[0]
-
-    for release in releases:
-        # if we have a filter, and the results it False, continue to the next result
-        if _filter and not _filter(release.tag_name.lower()):
-            continue
-        if title in release.tag_name.lower():
-            return release
-
-    return None
-
-
-def echo_progress_bar_simple(current, total, stream):
-    """Echo a simple percentage in the stream. Stream must be a stream of type TextIOWrapper, or any other class that
-    has a .write(str) and .flush() method."""
-    stream.write(f"\r{round((current / total) * 100, 2)}%")
-    stream.flush()
-
-
-def echo_progress_bar_complex(current, total, stream, max_columns, use_ascii=False):
-    """Echo a complex progress bar in the stream. Stream must be a stream of type TextIOWrapper, or any other class
-    that has a .write(str) and .flush() method."""
-    empty_space = " " if use_ascii else "\033[1m\033[38;5;196m―\033[0m"  # bold, light_red & clean_colour
-    filled_space = "-" if use_ascii else "\033[1m\033[38;5;34m―\033[0m"  # bold, green & clean_colour
-    # total bar length: we're going to use the max columns with a padding of 6 characters
-    #  for the "[" "]" "999%" pads.
-    percentage_str = f"{round((current / total) * 100, 1)}%"
-    bar_length = max_columns - len(percentage_str) - 2 # 2 for safety, sometimes tput cols overshoots this. 
-    bar = ["\r", "["] + [empty_space] * bar_length + ["]"] + list(f"\033[1m\033[38;5;34m{percentage_str}\033[0m")
-    for i in range(2, bar_length + 2):
-        if round(i / (bar_length + 1), 2) <= round(current / total, 2):
-            bar[i] = filled_space
-    stream.write("".join(bar))
-    stream.flush()
+    import subprocess
+    import os
+    return subprocess.run(commands, cwd=os.path.expanduser(cwd)).returncode == 0
 
 
 def is_root() -> bool:
@@ -281,39 +386,21 @@ def get_all_subdirectories(path) -> list[str]:
     return os.listdir(path=path)
 
 
-if __name__ == "__main__":
-    from time import sleep
-    import sys
+def echo_progress_bar_simple(current, total) -> str:
+    """Return a simple percentage string."""
+    return f"\r{round((current / total) * 100, 2)}%"
 
-    print(f"Script is running as {'root' if is_root() else 'user'}")
 
-    for i in range(100):
-        echo_progress_bar_simple(i, 99, sys.stdout)
-        sleep(0.1)
-
-    print()
-
-    for i in range(100):
-        echo_progress_bar_complex(i, 99, sys.stdout, 50)
-        sleep(0.1)
-
-    print()
-
-    for i in range(100):
-        echo_progress_bar_complex(i, 99, sys.stdout, 16)
-        sleep(0.1)
-
-    print()
-
-    for release in get_github_releases("https://api.github.com/repos/GloriousEggroll/proton-ge-custom/releases"):
-        print(release.name)
-        sleep(0.1)
-
-    for release in get_github_releases(
-            "https://api.github.com/repos/GloriousEggroll/proton-ge-custom/releases",
-            recurse=True):
-        print(release)
-        sleep(0.1)
-
-    if run_subprocess(["echo", "hello", "bash!" "$PWD"], "~"):
-        print("Success!")
+def echo_progress_bar_complex(current, total, max_columns, use_ascii=False):
+    """Return a complex progress bar string."""
+    empty_space = " " if use_ascii else "\033[1m\033[38;5;196m―\033[0m"  # bold, light_red & clean_colour
+    filled_space = "-" if use_ascii else "\033[1m\033[38;5;34m―\033[0m"  # bold, green & clean_colour
+    # total bar length: we're going to use the max columns with a padding of 6 characters
+    #  for the "[" "]" "999%" pads.
+    percentage_str = f"{round((current / total) * 100, 1)}%"
+    bar_length = max_columns - len(percentage_str) - 2  # 2 for safety, sometimes tput cols overshoots this.
+    bar = ["\r", "["] + [empty_space] * bar_length + ["]"] + list(f"\033[1m\033[38;5;34m{percentage_str}\033[0m")
+    for i in range(2, bar_length + 2):
+        if round(i / (bar_length + 1), 2) <= round(current / total, 2):
+            bar[i] = filled_space
+    return "".join(bar)
