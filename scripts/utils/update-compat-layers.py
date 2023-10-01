@@ -7,75 +7,83 @@ import update_utils as utils
 
 
 def create_argparser() -> ap.ArgumentParser:
-    parser = ap.ArgumentParser(
-        description="Download & extract latest version of GE-Proton\n\thttps://github.com/GloriousEggroll/proton-ge-custom"
+    p = ap.ArgumentParser(
+        description="Download & extract latest version of the most popular compatibility layers"
     )
-    parser.add_argument(
-        "--luxtorpeda", 
-        help="Download & extract latest version of Luxtorpeda\n\thttps://github.com/luxtorpeda-dev/luxtorpeda", 
-        required=False, 
-        action="store_true"
-    )
-    parser.add_argument(
-        "--league", 
-        help="Download & extract latest version of Lutris-GE-X.x.x-LoL\n\thttps://github.com/gloriouseggroll/wine-ge-custom", 
-        required=False, 
-        action="store_true"
-    )
-    parser.add_argument(
-        "--wine", 
-        help="Download & extract latest version of Wine-GE-ProtonX-x\n\thttps://github.com/gloriouseggroll/wine-ge-custom", 
-        required=False, 
-        action="store_true"
-    )
-    parser.add_argument(
-        "-u", "--unsafe",
-        help="do not check (verify) download contents with sha512sum",
+    group = p.add_mutually_exclusive_group(required=True)
+    group.add_argument(
+        "--luxtorpeda",
+        help="Download & extract latest version of Luxtorpeda\n\thttps://github.com/luxtorpeda-dev/luxtorpeda",
         required=False,
         action="store_true"
     )
-    parser.add_argument(
-        "-d", "--destination", 
-        help="specify installation directory", 
+    group.add_argument(
+        "--league",
+        help="Download & extract latest version of Lutris-GE-X.x.x-LoL\n\thttps://github.com/gloriouseggroll/wine-ge-custom",
+        required=False,
+        action="store_true"
+    )
+    group.add_argument(
+        "--wine",
+        help="Download & extract latest version of Wine-GE-ProtonX-x\n\thttps://github.com/gloriouseggroll/wine-ge-custom",
+        required=False,
+        action="store_true"
+    )
+    group.add_argument(
+        "--golden-egg",
+        help="Download & extract latest version of GE-ProtonX-x\n\thttps://github.com/GloriousEggroll/proton-ge-custom",
+        required=False,
+        action="store_true"
+    )
+    p.add_argument(
+        "-u", "--unsafe",
+        help="skip checksum verification, even if supported",
+        required=False,
+        action="store_true"
+    )
+    p.add_argument(
+        "-d", "--destination",
+        help="specify installation directory",
         required=False
     )
-    parser.add_argument(
-        "-t", "--temporary", 
-        help="specify temporary download directory", 
+    p.add_argument(
+        "-t", "--temporary",
+        help="specify temporary download directory",
         required=False
     )
-    parser.add_argument(
+    p.add_argument(
         "-k", "--keep",
         help="keep downloaded files in download directory",
         required=False,
         action="store_true"
     )
-    parser.add_argument(
+    p.add_argument(
         "-v", "--version",
         help="specific version to install, with standard GE-Proton naming format e.g. 7-46",
         required=False,
         default=None
     )
-    subparser = parser.add_subparsers(dest="subcommand", required=False)
+    subparser = p.add_subparsers(dest="subcommand", required=False)
     ls_parser = subparser.add_parser("ls", help="print the currently installed versions, separated by newline")
     versions_parser = subparser.add_parser("versions", help="print all the GE-Proton released versions to date")
-    return parser
+    return p
 
 
 def setup_argument_options(argparser_output) -> None:
     global DOWNLOAD_DIR, COMPATIBILITY_LAYER_URL, INSTALL_DIR, VERSION, RELEASE_FILTER
-    
+
+    # FIXME missing golden-egg check since it was removed from being the default and became a flag
     if args.luxtorpeda:
-        args.unsafe = True # as of writing, luxtorpeda doesn't have a sha512sum in their assets.
+        args.unsafe = True  # as of writing, luxtorpeda doesn't have a sha512sum in their assets.
         COMPATIBILITY_LAYER_URL = LUXTORPEDA_GITHUB_RELEASES_URL
-    
+
     if args.league or args.wine:
         RELEASE_FILTER = lambda s: "proton" in s
         if args.league:
             RELEASE_FILTER = lambda s: "lol" in s
         INSTALL_DIR = os.path.expanduser("~/.local/share/lutris/runners/wine/")
         COMPATIBILITY_LAYER_URL = WINE_GE_GITHUB_RELEASES_URL
-    
+
     if args.destination:
         INSTALL_DIR = os.path.abspath(os.path.expanduser(args.destination))
 
@@ -94,7 +102,7 @@ def setup_argument_options(argparser_output) -> None:
                 for d in dirs:
                     print(d)
                 exit(0)
-            case "versions":            
+            case "versions":
                 for v in utils.get_github_releases(COMPATIBILITY_LAYER_URL, recurse=True):
                     if RELEASE_FILTER and not RELEASE_FILTER(v.tag_name.lower()):
                         continue
@@ -113,7 +121,7 @@ DOWNLOAD_DIR = "/tmp/"
 PROTON_GE_GITHUB_RELEASES_URL = "https://api.github.com/repos/GloriousEggroll/proton-ge-custom/releases"
 WINE_GE_GITHUB_RELEASES_URL = "https://api.github.com/repos/gloriouseggroll/wine-ge-custom/releases"
 LUXTORPEDA_GITHUB_RELEASES_URL = "https://api.github.com/repos/luxtorpeda-dev/luxtorpeda/releases"
-COMPATIBILITY_LAYER_URL = PROTON_GE_GITHUB_RELEASES_URL # default compat layer to install 
+COMPATIBILITY_LAYER_URL = PROTON_GE_GITHUB_RELEASES_URL  # default compat layer to install
 INSTALL_DIR = os.path.expanduser("~/.local/share/Steam/compatibilitytools.d/")
 VERSION = None
 RELEASE_FILTER = None
@@ -122,7 +130,7 @@ if __name__ == "__main__":
     parser = create_argparser()
     args = parser.parse_args()
     setup_argument_options(args)
-    
+
     if not os.path.exists(INSTALL_DIR):
         os.makedirs(INSTALL_DIR)
 
@@ -130,7 +138,7 @@ if __name__ == "__main__":
     if not release:
         print(f"Couldn't match any release for version {VERSION}")
         exit(1)
-    print(f"Found correct version{' Luxtorpeda' if args.luxtorpeda else '' } {release.tag_name}")
+    print(f"Found correct version{' Luxtorpeda' if args.luxtorpeda else ''} {release.tag_name}")
 
     print("""
     \033[5m
@@ -166,7 +174,7 @@ if __name__ == "__main__":
         print(f"Couldn't find a sha512sum for version {release.tag_name}")
         if not args.unsafe:
             exit(1)
-        
+
     if not ftarballname:
         print(f"Couldn't find a tarball for version {release.tag_name}")
         exit(1)
@@ -180,7 +188,7 @@ if __name__ == "__main__":
                     out.write(data)
                     utils.echo_progress_bar_complex(bread, btotal, sys.stdout, os.get_terminal_size().columns)
                 print(f"\nDownloaded {fhashname}")
-        
+
         # download tarball
         with open(ftarballname, "wb") as out:
             print(f"Writing {ftarballname} from url {ftarballurl}")
@@ -194,7 +202,7 @@ if __name__ == "__main__":
     except Exception as e:
         print(f"Unknown exception {e}", out=sys.stderr)
         exit(1)
-    
+
     try:
         # there's no sha512sum to download in luxtorpeda (as of writing)
         if not args.unsafe and not utils.run_subprocess(["sha512sum", "-c", fhashname], DOWNLOAD_DIR):
