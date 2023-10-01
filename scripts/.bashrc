@@ -342,12 +342,6 @@ alias unbz2='tar -xvjf'
 alias ungz='tar -xvzf'
 alias unxz="tar -xf"
 
-# encryptions
-alias md5="openssl md5"
-alias sha1="openssl sha1"
-alias sha256="openssl sha256"
-alias sha512="openssl sha512"
-
 alias bd='cd "$OLDPWD"'
 alias less='less -R'
 
