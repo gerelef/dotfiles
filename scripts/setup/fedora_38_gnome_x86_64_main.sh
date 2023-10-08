@@ -237,6 +237,7 @@ echo "Done."
 #######################################################################################################
 # no requirement to add flathub ourselves anymore in f38; it should be enabled by default. however, it may not be, most likely by accident, so this is a failsafe
 flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
+flatpak remote-delete fedora
 
 #######################################################################################################
 
