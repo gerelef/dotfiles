@@ -38,7 +38,6 @@ fedora-chromium-config \
 gimp \
 krita \
 libreoffice \
-qbittorrent \
 sqlitebrowser \
 gnome-system-monitor \
 piper \
@@ -84,19 +83,18 @@ gnome-maps* \
 "
 
 readonly INSTALLABLE_FLATPAKS="\
+com.spotify.Client \
+com.raggesilver.BlackBox \
+de.haeckerfelix.Fragments \
 org.gtk.Gtk3theme.adw-gtk3 \
 org.gtk.Gtk3theme.adw-gtk3-dark \
-io.gitlab.daikhan.stable.stable \
-io.gitlab.theevilskeleton.Upscaler.stable \
-page.codeberg.Imaginer.Imaginer.stable \
-io.github.tfuxu.Halftone.stable \
-com.raggesilver.BlackBox.stable \
-com.spotify.Client.stable \
-net.cozic.joplin_desktop.stable \
-com.skype.Client.stable \
-us.zoom.Zoom.stable \
-net.openra.OpenRA.stable \
-com.github.tchx84.Flatseal.stable \
+io.gitlab.daikhan.stable \
+io.gitlab.theevilskeleton.Upscaler \
+page.codeberg.Imaginer.Imaginer \
+net.cozic.joplin_desktop \
+com.skype.Client \
+us.zoom.Zoom \
+com.github.tchx84.Flatseal \
 "
 
 readonly INSTALLABLE_OBS_STUDIO="\
@@ -131,9 +129,8 @@ steam \
 "
 
 readonly INSTALLABLE_EXTRAS_FLATPAK="\
-com.discordapp.Discord.stable \
-com.teamspeak.TeamSpeak.stable \
-io.github.dummerle.rare.stable \
+com.discordapp.Discord \
+com.teamspeak.TeamSpeak \
 "
 
 readonly INSTALLABLE_DEV_PKGS="\
@@ -145,9 +142,9 @@ bless \
 "
 
 readonly INSTALLABLE_IDE_FLATPAKS="\
-ar.xjuan.Cambalache.stable \
-cc.arduino.IDE2.stable \
-com.visualstudio.code.stable \
+ar.xjuan.Cambalache \
+cc.arduino.IDE2 \
+com.visualstudio.code \
 "
 
 readonly INSTALLABLE_NVIDIA_DRIVERS="\
