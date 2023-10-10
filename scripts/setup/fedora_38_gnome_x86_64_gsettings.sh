@@ -191,14 +191,7 @@ gsettings set org.gnome.TextEditor spellcheck false
 gsettings set org.gnome.TextEditor style-scheme 'classic'
 gsettings set org.gnome.TextEditor tab-width 4
 gsettings set org.gnome.TextEditor use-system-font true
-gsettings set org.gnome.TextEditor wrap-text true
-############################################################################################################################################
-gsettings set org.gnome.shell.extensions.pop-shell activate-launcher "[]"
-gsettings set org.gnome.shell.extensions.pop-shell active-hint true
-gsettings set org.gnome.shell.extensions.pop-shell active-hint-border-radius 0
-gsettings set org.gnome.shell.extensions.pop-shell hint-color-rgba 'rgb(57,57,57)'
-gsettings set org.gnome.shell.extensions.pop-shell gap-inner 0
-gsettings set org.gnome.shell.extensions.pop-shell gap-outer 0
+gsettings set org.gnome.TextEditor wrap-text false
 ############################################################################################################################################
 gsettings set org.gnome.desktop.interface clock-format '24h'
 gsettings set org.gnome.desktop.interface clock-show-date false

@@ -68,6 +68,14 @@ gstreamer1-plugin-openh264 \
 gstreamer1-libav --exclude=gstreamer1-plugins-bad-free-devel \
 "
 
+readonly INSTALLABLE_OBS_STUDIO="\
+obs-studio \
+obs-studio-plugin-vkcapture \
+obs-studio-plugin-vlc-video \
+obs-studio-plugin-webkitgtk \
+obs-studio-plugin-x264 \
+"
+
 readonly UNINSTALLABLE_BLOAT="\
 rhythmbox* \
 totem \
@@ -97,22 +105,7 @@ us.zoom.Zoom \
 com.github.tchx84.Flatseal \
 "
 
-readonly INSTALLABLE_OBS_STUDIO="\
-com.obsproject.Studio \
-com.obsproject.Studio.Plugin.Gstreamer \
-com.obsproject.Studio.Plugin.InputOverlay \
-com.obsproject.Studio.Plugin.MoveTransition \
-com.obsproject.Studio.Plugin.OBSVkCapture \
-com.obsproject.Studio.Plugin.ScaleToSound \
-com.obsproject.Studio.Plugin.SceneSwitcher \
-com.obsproject.Studio.Plugin.WebSocket \
-com.obsproject.Studio.Plugin.waveform \
-"
-
 readonly INSTALLABLE_EXTENSIONS="\
-xprop \
-gnome-shell-extension-pop-shell \
-gnome-shell-extension-pop-shell-shortcut-overrides \
 gnome-shell-extension-places-menu \
 "
 
@@ -195,10 +188,11 @@ fwupdmgr update -y
 
 #######################################################################################################
 
-echo "-------------------INSTALLING---------------- $INSTALLABLE_PACKAGES $INSTALLABLE_CODECS" | tr " " "\n"
+echo "-------------------INSTALLING---------------- $INSTALLABLE_PACKAGES $INSTALLABLE_CODECS $INSTALLABLE_OBS_STUDIO" | tr " " "\n"
 dnf-remove "$UNINSTALLABLE_BLOAT"
 dnf-install "$INSTALLABLE_PACKAGES"
 dnf-install "$INSTALLABLE_CODECS"
+dnf-install "$INSTALLABLE_OBS_STUDIO"
 dnf-install-group "--with-optional Multimedia"
 
 case "btrfs" in
@@ -238,9 +232,8 @@ flatpak remote-delete fedora
 
 #######################################################################################################
 
-echo "-------------------INSTALLING---------------- $INSTALLABLE_FLATPAKS $INSTALLABLE_OBS_STUDIO" | tr " " "\n"
+echo "-------------------INSTALLING---------------- $INSTALLABLE_FLATPAKS" | tr " " "\n"
 flatpak-install "$INSTALLABLE_FLATPAKS"
-flatpak-install "$INSTALLABLE_OBS_STUDIO"
 
 echo "Done."
 
@@ -341,7 +334,7 @@ lower-swappiness
 echo "Lowered swappiness."
 raise-user-watches
 echo "Raised user watches."
-raise-memory-map-counts
+raise-memory-map-counts # FIXME Remove in F39!
 echo "Raised memory map counts."
 cap-nproc-count
 echo "Capped maximum number of processes."
@@ -383,6 +376,8 @@ echo "Make sure to get the legacy (GTK3) Theme Auto Switcher"
 echo "  https://extensions.gnome.org/extension/4998/legacy-gtk3-theme-scheme-auto-switcher/"
 echo "Make sure to get Dash to Panel"
 echo "  https://extensions.gnome.org/extension/1160/dash-to-panel/"
+echo "Make sure to get Forge, the GNOME Tiling Manager"
+echo "  https://extensions.gnome.org/extension/4481/forge/"
 echo "--------------------------- FSTAB ---------------------------"
 echo "Remember to add a permanent mount point for permanently mounted partitions."
 echo "Standard fstab USER mount arguments:"
@@ -397,7 +392,6 @@ echo "32GB:"
 echo "  sudo fallocate -l 32G /swapfile && sudo chmod 600 /swapfile && sudo chown root /swapfile && sudo mkswap /swapfile && sudo swapon /swapfile"
 echo "64GB:"
 echo "  sudo fallocate -l 64G /swapfile && sudo chmod 600 /swapfile && sudo chown root /swapfile && sudo mkswap /swapfile && sudo swapon /swapfile"
-echo ""
 echo "It's possible this swapfile won't persist after reboots; confirm with:"
 echo "  sudo swapon --show"
 echo "If this is the case, make permanent by appending this line in /etc/fstab:"
