@@ -136,7 +136,6 @@ bless \
 
 readonly INSTALLABLE_IDE_FLATPAKS="\
 ar.xjuan.Cambalache \
-cc.arduino.IDE2 \
 com.visualstudio.code \
 "
 
