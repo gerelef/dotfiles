@@ -423,6 +423,48 @@ class Manager(ABC):
         pass
 
 
+DEFAULT_ARGUMENTS = {
+    "--version": {
+        "help": "Specify a version to install. Default is latest.",
+        "required": False,
+        "default": None
+
+    },
+    "--keep": {
+        "help": "Specify if downloaded files will be kept after finishing.",
+        "required": False,
+        "default": False,
+        "action": "store_true"
+    },
+    "--temporary": {
+        "help": "Specify temporary directory files will be downloaded at. Default is /tmp/",
+        "required": False,
+        "default": "/tmp/",
+        "type": str
+    },
+    "--destination": {
+        "help": "Specify installation directory.",
+        "required": False,
+        "default": "/tmp/",
+        "type": str
+    },
+    "--unsafe": {
+        "help": "Specify if file verification will be skipped. Set by default if unsupported by the repository.",
+        "required": False,
+        "default": False,
+        "action": "store_true"
+    },
+}
+
+
+def get_default_argparser(description):
+    import argparse as ap
+    p = ap.ArgumentParser(description=description)
+    for argname, argopts in DEFAULT_ARGUMENTS.items():
+        p.add_argument(argname, **argopts)
+    return p
+
+
 def run_subprocess(commands: Sequence[str] | str, cwd: Filename) -> bool:
     """
     :param cwd: current working directory
