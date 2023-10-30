@@ -24,7 +24,7 @@ export HISTSIZE=10000
 export HISTCONTROL=erasedups:ignoredups:ignorespace
 export SUDO_PROMPT="$(tput setaf 4)Root password:$(tput sgr0)"
 #############################################################
-# package management 
+# package management
 
 install-system-pkg () (
     while :; do
@@ -97,8 +97,8 @@ _dnf-installed-packages-by-size_completions () {
 complete -F _dnf-installed-packages-by-size_completions dnf-installed-packages-by-size
 
 #############################################################
-# pure bash helpers 
-# Get directory size 
+# pure bash helpers
+# Get directory size
 gds () (
     if [[ -n "$*" ]]; then
         for arg in "$@"; do
@@ -111,10 +111,16 @@ gds () (
 
 complete -A directory gds
 
+watch-dir () (
+    [[ $# -ne 1 ]] && return 2
+
+    watch -n 1 "lsof +D $1"
+)
+
 # Highlight (and not filter) text with grep
 highlight () (
     [[ -z "$*" ]] && return 2
-    
+
     grep --color=always -iE "$1|\$"
 )
 
@@ -122,7 +128,7 @@ highlight () (
 rn () (
     [[ -z "$*" ]] && return 2
     [[ $# -eq 2 ]] || return 2
-    
+
     mv -vn "$1" "$2"
 )
 
@@ -180,7 +186,7 @@ complete -A service journalctl
 
 # tldr wrapper for ease of use
 _tldr () (
-    [[ $# -eq 0 ]] && (command tldr tldr) | less -R && return    
+    [[ $# -eq 0 ]] && (command tldr tldr) | less -R && return
     [[ $# -eq 1 ]] && (command tldr "$1") | less -R && return
     command tldr "$@"
 )
@@ -189,7 +195,7 @@ alias tldr="_tldr"
 complete -A command tldr
 
 # Automatically do an ls after each cd
-cd () { 
+cd () {
 	builtin cd "$@" && lss
 }
 
@@ -198,30 +204,30 @@ cd () {
 
 require-ksh-packages () (
     [[ -f $HAS_RUN_KSH_FILE ]] && return 0
-    
+
     echo -ne "$_FBROWN"
     echo -e "Installing ksh $_NOCOLOUR"
-    
+
     install-system-pkg ksh && touch $HAS_RUN_KSH_FILE && clear
 )
 
 ksh () (
-    require-ksh-packages 
-    
+    require-ksh-packages
+
     /usr/bin/env ksh
 )
 
 require-fsh-packages () (
     [[ -f $HAS_RUN_FSH_FILE ]] && return 0
-    
+
     echo -ne "$_FBLUE"
     echo -e "Installing fish $_NOCOLOUR"
-    
+
     install-system-pkg fish && touch $HAS_RUN_FSH_FILE && clear
 )
 
 fsh () (
-    require-fsh-packages  
+    require-fsh-packages
     
     /usr/bin/env fish
 )
@@ -299,7 +305,7 @@ prepare-pip () (
         # append to the file
         echo "$virtual_group" >> $vip_fname
         echo "$virtual_group_subshell" >> $vip_fname
-    done 
+    done
     
     echo $vip_fname
 )
