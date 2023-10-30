@@ -1,8 +1,12 @@
 #!/usr/bin/env python3
+import os
 import enum
+import requests
+from datetime import datetime
+from re import search as regex_search
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
-from typing import Generator, Sequence, TextIO, Callable, Optional, TypeAlias
+from typing import Generator, Sequence, Callable, Optional, TypeAlias, Self
 
 
 # Writing boilerplate code to avoid writing boilerplate code!
@@ -83,11 +87,11 @@ class Release:
     tag_name: str
     name: str
 
-    body: str
+    body: Optional[str]
     created_at: str
     published_at: str
 
-    assets: dict[Filename, URL]
+    assets: Optional[dict[Filename, URL]]
     src: Optional[list[URL]]
 
     is_draft: Optional[bool] = None
@@ -104,8 +108,8 @@ class HTTPStatus(enum.Enum):
     CLIENT_ERROR = 399  # starts at > 400
     SERVER_ERROR = 499  # starts at > 500
 
-    @staticmethod
-    def create(code: int) -> Status:
+    @classmethod
+    def create(cls, code: int) -> Self:
         """
         :param code: HTTP Status Code.
         :returns: Group Status Class. For more information:
@@ -123,47 +127,34 @@ class HTTPStatus(enum.Enum):
             return HTTPStatus.INFORMATIONAL
 
 
-class ProviderFactory:
-    import enum
+class Exceptions:
+    class UnknownProviderException(Exception):
+        pass
 
-    class Exceptions(Exception):
-        class UnknownProviderException(Manager.Exceptions):
-            pass
+    class FileVerificationFailed(Exception):
+        pass
 
-    class SupportedAPI(enum.Enum):
+
+class SupportedAPI(enum.Enum):
+    """
+    Supported Git providers.
+    """
+    GITHUB_API = "api.github.com/"
+    # GITLAB_API = "gitlab.com/api/" NOT SUPPORTED YET
+    GITHUB_API_REGEXR = r"(api\.github\.com\/)+"
+
+    # GITLAB_API_REGEXR = r"(gitlab[\.a-zA-Z]*\.com\/api\/)+" NOT SUPPORTED YET
+
+    @classmethod
+    def match(cls, url: URL) -> Self | None:
         """
-        Supported Git providers.
+        Match a URL to a provider.
+        :returns: the supported Provider, or None if there are no matches.
         """
-        GITHUB_API = "api.github.com/"
-        # GITLAB_API = "gitlab.com/api/" NOT SUPPORTED YET
-        GITHUB_API_REGEXR = r"(api\.github\.com\/)+"
+        if regex_search(SupportedAPI.GITHUB_API_REGEXR.value, url):
+            return SupportedAPI.GITHUB_API
 
-        # GITLAB_API_REGEXR = r"(gitlab[\.a-zA-Z]*\.com\/api\/)+" NOT SUPPORTED YET
-
-        @staticmethod
-        def match(url: URL) -> Provider | None:
-            """
-            Match a URL to a provider.
-            :returns: the supported Provider, or None if there are no matches.
-            """
-            from re import search as regex_search
-            if regex_search(Provider.GITHUB_API_REGEXR, url):
-                return Provider.GITHUB_API
-
-            return None
-
-    def __init__(self):
-        raise RuntimeError("Cannot instantiate static factory!")
-
-    @staticmethod
-    def create(url) -> Provider:
-        match (ProviderFactory.SupportedAPI.match(url)):
-            case ProviderFactory.SupportedAPI.GITHUB_API:
-                return GitHubProvider(url=url)
-            case _:
-                raise ProviderFactory.Exceptions.UnknownProviderException(
-                    f"Couldn't match repository URL to any supported provider!"
-                )
+        return None
 
 
 Filter: TypeAlias = Callable[[Release], bool]
@@ -172,32 +163,33 @@ Filter: TypeAlias = Callable[[Release], bool]
 class Provider:
     """
     Wrapper/Facade for Git API endpoints.
+    Use by instanciating with ProviderFactory and using get_releease(f: Filter)
     """
 
     def __init__(self, url: URL):
         """
         :param url: git project endpoint to use
-        :raises ProviderFactory.Exceptions.UnknownProviderException:
+        :raises Exceptions.UnknownProviderException:
         raised if the repository provider is not supported
         """
         self.repository = url
 
     @abstractmethod
-    def __recurse_releases(self, url: URL) -> Generator[Status, Release | None]:
+    def __recurse_releases(self, url: URL) -> Generator[HTTPStatus, Release | None]:
         """
         Generator to get all GitHub releases for a given project.
         :param url: project endpoint
-        :returns: Generator[Status, Release]
+        :returns: Generator[HTTPStatus, Release]
         :raises requests.exceptions.JSONDecodeError: Raised if unable to decode Json due to mangled data
         """
         pass
 
     @abstractmethod
-    def download(self, url: URL, chunk_size=1024 * 1024) -> Generator[Status, int, int, bytes] | None:
+    def download(self, url: URL, chunk_size=1024 * 1024) -> Generator[HTTPStatus, int, int, bytes] | None:
         """
         Downloads a packet of size chunk_size from URL, which belongs to the provider defined previously.
         Generator that returns a binary data packet of size chunk_size, iteratively requested from url.
-        :returns: Generator[Status, CurrentBytesRead, TotalBytesToRead, Data]
+        :returns: Generator[HTTPStatus, CurrentBytesRead, TotalBytesToRead, Data]
         :raises requests.ConnectionError:
         :raises requests.Timeout:
         :raises requests.TooManyRedirects:
@@ -205,16 +197,39 @@ class Provider:
         pass
 
     def get_release(self, f: Filter) -> Release | None:
-        # TODO
-        pass
+        """
+        :param f: filter to use in order to match the correct release
+        :returns Release | None:
+        :raises requests.exceptions.JSONDecodeError:
+        """
+        status: HTTPStatus
+        release: Release
+        for status, release in self.__recurse_releases(self.repository):
+            if status.value == HTTPStatus.CLIENT_ERROR or status.value == HTTPStatus.SERVER_ERROR:
+                return None
+            if release is None:
+                continue
+            if f(release):
+                return release
+
+
+class ProviderFactory:
+    def __init__(self):
+        raise RuntimeError("Cannot instantiate static factory!")
+
+    @classmethod
+    def create(cls, url) -> Provider:
+        match (SupportedAPI.match(url)):
+            case SupportedAPI.GITHUB_API:
+                return GitHubProvider(url=url)
+            case _:
+                raise Exceptions.UnknownProviderException(
+                    f"Couldn't match repository URL to any supported provider!"
+                )
 
 
 class GitHubProvider(Provider):
-    import datetime
-    import requests
-
-    # noinspection PyMethodMayBeStatic
-    def __recurse_releases(self, url: URL) -> Generator[Status, Release | None]:
+    def __recurse_releases(self, url: URL) -> Generator[(HTTPStatus, Release | None), None, None]:
         while True:
             try:
                 with requests.get(url, allow_redirects=True, verify=True) as req:
@@ -240,8 +255,8 @@ class GitHubProvider(Provider):
                             is_draft=bool(version["draft"]),
                             is_prerelease=bool(version["prerelease"]),
                             # https://stackoverflow.com/a/36236080/10007109
-                            created_at=datetime.datetime.strptime(version["created_at"], "%Y-%m-%dT%H:%M:%SZ"),
-                            published_at=datetime.datetime.strptime(version["published_at"], "%Y-%m-%dT%H:%M:%SZ"),
+                            created_at=datetime.strptime(version["created_at"], "%Y-%m-%dT%H:%M:%SZ"),
+                            published_at=datetime.strptime(version["published_at"], "%Y-%m-%dT%H:%M:%SZ"),
                             assets=downloadables,
                             src=[version["tarball_url"], version["zipball_url"]]
                         )
@@ -253,9 +268,9 @@ class GitHubProvider(Provider):
                 # if either next links don't exist, we're done
                 break
 
-        return
+        return None
 
-    def download(self, url: URL, chunk_size=1024 * 1024) -> Generator[Status, int, int, bytes] | None:
+    def download(self, url: URL, chunk_size=1024 * 1024) -> Generator[(HTTPStatus, int, int, bytes | None), None, None]:
         with requests.get(url, verify=True, stream=True, allow_redirects=True) as req:
             if HTTPStatus.create(req.status_code) != HTTPStatus.SUCCESS:
                 yield HTTPStatus.create(req.status_code), -1, -1, None
@@ -267,36 +282,36 @@ class GitHubProvider(Provider):
         return
 
 
+class Checksum(enum.Enum):
+    MD5SUM = "md5"
+    SHA1SUM = "sha1"
+    SHA256SUM = "sha256"
+    SHA384SUM = "sha384"
+    SHA512SUM = "sha512"
+
+    @classmethod
+    def match(cls, filename: Filename) -> Self:
+        # last part *should* always be the file type
+        fn_sanitized = filename.lower().split(".")[-1]
+        if Checksum.MD5SUM.value in fn_sanitized:
+            return Checksum.MD5SUM
+        if Checksum.SHA1SUM.value in fn_sanitized:
+            return Checksum.SHA1SUM
+        if Checksum.SHA256SUM.value in fn_sanitized:
+            return Checksum.SHA256SUM
+        if Checksum.SHA384SUM.value in fn_sanitized:
+            return Checksum.SHA384SUM
+        if Checksum.SHA512SUM.value in fn_sanitized:
+            return Checksum.SHA512SUM
+
+
 @auto_str
-@auto_eq
 class Manager(ABC):
-    import sys
-    import os
+    LOG_NOTHING: Callable[[str], None] = lambda s: None
+    VERIFY_NOTHING: Callable[[list[Filename]], bool] = lambda f: True
+    DO_NOTHING: Callable[[list[Filename]], bool] = lambda f: None
 
-    class Checksum(enum.Enum):
-        MD5SUM = "md5"
-        SHA1SUM = "sha1"
-        SHA256SUM = "sha256"
-        SHA384SUM = "sha384"
-        SHA512SUM = "sha512"
-
-        @staticmethod
-        def match(filename: Filename) -> Checksum:
-            # last part *should* always be the file type
-            fn_sanitized = filename.lower().split(".")[-1]
-            if Checksum.MD5SUM in fn_sanitized:
-                return Checksum.MD5SUM
-            if Checksum.SHA1SUM in fn_sanitized:
-                return Checksum.SHA1SUM
-            if Checksum.SHA256SUM in fn_sanitized:
-                return Checksum.SHA256SUM
-            if Checksum.SHA384SUM in fn_sanitized:
-                return Checksum.SHA384SUM
-            if Checksum.SHA512SUM in fn_sanitized:
-                return Checksum.SHA512SUM
-
-    @abstractmethod
-    def __init__(self, repository: URL, download_dir: Filename = "/tmp"):
+    def __init__(self, repository: URL, download_dir: Filename = "/tmp/"):
         """
         :param repository: direct URL to the repository to make requests
         :param download_dir: download directory path
@@ -311,61 +326,106 @@ class Manager(ABC):
             raise FileNotFoundError(f"Couldn't find, or not enough permissions to use os.stat(), on {self.directory}")
 
     def run(self) -> None:
-        # FIXME not finished yet
         files: list[Filename] = []
+        self.log("Starting preprocessing...")
         try:
-            r = self.match()
+            r = self.provider.get_release(self.filter)
             downloadables = self.get_downloads(r)
+            self.log("Starting downloads...")
             for fn, url in downloadables.items():
-                self.download(f"{self.directory}/{fn}", url)
-            self.verify(files)
+                files.append(fn)
+                status = self.download(f"{self.directory}/{fn}", url)
+                if status.value == HTTPStatus.CLIENT_ERROR or status.value == HTTPStatus.SERVER_ERROR:
+                    raise RuntimeError(f"Got HTTPStatus {status.value}!")
+            self.log("Starting verification...")
+            if not self.verify(files):
+                raise Exceptions.FileVerificationFailed()
+            self.log("Starting install...")
             self.install(files)
         finally:
             self.cleanup(files)
+            self.log("Done.")
 
     @abstractmethod
     def filter(self, release: Release) -> bool:
-        # TODO
-        pass
-
-    def match(self) -> Release:
-        # TODO
-        # the filter to use is self.filter()
+        """
+        Check if this is the release we want to download.
+        :param release:
+        :returns bool: True if attributes match what we want to download, false otherwise.
+        """
         pass
 
     @abstractmethod
     def get_downloads(self, r: Release) -> dict[Filename, URL]:
         """
         Get the assets that we'll download from a specific Release.
+        :returns dict[Filename, URL]: a dict where filenames match the URL we'll download from
         """
         pass
 
-    def download(self, filename: Filename, url: URL) -> Status:
-        # TODO use self.provider.download
-        pass
+    def download(self, filename: Filename, url: URL) -> HTTPStatus:
+        """
+        Downloads a specific file fromn url, stored in self.directory + filename. Finishes early upon HTTPStatus error.
+        :param filename: filename to store as
+        :param url: url to download from
+        :return: last HTTPStatus received by self.provider.download
+        :raises requests.ConnectionError:
+        :raises requests.Timeout:
+        :raises requests.TooManyRedirects:
+        """
+        self.log(f"Downloading {self.directory + filename}")
+        with open(self.directory + filename, "wb") as out:
+            for status, bread, btotal, data in self.provider.download(url):
+                if status.value == HTTPStatus.CLIENT_ERROR or status.value == HTTPStatus.SERVER_ERROR:
+                    break
+                self.log(echo_progress_bar_complex(bread, btotal, os.get_terminal_size().columns))
+                out.write(data)
+            # noinspection PyUnboundLocalVariable
+            return status
 
     @abstractmethod
     def verify(self, files: list[Filename]) -> bool:
         # hashfile used by md5sum and sha*sum tools format is: checksum filename.ext, 1 file per line.
+        """
+        Verify that files match their checksum.
+        Note: if this is not needed, override with Manager.VERIFY_NOTHING
+        :param files:
+        :returns bool: True if everything's verified, false otherwise.
+        """
         pass
 
     @abstractmethod
-    def install(self, files: list[Filename]) -> list[Filename]:
-        # if this function ever errors, before dying this function should add all the files that were installed
-        #  to the list of files
+    def install(self, files: list[Filename]):
+        """
+        Install the release to the system.
+        Note: if this is not needed, override with Manager.DO_NOTHING
+        :param files: files to install
+        """
         pass
 
     @abstractmethod
     def cleanup(self, files: list[Filename]):
+        """
+        Cleanup downloaded (and/or installed) files.
+        Note: if this is not needed, override with Manager.DO_NOTHING
+        :param files: downloaded files; prefix with self.download_dir + filename.
+        Note: it's not guaranteed the files exist!
+        """
         pass
 
     @abstractmethod
     def log(self, msg: str):
+        """
+        Log internal strings. Provide concrete implementation to redirect to whatever sink is appropriate.
+        Note: if this is not needed, override with Manager.LOG_NOTHING
+        :param msg: string to log
+        """
         pass
 
 
 def run_subprocess(commands: Sequence[str] | str, cwd: Filename) -> bool:
     """
+    :param cwd: current working directory
     :param commands: commands to run in subshell, sequence of or singular string(s)
     :parm cwd: working directory for subshell
     """
