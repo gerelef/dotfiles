@@ -102,6 +102,11 @@ copy-dnf () (
     chmod 644 "/etc/dnf/dnf.conf"
 )
 
+copy-pipewire () (
+    ln -sf "$CONFIG_DIR/pipewire.conf" "$REAL_USER_HOME/.config/pipewire/pipewire.conf"
+    change-ownership "$REAL_USER_HOME/.config/pipewire/pipewire.conf"
+)
+
 # man 5 sysctl.d
 #    CONFIGURATION DIRECTORIES AND PRECEDENCE
 #    ...

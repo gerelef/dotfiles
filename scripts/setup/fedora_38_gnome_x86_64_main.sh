@@ -320,6 +320,7 @@ done
 
 echo "-------------------INSTALLING RC FILES----------------"
 
+copy-pipewire
 create-private-bashrc
 create-private-gitconfig
 copy-rc-files
@@ -333,7 +334,7 @@ lower-swappiness
 echo "Lowered swappiness."
 raise-user-watches
 echo "Raised user watches."
-raise-memory-map-counts # FIXME Remove in F39!
+raise-memory-map-counts 
 echo "Raised memory map counts."
 cap-nproc-count
 echo "Capped maximum number of processes."
