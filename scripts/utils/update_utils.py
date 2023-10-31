@@ -73,6 +73,17 @@ def auto_hash(cls):
     return cls
 
 
+class Exceptions:
+    class UnknownProviderException(Exception):
+        pass
+
+    class FileVerificationFailed(Exception):
+        pass
+
+    class NoReleaseFound(Exception):
+        pass
+
+
 Filename: TypeAlias = str
 URL: TypeAlias = str
 
@@ -127,14 +138,6 @@ class HTTPStatus(enum.Enum):
             return HTTPStatus.INFORMATIONAL
 
 
-class Exceptions:
-    class UnknownProviderException(Exception):
-        pass
-
-    class FileVerificationFailed(Exception):
-        pass
-
-
 class SupportedAPI(enum.Enum):
     """
     Supported Git providers.
@@ -175,7 +178,7 @@ class Provider:
         self.repository = url
 
     @abstractmethod
-    def __recurse_releases(self, url: URL) -> Generator[HTTPStatus, Release | None]:
+    def __recurse_releases(self, url: URL) -> Generator[tuple[HTTPStatus, Release | None], None, None]:
         """
         Generator to get all GitHub releases for a given project.
         :param url: project endpoint
@@ -185,11 +188,11 @@ class Provider:
         pass
 
     @abstractmethod
-    def download(self, url: URL, chunk_size=1024 * 1024) -> Generator[HTTPStatus, int, int, bytes] | None:
+    def download(self, url: URL, chunk_size=1024 * 1024) -> Generator[tuple[HTTPStatus, int, int, bytes | None], None, None]:
         """
         Downloads a packet of size chunk_size from URL, which belongs to the provider defined previously.
         Generator that returns a binary data packet of size chunk_size, iteratively requested from url.
-        :returns: Generator[HTTPStatus, CurrentBytesRead, TotalBytesToRead, Data]
+        :returns: Generator[(HTTPStatus, CurrentBytesRead, TotalBytesToRead, Data), None, None]
         :raises requests.ConnectionError:
         :raises requests.Timeout:
         :raises requests.TooManyRedirects:
@@ -229,7 +232,7 @@ class ProviderFactory:
 
 
 class GitHubProvider(Provider):
-    def __recurse_releases(self, url: URL) -> Generator[(HTTPStatus, Release | None), None, None]:
+    def __recurse_releases(self, url: URL) -> Generator[tuple[HTTPStatus, Release | None], None, None]:
         while True:
             try:
                 with requests.get(url, allow_redirects=True, verify=True) as req:
@@ -270,7 +273,7 @@ class GitHubProvider(Provider):
 
         return None
 
-    def download(self, url: URL, chunk_size=1024 * 1024) -> Generator[(HTTPStatus, int, int, bytes | None), None, None]:
+    def download(self, url: URL, chunk_size=1024 * 1024) -> Generator[tuple[HTTPStatus, int, int, bytes | None], None, None]:
         with requests.get(url, verify=True, stream=True, allow_redirects=True) as req:
             if HTTPStatus.create(req.status_code) != HTTPStatus.SUCCESS:
                 yield HTTPStatus.create(req.status_code), -1, -1, None
@@ -309,6 +312,7 @@ class Checksum(enum.Enum):
 class Manager(ABC):
     LOG_NOTHING: Callable[[str], None] = lambda s: None
     VERIFY_NOTHING: Callable[[list[Filename]], bool] = lambda f: True
+    FILTER_FIRST: Callable[[Release], bool] = lambda r: True
     DO_NOTHING: Callable[[list[Filename]], bool] = lambda f: None
 
     def __init__(self, repository: URL, download_dir: Filename = "/tmp/"):
@@ -321,20 +325,28 @@ class Manager(ABC):
         self.repository = repository
         self.provider = ProviderFactory.create(self.repository)
 
-        self.directory = download_dir
-        if not os.path.exists(self.directory):
-            raise FileNotFoundError(f"Couldn't find, or not enough permissions to use os.stat(), on {self.directory}")
+        self.download_dir = download_dir
+        if not os.path.exists(self.download_dir):
+            raise FileNotFoundError(f"Couldn't find, or not enough permissions to use os.stat(), on {self.download_dir}")
 
     def run(self) -> None:
+        """
+        :raises
+        :raises RuntimeError: raised when download requests errored
+        :raises FileVerificationFailed: raised when file verification failed
+        """
         files: list[Filename] = []
         self.log("Starting preprocessing...")
         try:
             r = self.provider.get_release(self.filter)
+            if not r:
+                self.log("No release found, or matched! Is everything set OK?")
+                raise
             downloadables = self.get_downloads(r)
             self.log("Starting downloads...")
             for fn, url in downloadables.items():
                 files.append(fn)
-                status = self.download(f"{self.directory}/{fn}", url)
+                status = self.download(os.path.join(self.download_dir, fn), url)
                 if status.value == HTTPStatus.CLIENT_ERROR or status.value == HTTPStatus.SERVER_ERROR:
                     raise RuntimeError(f"Got HTTPStatus {status.value}!")
             self.log("Starting verification...")
@@ -342,6 +354,9 @@ class Manager(ABC):
                 raise Exceptions.FileVerificationFailed()
             self.log("Starting install...")
             self.install(files)
+        except KeyboardInterrupt:
+            self.log("Aborted by user.")
+            exit(130)
         finally:
             self.cleanup(files)
             self.log("Done.")
@@ -350,6 +365,7 @@ class Manager(ABC):
     def filter(self, release: Release) -> bool:
         """
         Check if this is the release we want to download.
+        Note: if you just need the latest available release, override with FILTER_FIRST.
         :param release:
         :returns bool: True if attributes match what we want to download, false otherwise.
         """
@@ -373,8 +389,8 @@ class Manager(ABC):
         :raises requests.Timeout:
         :raises requests.TooManyRedirects:
         """
-        self.log(f"Downloading {self.directory + filename}")
-        with open(self.directory + filename, "wb") as out:
+        self.log(f"Downloading {os.path.join(self.download_dir, filename)}")
+        with open(os.path.join(self.download_dir, filename), "wb") as out:
             for status, bread, btotal, data in self.provider.download(url):
                 if status.value == HTTPStatus.CLIENT_ERROR or status.value == HTTPStatus.SERVER_ERROR:
                     break
@@ -408,7 +424,7 @@ class Manager(ABC):
         """
         Cleanup downloaded (and/or installed) files.
         Note: if this is not needed, override with Manager.DO_NOTHING
-        :param files: downloaded files; prefix with self.download_dir + filename.
+        :param files: downloaded files; interact with os.path.join(self.download_dir, filename)
         Note: it's not guaranteed the files exist!
         """
         pass
@@ -424,11 +440,16 @@ class Manager(ABC):
 
 
 DEFAULT_ARGUMENTS = {
+    "--list-versions": {
+        "help": "List available version(s) to download from remote.",
+        "required": False,
+        "default": False,
+        "action": "store_true"
+    },
     "--version": {
         "help": "Specify a version to install. Default is latest.",
         "required": False,
         "default": None
-
     },
     "--keep": {
         "help": "Specify if downloaded files will be kept after finishing.",
@@ -445,7 +466,7 @@ DEFAULT_ARGUMENTS = {
     "--destination": {
         "help": "Specify installation directory.",
         "required": False,
-        "default": "/tmp/",
+        "default": None,
         "type": str
     },
     "--unsafe": {
@@ -457,6 +478,7 @@ DEFAULT_ARGUMENTS = {
 }
 
 
+# TODO add compgen generator to use along with this (?)
 def get_default_argparser(description):
     import argparse as ap
     p = ap.ArgumentParser(description=description)
@@ -476,7 +498,7 @@ def run_subprocess(commands: Sequence[str] | str, cwd: Filename) -> bool:
     return subprocess.run(commands, cwd=os.path.expanduser(cwd)).returncode == 0
 
 
-def is_root() -> bool:
+def euid_is_root() -> bool:
     """Returns True if script is running as root."""
     import os
     return os.geteuid() == 0
