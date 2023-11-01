@@ -250,8 +250,8 @@ zsh () (
 #############################################################
 # PYTHON VENV(s)
 
-# goal: we want to create alot of different vipN () (...) functions to call
-#  for every different virtual environment that we have; e.g. python3.11 will have vip3.11
+# goal: we want to create alot of different vpipN () (...) functions to call
+#  for every different virtual environment that we have; e.g. python3.11 will have vpip3.11
 #  which calls for the activation of the virtual environment of python3.11 stored somewhere on the system
 #  to do that, we're going to (1) create a mock file (2) dump all these different functions in it
 #  (3) source it (4) then promptly delete it so we don't create garbage files & for (perhaps) obscure security reasons
@@ -263,7 +263,7 @@ zsh () (
 # important note: the statement pythonX.x -m venv \"\$venv_dir\" won't work with 2.7 or lower,
 #  for that, we need the virtualenv module
 prepare-pip () (
-    local vip_fname="/tmp/vip-temp-$(date +%s%N).sh"
+    local vpip_fname="/tmp/vpip-temp-$(date +%s%N).sh"
     local venv_dir="$HOME/.vpip"
     local python_versions=()
     
@@ -278,22 +278,10 @@ prepare-pip () (
         # sanitize the filename and keep only the numbers at the end
         local python_version_number="$(echo $python_version | tr -d -c 0-9.)"
         
-        local virtual_group="vip$python_version_number () {
+        local virtual_group_subshell="vpip$python_version_number-subshell () {
             [[ \"\$EUID\" -eq 0 ]] && echo \"Do NOT run as root.\" && return 2; 
             [[ ! -d \"$venv_dir\" ]] && mkdir -p \"$venv_dir\" # create root dir if doesn't exist
-            local venv_dir=\"$venv_dir/dvip$python_version_number\"
-            
-            # if venv dir doesn't exist for our version notify and create it
-            [[ ! -d \"\$venv_dir\" ]] && echo \"\$venv_dir doesn't exist; creating venv for $python_version\"
-            [[ ! -d \"\$venv_dir\" ]] && $python_version -m venv \"\$venv_dir\"
-            
-            source \"\$venv_dir/bin/activate\"
-        }"
-        
-        local virtual_group_subshell="vip$python_version_number-subshell () {
-            [[ \"\$EUID\" -eq 0 ]] && echo \"Do NOT run as root.\" && return 2; 
-            [[ ! -d \"$venv_dir\" ]] && mkdir -p \"$venv_dir\" # create root dir if doesn't exist
-            local venv_dir=\"$venv_dir/dvip$python_version_number\"
+            local venv_dir=\"$venv_dir/dvpip$python_version_number\"
             
             # if venv dir doesn't exist for our version create it
             [[ ! -d \"\$venv_dir\" ]] && echo \"\$venv_dir doesn't exist; creating venv for $python_version\"
@@ -303,19 +291,18 @@ prepare-pip () (
         }"
         
         # append to the file
-        echo "$virtual_group" >> $vip_fname
-        echo "$virtual_group_subshell" >> $vip_fname
+        echo "$virtual_group_subshell" >> $vpip_fname
     done
     
-    echo $vip_fname
+    echo $vpip_fname
 )
 
 require-pip () {
-    local vip_fname="$(prepare-pip)"
+    local vpip_fname="$(prepare-pip)"
 
     # source the file & delete
-    source "$vip_fname"
-    rm "$vip_fname"
+    source "$vpip_fname"
+    rm "$vpip_fname"
 }
 
 require-pip
