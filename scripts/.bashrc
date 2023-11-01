@@ -269,7 +269,7 @@ prepare-pip () (
     
     # get all the appropriate versions from the filesystem 
     # https://stackoverflow.com/a/57485303
-    for pv in "$(ls -1 /usr/bin/python* | grep '.*[0-9]\.\([0-9]\+\)\?$')"; do
+    for pv in "$(ls -1 /usr/bin/python* | grep '.*[0-9]\.\([0-9]\+\)\?$' | sort --version-sort)"; do
         python_versions+=("$pv")
     done
     
@@ -277,15 +277,25 @@ prepare-pip () (
     for python_version in $python_versions; do 
         # sanitize the filename and keep only the numbers at the end
         local python_version_number="$(echo $python_version | tr -d -c 0-9.)"
-        
-        local virtual_group_subshell="vpip$python_version_number-subshell () {
+
+        local virtual_group_subshell="vpip$python_version_number () {
             [[ \"\$EUID\" -eq 0 ]] && echo \"Do NOT run as root.\" && return 2; 
             [[ ! -d \"$venv_dir\" ]] && mkdir -p \"$venv_dir\" # create root dir if doesn't exist
             local venv_dir=\"$venv_dir/dvpip$python_version_number\"
-            
+
             # if venv dir doesn't exist for our version create it
-            [[ ! -d \"\$venv_dir\" ]] && echo \"\$venv_dir doesn't exist; creating venv for $python_version\"
-            [[ ! -d \"\$venv_dir\" ]] && $python_version -m venv \"\$venv_dir\"
+            if [[ ! -d \"\$venv_dir\" ]]; then
+                echo \"\$venv_dir doesn't exist; creating venv for $python_version\"
+
+                # special case of the trick below: if python version < 3 (2.7 e.g.) use a special way for venv init
+                if [[ ${python_version_number%.*} -lt 3 ]]; then
+                    $python_version  -m ensurepip --user
+                    $python_version -m pip install virtualenv --user
+                    $python_version -m virtualenv --python=\"$python_version\" \"\$venv_dir\"
+                else
+                    $python_version -m venv \"\$venv_dir\" # for python >= 3
+                fi
+            fi
             
             bash --init-file <(echo \"source \\\"$HOME/.bashrc\\\"; source \$venv_dir/bin/activate\")
         }"
@@ -302,7 +312,7 @@ require-pip () {
 
     # source the file & delete
     source "$vpip_fname"
-    rm "$vpip_fname"
+    # FIXME rm "$vpip_fname"
 }
 
 require-pip
