@@ -17,7 +17,7 @@ if ! ping -q -c 1 -W 1 google.com > /dev/null; then
 fi
 
 # there should be a matching change-ownership-recursive after everything's done in the script
-mkdir -p "$CLONED_ROOT" "$MZL_ROOT" "$SSH_ROOT" "$BIN_ROOT" "$WRK_ROOT" "$SMR_ROOT" "$RND_ROOT"
+mkdir -p "$MZL_ROOT" "$SSH_ROOT" "$BIN_ROOT" "$WRK_ROOT" "$SMR_ROOT" "$RND_ROOT"
 
 # fs thingies
 readonly ROOT_FS=$(stat -f --format=%T /)
@@ -376,7 +376,7 @@ ssh-keygen -t rsa -b 4096 -C "$REAL_USER@$DISTRIBUTION_NAME" -f "$SSH_ROOT/id_rs
 #######################################################################################################
 
 #matching the mkdir
-change-ownership-recursive "$CLONED_ROOT" "$MZL_ROOT" "$SSH_ROOT" "$BIN_ROOT" "$WRK_ROOT" "$SMR_ROOT" "$RND_ROOT"
+change-ownership-recursive "$MZL_ROOT" "$SSH_ROOT" "$BIN_ROOT" "$WRK_ROOT" "$SMR_ROOT" "$RND_ROOT"
 
 #######################################################################################################
 
