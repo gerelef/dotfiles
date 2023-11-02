@@ -185,6 +185,9 @@ class Provider:
         :param url: project endpoint
         :returns: Generator[HTTPStatus, Release]
         :raises requests.exceptions.JSONDecodeError: Raised if unable to decode Json due to mangled data
+        :raises requests.ConnectionError:
+        :raises requests.Timeout:
+        :raises requests.TooManyRedirects:
         """
         pass
 
@@ -206,6 +209,9 @@ class Provider:
         :param f: filter to use in order to match the correct release
         :returns Release | None:
         :raises requests.exceptions.JSONDecodeError:
+        :raises requests.ConnectionError:
+        :raises requests.Timeout:
+        :raises requests.TooManyRedirects:
         """
         status: HTTPStatus
         release: Release
@@ -342,9 +348,13 @@ class Manager(ABC):
 
     def run(self) -> None:
         """
+        :raises RuntimeError: raised when download requests errored or ended abruptly with HTTP Status != 200
         :raises Exceptions.NoReleaseFound: raised when no release matched
-        :raises RuntimeError: raised when download requests errored
         :raises Exceptions.FileVerificationFailed: raised when file verification failed
+        :raises requests.JSONDecodeError: raised when there's malformed JSON in the response
+        :raises requests.ConnectionError:
+        :raises requests.Timeout:
+        :raises requests.TooManyRedirects:
         """
         files: list[Filename] = []
         self.log(Manager.Level.PROGRESS, "Starting preprocessing...")
@@ -353,7 +363,7 @@ class Manager(ABC):
             if not r:
                 self.log(Manager.Level.ERROR, "No release found, or matched! Is everything set OK?")
                 raise Exceptions.NoReleaseFound()
-            downloadables = self.get_downloads(r)
+            downloadables = self.get_assets(r)
             self.log(Manager.Level.PROGRESS, "Starting downloads...")
             for fn, url in downloadables.items():
                 files.append(fn)
@@ -367,9 +377,6 @@ class Manager(ABC):
                 raise Exceptions.FileVerificationFailed()
             self.log(Manager.Level.PROGRESS, "Starting install...")
             self.install(files)
-        except KeyboardInterrupt:
-            self.log(Manager.Level.WARNING, "Aborted by user.")
-            exit(130)
         finally:
             self.cleanup(files)
             self.log(Manager.Level.PROGRESS, "Done.")
@@ -385,7 +392,7 @@ class Manager(ABC):
         pass
 
     @abstractmethod
-    def get_downloads(self, r: Release) -> dict[Filename, URL]:
+    def get_assets(self, r: Release) -> dict[Filename, URL]:
         """
         Get the assets that we'll download from a specific Release.
         :returns dict[Filename, URL]: a dict where filenames match the URL we'll download from
@@ -455,12 +462,6 @@ class Manager(ABC):
 
 
 DEFAULT_ARGUMENTS = {
-    "--list-versions": {
-        "help": "List available version(s) to download from remote.",
-        "required": False,
-        "default": False,
-        "action": "store_true"
-    },
     "--version": {
         "help": "Specify a version to install. Default is latest.",
         "required": False,
@@ -475,7 +476,7 @@ DEFAULT_ARGUMENTS = {
     "--temporary": {
         "help": "Specify temporary directory files will be downloaded at. Default is /tmp/",
         "required": False,
-        "default": "/tmp/",
+        "default": None,
         "type": str
     },
     "--destination": {

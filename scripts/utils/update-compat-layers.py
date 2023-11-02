@@ -1,8 +1,11 @@
 #!/usr/bin/env python3
+from typing import Any
+
+import requests
+
+from update_utils import Manager, Exceptions, get_default_argparser, euid_is_root, Filename, Release, URL
 import os
 import sys
-import argparse as ap
-from update_utils import Manager, get_default_argparser, euid_is_root, Filename, Release, URL
 
 
 class CompatibilityManager(Manager):
@@ -27,7 +30,7 @@ class CompatibilityManager(Manager):
         return version_matches and keyword_matches
 
     # TODO create a specific function for each distinct repository required and assign to this
-    def get_downloads(self, r: Release) -> dict[Filename, URL]:
+    def get_assets(self, r: Release) -> dict[Filename, URL]:
         pass
 
     # TODO set as VERIFY_NOTHING on luxtorpeda, or on --unsafe
@@ -48,7 +51,7 @@ class CompatibilityManager(Manager):
         print(msg)
 
 
-def create_argparser() -> ap.ArgumentParser:
+def create_argparser():
     p = get_default_argparser("Download & extract latest version of the most popular game compatibility layers.")
     group = p.add_mutually_exclusive_group(required=True)
     group.add_argument(
@@ -86,82 +89,125 @@ def create_argparser() -> ap.ArgumentParser:
     return p
 
 
-def setup_argument_options(argparser_output) -> None:
-    global DOWNLOAD_DIR, COMPATIBILITY_LAYER_URL, INSTALL_DIR, VERSION, RELEASE_FILTER
+PROTON_GE_GITHUB_RELEASES_URL = "https://api.github.com/repos/GloriousEggroll/proton-ge-custom/releases"
+WINE_GE_GITHUB_RELEASES_URL = "https://api.github.com/repos/gloriouseggroll/wine-ge-custom/releases"
+LUXTORPEDA_GITHUB_RELEASES_URL = "https://api.github.com/repos/luxtorpeda-dev/luxtorpeda/releases"
+PROTON_GE_INSTALL_DIR = os.path.expanduser("~/.local/share/Steam/compatibilitytools.d/")
+DOWNLOAD_DIR = "/tmp/"
 
-    # FIXME missing golden-egg check since it was removed from being the default and became a flag
-    if args.luxtorpeda:
-        args.unsafe = True  # as of writing, luxtorpeda doesn't have a sha512sum in their assets.
-        COMPATIBILITY_LAYER_URL = LUXTORPEDA_GITHUB_RELEASES_URL
 
-    if args.league or args.wine:
-        RELEASE_FILTER = lambda s: "proton" in s
-        if args.league:
-            RELEASE_FILTER = lambda s: "lol" in s
-        INSTALL_DIR = os.path.expanduser("~/.local/share/lutris/runners/wine/")
-        COMPATIBILITY_LAYER_URL = WINE_GE_GITHUB_RELEASES_URL
+def setup_argument_options(args: dict[str, Any]) -> CompatibilityManager:
+    remote = None
+    league_wine_filter = None
+    version_filter = None
+    temp_dir = DOWNLOAD_DIR
+    install_dir = PROTON_GE_INSTALL_DIR
+    cleanup_method = CompatibilityManager.cleanup
+    verification_method = CompatibilityManager.verify
 
-    if args.destination:
-        INSTALL_DIR = os.path.abspath(os.path.expanduser(args.destination))
-
-    if args.temporary:
-        DOWNLOAD_DIR = os.path.abspath(os.path.expanduser(args.temporary))
-        if not os.path.exists(DOWNLOAD_DIR):
-            os.makedirs(DOWNLOAD_DIR)
-
-    if args.version:
-        VERSION = args.version
+    for arg in args:
+        match arg:
+            case "golden_egg":
+                if args[arg]:
+                    remote = PROTON_GE_GITHUB_RELEASES_URL
+            case "wine":
+                if args[arg]:
+                    remote = WINE_GE_GITHUB_RELEASES_URL
+            case "league":
+                if args[arg]:
+                    remote = WINE_GE_GITHUB_RELEASES_URL
+                    league_wine_filter = "LoL"
+            case "luxtorpeda":
+                if args[arg]:
+                    remote = LUXTORPEDA_GITHUB_RELEASES_URL
+                    verification_method = CompatibilityManager.DO_NOTHING
+            case "unsafe":
+                if args[arg]:
+                    verification_method = CompatibilityManager.DO_NOTHING
+            case "destination":
+                if args[arg]:
+                    install_dir = os.path.abspath(os.path.expanduser(args[arg]))
+                    if not os.path.exists(install_dir):
+                        os.makedirs(install_dir)
+            case "temporary":
+                if args[arg]:
+                    temp_dir = os.path.abspath(os.path.expanduser(args[arg]))
+                    if not os.path.exists(temp_dir):
+                        os.makedirs(temp_dir)
+            case "keep":
+                if args[arg]:
+                    cleanup_method = CompatibilityManager.DO_NOTHING
+            case "version":
+                if args[arg]:
+                    version_filter = args[arg]
+            case _:
+                raise RuntimeError(f"Unknown argument {arg}")
+        manager = CompatibilityManager(
+            repository=remote,
+            install_dir=install_dir,
+            download_dir=temp_dir,
+            version=version_filter,
+            keyword=league_wine_filter,
+        )
+        manager.verify = verification_method
+        manager.cleanup = cleanup_method
+        return manager
 
 
 if euid_is_root():
     print("Do NOT run this script as root!", file=sys.stderr)
     exit(2)
 
-PROTON_GE_GITHUB_RELEASES_URL = "https://api.github.com/repos/GloriousEggroll/proton-ge-custom/releases"
-WINE_GE_GITHUB_RELEASES_URL = "https://api.github.com/repos/gloriouseggroll/wine-ge-custom/releases"
-LUXTORPEDA_GITHUB_RELEASES_URL = "https://api.github.com/repos/luxtorpeda-dev/luxtorpeda/releases"
-COMPATIBILITY_LAYER_URL = None
-DOWNLOAD_DIR = "/tmp/"
-# TODO add default install dir specifically for each version
-INSTALL_DIR = os.path.expanduser("~/.local/share/Steam/compatibilitytools.d/")
-VERSION = None
-RELEASE_FILTER = None
 
 if __name__ == "__main__":
     parser = create_argparser()
-    args = parser.parse_args()
-    print(args)
-    print(vars(args))
-    exit(0)
-    setup_argument_options(args)
+    compat_manager = setup_argument_options(vars(parser.parse_args()))
+    print("""
+        \033[5m
+                                          _          
+                                         | |         
+           ___ ___  _ __ ___  _ __   __ _| |_        
+          / __/ _ \\| '_ ` _ \\| '_ \\ / _` | __|       
+         | (_| (_) | | | | | | |_) | (_| | |_        
+          \\___\\___/|_| |_| |_| .__/ \\__,_|\\__|       
+                             | |                     
+          ______ ______ _____|_|_____ ______         
+         |______|______|______|______|______|        
+                 (_)         | |      | | |          
+                  _ _ __  ___| |_ __ _| | | ___ _ __ 
+                 | | '_ \\/ __| __/ _` | | |/ _ | '__|
+                 | | | | \\__ | || (_| | | |  __| |   
+                 |_|_| |_|___/\\__\\__,_|_|_|\\___|_|   
+        \033[0m
+        """)
+    try:
+        compat_manager.run()
+    except KeyboardInterrupt:
+        print("Aborted by user. Exiting...")
+        exit(130)
+    except Exceptions.NoReleaseFound as e:
+        print("Couldn't find a matching release! Exiting...", file=sys.stderr)
+        exit(1)
+    except Exceptions.FileVerificationFailed as e:
+        print("Couldn't verify the downloaded files! Exiting...", file=sys.stderr)
+        exit(1)
+    except RuntimeError as e:
+        print(f"Got unknown exception {e}! Exiting...", file=sys.stderr)
+        exit(1)
+    except requests.ConnectionError | requests.Timeout as e:
+        print(f"Got {e}! Is the network connection OK?", file=sys.stderr)
+        exit(1)
 
-    if not os.path.exists(INSTALL_DIR):
-        os.makedirs(INSTALL_DIR)
+    print("Done!")
+
+    if not os.path.exists(PROTON_GE_INSTALL_DIR):
+        os.makedirs(PROTON_GE_INSTALL_DIR)
 
     release = utils.match_correct_release(COMPATIBILITY_LAYER_URL, title=VERSION, _filter=RELEASE_FILTER)
     if not release:
         print(f"Couldn't match any release for version {VERSION}")
         exit(1)
     print(f"Found correct version{' Luxtorpeda' if args.luxtorpeda else ''} {release.tag_name}")
-
-    print("""
-    \033[5m
-                                      _          
-                                     | |         
-       ___ ___  _ __ ___  _ __   __ _| |_        
-      / __/ _ \\| '_ ` _ \\| '_ \\ / _` | __|       
-     | (_| (_) | | | | | | |_) | (_| | |_        
-      \\___\\___/|_| |_| |_| .__/ \\__,_|\\__|       
-                         | |                     
-      ______ ______ _____|_|_____ ______         
-     |______|______|______|______|______|        
-             (_)         | |      | | |          
-              _ _ __  ___| |_ __ _| | | ___ _ __ 
-             | | '_ \\/ __| __/ _` | | |/ _ | '__|
-             | | | | \\__ | || (_| | | |  __| |   
-             |_|_| |_|___/\\__\\__,_|_|_|\\___|_|   
-    \033[0m
-    """)
 
     ftarballname = None
     ftarballurl = None
@@ -213,7 +259,8 @@ if __name__ == "__main__":
         if not args.unsafe and not utils.run_subprocess(["sha512sum", "-c", fhashname], DOWNLOAD_DIR):
             exit(1)
 
-        if not utils.run_subprocess(["tar", "-xPf", ftarballname, f"--directory={INSTALL_DIR}"], DOWNLOAD_DIR):
+        if not utils.run_subprocess(["tar", "-xPf", ftarballname, f"--directory={PROTON_GE_INSTALL_DIR}"],
+                                    DOWNLOAD_DIR):
             exit(1)
         print(f"Extracted {ftarballname}")
 
@@ -233,5 +280,5 @@ if __name__ == "__main__":
             if ftarballname:
                 os.remove(ftarballname)
             print(f"Removed {DOWNLOAD_DIR} files.")
-    print(f"New contents are at {INSTALL_DIR}")
+    print(f"New contents are at {PROTON_GE_INSTALL_DIR}")
     print("Done.")
