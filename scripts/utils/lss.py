@@ -1,14 +1,11 @@
 #!/usr/bin/env -S python3 -S -OO
-from enum import Enum
-from stat import filemode
-from sys import argv, stderr, exit
-from pathlib import PosixPath
-from subprocess import run
-from fcolour import colour, Colours
-from functools import reduce
 from math import floor
-import argparse as ap
-import typing
+from pathlib import PosixPath
+from stat import filemode
+from subprocess import run
+from sys import argv, stderr, exit
+
+from fcolour import colour, Colours
 
 
 class Column:
@@ -53,7 +50,7 @@ class Column:
     def get_row_elements(self, max_cols, max_lines):
         columns, rows = self.get_ideal_rows_columns(max_cols, max_lines, max(self.get_row_indices()))
 
-        subgenerators: Typing.Generator = []
+        subgenerators = []
         for sub in self.subcolumns:
             subgenerators.append(sub.get_row_elements(max_cols, max_lines))
 
@@ -97,10 +94,14 @@ def run_subshell(command: list[str]) -> tuple[int, str]:
 
 def git_status(directory: str):
     status = "Working tree clean."
-    toplevel = run_subshell(["git", "-C", directory, "rev-parse", "--show-toplevel"])[1]
+    ret_code, toplevel = run_subshell(["git", "-C", directory, "rev-parse", "--show-toplevel"])
+
+    # not a git directory most likely
+    if ret_code != 0:
+        return ""
 
     if toplevel:
-        has_changes = run_subshell(["git", "-C", directory, "status", "-s", "--ignored=no"])[1]
+        _, has_changes = run_subshell(["git", "-C", directory, "status", "-s", "--ignored=no"])
         if has_changes:
             status = "Uncommited changes."
 
