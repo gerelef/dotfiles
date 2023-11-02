@@ -454,52 +454,6 @@ class Manager(ABC):
         pass
 
 
-# we're not using 3.12 syntax because we want to comply with (somewhat) earlier versions
-T = TypeVar("T")
-
-
-class ArgHandler(ABC, Generic[T]):
-    # TODO implement priority based on hard and soft dependencies in self.actions
-    def __init__(self, parser: ArgumentParser, args=None):
-        self.parser = parser
-        self.parser_args = args
-        self.setters: dict[str, list[Callable[[None], None]]] = {}
-        self.actions: dict[str, list[Callable[[None], None]]] = {}
-        self.args = None
-
-    def run(self) -> T:
-        self.preprocess()
-        self.args = vars(self.parser.parse_args(self.args))
-        self.__fire_setters()
-        self.__fire_actions()
-        return self.postprocess()
-
-    def __fire_setters(self):
-        # TODO
-        pass
-
-    def __fire_actions(self):
-        # TODO
-        pass
-
-    @abstractmethod
-    def preprocess(self):
-        pass
-
-    @abstractmethod
-    def postprocess(self) -> T:
-        pass
-
-
-class Test(ArgHandler):
-
-    def preprocess(self):
-        pass
-
-    def postprocess(self) -> T:
-        pass
-
-
 DEFAULT_ARGUMENTS = {
     "--list-versions": {
         "help": "List available version(s) to download from remote.",
