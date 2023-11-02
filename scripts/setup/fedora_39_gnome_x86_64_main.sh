@@ -62,18 +62,18 @@ openvpn \
 pulseeffects \
 "
 
-readonly INSTALLABLE_CODECS="\
-gstreamer1-plugins-* \
-gstreamer1-plugin-openh264 \
-gstreamer1-libav --exclude=gstreamer1-plugins-bad-free-devel \
-"
-
 readonly INSTALLABLE_OBS_STUDIO="\
 obs-studio \
 obs-studio-plugin-vkcapture \
 obs-studio-plugin-vlc-video \
 obs-studio-plugin-webkitgtk \
 obs-studio-plugin-x264 \
+"
+
+readonly INSTALLABLE_PWR_MGMNT="\
+tlp \
+tlp-rdw \
+powertop \
 "
 
 readonly UNINSTALLABLE_BLOAT="\
@@ -115,8 +115,6 @@ timeshift \
 "
 
 readonly INSTALLABLE_EXTRAS="\
-lmms \
-lmms-vst \
 mixxx \
 steam \
 "
@@ -187,12 +185,9 @@ fwupdmgr update -y
 
 #######################################################################################################
 
-echo "-------------------INSTALLING---------------- $INSTALLABLE_PACKAGES $INSTALLABLE_CODECS $INSTALLABLE_OBS_STUDIO" | tr " " "\n"
+echo "-------------------INSTALLING---------------- $INSTALLABLE_PACKAGES" | tr " " "\n"
 dnf-remove "$UNINSTALLABLE_BLOAT"
 dnf-install "$INSTALLABLE_PACKAGES"
-dnf-install "$INSTALLABLE_CODECS"
-dnf-install "$INSTALLABLE_OBS_STUDIO"
-dnf-install-group "--with-optional Multimedia"
 
 case "btrfs" in
     "$ROOT_FS" | "$REAL_USER_HOME_FS")
@@ -206,6 +201,13 @@ esac
 
 readonly GPU=$(lspci | grep -i vga | grep NVIDIA)
 if [ ! -z "$GPU" ]; then
+    echo "Found NVIDIA GPU $GPU, installing drivers..."
+    dnf-install "$INSTALLABLE_NVIDIA_DRIVERS"
+
+    akmods --force
+    dracut --force
+    
+    grubby --update-kernel=ALL --args="nvidia-drm.modeset=1"
     readonly BIOS_MODE=$([ -d /sys/firmware/efi ] && echo UEFI || echo BIOS)
     if [[ "$BIOS_MODE" -eq "UEFI" ]]; then
         echo "Signing GPU drivers..."
@@ -216,14 +218,35 @@ if [ ! -z "$GPU" ]; then
     else
         echo "UEFI not found; please restart & use UEFI..."
     fi
-    echo "Found NVIDIA GPU $GPU, installing drivers..."
-    dnf-install "$INSTALLABLE_NVIDIA_DRIVERS"
-
-    akmods --force
-    dracut --force
 fi
 
 echo "Done."
+
+echo "-------------------INSTALLING CODECS----------------" | tr " " "\n"
+
+# based on https://github.com/devangshekhawat/Fedora-39-Post-Install-Guide
+dnf-groupupdate 'core' 'multimedia' 'sound-and-video' --setop='install_weak_deps=False' --exclude='PackageKit-gstreamer-plugin' --allowerasing && sync
+dnf swap 'ffmpeg-free' 'ffmpeg' --allowerasing
+dnf-install "gstreamer1-plugins-{bad-\*,good-\*,base}" "gstreamer1-plugin-openh264" "gstreamer1-libav" "--exclude=gstreamer1-plugins-bad-free-devel" "ffmpeg" "gstreamer-ffmpeg"
+dnf-install "lame\*" "--exclude=lame-devel"
+dnf-install-group "--with-optional Multimedia"
+
+dnf-install "ffmpeg" "ffmpeg-libs" "libva" "libva-utils"
+dnf config-manager --set-enabled fedora-cisco-openh264
+dnf-install "openh264" "gstreamer1-plugin-openh264" "mozilla-openh264"
+
+echo "-------------------OPTIMIZING BATTERY USAGE----------------" | tr " " "\n"
+while : ; do
+    read -p "Are you sure you want to optimize battery usage?[Y/n] " -n 1 -r
+    [[ ! $REPLY =~ ^[YyNn]$ ]] || break
+done
+
+echo ""
+if [[ $REPLY =~ ^[Yy]$ ]]; then
+    dnf-install "$INSTALLABLE_PWR_MGMNT"
+    systemctl mask power-profiles-daemon
+    echo "Done."
+fi
 #######################################################################################################
 # no requirement to add flathub ourselves anymore in f38; it should be enabled by default. however, it may not be, most likely by accident, so this is a failsafe
 flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
@@ -247,6 +270,7 @@ done
 echo ""
 if [[ $REPLY =~ ^[Yy]$ ]]; then
     dnf-install "$INSTALLABLE_EXTRAS"
+    dnf-install "$INSTALLABLE_OBS_STUDIO"
     flatpak-install "$INSTALLABLE_EXTRAS_FLATPAK"
     echo "Done."
 fi
@@ -362,7 +386,13 @@ echo 'GRUB_HIDDEN_TIMEOUT_QUIET=true' >> /etc/default/grub
 #######################################################################################################
 
 systemctl restart NetworkManager
-hostnamectl hostname "$DISTRIBUTION_NAME"
+timedatectl set-local-rtc '0' # for fixing dual boot time inconsistencies
+hostnamectl hostname "$DISTRIBUTION_NAME$(rpm -E %fedora)"
+# if the statement below doesnt work, check this out
+#  https://old.reddit.com/r/linuxhardware/comments/ng166t/s3_deep_sleep_not_working/
+grubby --update-kernel=ALL --args="mem_sleep_default=s2idle" # modern standby (primarily for laptops)
+systemctl disable NetworkManager-wait-online.service # stop network manager from waiting until online, improves boot times
+rm /etc/xdg/autostart/org.gnome.Software.desktop # stop this from updating in the background and eating ram, no reason
 
 updatedb 2> /dev/null
 if ! [ $? -eq 0 ]; then

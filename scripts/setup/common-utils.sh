@@ -25,7 +25,6 @@ readonly CONFIG_DIR=$(realpath -s "$SCRIPT_DIR/../../.config")
 readonly RC_MZL_DIR="$CONFIG_DIR/mozilla"
 
 # home directories to create
-readonly CLONED_ROOT="$REAL_USER_HOME/cloned"
 readonly MZL_ROOT="$REAL_USER_HOME/.mozilla/firefox"
 readonly SSH_ROOT="$REAL_USER_HOME/.ssh"
 readonly BIN_ROOT="$REAL_USER_HOME/bin"
@@ -53,10 +52,21 @@ dnf-install-group () (
     echo "Finished group-installing."
 )
 
+dnf-groupupdate () (
+    [[ $# -eq 0 ]] && return 2
+    
+    echo "-------------------DNF-GROUPUPDATE---------------- $*" | tr " " "\n"
+    while : ; do
+        dnf groupupdate -y --best --allowerasing $@ && break
+    done
+    echo "Finished group-installing."
+)
+
 dnf-update-refresh () (
     echo "-------------------DNF-UPDATE----------------"
     while : ; do
-        dnf update -y --refresh && break
+        dnf update -y 
+        dnf upgrade -y --refresh && break
     done
     echo "Finished updating."
 )
@@ -171,17 +181,6 @@ copy-rc-files () (
 )
 
 copy-ff-rc-files () (
-    mkdir -p "$CLONED_ROOT/mono-firefox-theme"
-    echo "Created $CLONED_ROOT/mono-firefox-theme/"
-    readonly RC_VIS_MZL_DIR="$CLONED_ROOT/mono-firefox-theme"
-    # if something goes wrong, install the next version, otherwise break
-    wget -c --read-timeout=5 --tries=0 --directory-prefix "$CLONED_ROOT/" "https://github.com/witalihirsch/Mono-firefox-theme/releases/download/0.5/mono-firefox-theme.tar.xz"
-    tar -xf "$CLONED_ROOT/mono-firefox-theme.tar.xz" --directory="$RC_VIS_MZL_DIR"
-    echo "Extracted $CLONED_ROOT/mono-firefox-theme.tar.xz"
-    rm -vf "$CLONED_ROOT/mono-firefox-theme.tar.xz"
-    cat "$RC_MZL_DIR/userChrome.css" >> "$RC_VIS_MZL_DIR/userChrome.css"
-    echo "Installing visual rc files from $RC_VIS_MZL_DIR"
-
     #https://askubuntu.com/questions/239543/get-the-default-firefox-profile-directory-from-bash
     if [[ $(grep '\[Profile[^0]\]' "$MZL_ROOT/profiles.ini") ]]; then
         readonly PROFPATH=$(grep -E '^\[Profile|^Path|^Default' "$MZL_ROOT/profiles.ini" | grep '^Path' | cut -c6- | tr " " "\n")
@@ -196,12 +195,6 @@ copy-ff-rc-files () (
         # preference rc
         ln -sf "$RC_MZL_DIR/user.js" "$MZL_PROF_DIR_ABSOLUTE/user.js"
         change-ownership "$MZL_PROF_DIR_ABSOLUTE/user.js"
-
-        # visual rc
-        mkdir -p "$MZL_PROF_CHROME_DIR_ABSOLUTE"
-        ln -sf "$RC_VIS_MZL_DIR/userChrome.css" "$MZL_PROF_CHROME_DIR_ABSOLUTE/userChrome.css"
-        ln -sf "$RC_VIS_MZL_DIR/userContent.css" "$MZL_PROF_CHROME_DIR_ABSOLUTE/userContent.css"
-        ln -sf "$RC_VIS_MZL_DIR/mono-firefox-theme" "$MZL_PROF_CHROME_DIR_ABSOLUTE/mono-firefox-theme"
     done
 )
 
