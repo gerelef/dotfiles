@@ -2,6 +2,7 @@
 user_pref("toolkit.legacyUserProfileCustomizations.stylesheets", true);
 user_pref("svg.context-properties.content.enabled", true);
 user_pref("gnomeTheme.hideSingleTab", true);
+user_pref("media.ffmpeg.allow-openh264", true);
 
 // GENERIC
 user_pref("browser.bookmarks.restore_default_bookmarks", false);
