@@ -2,11 +2,12 @@
 import os
 import enum
 import requests
+from argparse import ArgumentParser
 from datetime import datetime
 from re import search as regex_search
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
-from typing import Generator, Sequence, Callable, Optional, TypeAlias, Self
+from typing import Generator, Sequence, Callable, Optional, TypeAlias, Self, Generic, TypeVar, Any
 
 
 # Writing boilerplate code to avoid writing boilerplate code!
@@ -188,7 +189,8 @@ class Provider:
         pass
 
     @abstractmethod
-    def download(self, url: URL, chunk_size=1024 * 1024) -> Generator[tuple[HTTPStatus, int, int, bytes | None], None, None]:
+    def download(self, url: URL, chunk_size=1024 * 1024) -> Generator[
+        tuple[HTTPStatus, int, int, bytes | None], None, None]:
         """
         Downloads a packet of size chunk_size from URL, which belongs to the provider defined previously.
         Generator that returns a binary data packet of size chunk_size, iteratively requested from url.
@@ -273,7 +275,8 @@ class GitHubProvider(Provider):
 
         return None
 
-    def download(self, url: URL, chunk_size=1024 * 1024) -> Generator[tuple[HTTPStatus, int, int, bytes | None], None, None]:
+    def download(self, url: URL, chunk_size=1024 * 1024) -> Generator[
+        tuple[HTTPStatus, int, int, bytes | None], None, None]:
         with requests.get(url, verify=True, stream=True, allow_redirects=True) as req:
             if HTTPStatus.create(req.status_code) != HTTPStatus.SUCCESS:
                 yield HTTPStatus.create(req.status_code), -1, -1, None
@@ -315,6 +318,13 @@ class Manager(ABC):
     FILTER_FIRST: Callable[[Release], bool] = lambda r: True
     DO_NOTHING: Callable[[list[Filename]], bool] = lambda f: None
 
+    class Level(enum.IntEnum):
+        ERROR = 16
+        WARNING = 8
+        DEBUG = 4
+        INFO = 2
+        PROGRESS = 1
+
     def __init__(self, repository: URL, download_dir: Filename = "/tmp/"):
         """
         :param repository: direct URL to the repository to make requests
@@ -327,39 +337,42 @@ class Manager(ABC):
 
         self.download_dir = download_dir
         if not os.path.exists(self.download_dir):
-            raise FileNotFoundError(f"Couldn't find, or not enough permissions to use os.stat(), on {self.download_dir}")
+            raise FileNotFoundError(
+                f"Couldn't find, or not enough permissions to use os.stat(), on {self.download_dir}")
 
     def run(self) -> None:
         """
-        :raises
+        :raises Exceptions.NoReleaseFound: raised when no release matched
         :raises RuntimeError: raised when download requests errored
-        :raises FileVerificationFailed: raised when file verification failed
+        :raises Exceptions.FileVerificationFailed: raised when file verification failed
         """
         files: list[Filename] = []
-        self.log("Starting preprocessing...")
+        self.log(Manager.Level.PROGRESS, "Starting preprocessing...")
         try:
             r = self.provider.get_release(self.filter)
             if not r:
-                self.log("No release found, or matched! Is everything set OK?")
-                raise
+                self.log(Manager.Level.ERROR, "No release found, or matched! Is everything set OK?")
+                raise Exceptions.NoReleaseFound()
             downloadables = self.get_downloads(r)
-            self.log("Starting downloads...")
+            self.log(Manager.Level.PROGRESS, "Starting downloads...")
             for fn, url in downloadables.items():
                 files.append(fn)
                 status = self.download(os.path.join(self.download_dir, fn), url)
                 if status.value == HTTPStatus.CLIENT_ERROR or status.value == HTTPStatus.SERVER_ERROR:
+                    self.log(Manager.Level.ERROR, f"Got HTTPStatus {status.value}!")
                     raise RuntimeError(f"Got HTTPStatus {status.value}!")
-            self.log("Starting verification...")
+            self.log(Manager.Level.PROGRESS, "Starting verification...")
             if not self.verify(files):
+                self.log(Manager.Level.ERROR, "Couldn't verify files!")
                 raise Exceptions.FileVerificationFailed()
-            self.log("Starting install...")
+            self.log(Manager.Level.PROGRESS, "Starting install...")
             self.install(files)
         except KeyboardInterrupt:
-            self.log("Aborted by user.")
+            self.log(Manager.Level.WARNING, "Aborted by user.")
             exit(130)
         finally:
             self.cleanup(files)
-            self.log("Done.")
+            self.log(Manager.Level.PROGRESS, "Done.")
 
     @abstractmethod
     def filter(self, release: Release) -> bool:
@@ -381,7 +394,8 @@ class Manager(ABC):
 
     def download(self, filename: Filename, url: URL) -> HTTPStatus:
         """
-        Downloads a specific file fromn url, stored in self.directory + filename. Finishes early upon HTTPStatus error.
+        Downloads a specific file fromn url, stored in self.directory + filename.
+        Finishes early upon HTTPStatus error.
         :param filename: filename to store as
         :param url: url to download from
         :return: last HTTPStatus received by self.provider.download
@@ -389,12 +403,12 @@ class Manager(ABC):
         :raises requests.Timeout:
         :raises requests.TooManyRedirects:
         """
-        self.log(f"Downloading {os.path.join(self.download_dir, filename)}")
+        self.log(Manager.Level.PROGRESS, f"Downloading {os.path.join(self.download_dir, filename)}")
         with open(os.path.join(self.download_dir, filename), "wb") as out:
             for status, bread, btotal, data in self.provider.download(url):
                 if status.value == HTTPStatus.CLIENT_ERROR or status.value == HTTPStatus.SERVER_ERROR:
                     break
-                self.log(echo_progress_bar_complex(bread, btotal, os.get_terminal_size().columns))
+                self.log(Manager.Level.PROGRESS, f"\r{progress_bar(bread, btotal)}")
                 out.write(data)
             # noinspection PyUnboundLocalVariable
             return status
@@ -430,12 +444,59 @@ class Manager(ABC):
         pass
 
     @abstractmethod
-    def log(self, msg: str):
+    def log(self, level: Level, msg: str):
         """
         Log internal strings. Provide concrete implementation to redirect to whatever sink is appropriate.
         Note: if this is not needed, override with Manager.LOG_NOTHING
+        :param level: Log level
         :param msg: string to log
         """
+        pass
+
+
+# we're not using 3.12 syntax because we want to comply with (somewhat) earlier versions
+T = TypeVar("T")
+
+
+class ArgHandler(ABC, Generic[T]):
+    # TODO implement priority based on hard and soft dependencies in self.actions
+    def __init__(self, parser: ArgumentParser, args=None):
+        self.parser = parser
+        self.parser_args = args
+        self.setters: dict[str, list[Callable[[None], None]]] = {}
+        self.actions: dict[str, list[Callable[[None], None]]] = {}
+        self.args = None
+
+    def run(self) -> T:
+        self.preprocess()
+        self.args = vars(self.parser.parse_args(self.args))
+        self.__fire_setters()
+        self.__fire_actions()
+        return self.postprocess()
+
+    def __fire_setters(self):
+        # TODO
+        pass
+
+    def __fire_actions(self):
+        # TODO
+        pass
+
+    @abstractmethod
+    def preprocess(self):
+        pass
+
+    @abstractmethod
+    def postprocess(self) -> T:
+        pass
+
+
+class Test(ArgHandler):
+
+    def preprocess(self):
+        pass
+
+    def postprocess(self) -> T:
         pass
 
 
@@ -504,27 +565,6 @@ def euid_is_root() -> bool:
     return os.geteuid() == 0
 
 
-def get_all_subdirectories(path) -> list[str]:
-    """Returns the filenames of all subdirectories in a path."""
-    import os
-    return os.listdir(path=path)
-
-
-def echo_progress_bar_simple(current, total) -> str:
+def progress_bar(current, total) -> str:
     """Return a simple percentage string."""
-    return f"\r{round((current / total) * 100, 2)}%"
-
-
-def echo_progress_bar_complex(current, total, max_columns, use_ascii=False):
-    """Return a complex progress bar string."""
-    empty_space = " " if use_ascii else "\033[1m\033[38;5;196m―\033[0m"  # bold, light_red & clean_colour
-    filled_space = "-" if use_ascii else "\033[1m\033[38;5;34m―\033[0m"  # bold, green & clean_colour
-    # total bar length: we're going to use the max columns with a padding of 6 characters
-    #  for the "[" "]" "999%" pads.
-    percentage_str = f"{round((current / total) * 100, 1)}%"
-    bar_length = max_columns - len(percentage_str) - 2  # 2 for safety, sometimes tput cols overshoots this.
-    bar = ["\r", "["] + [empty_space] * bar_length + ["]"] + list(f"\033[1m\033[38;5;34m{percentage_str}\033[0m")
-    for i in range(2, bar_length + 2):
-        if round(i / (bar_length + 1), 2) <= round(current / total, 2):
-            bar[i] = filled_space
-    return "".join(bar)
+    return f"{current}/{total} | {round((current / total) * 100, 2)}%"
