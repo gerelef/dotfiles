@@ -41,7 +41,7 @@ def create_argparse():
     return p
 
 
-if utils.is_root():
+if utils.euid_is_root():
     print("Do NOT run this script as root.", file=sys.stderr)
     exit(2)
 

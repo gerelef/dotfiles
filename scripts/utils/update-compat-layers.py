@@ -1,71 +1,88 @@
 #!/usr/bin/env python3
 import os
 import sys
-import time
 import argparse as ap
-import update_utils as utils
+from update_utils import Manager, get_default_argparser, euid_is_root, Filename, Release, URL
+
+
+class CompatibilityManager(Manager):
+
+    def __init__(self, repository: URL, install_dir: Filename, version=None, keyword: str = None, **kwargs):
+        super().__init__(repository, **kwargs)
+        self.install_dir = install_dir
+        self.keyword = keyword
+        self.version = version
+
+    # TODO set as FILTER_FIRST if --version is not set
+    def filter(self, release: Release) -> bool:
+        lower_tag_name = release.tag_name.lower()
+
+        version_matches = True
+        if self.version:
+            version_matches = self.version not in lower_tag_name
+
+        keyword_matches = True
+        if self.keyword:
+            keyword_matches = self.keyword not in lower_tag_name
+        return version_matches and keyword_matches
+
+    # TODO create a specific function for each distinct repository required and assign to this
+    def get_downloads(self, r: Release) -> dict[Filename, URL]:
+        pass
+
+    # TODO set as VERIFY_NOTHING on luxtorpeda, or on --unsafe
+    def verify(self, files: list[Filename]) -> bool:
+        pass
+
+    def install(self, files: list[Filename]):
+        pass
+
+    # TODO set as DO_NOTHING if --keep is passed
+    def cleanup(self, files: list[Filename]):
+        for filename in files:
+            real_path = os.path.join(self.download_dir, filename)
+            if os.path.exists(real_path):
+                os.remove(filename)
+
+    def log(self, level: Manager.Level, msg: str):
+        print(msg)
 
 
 def create_argparser() -> ap.ArgumentParser:
-    p = ap.ArgumentParser(
-        description="Download & extract latest version of the most popular compatibility layers"
-    )
+    p = get_default_argparser("Download & extract latest version of the most popular game compatibility layers.")
     group = p.add_mutually_exclusive_group(required=True)
     group.add_argument(
         "--luxtorpeda",
-        help="Download & extract latest version of Luxtorpeda\n\thttps://github.com/luxtorpeda-dev/luxtorpeda",
+        help="Download & extract latest version of Luxtorpeda\n"
+             "\thttps://github.com/luxtorpeda-dev/luxtorpeda",
         required=False,
+        default=False,
         action="store_true"
     )
     group.add_argument(
         "--league",
-        help="Download & extract latest version of Lutris-GE-X.x.x-LoL\n\thttps://github.com/gloriouseggroll/wine-ge-custom",
+        help="Download & extract latest version of Lutris-GE-X.x.x-LoL\n"
+             "\thttps://github.com/gloriouseggroll/wine-ge-custom",
         required=False,
+        default=False,
         action="store_true"
     )
     group.add_argument(
         "--wine",
-        help="Download & extract latest version of Wine-GE-ProtonX-x\n\thttps://github.com/gloriouseggroll/wine-ge-custom",
+        help="Download & extract latest version of Wine-GE-ProtonX-x\n"
+             "\thttps://github.com/gloriouseggroll/wine-ge-custom",
         required=False,
+        default=False,
         action="store_true"
     )
     group.add_argument(
         "--golden-egg",
-        help="Download & extract latest version of GE-ProtonX-x\n\thttps://github.com/GloriousEggroll/proton-ge-custom",
+        help="Download & extract latest version of GE-ProtonX-x\n"
+             "\thttps://github.com/GloriousEggroll/proton-ge-custom",
         required=False,
+        default=False,
         action="store_true"
     )
-    p.add_argument(
-        "-u", "--unsafe",
-        help="skip checksum verification, even if supported",
-        required=False,
-        action="store_true"
-    )
-    p.add_argument(
-        "-d", "--destination",
-        help="specify installation directory",
-        required=False
-    )
-    p.add_argument(
-        "-t", "--temporary",
-        help="specify temporary download directory",
-        required=False
-    )
-    p.add_argument(
-        "-k", "--keep",
-        help="keep downloaded files in download directory",
-        required=False,
-        action="store_true"
-    )
-    p.add_argument(
-        "-v", "--version",
-        help="specific version to install, with standard GE-Proton naming format e.g. 7-46",
-        required=False,
-        default=None
-    )
-    subparser = p.add_subparsers(dest="subcommand", required=False)
-    ls_parser = subparser.add_parser("ls", help="print the currently installed versions, separated by newline")
-    versions_parser = subparser.add_parser("versions", help="print all the GE-Proton released versions to date")
     return p
 
 
@@ -95,33 +112,17 @@ def setup_argument_options(argparser_output) -> None:
     if args.version:
         VERSION = args.version
 
-    if args.subcommand:
-        match args.subcommand:
-            case "ls":
-                dirs = utils.get_all_subdirectories(INSTALL_DIR)
-                for d in dirs:
-                    print(d)
-                exit(0)
-            case "versions":
-                for v in utils.get_github_releases(COMPATIBILITY_LAYER_URL, recurse=True):
-                    if RELEASE_FILTER and not RELEASE_FILTER(v.tag_name.lower()):
-                        continue
-                    print(v.tag_name)
-                exit(0)
-            case _:
-                print("Unknown subcommand, exiting...")
-                exit(2)
 
-
-if utils.is_root():
-    print("Do NOT run this script as root.", file=sys.stderr)
+if euid_is_root():
+    print("Do NOT run this script as root!", file=sys.stderr)
     exit(2)
 
-DOWNLOAD_DIR = "/tmp/"
 PROTON_GE_GITHUB_RELEASES_URL = "https://api.github.com/repos/GloriousEggroll/proton-ge-custom/releases"
 WINE_GE_GITHUB_RELEASES_URL = "https://api.github.com/repos/gloriouseggroll/wine-ge-custom/releases"
 LUXTORPEDA_GITHUB_RELEASES_URL = "https://api.github.com/repos/luxtorpeda-dev/luxtorpeda/releases"
-COMPATIBILITY_LAYER_URL = PROTON_GE_GITHUB_RELEASES_URL  # default compat layer to install
+COMPATIBILITY_LAYER_URL = None
+DOWNLOAD_DIR = "/tmp/"
+# TODO add default install dir specifically for each version
 INSTALL_DIR = os.path.expanduser("~/.local/share/Steam/compatibilitytools.d/")
 VERSION = None
 RELEASE_FILTER = None
@@ -129,6 +130,9 @@ RELEASE_FILTER = None
 if __name__ == "__main__":
     parser = create_argparser()
     args = parser.parse_args()
+    print(args)
+    print(vars(args))
+    exit(0)
     setup_argument_options(args)
 
     if not os.path.exists(INSTALL_DIR):
@@ -142,19 +146,20 @@ if __name__ == "__main__":
 
     print("""
     \033[5m
-     _____  _____                   _              
-    |  __ \|  ___|                 | |             
-    | |  \/| |__    _ __  _ __ ___ | |_ ___  _ __  
-    | | __ |  __|  | '_ \| '__/ _ \| __/ _ \| '_ \ 
-    | |_\ \| |___  | |_) | | | (_) | || (_) | | | |
-     \____/\____/  | .__/|_|  \___/ \__\___/|_| |_|
-             ______| |______ ______ ______ ______  
-        _   |______|_|______|______|______|______| 
-       (_)         | |      | | |                  
-        _ _ __  ___| |_ __ _| | | ___ _ __         
-       | | '_ \/ __| __/ _` | | |/ _ \ '__|        
-       | | | | \__ \ || (_| | | |  __/ |           
-       |_|_| |_|___/\__\__,_|_|_|\___|_|           
+                                      _          
+                                     | |         
+       ___ ___  _ __ ___  _ __   __ _| |_        
+      / __/ _ \\| '_ ` _ \\| '_ \\ / _` | __|       
+     | (_| (_) | | | | | | |_) | (_| | |_        
+      \\___\\___/|_| |_| |_| .__/ \\__,_|\\__|       
+                         | |                     
+      ______ ______ _____|_|_____ ______         
+     |______|______|______|______|______|        
+             (_)         | |      | | |          
+              _ _ __  ___| |_ __ _| | | ___ _ __ 
+             | | '_ \\/ __| __/ _` | | |/ _ | '__|
+             | | | | \\__ | || (_| | | |  __| |   
+             |_|_| |_|___/\\__\\__,_|_|_|\\___|_|   
     \033[0m
     """)
 
