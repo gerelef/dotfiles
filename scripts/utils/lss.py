@@ -146,7 +146,9 @@ if __name__ == "__main__":
     files_column = Column(elements=files, permissions=permissions)
     output_column = Column(subcolumns=[dir_column, files_column], permissions=permissions)
 
-    print(f"{len(dirs)} directories, {len(files)} files. {git_status(str(cwd))}")
+    print(f"{len(dirs)} {'directories' if len(dirs) > 1 else 'directory'}, "
+          f"{len(files)} {'files' if len(files) > 1 else 'file'}. "
+          f"{git_status(str(cwd))}")
     if len(dirs) == 0 and len(files) == 0:
         exit(0)
 
