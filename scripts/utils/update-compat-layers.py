@@ -1,22 +1,21 @@
 #!/usr/bin/env python3
-from typing import Any
-
-import requests
-
-from update_utils import Manager, Exceptions, get_default_argparser, euid_is_root, Filename, Release, URL
 import os
 import sys
+import types
+
+import requests
+from typing import Any
+from update_utils import Manager, Exceptions, get_default_argparser, euid_is_root, Filename, Release, URL
 
 
 class CompatibilityManager(Manager):
 
-    def __init__(self, repository: URL, install_dir: Filename, version=None, keyword: str = None, **kwargs):
-        super().__init__(repository, **kwargs)
+    def __init__(self, repository: URL, install_dir: Filename, temp_dir: Filename, version=None, keyword: str = None):
+        super().__init__(repository, download_dir=temp_dir)
         self.install_dir = install_dir
         self.keyword = keyword
         self.version = version
 
-    # TODO set as FILTER_FIRST if --version is not set
     def filter(self, release: Release) -> bool:
         lower_tag_name = release.tag_name.lower()
 
@@ -33,19 +32,19 @@ class CompatibilityManager(Manager):
     def get_assets(self, r: Release) -> dict[Filename, URL]:
         pass
 
-    # TODO set as VERIFY_NOTHING on luxtorpeda, or on --unsafe
     def verify(self, files: list[Filename]) -> bool:
         pass
 
     def install(self, files: list[Filename]):
         pass
 
-    # TODO set as DO_NOTHING if --keep is passed
     def cleanup(self, files: list[Filename]):
-        for filename in files:
-            real_path = os.path.join(self.download_dir, filename)
-            if os.path.exists(real_path):
-                os.remove(filename)
+        print("CLEANUP CALLED!!!1")
+        # FIXME
+        # for filename in files:
+        #     real_path = os.path.join(self.download_dir, filename)
+        #     if os.path.exists(real_path):
+        #         os.remove(filename)
 
     def log(self, level: Manager.Level, msg: str):
         print(msg)
@@ -102,8 +101,11 @@ def setup_argument_options(args: dict[str, Any]) -> CompatibilityManager:
     version_filter = None
     temp_dir = DOWNLOAD_DIR
     install_dir = PROTON_GE_INSTALL_DIR
-    cleanup_method = CompatibilityManager.cleanup
+    # pick the first version by default
+    # FIXME bind all of these mthods
+    filter_method = CompatibilityManager.FILTER_FIRST
     verification_method = CompatibilityManager.verify
+    cleanup_method = CompatibilityManager.cleanup
 
     for arg in args:
         match arg:
@@ -116,7 +118,8 @@ def setup_argument_options(args: dict[str, Any]) -> CompatibilityManager:
             case "league":
                 if args[arg]:
                     remote = WINE_GE_GITHUB_RELEASES_URL
-                    league_wine_filter = "LoL"
+                    filter_method = CompatibilityManager.filter
+                    league_wine_filter = "lol"
             case "luxtorpeda":
                 if args[arg]:
                     remote = LUXTORPEDA_GITHUB_RELEASES_URL
@@ -139,19 +142,22 @@ def setup_argument_options(args: dict[str, Any]) -> CompatibilityManager:
                     cleanup_method = CompatibilityManager.DO_NOTHING
             case "version":
                 if args[arg]:
+                    filter_method = CompatibilityManager.filter
                     version_filter = args[arg]
             case _:
                 raise RuntimeError(f"Unknown argument {arg}")
-        manager = CompatibilityManager(
-            repository=remote,
-            install_dir=install_dir,
-            download_dir=temp_dir,
-            version=version_filter,
-            keyword=league_wine_filter,
-        )
-        manager.verify = verification_method
-        manager.cleanup = cleanup_method
-        return manager
+    manager = CompatibilityManager(
+        repository=remote,
+        install_dir=install_dir,
+        temp_dir=temp_dir,
+        version=version_filter,
+        keyword=league_wine_filter,
+    )
+    # these new methods need to be bound to the instance of the class in order to use self
+    manager.filter = types.MethodType(filter_method, manager)
+    manager.verify = types.MethodType(verification_method, manager)
+    manager.cleanup = types.MethodType(cleanup_method, manager)
+    return manager
 
 
 if euid_is_root():
@@ -164,21 +170,21 @@ if __name__ == "__main__":
     compat_manager = setup_argument_options(vars(parser.parse_args()))
     print("""
         \033[5m
-                                          _          
-                                         | |         
-           ___ ___  _ __ ___  _ __   __ _| |_        
-          / __/ _ \\| '_ ` _ \\| '_ \\ / _` | __|       
-         | (_| (_) | | | | | | |_) | (_| | |_        
-          \\___\\___/|_| |_| |_| .__/ \\__,_|\\__|       
-                             | |                     
-          ______ ______ _____|_|_____ ______         
-         |______|______|______|______|______|        
-                 (_)         | |      | | |          
-                  _ _ __  ___| |_ __ _| | | ___ _ __ 
-                 | | '_ \\/ __| __/ _` | | |/ _ | '__|
-                 | | | | \\__ | || (_| | | |  __| |   
-                 |_|_| |_|___/\\__\\__,_|_|_|\\___|_|   
-        \033[0m
+                                  _          
+                                 | |         
+   ___ ___  _ __ ___  _ __   __ _| |_        
+  / __/ _ \\| '_ ` _ \\| '_ \\ / _` | __|       
+ | (_| (_) | | | | | | |_) | (_| | |_        
+  \\___\\___/|_| |_| |_| .__/ \\__,_|\\__|       
+                     | |                     
+  ______ ______ _____|_|_____ ______         
+ |______|______|______|______|______|        
+         (_)         | |      | | |          
+          _ _ __  ___| |_ __ _| | | ___ _ __ 
+         | | '_ \\/ __| __/ _` | | |/ _ | '__|
+         | | | | \\__ | || (_| | | |  __| |   
+         |_|_| |_|___/\\__\\__,_|_|_|\\___|_|   
+\033[0m
         """)
     try:
         compat_manager.run()
@@ -194,7 +200,11 @@ if __name__ == "__main__":
     except RuntimeError as e:
         print(f"Got unknown exception {e}! Exiting...", file=sys.stderr)
         exit(1)
-    except requests.ConnectionError | requests.Timeout as e:
+    except requests.ConnectionError as e:
+        print(f"Got {e}! Is the network connection OK?", file=sys.stderr)
+        exit(1)
+    except requests.Timeout as e:
+        # FIXME Duplicate code for no reason
         print(f"Got {e}! Is the network connection OK?", file=sys.stderr)
         exit(1)
 

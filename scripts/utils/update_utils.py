@@ -179,7 +179,7 @@ class Provider:
         self.repository = url
 
     @abstractmethod
-    def __recurse_releases(self, url: URL) -> Generator[tuple[HTTPStatus, Release | None], None, None]:
+    def recurse_releases(self, url: URL) -> Generator[tuple[HTTPStatus, Release | None], None, None]:
         """
         Generator to get all GitHub releases for a given project.
         :param url: project endpoint
@@ -189,11 +189,10 @@ class Provider:
         :raises requests.Timeout:
         :raises requests.TooManyRedirects:
         """
-        pass
+        raise NotImplementedError
 
     @abstractmethod
-    def download(self, url: URL, chunk_size=1024 * 1024) -> Generator[
-        tuple[HTTPStatus, int, int, bytes | None], None, None]:
+    def download(self, url: URL, chunk_size=1024 * 1024) -> Generator[tuple[HTTPStatus, int, int, bytes | None], None, None]:
         """
         Downloads a packet of size chunk_size from URL, which belongs to the provider defined previously.
         Generator that returns a binary data packet of size chunk_size, iteratively requested from url.
@@ -202,7 +201,7 @@ class Provider:
         :raises requests.Timeout:
         :raises requests.TooManyRedirects:
         """
-        pass
+        raise NotImplementedError
 
     def get_release(self, f: Filter) -> Release | None:
         """
@@ -215,7 +214,7 @@ class Provider:
         """
         status: HTTPStatus
         release: Release
-        for status, release in self.__recurse_releases(self.repository):
+        for status, release in self.recurse_releases(self.repository):
             if status.value == HTTPStatus.CLIENT_ERROR or status.value == HTTPStatus.SERVER_ERROR:
                 return None
             if release is None:
@@ -240,7 +239,7 @@ class ProviderFactory:
 
 
 class GitHubProvider(Provider):
-    def __recurse_releases(self, url: URL) -> Generator[tuple[HTTPStatus, Release | None], None, None]:
+    def recurse_releases(self, url: URL) -> Generator[tuple[HTTPStatus, Release | None], None, None]:
         while True:
             try:
                 with requests.get(url, allow_redirects=True, verify=True) as req:
@@ -281,8 +280,7 @@ class GitHubProvider(Provider):
 
         return None
 
-    def download(self, url: URL, chunk_size=1024 * 1024) -> Generator[
-        tuple[HTTPStatus, int, int, bytes | None], None, None]:
+    def download(self, url: URL, chunk_size=1024 * 1024) -> Generator[tuple[HTTPStatus, int, int, bytes | None], None, None]:
         with requests.get(url, verify=True, stream=True, allow_redirects=True) as req:
             if HTTPStatus.create(req.status_code) != HTTPStatus.SUCCESS:
                 yield HTTPStatus.create(req.status_code), -1, -1, None
@@ -294,35 +292,15 @@ class GitHubProvider(Provider):
         return
 
 
-class Checksum(enum.Enum):
-    MD5SUM = "md5"
-    SHA1SUM = "sha1"
-    SHA256SUM = "sha256"
-    SHA384SUM = "sha384"
-    SHA512SUM = "sha512"
-
-    @classmethod
-    def match(cls, filename: Filename) -> Self:
-        # last part *should* always be the file type
-        fn_sanitized = filename.lower().split(".")[-1]
-        if Checksum.MD5SUM.value in fn_sanitized:
-            return Checksum.MD5SUM
-        if Checksum.SHA1SUM.value in fn_sanitized:
-            return Checksum.SHA1SUM
-        if Checksum.SHA256SUM.value in fn_sanitized:
-            return Checksum.SHA256SUM
-        if Checksum.SHA384SUM.value in fn_sanitized:
-            return Checksum.SHA384SUM
-        if Checksum.SHA512SUM.value in fn_sanitized:
-            return Checksum.SHA512SUM
-
-
 @auto_str
 class Manager(ABC):
-    LOG_NOTHING: Callable[[str], None] = lambda s: None
-    VERIFY_NOTHING: Callable[[list[Filename]], bool] = lambda f: True
-    FILTER_FIRST: Callable[[Release], bool] = lambda r: True
-    DO_NOTHING: Callable[[list[Filename]], bool] = lambda f: None
+    # If you're going to be overriding functions using any of the functions below, this will be an important need
+    # https://stackoverflow.com/questions/23082509/how-is-the-self-argument-magically-passed-to-instance-methods
+    # https://stackoverflow.com/questions/1015307/how-to-bind-an-unbound-method-without-calling-it
+    LOG_NOTHING: Callable[[object, str], None] = lambda _, s: None
+    VERIFY_NOTHING: Callable[[object, list[Filename]], bool] = lambda _, f: True
+    FILTER_FIRST: Callable[[object, Release], bool] = lambda _, r: True
+    DO_NOTHING: Callable[[object, list[Filename]], bool] = lambda _, f: None
 
     class Level(enum.IntEnum):
         ERROR = 16
@@ -339,7 +317,7 @@ class Manager(ABC):
         :raises FileNotFoundError: raised if download_dir doesn't exist, or not enough permissions to execute os.stat(d)
         """
         self.repository = repository
-        self.provider = ProviderFactory.create(self.repository)
+        self.provider = ProviderFactory.create(repository)
 
         self.download_dir = download_dir
         if not os.path.exists(self.download_dir):
@@ -385,11 +363,12 @@ class Manager(ABC):
     def filter(self, release: Release) -> bool:
         """
         Check if this is the release we want to download.
-        Note: if you just need the latest available release, override with FILTER_FIRST.
+        Note: if you just need the latest available release, override with FILTER_FIRST!
+        Remember to bind the function to your instance with types.MethodType(FILTER_FIRST, instance)
         :param release:
         :returns bool: True if attributes match what we want to download, false otherwise.
         """
-        pass
+        raise NotImplementedError
 
     @abstractmethod
     def get_assets(self, r: Release) -> dict[Filename, URL]:
@@ -397,11 +376,11 @@ class Manager(ABC):
         Get the assets that we'll download from a specific Release.
         :returns dict[Filename, URL]: a dict where filenames match the URL we'll download from
         """
-        pass
+        raise NotImplementedError
 
     def download(self, filename: Filename, url: URL) -> HTTPStatus:
         """
-        Downloads a specific file fromn url, stored in self.directory + filename.
+        Downloads a specific file fromn url, stored in directory + filename.
         Finishes early upon HTTPStatus error.
         :param filename: filename to store as
         :param url: url to download from
@@ -425,40 +404,44 @@ class Manager(ABC):
         # hashfile used by md5sum and sha*sum tools format is: checksum filename.ext, 1 file per line.
         """
         Verify that files match their checksum.
-        Note: if this is not needed, override with Manager.VERIFY_NOTHING
+        Note: if this is not needed, override with Manager.VERIFY_NOTHING!
+        Remember to bind the function to your instance with types.MethodType(VERIFY_NOTHING, instance)
         :param files:
         :returns bool: True if everything's verified, false otherwise.
         """
-        pass
+        raise NotImplementedError
 
     @abstractmethod
     def install(self, files: list[Filename]):
         """
         Install the release to the system.
-        Note: if this is not needed, override with Manager.DO_NOTHING
+        Note: if this is not needed, override with Manager.DO_NOTHING!
+        Remember to bind the function to your instance with types.MethodType(DO_NOTHING, instance)
         :param files: files to install
         """
-        pass
+        raise NotImplementedError
 
     @abstractmethod
     def cleanup(self, files: list[Filename]):
         """
         Cleanup downloaded (and/or installed) files.
-        Note: if this is not needed, override with Manager.DO_NOTHING
+        Note: if this is not needed, override with Manager.DO_NOTHING!
+        Remember to bind the function to your instance with types.MethodType(DO_NOTHING, instance)
         :param files: downloaded files; interact with os.path.join(self.download_dir, filename)
         Note: it's not guaranteed the files exist!
         """
-        pass
+        raise NotImplementedError
 
     @abstractmethod
     def log(self, level: Level, msg: str):
         """
         Log internal strings. Provide concrete implementation to redirect to whatever sink is appropriate.
-        Note: if this is not needed, override with Manager.LOG_NOTHING
+        Note: if this is not needed, override with Manager.LOG_NOTHING!
+        Remember to bind the function to your instance with types.MethodType(LOG_NOTHING, instance)
         :param level: Log level
         :param msg: string to log
         """
-        pass
+        raise NotImplementedError
 
 
 DEFAULT_ARGUMENTS = {
