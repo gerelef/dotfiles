@@ -306,13 +306,14 @@ class Manager(ABC):
     DO_NOTHING: Callable[[object, list[Filename]], bool] = lambda _, f: None
 
     class Level(enum.IntEnum):
-        ERROR = 16
-        WARNING = 8
-        DEBUG = 4
-        INFO = 2
+        ERROR = 32
+        WARNING = 16
+        DEBUG = 8
+        INFO = 4
+        PROGRESS_BAR = 2
         PROGRESS = 1
 
-    def __init__(self, repository: URL, download_dir: Filename = "/tmp/"):
+    def __init__(self, repository: URL, download_dir: Filename):
         """
         :param repository: direct URL to the repository to make requests
         :param download_dir: download directory path
@@ -352,6 +353,7 @@ class Manager(ABC):
             self.log(Manager.Level.PROGRESS, "Starting downloads...")
             for fn, url in downloadables.items():
                 files.append(fn)
+                self.log(Manager.Level.PROGRESS, f"Downloading {fn}")
                 status = self.download(os.path.join(self.download_dir, fn), url)
                 if status.value == HTTPStatus.CLIENT_ERROR or status.value == HTTPStatus.SERVER_ERROR:
                     raise RuntimeError(f"Got HTTPStatus {status.value}!")
@@ -389,21 +391,20 @@ class Manager(ABC):
         """
         Downloads a specific file fromn url, stored in directory + filename.
         Finishes early upon HTTPStatus error.
-        :param filename: filename to store as
+        :param filename: absolute path to the filename we're going to write
         :param url: url to download from
         :return: last HTTPStatus received by self.provider.download
         :raises requests.ConnectionError:
         :raises requests.Timeout:
         :raises requests.TooManyRedirects:
         """
-        self.log(Manager.Level.PROGRESS, f"Downloading {os.path.join(self.download_dir, filename)}")
-        with open(os.path.join(self.download_dir, filename), "wb") as out:
+        with open(filename, "wb") as out:
             for status, bread, btotal, data in self.provider.download(url):
                 if status.value == HTTPStatus.CLIENT_ERROR or status.value == HTTPStatus.SERVER_ERROR:
                     return status
-                self.log(Manager.Level.PROGRESS, f"\r{progress_bar(bread, btotal)}")
+                self.log(Manager.Level.PROGRESS_BAR, f"\r{progress_bar(bread, btotal)} | {filename}")
                 out.write(data)
-            # noinspection PyUnboundLocalVariable
+            self.log(Manager.Level.PROGRESS_BAR, f"\n")
             return status
 
     @abstractmethod
