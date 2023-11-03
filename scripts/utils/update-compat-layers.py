@@ -197,11 +197,7 @@ if __name__ == "__main__":
     except RuntimeError as e:
         print(f"Got unknown exception {e}! Exiting...", file=sys.stderr)
         exit(1)
-    except requests.ConnectionError as e:
-        print(f"Got {e}! Is the network connection OK?", file=sys.stderr)
-        exit(1)
-    except requests.Timeout as e:
-        # FIXME Duplicate code for no reason
+    except requests.ConnectionError | requests.Timeout as e:
         print(f"Got {e}! Is the network connection OK?", file=sys.stderr)
         exit(1)
 
