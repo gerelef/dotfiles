@@ -2,19 +2,24 @@
 import os
 import sys
 import types
+from dataclasses import dataclass
 
 import requests
-from typing import Any
+from typing import Any, Optional
 from update_utils import Manager, Exceptions, get_default_argparser, euid_is_root, Filename, Release, URL
 
 
 class CompatibilityManager(Manager):
+    @dataclass
+    class Filter:
+        version: Optional[str] = None
+        keyword: Optional[str] = None
 
-    def __init__(self, repository: URL, install_dir: Filename, temp_dir: Filename, version=None, keyword: str = None):
+    def __init__(self, repository: URL, install_dir: Filename, temp_dir: Filename, _filter: Filter = Filter()):
         super().__init__(repository, download_dir=temp_dir)
         self.install_dir = install_dir
-        self.keyword = keyword
-        self.version = version
+        self.keyword = _filter.keyword
+        self.version = _filter.version
 
     def filter(self, release: Release) -> bool:
         lower_tag_name = release.tag_name.lower()
@@ -95,8 +100,7 @@ DOWNLOAD_DIR = "/tmp/"
 
 def setup_argument_options(args: dict[str, Any]) -> CompatibilityManager:
     remote = None
-    league_wine_filter = None
-    version_filter = None
+    _filter = CompatibilityManager.Filter()
     temp_dir = DOWNLOAD_DIR
     install_dir = PROTON_GE_INSTALL_DIR
     # pick the first version by default
@@ -116,7 +120,7 @@ def setup_argument_options(args: dict[str, Any]) -> CompatibilityManager:
                 if args[arg]:
                     remote = WINE_GE_GITHUB_RELEASES_URL
                     filter_method = CompatibilityManager.filter
-                    league_wine_filter = "lol"
+                    _filter.keyword = "lol"
             case "luxtorpeda":
                 if args[arg]:
                     remote = LUXTORPEDA_GITHUB_RELEASES_URL
@@ -140,15 +144,14 @@ def setup_argument_options(args: dict[str, Any]) -> CompatibilityManager:
             case "version":
                 if args[arg]:
                     filter_method = CompatibilityManager.filter
-                    version_filter = args[arg]
+                    _filter.version = args[arg]
             case _:
                 raise RuntimeError(f"Unknown argument {arg}")
     manager = CompatibilityManager(
         repository=remote,
         install_dir=install_dir,
         temp_dir=temp_dir,
-        version=version_filter,
-        keyword=league_wine_filter,
+        _filter=_filter
     )
     # these new methods need to be bound to the instance of the class in order to use self
     manager.filter = types.MethodType(filter_method, manager)
