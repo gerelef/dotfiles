@@ -201,7 +201,8 @@ esac
 
 readonly GPU=$(lspci | grep -i vga | grep NVIDIA)
 if [ ! -z "$GPU" ]; then
-    echo "Found NVIDIA GPU $GPU, installing drivers..."
+    echo "-------------------INSTALLING NVIDIA DRIVERS----------------"
+    echo "Found NVIDIA GPU $GPU"
     dnf-install "$INSTALLABLE_NVIDIA_DRIVERS"
 
     akmods --force
@@ -220,9 +221,19 @@ if [ ! -z "$GPU" ]; then
     fi
 fi
 
+readonly CHASSIS_TYPE="$(dmidecode --string chassis-type)"
+if [[ $CHASSIS_TYPE == "Sub Notebook" || $CHASSIS_TYPE == "Laptop" || $CHASSIS_TYPE == "Notebook" || 
+      $CHASSIS_TYPE == "Hand Held" || $CHASSIS_TYPE == "Portable" ]]; then
+    echo "-------------------OPTIMIZING BATTERY USAGE----------------"
+    echo "Found laptop $CHASSIS_TYPE"
+    dnf-install "$INSTALLABLE_PWR_MGMNT"
+    systemctl mask power-profiles-daemon
+    powertop --auto-tune
+fi
+
 echo "Done."
 
-echo "-------------------INSTALLING CODECS----------------" | tr " " "\n"
+echo "-------------------INSTALLING CODECS / H/W VIDEO ACCELERATION----------------" | tr " " "\n"
 
 # based on https://github.com/devangshekhawat/Fedora-39-Post-Install-Guide
 dnf-groupupdate 'core' 'multimedia' 'sound-and-video' --setop='install_weak_deps=False' --exclude='PackageKit-gstreamer-plugin' --allowerasing && sync
@@ -235,18 +246,6 @@ dnf-install "ffmpeg" "ffmpeg-libs" "libva" "libva-utils"
 dnf config-manager --set-enabled fedora-cisco-openh264
 dnf-install "openh264" "gstreamer1-plugin-openh264" "mozilla-openh264"
 
-echo "-------------------OPTIMIZING BATTERY USAGE----------------" | tr " " "\n"
-while : ; do
-    read -p "Are you sure you want to optimize battery usage?[Y/n] " -n 1 -r
-    [[ ! $REPLY =~ ^[YyNn]$ ]] || break
-done
-
-echo ""
-if [[ $REPLY =~ ^[Yy]$ ]]; then
-    dnf-install "$INSTALLABLE_PWR_MGMNT"
-    systemctl mask power-profiles-daemon
-    echo "Done."
-fi
 #######################################################################################################
 # no requirement to add flathub ourselves anymore in f38; it should be enabled by default. however, it may not be, most likely by accident, so this is a failsafe
 flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
