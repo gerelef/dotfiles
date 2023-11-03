@@ -191,13 +191,16 @@ if __name__ == "__main__":
     except Exceptions.NoReleaseFound as e:
         print("Couldn't find a matching release! Exiting...", file=sys.stderr)
         exit(1)
+    except Exceptions.NoAssetsFound as e:
+        print("Couldn't get assets from release! Exiting...", file=sys.stderr)
+        exit(1)
     except Exceptions.FileVerificationFailed as e:
         print("Couldn't verify the downloaded files! Exiting...", file=sys.stderr)
         exit(1)
     except RuntimeError as e:
         print(f"Got unknown exception {e}! Exiting...", file=sys.stderr)
         exit(1)
-    except requests.ConnectionError | requests.Timeout as e:
+    except requests.RequestException as e:
         print(f"Got {e}! Is the network connection OK?", file=sys.stderr)
         exit(1)
 

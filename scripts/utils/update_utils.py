@@ -84,6 +84,9 @@ class Exceptions:
     class NoReleaseFound(Exception):
         pass
 
+    class NoAssetsFound(Exception):
+        pass
+
 
 Filename: TypeAlias = str
 URL: TypeAlias = str
@@ -328,6 +331,7 @@ class Manager(ABC):
         """
         :raises RuntimeError: raised when download requests errored or ended abruptly with HTTP Status != 200
         :raises Exceptions.NoReleaseFound: raised when no release matched
+        :raises Exceptions.NoAssetsFound: raised when no assets are available/returned
         :raises Exceptions.FileVerificationFailed: raised when file verification failed
         :raises requests.JSONDecodeError: raised when there's malformed JSON in the response
         :raises requests.ConnectionError:
@@ -339,9 +343,14 @@ class Manager(ABC):
         try:
             r = self.provider.get_release(self.filter)
             if not r:
-                self.log(Manager.Level.ERROR, "No release found, or matched! Is everything set OK?")
+                self.log(Manager.Level.ERROR, "No release found, or matched! Is everything OK?")
                 raise Exceptions.NoReleaseFound()
+
             downloadables = self.get_assets(r)
+            if not downloadables:
+                self.log(Manager.Level.ERROR, "No assets found, or matched! Is everything OK?")
+                raise Exceptions.NoAssetsFound()
+
             self.log(Manager.Level.PROGRESS, "Starting downloads...")
             for fn, url in downloadables.items():
                 files.append(fn)
@@ -349,15 +358,17 @@ class Manager(ABC):
                 if status.value == HTTPStatus.CLIENT_ERROR or status.value == HTTPStatus.SERVER_ERROR:
                     self.log(Manager.Level.ERROR, f"Got HTTPStatus {status.value}!")
                     raise RuntimeError(f"Got HTTPStatus {status.value}!")
+
             self.log(Manager.Level.PROGRESS, "Starting verification...")
             if not self.verify(files):
                 self.log(Manager.Level.ERROR, "Couldn't verify files!")
                 raise Exceptions.FileVerificationFailed()
+
             self.log(Manager.Level.PROGRESS, "Starting install...")
             self.install(files)
         finally:
             self.cleanup(files)
-            self.log(Manager.Level.PROGRESS, "Done.")
+        self.log(Manager.Level.PROGRESS, "Done.")
 
     @abstractmethod
     def filter(self, release: Release) -> bool:
