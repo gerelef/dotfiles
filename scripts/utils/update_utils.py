@@ -343,26 +343,22 @@ class Manager(ABC):
         try:
             r = self.provider.get_release(self.filter)
             if not r:
-                self.log(Manager.Level.ERROR, "No release found, or matched! Is everything OK?")
-                raise Exceptions.NoReleaseFound()
+                raise Exceptions.NoReleaseFound("No release found, or matched! Is everything OK?")
 
             downloadables = self.get_assets(r)
             if not downloadables:
-                self.log(Manager.Level.ERROR, "No assets found, or matched! Is everything OK?")
-                raise Exceptions.NoAssetsFound()
+                raise Exceptions.NoAssetsFound("No assets found, or matched! Is everything OK?")
 
             self.log(Manager.Level.PROGRESS, "Starting downloads...")
             for fn, url in downloadables.items():
                 files.append(fn)
                 status = self.download(os.path.join(self.download_dir, fn), url)
                 if status.value == HTTPStatus.CLIENT_ERROR or status.value == HTTPStatus.SERVER_ERROR:
-                    self.log(Manager.Level.ERROR, f"Got HTTPStatus {status.value}!")
                     raise RuntimeError(f"Got HTTPStatus {status.value}!")
 
             self.log(Manager.Level.PROGRESS, "Starting verification...")
             if not self.verify(files):
-                self.log(Manager.Level.ERROR, "Couldn't verify files!")
-                raise Exceptions.FileVerificationFailed()
+                raise Exceptions.FileVerificationFailed("Couldn't verify files!")
 
             self.log(Manager.Level.PROGRESS, "Starting install...")
             self.install(files)
@@ -404,7 +400,7 @@ class Manager(ABC):
         with open(os.path.join(self.download_dir, filename), "wb") as out:
             for status, bread, btotal, data in self.provider.download(url):
                 if status.value == HTTPStatus.CLIENT_ERROR or status.value == HTTPStatus.SERVER_ERROR:
-                    break
+                    return status
                 self.log(Manager.Level.PROGRESS, f"\r{progress_bar(bread, btotal)}")
                 out.write(data)
             # noinspection PyUnboundLocalVariable
