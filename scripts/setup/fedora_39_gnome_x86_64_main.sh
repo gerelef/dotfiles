@@ -224,6 +224,8 @@ fi
 readonly CHASSIS_TYPE="$(dmidecode --string chassis-type)"
 if [[ $CHASSIS_TYPE == "Sub Notebook" || $CHASSIS_TYPE == "Laptop" || $CHASSIS_TYPE == "Notebook" || 
       $CHASSIS_TYPE == "Hand Held" || $CHASSIS_TYPE == "Portable" ]]; then
+    # s3 sleep
+    grubby --update-kernel=ALL --args="mem_sleep_default=s2idle" # modern standby
     echo "-------------------OPTIMIZING BATTERY USAGE----------------"
     echo "Found laptop $CHASSIS_TYPE"
     dnf-install "$INSTALLABLE_PWR_MGMNT"
@@ -389,7 +391,6 @@ timedatectl set-local-rtc '0' # for fixing dual boot time inconsistencies
 hostnamectl hostname "$DISTRIBUTION_NAME$(rpm -E %fedora)"
 # if the statement below doesnt work, check this out
 #  https://old.reddit.com/r/linuxhardware/comments/ng166t/s3_deep_sleep_not_working/
-grubby --update-kernel=ALL --args="mem_sleep_default=s2idle" # modern standby (primarily for laptops)
 systemctl disable NetworkManager-wait-online.service # stop network manager from waiting until online, improves boot times
 rm /etc/xdg/autostart/org.gnome.Software.desktop # stop this from updating in the background and eating ram, no reason
 
