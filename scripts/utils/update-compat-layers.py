@@ -1,12 +1,14 @@
 #!/usr/bin/env python3
 import os
+import re
 import sys
 import types
 from dataclasses import dataclass
 
 import requests
 from typing import Any, Optional
-from update_utils import Manager, Exceptions, get_default_argparser, euid_is_root, Filename, Release, URL
+from update_utils import Manager, Exceptions, get_default_argparser, euid_is_root, run_subprocess, Filename, Release, \
+    URL
 
 
 class CompatibilityManager(Manager):
@@ -15,11 +17,14 @@ class CompatibilityManager(Manager):
         version: Optional[str] = None
         keyword: Optional[str] = None
 
+    SHA_CHECKSUM_REGEX = re.compile(r".*(sha[0-9][0-9]?[0-9]?sum)", flags=re.IGNORECASE & re.DOTALL)
+
     def __init__(self, repository: URL, install_dir: Filename, temp_dir: Filename, _filter: Filter = Filter()):
-        super().__init__(repository, download_dir=temp_dir)
+        super().__init__(repository, temp_dir)
         self.install_dir = install_dir
         self.keyword = _filter.keyword
         self.version = _filter.version
+        self.last_msg_lvl = None
 
     def filter(self, release: Release) -> bool:
         lower_tag_name = release.tag_name.lower()
@@ -35,21 +40,41 @@ class CompatibilityManager(Manager):
 
     # TODO create a specific function for each distinct repository required and assign to this
     def get_assets(self, r: Release) -> dict[Filename, URL]:
-        pass
+        items = {}
+        for fname, url in r.assets.items():
+            if "tar" in fname or CompatibilityManager.SHA_CHECKSUM_REGEX.match(fname):
+                items[fname] = url
+        return items
 
     def verify(self, files: list[Filename]) -> bool:
-        pass
+        checksums = filter(lambda fn: bool(CompatibilityManager.SHA_CHECKSUM_REGEX.match(fn)), files)
+        results: list[bool] = []
+        for fname in checksums:
+            # there should be only one match
+            checksum_command = CompatibilityManager.SHA_CHECKSUM_REGEX.findall(fname)[0].lower()
+            command = [checksum_command, "-c", fname]
+            results.append(run_subprocess(command, cwd=self.download_dir))
+        return False not in results
 
     def install(self, files: list[Filename]):
-        pass
+        if not os.path.exists(self.install_dir):
+            os.makedirs(self.install_dir)
+        tars = filter(lambda fn: "tar" in fn, files)
+        for tarball in tars:
+            command = ["tar", "-xPf", tarball, f"--directory={self.install_dir}"]
+            if not run_subprocess(command, cwd=self.download_dir):
+                raise RuntimeError(f"{' '.join(command)} errored! !")
 
     def cleanup(self, files: list[Filename]):
         for filename in files:
             real_path = os.path.join(self.download_dir, filename)
             if os.path.exists(real_path):
-                os.remove(filename)
+                os.remove(real_path)
 
     def log(self, level: Manager.Level, msg: str):
+        if level == level.PROGRESS_BAR:
+            sys.stdout.write(msg)
+            return
         print(msg)
 
 
@@ -164,7 +189,6 @@ if euid_is_root():
     print("Do NOT run this script as root!", file=sys.stderr)
     exit(2)
 
-
 if __name__ == "__main__":
     parser = create_argparser()
     compat_manager = setup_argument_options(vars(parser.parse_args()))
@@ -208,86 +232,3 @@ if __name__ == "__main__":
         exit(1)
 
     print("Done!")
-
-    if not os.path.exists(PROTON_GE_INSTALL_DIR):
-        os.makedirs(PROTON_GE_INSTALL_DIR)
-
-    release = utils.match_correct_release(COMPATIBILITY_LAYER_URL, title=VERSION, _filter=RELEASE_FILTER)
-    if not release:
-        print(f"Couldn't match any release for version {VERSION}")
-        exit(1)
-    print(f"Found correct version{' Luxtorpeda' if args.luxtorpeda else ''} {release.tag_name}")
-
-    ftarballname = None
-    ftarballurl = None
-    fhashname = None
-    fhashurl = None
-    for n, l in release.assets.items():
-        if "tar" in n:
-            ftarballname = DOWNLOAD_DIR + os.sep + n
-            ftarballurl = l
-        if "sha512sum" in n:
-            fhashname = DOWNLOAD_DIR + os.sep + n
-            fhashurl = l
-
-    if not fhashname:
-        print(f"Couldn't find a sha512sum for version {release.tag_name}")
-        if not args.unsafe:
-            exit(1)
-
-    if not ftarballname:
-        print(f"Couldn't find a tarball for version {release.tag_name}")
-        exit(1)
-
-    try:
-        # download sha512sum
-        if not args.unsafe:
-            with open(fhashname, "wb") as out:
-                print(f"Writing {fhashname} from url {fhashurl}")
-                for bread, btotal, data in utils.download(fhashurl):
-                    out.write(data)
-                    utils.echo_progress_bar_complex(bread, btotal, sys.stdout, os.get_terminal_size().columns)
-                print(f"\nDownloaded {fhashname}")
-
-        # download tarball
-        with open(ftarballname, "wb") as out:
-            print(f"Writing {ftarballname} from url {ftarballurl}")
-            for bread, btotal, data in utils.download(ftarballurl):
-                out.write(data)
-                utils.echo_progress_bar_complex(bread, btotal, sys.stdout, os.get_terminal_size().columns)
-        print(f"\nDownloaded {ftarballname}")
-    except KeyboardInterrupt:
-        print("Interrupted by user.")
-        exit(0)
-    except Exception as e:
-        print(f"Unknown exception {e}", out=sys.stderr)
-        exit(1)
-
-    try:
-        # there's no sha512sum to download in luxtorpeda (as of writing)
-        if not args.unsafe and not utils.run_subprocess(["sha512sum", "-c", fhashname], DOWNLOAD_DIR):
-            exit(1)
-
-        if not utils.run_subprocess(["tar", "-xPf", ftarballname, f"--directory={PROTON_GE_INSTALL_DIR}"],
-                                    DOWNLOAD_DIR):
-            exit(1)
-        print(f"Extracted {ftarballname}")
-
-        # The default python module has a significant security vulnerability:
-        #  see more: https://docs.python.org/3/library/tarfile.html
-        # with tarfile.open(ftarballname, "r:gz") as tar:
-        #    tar.extractall()
-        #    tar.close()
-        #  to counter this, we used the shell utility instead
-    except KeyboardInterrupt:
-        print("Interrupted by user.")
-        exit(0)
-    finally:
-        if not args.keep:
-            if fhashname:
-                os.remove(fhashname)
-            if ftarballname:
-                os.remove(ftarballname)
-            print(f"Removed {DOWNLOAD_DIR} files.")
-    print(f"New contents are at {PROTON_GE_INSTALL_DIR}")
-    print("Done.")

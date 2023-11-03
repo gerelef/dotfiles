@@ -358,15 +358,14 @@ class Manager(ABC):
                 if status.value == HTTPStatus.CLIENT_ERROR or status.value == HTTPStatus.SERVER_ERROR:
                     raise RuntimeError(f"Got HTTPStatus {status.value}!")
 
-            self.log(Manager.Level.PROGRESS, "Starting verification...")
+            self.log(Manager.Level.PROGRESS, "Verifying...")
             if not self.verify(files):
                 raise Exceptions.FileVerificationFailed("Couldn't verify files!")
 
-            self.log(Manager.Level.PROGRESS, "Starting install...")
+            self.log(Manager.Level.PROGRESS, "Installing...")
             self.install(files)
         finally:
             self.cleanup(files)
-        self.log(Manager.Level.PROGRESS, "Done.")
 
     @abstractmethod
     def filter(self, release: Release) -> bool:
@@ -494,7 +493,7 @@ def get_default_argparser(description):
     return p
 
 
-def run_subprocess(commands: Sequence[str] | str, cwd: Filename) -> bool:
+def run_subprocess(commands: Sequence[str] | str, cwd: Filename = "~") -> bool:
     """
     :param cwd: current working directory
     :param commands: commands to run in subshell, sequence of or singular string(s)
