@@ -39,12 +39,10 @@ class CompatibilityManager(Manager):
         pass
 
     def cleanup(self, files: list[Filename]):
-        print("CLEANUP CALLED!!!1")
-        # FIXME
-        # for filename in files:
-        #     real_path = os.path.join(self.download_dir, filename)
-        #     if os.path.exists(real_path):
-        #         os.remove(filename)
+        for filename in files:
+            real_path = os.path.join(self.download_dir, filename)
+            if os.path.exists(real_path):
+                os.remove(filename)
 
     def log(self, level: Manager.Level, msg: str):
         print(msg)
@@ -102,7 +100,6 @@ def setup_argument_options(args: dict[str, Any]) -> CompatibilityManager:
     temp_dir = DOWNLOAD_DIR
     install_dir = PROTON_GE_INSTALL_DIR
     # pick the first version by default
-    # FIXME bind all of these mthods
     filter_method = CompatibilityManager.FILTER_FIRST
     verification_method = CompatibilityManager.verify
     cleanup_method = CompatibilityManager.cleanup
