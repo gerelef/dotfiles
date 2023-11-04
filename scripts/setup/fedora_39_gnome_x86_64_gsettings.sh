@@ -24,6 +24,49 @@ gsettings set org.gnome.settings-daemon.plugins.media-keys.custom-keybinding:/or
 gsettings set org.gnome.settings-daemon.plugins.media-keys.custom-keybinding:/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom1/ command 'gnome-system-monitor'
 gsettings set org.gnome.settings-daemon.plugins.media-keys.custom-keybinding:/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom1/ binding '<Shift><Control>Escape'
 ############################################################################################################################################
+FORGE="$HOME/.local/share/gnome-shell/extensions/forge@jmmaranan.com/schemas/"
+gsettings --schemadir $FORGE set org.gnome.shell.extensions.forge.keybindings prefs-tiling-toggle ['<Super>y']
+gsettings --schemadir $FORGE set org.gnome.shell.extensions.forge.keybindings con-split-horizontal "[]"
+gsettings --schemadir $FORGE set org.gnome.shell.extensions.forge.keybindings con-split-layout-toggle "[]"
+gsettings --schemadir $FORGE set org.gnome.shell.extensions.forge.keybindings con-split-vertical "[]"
+gsettings --schemadir $FORGE set org.gnome.shell.extensions.forge.keybindings con-stacked-layout-toggle "[]"
+gsettings --schemadir $FORGE set org.gnome.shell.extensions.forge.keybindings con-tabbed-layout-toggle "[]"
+gsettings --schemadir $FORGE set org.gnome.shell.extensions.forge.keybindings con-tabbed-showtab-decoration-toggle "[]"
+gsettings --schemadir $FORGE set org.gnome.shell.extensions.forge.keybindings focus-border-toggle "[]"
+gsettings --schemadir $FORGE set org.gnome.shell.extensions.forge.keybindings mod-mask-mouse-tile 'None'
+gsettings --schemadir $FORGE set org.gnome.shell.extensions.forge.keybindings prefs-open "[]"
+gsettings --schemadir $FORGE set org.gnome.shell.extensions.forge.keybindings window-focus-down "[]"
+gsettings --schemadir $FORGE set org.gnome.shell.extensions.forge.keybindings window-focus-left "[]"
+gsettings --schemadir $FORGE set org.gnome.shell.extensions.forge.keybindings window-focus-right "[]"
+gsettings --schemadir $FORGE set org.gnome.shell.extensions.forge.keybindings window-focus-up "[]"
+gsettings --schemadir $FORGE set org.gnome.shell.extensions.forge.keybindings window-gap-size-decrease "[]"
+gsettings --schemadir $FORGE set org.gnome.shell.extensions.forge.keybindings window-gap-size-increase "[]"
+gsettings --schemadir $FORGE set org.gnome.shell.extensions.forge.keybindings window-move-down "[]"
+gsettings --schemadir $FORGE set org.gnome.shell.extensions.forge.keybindings window-move-left "[]"
+gsettings --schemadir $FORGE set org.gnome.shell.extensions.forge.keybindings window-move-right "[]"
+gsettings --schemadir $FORGE set org.gnome.shell.extensions.forge.keybindings window-move-up "[]"
+gsettings --schemadir $FORGE set org.gnome.shell.extensions.forge.keybindings window-resize-bottom-decrease "[]"
+gsettings --schemadir $FORGE set org.gnome.shell.extensions.forge.keybindings window-resize-bottom-increase "[]"
+gsettings --schemadir $FORGE set org.gnome.shell.extensions.forge.keybindings window-resize-left-decrease "[]"
+gsettings --schemadir $FORGE set org.gnome.shell.extensions.forge.keybindings window-resize-left-increase "[]"
+gsettings --schemadir $FORGE set org.gnome.shell.extensions.forge.keybindings window-resize-right-decrease "[]"
+gsettings --schemadir $FORGE set org.gnome.shell.extensions.forge.keybindings window-resize-right-increase "[]"
+gsettings --schemadir $FORGE set org.gnome.shell.extensions.forge.keybindings window-resize-top-decrease "[]"
+gsettings --schemadir $FORGE set org.gnome.shell.extensions.forge.keybindings window-resize-top-increase "[]"
+gsettings --schemadir $FORGE set org.gnome.shell.extensions.forge.keybindings window-snap-center "[]"
+gsettings --schemadir $FORGE set org.gnome.shell.extensions.forge.keybindings window-snap-one-third-left "[]"
+gsettings --schemadir $FORGE set org.gnome.shell.extensions.forge.keybindings window-snap-one-third-right "[]"
+gsettings --schemadir $FORGE set org.gnome.shell.extensions.forge.keybindings window-snap-two-third-left "[]"
+gsettings --schemadir $FORGE set org.gnome.shell.extensions.forge.keybindings window-snap-two-third-right "[]"
+gsettings --schemadir $FORGE set org.gnome.shell.extensions.forge.keybindings window-swap-down "[]"
+gsettings --schemadir $FORGE set org.gnome.shell.extensions.forge.keybindings window-swap-last-active "[]"
+gsettings --schemadir $FORGE set org.gnome.shell.extensions.forge.keybindings window-swap-left "[]"
+gsettings --schemadir $FORGE set org.gnome.shell.extensions.forge.keybindings window-swap-right "[]"
+gsettings --schemadir $FORGE set org.gnome.shell.extensions.forge.keybindings window-swap-up "[]"
+gsettings --schemadir $FORGE set org.gnome.shell.extensions.forge.keybindings window-toggle-always-float "[]"
+gsettings --schemadir $FORGE set org.gnome.shell.extensions.forge.keybindings window-toggle-float "[]"
+gsettings --schemadir $FORGE set org.gnome.shell.extensions.forge.keybindings workspace-active-tile-toggle "[]"
+############################################################################################################################################
 /usr/bin/flatpak run --branch=stable --arch=x86_64 --command=gsettings com.raggesilver.BlackBox set com.raggesilver.BlackBox command-as-login-shell true
 /usr/bin/flatpak run --branch=stable --arch=x86_64 --command=gsettings com.raggesilver.BlackBox set com.raggesilver.BlackBox cursor-shape 1
 /usr/bin/flatpak run --branch=stable --arch=x86_64 --command=gsettings com.raggesilver.BlackBox set com.raggesilver.BlackBox custom-shell-command ''

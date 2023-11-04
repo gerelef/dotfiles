@@ -200,11 +200,12 @@ case "btrfs" in
 esac
 
 readonly GPU=$(lspci | grep -i vga | grep NVIDIA)
-if [ ! -z "$GPU" ]; then
+if [ ! -z "$GPU" && $(lsmod | grep nouveau) ]; then
     echo "-------------------INSTALLING NVIDIA DRIVERS----------------"
-    echo "Found NVIDIA GPU $GPU"
+    echo "Found NVIDIA GPU $GPU running with nouveau drivers"
     readonly BIOS_MODE=$([ -d /sys/firmware/efi ] && echo UEFI || echo BIOS)
-    if [[ "$BIOS_MODE" -eq "UEFI" ]]; then
+    if [[ "$BIOS_MODE" -eq "UEFI" && ! $(modinfo nvidia | grep sig_key) ]]; then
+        # if nvidia drivers are installed and not signed
         echo "Signing GPU drivers..."
         # https://blog.monosoul.dev/2022/05/17/automatically-sign-nvidia-kernel-module-in-fedora-36/
         kmodgenca -a
