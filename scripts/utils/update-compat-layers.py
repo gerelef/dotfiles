@@ -63,7 +63,7 @@ class CompatibilityManager(ut.Manager):
     def install(self, files: list[ut.Filename]):
         if not os.path.exists(self.install_dir):
             os.makedirs(self.install_dir)
-        tars = filter(lambda fn: "tar" in fn, files)
+        tars = list(map(lambda fn: os.path.join(self.download_dir, fn), filter(lambda fn: "tar" in fn, files)))
         for tarball in tars:
             command = ["tar", "-xPf", tarball, f"--directory={self.install_dir}"]
             if not ut.run_subprocess(command, cwd=self.download_dir):
