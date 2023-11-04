@@ -489,7 +489,8 @@ DEFAULT_ARGUMENTS = {
 }
 
 
-# TODO add compgen generator to use along with this (?)
+# TODO add ArgHandler so there's less ArgumentParser boilerplate in scripts...
+# TODO add compgen generator from ArgumentParser
 def get_default_argparser(description):
     import argparse as ap
     p = ap.ArgumentParser(description=description)
