@@ -397,11 +397,16 @@ class Manager(ABC):
         :raises requests.Timeout:
         :raises requests.TooManyRedirects:
         """
+        kilobytes_denominator = 1_000_000
         with open(filename, "wb") as out:
             for status, bread, btotal, data in self.provider.download(url):
                 if status.value == HTTPStatus.CLIENT_ERROR or status.value == HTTPStatus.SERVER_ERROR:
                     return status
-                self.log(Manager.Level.PROGRESS_BAR, f"\r{progress_bar(bread, btotal)} | {filename}")
+                self.log(Manager.Level.PROGRESS_BAR,
+                         f"\r{round(bread/kilobytes_denominator)}"
+                         f"/{round(btotal/kilobytes_denominator)} MB "
+                         f"| {round((bread / btotal) * 100, 1)}% | {filename}"
+                )
                 out.write(data)
             self.log(Manager.Level.PROGRESS_BAR, f"\n")
             return status
@@ -508,8 +513,3 @@ def euid_is_root() -> bool:
     """Returns True if script is running as root."""
     import os
     return os.geteuid() == 0
-
-
-def progress_bar(current, total) -> str:
-    """Return a simple percentage string."""
-    return f"{current}/{total} | {round((current / total) * 100, 2)}%"
