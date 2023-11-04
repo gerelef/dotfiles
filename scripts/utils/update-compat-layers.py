@@ -7,11 +7,10 @@ from dataclasses import dataclass
 
 import requests
 from typing import Any, Optional
-from update_utils import Manager, Exceptions, get_default_argparser, euid_is_root, run_subprocess, Filename, Release, \
-    URL
+import update_utils as ut
 
 
-class CompatibilityManager(Manager):
+class CompatibilityManager(ut.Manager):
     @dataclass
     class Filter:
         version: Optional[str] = None
@@ -19,14 +18,14 @@ class CompatibilityManager(Manager):
 
     SHA_CHECKSUM_REGEX = re.compile(r".*(sha[0-9][0-9]?[0-9]?sum)", flags=re.IGNORECASE & re.DOTALL)
 
-    def __init__(self, repository: URL, install_dir: Filename, temp_dir: Filename, _filter: Filter = Filter()):
+    def __init__(self, repository: ut.URL, install_dir: ut.Filename, temp_dir: ut.Filename, _filter: Filter = Filter()):
         super().__init__(repository, temp_dir)
         self.install_dir = install_dir
         self.keyword = _filter.keyword
         self.version = _filter.version
         self.last_msg_lvl = None
 
-    def filter(self, release: Release) -> bool:
+    def filter(self, release: ut.Release) -> bool:
         lower_tag_name = release.tag_name.lower()
 
         version_matches = True
@@ -39,39 +38,39 @@ class CompatibilityManager(Manager):
         return version_matches and keyword_matches
 
     # TODO create a specific function for each distinct repository required and assign to this
-    def get_assets(self, r: Release) -> dict[Filename, URL]:
+    def get_assets(self, r: ut.Release) -> dict[ut.Filename, ut.URL]:
         items = {}
         for fname, url in r.assets.items():
             if "tar" in fname or CompatibilityManager.SHA_CHECKSUM_REGEX.match(fname):
                 items[fname] = url
         return items
 
-    def verify(self, files: list[Filename]) -> bool:
+    def verify(self, files: list[ut.Filename]) -> bool:
         checksums = filter(lambda fn: bool(CompatibilityManager.SHA_CHECKSUM_REGEX.match(fn)), files)
         results: list[bool] = []
         for fname in checksums:
             # there should be only one match
             checksum_command = CompatibilityManager.SHA_CHECKSUM_REGEX.findall(fname)[0].lower()
             command = [checksum_command, "-c", fname]
-            results.append(run_subprocess(command, cwd=self.download_dir))
+            results.append(ut.run_subprocess(command, cwd=self.download_dir))
         return False not in results
 
-    def install(self, files: list[Filename]):
+    def install(self, files: list[ut.Filename]):
         if not os.path.exists(self.install_dir):
             os.makedirs(self.install_dir)
         tars = filter(lambda fn: "tar" in fn, files)
         for tarball in tars:
             command = ["tar", "-xPf", tarball, f"--directory={self.install_dir}"]
-            if not run_subprocess(command, cwd=self.download_dir):
+            if not ut.run_subprocess(command, cwd=self.download_dir):
                 raise RuntimeError(f"{' '.join(command)} errored! !")
 
-    def cleanup(self, files: list[Filename]):
+    def cleanup(self, files: list[ut.Filename]):
         for filename in files:
             real_path = os.path.join(self.download_dir, filename)
             if os.path.exists(real_path):
                 os.remove(real_path)
 
-    def log(self, level: Manager.Level, msg: str):
+    def log(self, level: ut.Manager.Level, msg: str):
         if level == level.PROGRESS_BAR:
             sys.stdout.write(msg)
             return
@@ -79,7 +78,7 @@ class CompatibilityManager(Manager):
 
 
 def create_argparser():
-    p = get_default_argparser("Download & extract latest version of the most popular game compatibility layers.")
+    p = ut.get_default_argparser("Download & extract latest version of the most popular game compatibility layers.")
     group = p.add_mutually_exclusive_group(required=True)
     group.add_argument(
         "--luxtorpeda",
@@ -185,7 +184,7 @@ def setup_argument_options(args: dict[str, Any]) -> CompatibilityManager:
     return manager
 
 
-if euid_is_root():
+if ut.euid_is_root():
     print("Do NOT run this script as root!", file=sys.stderr)
     exit(2)
 
@@ -215,13 +214,13 @@ if __name__ == "__main__":
     except KeyboardInterrupt:
         print("Aborted by user. Exiting...")
         exit(130)
-    except Exceptions.NoReleaseFound as e:
+    except ut.Exceptions.NoReleaseFound as e:
         print("Couldn't find a matching release! Exiting...", file=sys.stderr)
         exit(1)
-    except Exceptions.NoAssetsFound as e:
+    except ut.Exceptions.NoAssetsFound as e:
         print("Couldn't get assets from release! Exiting...", file=sys.stderr)
         exit(1)
-    except Exceptions.FileVerificationFailed as e:
+    except ut.Exceptions.FileVerificationFailed as e:
         print("Couldn't verify the downloaded files! Exiting...", file=sys.stderr)
         exit(1)
     except RuntimeError as e:
