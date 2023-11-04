@@ -5,9 +5,14 @@ import sys
 import types
 from dataclasses import dataclass
 
-import requests
 from typing import Any, Optional
 import update_utils as ut
+
+try:
+    import requests
+except NameError:
+    print("Couldn't find requests library! Is it installed in the current environment?", file=sys.stderr)
+    exit(1)
 
 
 class CompatibilityManager(ut.Manager):

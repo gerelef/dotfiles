@@ -1,14 +1,18 @@
 #!/usr/bin/env python3
-import os
 import enum
-import requests
-from argparse import ArgumentParser
-from datetime import datetime
-from re import search as regex_search
+import os
+import sys
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
-from typing import Generator, Sequence, Callable, Optional, TypeAlias, Self, Generic, TypeVar, Any
+from datetime import datetime
+from re import search as regex_search
+from typing import Generator, Sequence, Callable, Optional, TypeAlias, Self
 
+try:
+    import requests
+except NameError:
+    print("Couldn't find requests library! Is it installed in the current environment?", file=sys.stderr)
+    exit(1)
 
 # Writing boilerplate code to avoid writing boilerplate code!
 # https://stackoverflow.com/questions/32910096/is-there-a-way-to-auto-generate-a-str-implementation-in-python
