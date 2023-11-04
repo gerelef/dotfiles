@@ -210,6 +210,16 @@ if [ ! -z "$GPU" ]; then
         kmodgenca -a
         mokutil --import /etc/pki/akmods/certs/public_key.der
         echo "Finished signing GPU drivers. Make sure you Enroll MOK when you restart."
+        while : ; do
+            read -p "Do you want to restart now?[Y/n] " -n 1 -r
+            [[ ! $REPLY =~ ^[YyNn]$ ]] || break
+        done
+        
+        echo ""
+        if [[ $REPLY =~ ^[Yy]$ ]]; then
+            echo "OK."
+            exit 0
+        fi
     else
         echo "UEFI not found; please restart & use UEFI..."
     fi
