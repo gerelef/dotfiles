@@ -14,6 +14,7 @@ except NameError:
     print("Couldn't find requests library! Is it installed in the current environment?", file=sys.stderr)
     exit(1)
 
+
 # Writing boilerplate code to avoid writing boilerplate code!
 # https://stackoverflow.com/questions/32910096/is-there-a-way-to-auto-generate-a-str-implementation-in-python
 def auto_str(cls):
@@ -291,11 +292,12 @@ class GitHubProvider(Provider):
         with requests.get(url, verify=True, stream=True, allow_redirects=True) as req:
             if HTTPStatus.create(req.status_code) != HTTPStatus.SUCCESS:
                 yield HTTPStatus.create(req.status_code), -1, -1, None
-            total_bytes_read = int(req.headers.get('content-length'))
+            cl = req.headers.get('Content-Length')
+            total_bytes = int(cl if cl else 1)
             bread = 0
             for data in req.iter_content(chunk_size=chunk_size):
                 bread += len(data)
-                yield HTTPStatus.create(req.status_code), bread, total_bytes_read, data
+                yield HTTPStatus.create(req.status_code), bread, total_bytes, data
         return
 
 
@@ -407,10 +409,10 @@ class Manager(ABC):
                 if status.value == HTTPStatus.CLIENT_ERROR or status.value == HTTPStatus.SERVER_ERROR:
                     return status
                 self.log(Manager.Level.PROGRESS_BAR,
-                         f"\r{round(bread/kilobytes_denominator)}"
-                         f"/{round(btotal/kilobytes_denominator)} MB "
+                         f"\r{round(bread / kilobytes_denominator)}"
+                         f"/{round(btotal / kilobytes_denominator)} MB "
                          f"| {round((bread / btotal) * 100, 1)}% | {filename}"
-                )
+                         )
                 out.write(data)
             self.log(Manager.Level.PROGRESS_BAR, f"\n")
             return status
