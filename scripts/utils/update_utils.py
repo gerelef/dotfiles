@@ -317,17 +317,17 @@ class Manager(ABC):
         PROGRESS_BAR = 2
         PROGRESS = 1
 
-    def __init__(self, repository: URL, download_dir: Filename):
+    def __init__(self, repository: URL, temp_dir: Filename):
         """
         :param repository: direct URL to the repository to make requests
-        :param download_dir: download directory path
+        :param temp_dir: temporary download directory path
         :raises Provider.Exceptions.UnknownProviderException: raised if the repository provider is not supported
         :raises FileNotFoundError: raised if download_dir doesn't exist, or not enough permissions to execute os.stat(d)
         """
         self.repository = repository
         self.provider = ProviderFactory.create(repository)
 
-        self.download_dir = download_dir
+        self.download_dir = temp_dir
         if not os.path.exists(self.download_dir):
             raise FileNotFoundError(
                 f"Couldn't find, or not enough permissions to use os.stat(), on {self.download_dir}")
