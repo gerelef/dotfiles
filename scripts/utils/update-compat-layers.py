@@ -76,9 +76,15 @@ class CompatibilityManager(ut.Manager):
                 os.remove(real_path)
 
     def log(self, level: ut.Manager.Level, msg: str):
+        # print debug info into stderr
+        if level.value >= level.INFO:
+            print(msg, file=sys.stderr)
+            return
+
         if level == level.PROGRESS_BAR:
             sys.stdout.write(msg)
             return
+
         print(msg)
 
 
