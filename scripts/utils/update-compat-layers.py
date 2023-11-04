@@ -30,11 +30,11 @@ class CompatibilityManager(ut.Manager):
 
         version_matches = True
         if self.version:
-            version_matches = self.version not in lower_tag_name
+            version_matches = self.version in lower_tag_name
 
         keyword_matches = True
         if self.keyword:
-            keyword_matches = self.keyword not in lower_tag_name
+            keyword_matches = self.keyword in lower_tag_name
         return version_matches and keyword_matches
 
     # TODO create a specific function for each distinct repository required and assign to this
@@ -148,10 +148,10 @@ def setup_argument_options(args: dict[str, Any]) -> CompatibilityManager:
             case "luxtorpeda":
                 if args[arg]:
                     remote = LUXTORPEDA_GITHUB_RELEASES_URL
-                    verification_method = CompatibilityManager.DO_NOTHING
+                    verification_method = CompatibilityManager.VERIFY_NOTHING
             case "unsafe":
                 if args[arg]:
-                    verification_method = CompatibilityManager.DO_NOTHING
+                    verification_method = CompatibilityManager.VERIFY_NOTHING
             case "destination":
                 if args[arg]:
                     install_dir = os.path.abspath(os.path.expanduser(args[arg]))
