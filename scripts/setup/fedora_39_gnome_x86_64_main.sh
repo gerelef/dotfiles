@@ -203,12 +203,6 @@ readonly GPU=$(lspci | grep -i vga | grep NVIDIA)
 if [ ! -z "$GPU" ]; then
     echo "-------------------INSTALLING NVIDIA DRIVERS----------------"
     echo "Found NVIDIA GPU $GPU"
-    dnf-install "$INSTALLABLE_NVIDIA_DRIVERS"
-
-    akmods --force
-    dracut --force
-    
-    grubby --update-kernel=ALL --args="nvidia-drm.modeset=1"
     readonly BIOS_MODE=$([ -d /sys/firmware/efi ] && echo UEFI || echo BIOS)
     if [[ "$BIOS_MODE" -eq "UEFI" ]]; then
         echo "Signing GPU drivers..."
@@ -219,6 +213,12 @@ if [ ! -z "$GPU" ]; then
     else
         echo "UEFI not found; please restart & use UEFI..."
     fi
+    dnf-install "$INSTALLABLE_NVIDIA_DRIVERS"
+
+    akmods --force
+    dracut --force
+    
+    grubby --update-kernel=ALL --args="nvidia-drm.modeset=1"
 fi
 
 readonly CHASSIS_TYPE="$(dmidecode --string chassis-type)"
