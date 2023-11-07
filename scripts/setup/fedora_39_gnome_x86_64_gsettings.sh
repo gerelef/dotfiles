@@ -97,6 +97,30 @@ gsettings --schemadir $FORGE set org.gnome.shell.extensions.forge.keybindings wo
 /usr/bin/flatpak run --branch=stable --arch=x86_64 --command=gsettings com.raggesilver.BlackBox set com.raggesilver.BlackBox.terminal.search match-whole-words false
 /usr/bin/flatpak run --branch=stable --arch=x86_64 --command=gsettings com.raggesilver.BlackBox set com.raggesilver.BlackBox.terminal.search wrap-around true
 ############################################################################################################################################
+gsettings set org.gnome.nautilus.preferences show-create-link true
+gsettings set org.gnome.nautilus.preferences show-delete-permanently false
+gsettings set org.gnome.nautilus.preferences show-hidden-files true
+gsettings set org.gnome.nautilus.preferences recursive-search 'local-only'
+gsettings set org.gnome.nautilus.preferences mouse-use-extra-buttons false
+gsettings set org.gnome.nautilus.list-view default-zoom-level 'small'
+gsettings set org.gnome.nautilus.preferences default-folder-viewer 'list-view'
+############################################################################################################################################
+gsettings set org.gtk.Settings.FileChooser clock-format '24h'
+gsettings set org.gtk.Settings.FileChooser date-format 'regular'
+gsettings set org.gtk.Settings.FileChooser show-hidden true
+gsettings set org.gtk.Settings.FileChooser show-size-column true
+gsettings set org.gtk.Settings.FileChooser show-type-column true
+gsettings set org.gtk.Settings.FileChooser sort-directories-first true
+gsettings set org.gtk.Settings.FileChooser type-format 'category'
+gsettings set org.gtk.Settings.FileChooser sidebar-width 140
+gsettings set org.gtk.gtk4.Settings.FileChooser clock-format '24h'
+gsettings set org.gtk.gtk4.Settings.FileChooser date-format 'regular'
+gsettings set org.gtk.gtk4.Settings.FileChooser show-hidden true
+gsettings set org.gtk.gtk4.Settings.FileChooser sort-directories-first true
+gsettings set org.gtk.gtk4.Settings.FileChooser type-format 'category'
+gsettings set org.gtk.gtk4.Settings.FileChooser view-type 'list'
+gsettings set org.gtk.gtk4.Settings.FileChooser sort-directories-first true
+############################################################################################################################################
 gsettings set org.gnome.desktop.wm.keybindings activate-window-menu "['Menu']"
 gsettings set org.gnome.desktop.wm.keybindings always-on-top  "[]"
 gsettings set org.gnome.desktop.wm.keybindings begin-move  "[]"
