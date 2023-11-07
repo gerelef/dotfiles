@@ -218,7 +218,6 @@ copy-ff-rc-files () (
 
     for MZL_PROF_DIR in $PROFPATH; do
         MZL_PROF_DIR_ABSOLUTE="$MZL_ROOT/$MZL_PROF_DIR"
-        MZL_PROF_CHROME_DIR_ABSOLUTE="$MZL_PROF_DIR_ABSOLUTE/chrome"
 
         # preference rc
         ln -sf "$RC_MZL_DIR/user.js" "$MZL_PROF_DIR_ABSOLUTE/user.js"
