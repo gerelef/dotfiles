@@ -349,7 +349,7 @@ echo "https://www.suse.com/support/kb/doc/?id=000017060"
 while : ; do
     change-ownership-recursive "$MZL_ROOT"
     read -p "Please run firefox as a user to create it's configuration directories; let it load fully, then close it.[Y/n] " -n 1 -r
-    [[ ! $REPLY =~ ^[YyNn]$ ]] || break
+    
     echo ""
     if [[ $REPLY =~ ^[Yy]$ ]]; then
         copy-ff-rc-files
