@@ -319,7 +319,7 @@ if [[ $REPLY =~ ^[Yy]$ ]]; then
     echo "Finished installing IDEs."
     echo "-------------------INSTALLING JETBRAINS TOOLBOX----------------"
     readonly curlsum=$(curl -fsSL https://raw.githubusercontent.com/nagygergo/jetbrains-toolbox-install/master/jetbrains-toolbox.sh | sha512sum -)
-    readonly validsum="9f7b643574de3990ad9afc50d1f82e731c6712c56b7adc91573b639f9322346aa217bdd0005724bc70164274202d617a289f0c7a74be3bd3f5a89d0b2fef3cb7  -"
+    readonly validsum="7eb50db1e6255eed35b27c119463513c44aee8e06f3014609a410033f397d2fd81d2605e4e5c243b1087a6c23651f6b549a7c4ee386d50a22cc9eab9e33c612e  -"
     if [[ "$validsum" == "$curlsum" ]]; then
         curl -fsSL https://raw.githubusercontent.com/nagygergo/jetbrains-toolbox-install/master/jetbrains-toolbox.sh | bash
     else
@@ -350,6 +350,11 @@ while : ; do
     change-ownership-recursive "$MZL_ROOT"
     read -p "Please run firefox as a user to create it's configuration directories; let it load fully, then close it.[Y/n] " -n 1 -r
     [[ ! $REPLY =~ ^[YyNn]$ ]] || break
+    echo ""
+    if [[ $REPLY =~ ^[Yy]$ ]]; then
+        copy-ff-rc-files
+        echo "Done."
+    fi
 done
 
 #######################################################################################################
@@ -360,7 +365,6 @@ copy-pipewire
 create-private-bashrc
 create-private-gitconfig
 copy-rc-files
-copy-ff-rc-files
 
 echo "Done."
 
