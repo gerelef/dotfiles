@@ -179,9 +179,14 @@ systemctl enable fstrim.timer
 #######################################################################################################
 dnf-update-refresh
 
-fwupdmgr refresh --force -y
-fwupdmgr get-updates -y
-fwupdmgr update -y
+if [[ "$BIOS_MODE" -eq "UEFI" ]]; then
+    echo "Updating UEFI with fwupdmgr..."
+    fwupdmgr refresh --force -y
+    fwupdmgr get-updates -y
+    fwupdmgr update -y
+else
+    echo 'UEFI not found!'
+fi
 
 #######################################################################################################
 
