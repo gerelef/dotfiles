@@ -370,8 +370,6 @@ lower-swappiness
 echo "Lowered swappiness."
 raise-user-watches
 echo "Raised user watches."
-raise-memory-map-counts 
-echo "Raised memory map counts."
 cap-nproc-count
 echo "Capped maximum number of processes."
 cap-max-logins-system
