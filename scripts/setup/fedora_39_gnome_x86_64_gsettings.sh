@@ -231,7 +231,6 @@ gsettings set org.gnome.TextEditor right-margin-position 80
 gsettings set org.gnome.TextEditor show-line-numbers true
 gsettings set org.gnome.TextEditor show-map true
 gsettings set org.gnome.TextEditor spellcheck false
-gsettings set org.gnome.TextEditor style-scheme 'classic'
 gsettings set org.gnome.TextEditor tab-width 4
 gsettings set org.gnome.TextEditor use-system-font true
 gsettings set org.gnome.TextEditor wrap-text false
