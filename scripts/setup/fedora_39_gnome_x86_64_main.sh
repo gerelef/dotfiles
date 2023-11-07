@@ -230,7 +230,8 @@ if [[ ! -z "$GPU" && $(lsmod | grep nouveau) ]]; then
         echo "UEFI not found; please restart & use UEFI..."
     fi
     dnf-install "$INSTALLABLE_NVIDIA_DRIVERS"
-
+    dnf remove -y "xorg-x11-drv-nvidia-power"
+    
     akmods --force
     dracut --force
     
