@@ -104,6 +104,10 @@ com.github.tchx84.Flatseal \
 
 readonly INSTALLABLE_EXTENSIONS="\
 gnome-shell-extension-places-menu \
+gnome-shell-extension-forge \
+gnome-shell-extension-dash-to-panel \
+gnome-extensions-app \
+f$(rpm -E %fedora)-backgrounds-extras-gnome \
 "
 
 readonly INSTALLABLE_BTRFS_TOOLS="\
@@ -415,10 +419,6 @@ fi
 echo "--------------------------- GNOME ---------------------------"
 echo "Make sure to get the legacy GTK3 Theme Auto Switcher"
 echo "  https://extensions.gnome.org/extension/4998/legacy-gtk3-theme-scheme-auto-switcher/"
-echo "Make sure to get Dash to Panel"
-echo "  https://extensions.gnome.org/extension/1160/dash-to-panel/"
-echo "Make sure to get Forge, the GNOME Tiling Manager"
-echo "  https://extensions.gnome.org/extension/4481/forge/"
 echo "--------------------------- FSTAB ---------------------------"
 echo "Remember to add a permanent mount point for permanently mounted partitions."
 echo "Standard fstab USER mount arguments:"
