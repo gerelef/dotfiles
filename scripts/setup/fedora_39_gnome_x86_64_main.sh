@@ -16,9 +16,6 @@ if ! ping -q -c 1 -W 1 google.com > /dev/null; then
     exit 1
 fi
 
-# there should be a matching change-ownership-recursive after everything's done in the script
-mkdir -p "$MZL_ROOT" "$SSH_ROOT" "$BIN_ROOT" "$WRK_ROOT" "$SMR_ROOT" "$RND_ROOT"
-
 # fs thingies
 readonly ROOT_FS=$(stat -f --format=%T /)
 readonly REAL_USER_HOME_FS=$(stat -f --format=%T "$REAL_USER_HOME")
@@ -205,7 +202,7 @@ case "btrfs" in
 esac
 
 readonly GPU=$(lspci | grep -i vga | grep NVIDIA)
-if [ ! -z "$GPU" && $(lsmod | grep nouveau) ]; then
+if [[ ! -z "$GPU" && $(lsmod | grep nouveau) ]]; then
     echo "-------------------INSTALLING NVIDIA DRIVERS----------------"
     echo "Found NVIDIA GPU $GPU running with nouveau drivers"
     readonly BIOS_MODE=$([ -d /sys/firmware/efi ] && echo UEFI || echo BIOS)
@@ -255,10 +252,10 @@ echo "-------------------INSTALLING CODECS / H/W VIDEO ACCELERATION-------------
 
 # based on https://github.com/devangshekhawat/Fedora-39-Post-Install-Guide
 dnf-groupupdate 'core' 'multimedia' 'sound-and-video' --setop='install_weak_deps=False' --exclude='PackageKit-gstreamer-plugin' --allowerasing && sync
-dnf swap 'ffmpeg-free' 'ffmpeg' --allowerasing
-dnf-install "gstreamer1-plugins-{bad-\*,good-\*,base}" "gstreamer1-plugin-openh264" "gstreamer1-libav" "--exclude=gstreamer1-plugins-bad-free-devel" "ffmpeg" "gstreamer-ffmpeg"
-dnf-install "lame\*" "--exclude=lame-devel"
-dnf-install-group "--with-optional Multimedia"
+dnf install -y --best --allowerasing gstreamer1-plugins-{bad-\*,good-\*,base}
+dnf install -y --best --allowerasing lame\* --exclude=lame-devel
+dnf-install "gstreamer1-plugin-openh264" "gstreamer1-libav" "--exclude=gstreamer1-plugins-bad-free-devel" "ffmpeg" "gstreamer-ffmpeg"
+dnf groupinstall -y --best --allowerasing --with-optional "Multimedia"
 
 dnf-install "ffmpeg" "ffmpeg-libs" "libva" "libva-utils"
 dnf config-manager --set-enabled fedora-cisco-openh264
@@ -302,8 +299,6 @@ echo ""
 if [[ $REPLY =~ ^[Yy]$ ]]; then
     echo "Installing tools for Wine..."
     dnf-install "$INSTALLABLE_WINE_GE_CUSTOM_PKGS"
-    dnf-install-group "C Development Tools and Libraries"
-    dnf-install-group "Development Tools"
     echo "Done."
 fi
 
@@ -315,14 +310,14 @@ done
 
 echo ""
 if [[ $REPLY =~ ^[Yy]$ ]]; then
-    flatpak-install "$INSTALLABLE_IDE_FLATPAKS"
-    echo "Finished installing IDEs."
+    dnf groupinstall -y --best --allowerasing "C Development Tools and Libraries"
+    dnf groupinstall -y --best --allowerasing "Development Tools"
 
     dnf copr enable -y zeno/scrcpy
     dnf-install "$INSTALLABLE_DEV_PKGS"
-
-    dnf-install-group "C Development Tools and Libraries"
-    dnf-install-group "Development Tools"
+    
+    flatpak-install "$INSTALLABLE_IDE_FLATPAKS"
+    echo "Finished installing IDEs."
     echo "-------------------INSTALLING JETBRAINS TOOLBOX----------------"
     readonly curlsum=$(curl -fsSL https://raw.githubusercontent.com/nagygergo/jetbrains-toolbox-install/master/jetbrains-toolbox.sh | sha512sum -)
     readonly validsum="9f7b643574de3990ad9afc50d1f82e731c6712c56b7adc91573b639f9322346aa217bdd0005724bc70164274202d617a289f0c7a74be3bd3f5a89d0b2fef3cb7  -"
@@ -353,6 +348,7 @@ fi
 
 echo "https://www.suse.com/support/kb/doc/?id=000017060"
 while : ; do
+    change-ownership-recursive "$MZL_ROOT"
     read -p "Please run firefox as a user to create it's configuration directories; let it load fully, then close it.[Y/n] " -n 1 -r
     [[ ! $REPLY =~ ^[YyNn]$ ]] || break
 done
@@ -390,11 +386,6 @@ ssh-keygen -t rsa -b 4096 -C "$REAL_USER@$DISTRIBUTION_NAME" -f "$SSH_ROOT/id_rs
 
 #######################################################################################################
 
-#matching the mkdir
-change-ownership-recursive "$MZL_ROOT" "$SSH_ROOT" "$BIN_ROOT" "$WRK_ROOT" "$SMR_ROOT" "$RND_ROOT"
-
-#######################################################################################################
-
 echo 'GRUB_HIDDEN_TIMEOUT=0' >> /etc/default/grub
 echo 'GRUB_HIDDEN_TIMEOUT_QUIET=true' >> /etc/default/grub
 
@@ -402,7 +393,7 @@ echo 'GRUB_HIDDEN_TIMEOUT_QUIET=true' >> /etc/default/grub
 
 systemctl restart NetworkManager
 timedatectl set-local-rtc '0' # for fixing dual boot time inconsistencies
-hostnamectl hostname "$DISTRIBUTION_NAME$(rpm -E %fedora)"
+hostnamectl hostname "$DISTRIBUTION_NAME$(rpm -E %fedora)" # FIXME
 # if the statement below doesnt work, check this out
 #  https://old.reddit.com/r/linuxhardware/comments/ng166t/s3_deep_sleep_not_working/
 systemctl disable NetworkManager-wait-online.service # stop network manager from waiting until online, improves boot times
@@ -410,13 +401,13 @@ rm /etc/xdg/autostart/org.gnome.Software.desktop # stop this from updating in th
 
 updatedb 2> /dev/null
 if ! [ $? -eq 0 ]; then
-    echo "Couldn't updatedb, retrying with absolute path"
+    echo "updatedb errored, retrying with absolute path"
     /usr/sbin/updatedb
 fi
 
 #######################################################################################################
 echo "--------------------------- GNOME ---------------------------"
-echo "Make sure to get the legacy (GTK3) Theme Auto Switcher"
+echo "Make sure to get the legacy GTK3 Theme Auto Switcher"
 echo "  https://extensions.gnome.org/extension/4998/legacy-gtk3-theme-scheme-auto-switcher/"
 echo "Make sure to get Dash to Panel"
 echo "  https://extensions.gnome.org/extension/1160/dash-to-panel/"
@@ -442,3 +433,9 @@ echo "If this is the case, make permanent by appending this line in /etc/fstab:"
 echo "  /swapfile swap swap defaults 0 0"
 echo "------------------------------------------------------"
 echo "Make sure to restart your PC after making all the necessary adjustments."
+
+#######################################################################################################
+
+# everything in home should be owned by the user and in the user's group
+chown -R "$REAL_USER" "$REAL_USER_HOME"
+chgrp -R "$REAL_USER" "$REAL_USER_HOME"

@@ -25,12 +25,17 @@ readonly CONFIG_DIR=$(realpath -s "$SCRIPT_DIR/../../.config")
 readonly RC_MZL_DIR="$CONFIG_DIR/mozilla"
 
 # home directories to create
+readonly PPW_ROOT="$REAL_USER_HOME/.config/pipewire/"
 readonly MZL_ROOT="$REAL_USER_HOME/.mozilla/firefox"
 readonly SSH_ROOT="$REAL_USER_HOME/.ssh"
 readonly BIN_ROOT="$REAL_USER_HOME/bin"
 readonly WRK_ROOT="$REAL_USER_HOME/work"
 readonly SMR_ROOT="$REAL_USER_HOME/seminar"
 readonly RND_ROOT="$REAL_USER_HOME/random"
+
+# there should be a matching change-ownership-recursive after everything's done in the script
+#  since everything here will be owned by "root" 
+mkdir -p "$PPW_ROOT" "$MZL_ROOT" "$SSH_ROOT" "$BIN_ROOT" "$WRK_ROOT" "$SMR_ROOT" "$RND_ROOT"
 
 dnf-install () (
     [[ $# -eq 0 ]] && return 2
@@ -42,7 +47,10 @@ dnf-install () (
     echo "Finished installing."
 )
 
+# DEPRECATED!!!
+# NOTE: This is here for legacy reasons! DO NOT USE! Reason: genuinely terrible.
 dnf-install-group () (
+    echo "USING DEPRECATED SUBSHELL FUNCTION dnf-install-group! DO NOT USE\!\!\!"
     [[ $# -eq 0 ]] && return 2
     
     echo "-------------------DNF-GROUP-INSTALL---------------- $*" | tr " " "\n"
@@ -112,7 +120,7 @@ copy-dnf () (
     chmod 644 "/etc/dnf/dnf.conf"
 )
 
-copy-pipewire () (
+copy-pipewire () (    
     ln -sf "$CONFIG_DIR/pipewire.conf" "$REAL_USER_HOME/.config/pipewire/pipewire.conf"
     change-ownership "$REAL_USER_HOME/.config/pipewire/pipewire.conf"
 )
