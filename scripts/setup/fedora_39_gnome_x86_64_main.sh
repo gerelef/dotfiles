@@ -321,7 +321,9 @@ if [[ $REPLY =~ ^[Yy]$ ]]; then
     readonly curlsum=$(curl -fsSL https://raw.githubusercontent.com/nagygergo/jetbrains-toolbox-install/master/jetbrains-toolbox.sh | sha512sum -)
     readonly validsum="7eb50db1e6255eed35b27c119463513c44aee8e06f3014609a410033f397d2fd81d2605e4e5c243b1087a6c23651f6b549a7c4ee386d50a22cc9eab9e33c612e  -"
     if [[ "$validsum" == "$curlsum" ]]; then
-        curl -fsSL https://raw.githubusercontent.com/nagygergo/jetbrains-toolbox-install/master/jetbrains-toolbox.sh | bash
+        # we're overriding $HOME for this script since it doesn't know we're running as root
+        #  and looks for $HOME, ruining everything in whatever "$HOME/.local/share/JetBrains/Toolbox/bin" and "$HOME/.local/bin" resolve into
+        (HOME="$REAL_USER_HOME" && curl -fsSL https://raw.githubusercontent.com/nagygergo/jetbrains-toolbox-install/master/jetbrains-toolbox.sh | bash)
     else
         echo "sha512sum mismatch"
     fi
@@ -354,6 +356,7 @@ while : ; do
     if [[ $REPLY =~ ^[Yy]$ ]]; then
         copy-ff-rc-files
         echo "Done."
+        break
     fi
 done
 
