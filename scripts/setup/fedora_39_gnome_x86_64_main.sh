@@ -176,6 +176,7 @@ systemctl enable fstrim.timer
 #######################################################################################################
 dnf-update-refresh
 
+readonly BIOS_MODE=$([ -d /sys/firmware/efi ] && echo UEFI || echo BIOS)
 if [[ "$BIOS_MODE" -eq "UEFI" ]]; then
     echo "Updating UEFI with fwupdmgr..."
     fwupdmgr refresh --force -y
@@ -205,21 +206,19 @@ readonly GPU=$(lspci | grep -i vga | grep NVIDIA)
 if [[ ! -z "$GPU" && $(lsmod | grep nouveau) ]]; then
     echo "-------------------INSTALLING NVIDIA DRIVERS----------------"
     echo "Found NVIDIA GPU $GPU running with nouveau drivers"
-    readonly BIOS_MODE=$([ -d /sys/firmware/efi ] && echo UEFI || echo BIOS)
-    if [[ "$BIOS_MODE" -eq "UEFI" && ! $(modinfo nvidia | grep sig_key) ]]; then
-        # if nvidia drivers are installed and not signed
-        echo "Signing GPU drivers..."
+    if [[ "$BIOS_MODE" -eq "UEFI" ]]; then
         # https://blog.monosoul.dev/2022/05/17/automatically-sign-nvidia-kernel-module-in-fedora-36/
-        kmodgenca -a
-        mokutil --import /etc/pki/akmods/certs/public_key.der
-        echo "Finished signing GPU drivers. Make sure you Enroll MOK when you restart."
         while : ; do
-            read -p "Do you want to restart now?[Y/n] " -n 1 -r
+            read -p "Do you want to enroll MOK and restart?[Y/n] " -n 1 -r
             [[ ! $REPLY =~ ^[YyNn]$ ]] || break
         done
         
         echo ""
         if [[ $REPLY =~ ^[Yy]$ ]]; then
+            echo "Signing GPU drivers..."
+            kmodgenca -a
+            mokutil --import /etc/pki/akmods/certs/public_key.der
+            echo "Finished signing GPU drivers. Make sure you Enroll MOK when you restart."
             echo "OK."
             exit 0
         fi
@@ -393,7 +392,7 @@ echo 'GRUB_HIDDEN_TIMEOUT_QUIET=true' >> /etc/default/grub
 
 systemctl restart NetworkManager
 timedatectl set-local-rtc '0' # for fixing dual boot time inconsistencies
-hostnamectl hostname "$DISTRIBUTION_NAME$(rpm -E %fedora)" # FIXME
+hostnamectl hostname "$DISTRIBUTION_NAME$(rpm -E %fedora)"
 # if the statement below doesnt work, check this out
 #  https://old.reddit.com/r/linuxhardware/comments/ng166t/s3_deep_sleep_not_working/
 systemctl disable NetworkManager-wait-online.service # stop network manager from waiting until online, improves boot times
@@ -437,5 +436,5 @@ echo "Make sure to restart your PC after making all the necessary adjustments."
 #######################################################################################################
 
 # everything in home should be owned by the user and in the user's group
-chown -R "$REAL_USER" "$REAL_USER_HOME"
-chgrp -R "$REAL_USER" "$REAL_USER_HOME"
+change-ownership-recursive "$REAL_USER_HOME"
+change-group-recursive "$REAL_USER_HOME"

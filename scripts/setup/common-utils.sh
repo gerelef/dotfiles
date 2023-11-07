@@ -114,6 +114,20 @@ change-ownership-recursive () (
     chmod -R 700 "$@"
 )
 
+change-group () (
+    [[ $# -eq 0 ]] && return 2
+    [[ -z "$REAL_USER" ]] && return 2
+    
+    chgrp "$REAL_USER" "$@"
+)
+
+change-group-recursive () (
+    [[ $# -eq 0 ]] && return 2
+    [[ -z "$REAL_USER" ]] && return 2
+    
+    chgrp -R "$REAL_USER" "$@"
+)
+
 copy-dnf () (
     command cp -r "$CONFIG_DIR/dnf.conf" "/etc/dnf/dnf.conf"
     chown root "/etc/dnf/dnf.conf"
@@ -121,8 +135,8 @@ copy-dnf () (
 )
 
 copy-pipewire () (    
-    ln -sf "$CONFIG_DIR/pipewire.conf" "$REAL_USER_HOME/.config/pipewire/pipewire.conf"
-    change-ownership "$REAL_USER_HOME/.config/pipewire/pipewire.conf"
+    ln -sf "$CONFIG_DIR/pipewire.conf" "$PPW/pipewire.conf"
+    change-ownership "$PPW/pipewire.conf"
 )
 
 # man 5 sysctl.d
@@ -168,6 +182,7 @@ create-convenience-sudoers () (
 create-private-bashrc () (
     touch "$REAL_USER_HOME/.bashrc-private"
     change-ownership "$REAL_USER_HOME/.bashrc-private"
+    change-group "$REAL_USER_HOME/.bashrc-private"
 )
 
 create-private-gitconfig () (
@@ -178,6 +193,10 @@ create-private-gitconfig () (
     change-ownership "$REAL_USER_HOME/.gitconfig-github"
     change-ownership "$REAL_USER_HOME/.gitconfig-gitlab"
     change-ownership "$REAL_USER_HOME/.gitconfig-gnome"
+    
+    change-group "$REAL_USER_HOME/.gitconfig-github"
+    change-group "$REAL_USER_HOME/.gitconfig-gitlab"
+    change-group "$REAL_USER_HOME/.gitconfig-gnome"
 )
 
 copy-rc-files () (
@@ -186,6 +205,7 @@ copy-rc-files () (
     ln -sf "$RC_DIR/.nanorc" "$REAL_USER_HOME/.nanorc"
     ln -sf "$CONFIG_DIR/.gitconfig" "$REAL_USER_HOME/.gitconfig"
     change-ownership "$REAL_USER_HOME/.vimrc" "$REAL_USER_HOME/.bashrc" "$REAL_USER_HOME/.nanorc" "$REAL_USER_HOME/.gitconfig"
+    change-group "$REAL_USER_HOME/.vimrc" "$REAL_USER_HOME/.bashrc" "$REAL_USER_HOME/.nanorc" "$REAL_USER_HOME/.gitconfig"
 )
 
 copy-ff-rc-files () (
@@ -203,6 +223,7 @@ copy-ff-rc-files () (
         # preference rc
         ln -sf "$RC_MZL_DIR/user.js" "$MZL_PROF_DIR_ABSOLUTE/user.js"
         change-ownership "$MZL_PROF_DIR_ABSOLUTE/user.js"
+        change-group "$MZL_PROF_DIR_ABSOLUTE/user.js"
     done
 )
 
