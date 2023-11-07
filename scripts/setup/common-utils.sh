@@ -135,7 +135,7 @@ copy-dnf () (
 )
 
 copy-pipewire () (    
-    ln -sf "$CONFIG_DIR/pipewire.conf" "$PPW/pipewire.conf"
+    ln -sf "$CONFIG_DIR/pipewire.conf" "$PPW_ROOT/pipewire.conf"
     change-ownership "$PPW/pipewire.conf"
 )
 
