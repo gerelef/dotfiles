@@ -443,5 +443,5 @@ echo "Make sure to restart your PC after making all the necessary adjustments."
 #######################################################################################################
 
 # everything in home should be owned by the user and in the user's group
-change-ownership-recursive "$REAL_USER_HOME"
-change-group-recursive "$REAL_USER_HOME"
+change-ownership-recursive "$REAL_USER_HOME" 2> /dev/null
+change-group-recursive "$REAL_USER_HOME" 2> /dev/null
