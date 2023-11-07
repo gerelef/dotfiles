@@ -247,7 +247,7 @@ fi
 
 echo "Done."
 
-echo "-------------------INSTALLING CODECS / H/W VIDEO ACCELERATION----------------" | tr " " "\n"
+echo "-------------------INSTALLING CODECS / H/W VIDEO ACCELERATION----------------"
 
 # based on https://github.com/devangshekhawat/Fedora-39-Post-Install-Guide
 dnf-groupupdate 'core' 'multimedia' 'sound-and-video' --setop='install_weak_deps=False' --exclude='PackageKit-gstreamer-plugin' --allowerasing && sync
