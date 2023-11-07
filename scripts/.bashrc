@@ -312,7 +312,7 @@ require-pip () {
 
     # source the file & delete
     source "$vpip_fname"
-    # FIXME rm "$vpip_fname"
+    rm "$vpip_fname"
 }
 
 require-pip
