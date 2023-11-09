@@ -1,13 +1,13 @@
 
 [submodule ".csgorc"]
-	path = .csgorc
+	path = games/cs2
 	url = git@github.com:gerelef/csgorc.git
 	branch = master
 [submodule ".insurc"]
-	path = .insurc
+	path = games/insurgency
 	url = git@github.com:gerelef/insurc.git
     branch = master
 [submodule ".chess"]
-	path = .chess
+	path = games/chess
 	url = git@github.com:gerelef/chess-preparation.git
     branch = master
