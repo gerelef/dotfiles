@@ -11,7 +11,7 @@ There is no particular philosophy to these configuration files, it's all persona
     - `mozilla/` contains firefox specific configuration files & themes. [mono-firefox-theme](https://github.com/witalihirsch/Mono-firefox-theme) is an external dependency & as such is not included in this repository. It should be automatically installed by the appropriate distribution setup script.
     - `alacritty/` contains configuration files for the Alacritty terminal emulator.
     - `gnome-extensions/` contains configuration files for specific gnome extensions.
-- `man/man*` contains manual pages, authored in `Markdown`, converted to manpages through `ronn`. They describe things that I need to look once in a time, and some information outsiders might find useful as well. The package for `ronn` in fedora flavours is `rubygem-ronn-ng`.
+- `.manpages/man*` contains manual pages, authored in `Markdown`, converted to manpages through `ronn`. They describe things that I need to look once in a time, and some information outsiders might find useful as well. The package for `ronn` in fedora flavours is `rubygem-ronn-ng`.
 
 ### Submodules
 - `games/cs2/` contains [CS:GO](https://store.steampowered.com/app/730/CounterStrike_Global_Offensive/) specific configuration files, located in another github submodule. This is not something I use in each & every machine, so I thought it'd better not be inside the "root" `dotfile` directory.
