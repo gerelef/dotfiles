@@ -17,7 +17,7 @@ readonly HAS_RUN_KSH_FILE="$DOTFILES_DIR/.has-run-ksh"
 
 # EXPORTS
 # https://unix.stackexchange.com/questions/90759/where-should-i-install-manual-pages-in-user-directory
-export MANPATH="$MANPATH:$DOTFILES_DIR/man"
+export MANPATH="$MANPATH:$DOTFILES_DIR/.manpages"
 export DOTNET_CLI_TELEMETRY_OPTOUT=1
 export HISTFILESIZE=100000
 export HISTSIZE=10000
