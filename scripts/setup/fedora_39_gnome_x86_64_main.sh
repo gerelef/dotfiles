@@ -76,6 +76,7 @@ powertop \
 readonly UNINSTALLABLE_BLOAT="\
 rhythmbox* \
 totem \
+cheese \
 gnome-tour \
 gnome-terminal \
 gnome-terminal-* \
@@ -88,6 +89,7 @@ gnome-maps* \
 "
 
 readonly INSTALLABLE_FLATPAKS="\
+org.gnome.Snapshot \
 com.spotify.Client \
 com.raggesilver.BlackBox \
 de.haeckerfelix.Fragments \
