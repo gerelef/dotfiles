@@ -97,6 +97,11 @@ Filename: TypeAlias = str
 URL: TypeAlias = str
 
 
+def get_request(url: URL, *args, **kwargs):
+    version_header = { "X-GitHub-Api-Version" : "2022-11-28" }
+    return requests.get(url, verify=True, allow_redirects=True, headers=version_header, *args, **kwargs)
+
+
 @auto_str
 @auto_eq
 @dataclass
@@ -250,7 +255,7 @@ class GitHubProvider(Provider):
     def recurse_releases(self, url: URL) -> Generator[tuple[HTTPStatus, Release | None], None, None]:
         while True:
             try:
-                with requests.get(url, allow_redirects=True, verify=True) as req:
+                with get_request(url) as req:
                     status = HTTPStatus.create(req.status_code)
                     if HTTPStatus.create(req.status_code) != HTTPStatus.SUCCESS:
                         yield status, None
@@ -289,7 +294,7 @@ class GitHubProvider(Provider):
         return None
 
     def download(self, url: URL, chunk_size=1024 * 1024) -> Generator[tuple[HTTPStatus, int, int, bytes | None], None, None]:
-        with requests.get(url, verify=True, stream=True, allow_redirects=True) as req:
+        with get_request(url, stream=True) as req:
             if HTTPStatus.create(req.status_code) != HTTPStatus.SUCCESS:
                 yield HTTPStatus.create(req.status_code), -1, -1, None
             cl = req.headers.get('Content-Length')
