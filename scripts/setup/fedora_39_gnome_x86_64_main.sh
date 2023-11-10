@@ -16,6 +16,13 @@ if ! ping -q -c 1 -W 1 google.com > /dev/null; then
     exit 1
 fi
 
+apply-wayland-gdm-patch () (
+    # this is an obscure bug where Wayland is skipped (often on NVIDIA machines, but not confirmed!)
+    #  due to a condition not being met, see journalctl for:
+    #  GNOME Shell on Wayland was skipped because of an unmet condition check (ConditionEnvironment=XDG_SESSION_TYPE=wayland)
+    mv /run/gdm/custom.conf /run/gdm/Xcustom.conf 
+)
+
 # fs thingies
 readonly ROOT_FS=$(stat -f --format=%T /)
 readonly REAL_USER_HOME_FS=$(stat -f --format=%T "$REAL_USER_HOME")
@@ -141,10 +148,13 @@ com.visualstudio.code \
 "
 
 readonly INSTALLABLE_NVIDIA_DRIVERS="\
+gcc \
 kernel-headers \
 kernel-devel \
 akmod-nvidia \
 xorg-x11-drv-nvidia \
+xorg-x11-drv-nvidia-libs \ 
+xorg-x11-drv-nvidia-libs.i686 \
 xorg-x11-drv-nvidia-cuda \
 "
 
@@ -232,10 +242,11 @@ if [[ ! -z "$GPU" && $(lsmod | grep nouveau) ]]; then
     fi
     dnf-install "$INSTALLABLE_NVIDIA_DRIVERS" --exclude="xorg-x11-drv-nvidia-power"
     
-    akmods --force
-    dracut --force
+    akmods --force && dracut --force
+    apply-wayland-gdm-patch
     
-    grubby --update-kernel=ALL --args="nvidia-drm.modeset=1"
+    # check arch wiki, these enable DRM
+    grubby --update-kernel=ALL --args="nvidia-drm.modeset=1 nvidia-drm.fbdev=1"
 fi
 
 readonly CHASSIS_TYPE="$(dmidecode --string chassis-type)"
@@ -397,6 +408,7 @@ ssh-keygen -t rsa -b 4096 -C "$REAL_USER@$DISTRIBUTION_NAME" -f "$SSH_ROOT/id_rs
 
 #######################################################################################################
 
+# FIXME Add guards!
 echo 'GRUB_HIDDEN_TIMEOUT=0' >> /etc/default/grub
 echo 'GRUB_HIDDEN_TIMEOUT_QUIET=true' >> /etc/default/grub
 
