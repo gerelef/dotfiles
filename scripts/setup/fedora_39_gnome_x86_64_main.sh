@@ -127,6 +127,7 @@ timeshift \
 readonly INSTALLABLE_EXTRAS="\
 mixxx \
 steam \
+gamescope \
 "
 
 readonly INSTALLABLE_EXTRAS_FLATPAK="\
@@ -177,7 +178,10 @@ echo "Done."
 
 #######################################################################################################
 
+# for some reason this repository is added on every new install, i dont' care i have toolbox wtf
 dnf copr remove -y --skip-broken phracek/PyCharm
+# i don't want google chrome ma boi please stahp
+dnf config-manager --set-disabled google-chrome 
 dnf-install "https://download1.rpmfusion.org/free/fedora/rpmfusion-free-release-$(rpm -E %fedora).noarch.rpm" # free rpmfusion
 dnf-install "https://download1.rpmfusion.org/nonfree/fedora/rpmfusion-nonfree-release-$(rpm -E %fedora).noarch.rpm" # nonfree rpmfusion
 
