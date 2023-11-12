@@ -9,19 +9,15 @@ from fcolour import colour, Colours
 
 
 class Column:
-    def __init__(self, elements: list[PosixPath] = None, subcolumns: list = None, permissions=False):
+    def __init__(self, elements: list[PosixPath] = None, subcolumns: list = None):
         if subcolumns is None:
             subcolumns = []
         if elements is None:
             elements = []
         self.subcolumns: list = subcolumns
         self.elements: list[PosixPath] = elements
-        self.permissions = permissions
         self.max = 0
         for e in elements:
-            if permissions:
-                self.max = max(self.max, len(str(e.name)) + len(self.get_permission(e)))
-                continue
             self.max = max(self.max, len(str(e.name)))
 
     def get_col_indices(self) -> list[int]:
@@ -63,8 +59,6 @@ class Column:
             for j in range(columns):
                 word = ""
                 if element_index < len(self.elements):
-                    if self.permissions:
-                        word = self.get_permission(self.elements[element_index]) + " "
                     word_temp, overhead = colour(self.elements[element_index])
                     word += word_temp
 
@@ -138,8 +132,6 @@ def get_all_elements(directory: PosixPath) -> tuple[list[PosixPath], list[PosixP
 
 
 if __name__ == "__main__":
-    permissions = False
-
     cwd = PosixPath(argv[1]) if len(argv) > 1 else PosixPath(PosixPath.cwd())
 
     if not cwd.is_dir():
@@ -151,9 +143,9 @@ if __name__ == "__main__":
     dirs.sort()
     files.sort()
 
-    dir_column = Column(elements=dirs, permissions=permissions)
-    files_column = Column(elements=files, permissions=permissions)
-    output_column = Column(subcolumns=[dir_column, files_column], permissions=permissions)
+    dir_column = Column(elements=dirs)
+    files_column = Column(elements=files)
+    output_column = Column(subcolumns=[dir_column, files_column])
 
     print(f"{top_level_string(len(dirs), len(files))}. {git_status(str(cwd))}")
     if len(dirs) == 0 and len(files) == 0:
