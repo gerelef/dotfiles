@@ -77,9 +77,8 @@ class Colours(StrEnum):
     FBLACK = f"{EscapeCodes.PFI}{ColourCodes.BLACK}"
 
 
-def colour_string(text: str, colour: list[Colours: str], cleanup=True):
-    s = f"{''.join(colour)}{text}"
-    return s
+def colour_string(text: str, colour: list[Colours: str]):
+    return f"{''.join(colour)}{text}{Colours.NOCOLOUR}"
 
 
 def root_modifier():
@@ -94,119 +93,132 @@ def mount_modifier():
     return Colours.BLINK
 
 
-def get_all_modifiers(p):
-    mods = ""
+def get_all_modifiers(p) -> list[Colours]:
+    mods = []
     if p.owner() == "root":
-        mods += root_modifier()
+        mods.append(root_modifier())
 
     if p.is_block_device():
-        mods += block_modifier()
+        mods.append(block_modifier())
 
     if p.is_mount():
-        mods += mount_modifier()
+        mods.append(mount_modifier())
 
     return mods
 
 
 def colour_default(p):
-    coloured_name = get_all_modifiers(p)
+    modifiers = get_all_modifiers(p)
 
     if p.is_symlink():
-        coloured_name += colour_string(p.name, [Colours.BWHITE, Colours.FBLACK])
+        coloured_name = colour_string(p.name, modifiers + [Colours.BWHITE, Colours.FBLACK])
     else:
-        coloured_name += colour_string(p.name, [])
+        coloured_name = colour_string(p.name, modifiers)
 
-    return coloured_name, len(coloured_name) - len(p.name)
+    return coloured_name
 
 
 def colour_dir(p):
-    coloured_name = get_all_modifiers(p)
+    modifiers = get_all_modifiers(p)
 
     try:
         if any(p.iterdir()):
             if p.is_symlink():
-                coloured_name += colour_string(p.name, [Colours.BBLUE, Colours.FWHITE])
+                coloured_name = colour_string(p.name, modifiers + [Colours.BBLUE, Colours.FWHITE])
             else:
-                coloured_name += colour_string(p.name, [Colours.FBLUE])
+                coloured_name = colour_string(p.name, modifiers + [Colours.FBLUE])
         else:
             if p.is_symlink():
-                coloured_name += colour_string(p.name, [Colours.BLBLUE, Colours.FWHITE])
+                coloured_name = colour_string(p.name, modifiers + [Colours.BLBLUE, Colours.FWHITE])
             else:
-                coloured_name += colour_string(p.name, [Colours.FLBLUE])
+                coloured_name = colour_string(p.name, modifiers + [Colours.FLBLUE])
     except PermissionError:
         return colour_default(p)
 
-    return coloured_name, len(coloured_name) - len(p.name)
+    return coloured_name
 
 
 def colour_broken_symlink(p):
     coloured_name = colour_string(p.name, [Colours.BRED, Colours.FWHITE])
 
-    return coloured_name, len(coloured_name) - len(p.name)
+    return coloured_name
 
 
 def colour_py(p):
-    coloured_name = get_all_modifiers(p)
-    if p.is_symlink():
-        coloured_name += colour_string(p.name, [Colours.BYELLOW, Colours.FWHITE])
-    else:
-        coloured_name += colour_string(p.name, [Colours.FYELLOW])
+    modifiers = get_all_modifiers(p)
 
-    return coloured_name, len(coloured_name) - len(p.name)
+    if p.is_symlink():
+        coloured_name = colour_string(p.name, modifiers + [Colours.BYELLOW, Colours.FWHITE])
+    else:
+        coloured_name = colour_string(p.name, modifiers + [Colours.FYELLOW])
+
+    return coloured_name
 
 
 def colour_archive(p):
-    coloured_name = get_all_modifiers(p)
+    modifiers = get_all_modifiers(p)
+
     if p.is_symlink():
-        coloured_name += colour_string(p.name, [Colours.BMAGENTA, Colours.FWHITE])
+        coloured_name = colour_string(p.name, modifiers + [Colours.BMAGENTA, Colours.FWHITE])
     else:
-        coloured_name += colour_string(p.name, [Colours.FMAGENTA])
-    return coloured_name, len(coloured_name) - len(p.name)
+        coloured_name = colour_string(p.name, modifiers + [Colours.FMAGENTA])
+
+    return coloured_name
 
 
 def colour_bash(p):
-    coloured_name = get_all_modifiers(p)
+    modifiers = get_all_modifiers(p)
+
     if p.is_symlink():
-        coloured_name += colour_string(p.name, [Colours.BPGREEN, Colours.FWHITE])
+        coloured_name = colour_string(p.name, modifiers + [Colours.BPGREEN, Colours.FWHITE])
     else:
-        coloured_name += colour_string(p.name, [Colours.FPGREEN])
-    return coloured_name, len(coloured_name) - len(p.name)
+        coloured_name = colour_string(p.name, modifiers + [Colours.FPGREEN])
+
+    return coloured_name
 
 
 def colour_video(p):
-    coloured_name = get_all_modifiers(p)
+    modifiers = get_all_modifiers(p)
+
     if p.is_symlink():
-        coloured_name += colour_string(p.name, [Colours.BORANGE, Colours.FWHITE])
+        coloured_name = colour_string(p.name, modifiers + [Colours.BORANGE, Colours.FWHITE])
     else:
-        coloured_name += colour_string(p.name, [Colours.FORANGE])
-    return coloured_name, len(coloured_name) - len(p.name)
+        coloured_name = colour_string(p.name, modifiers + [Colours.FORANGE])
+
+    return coloured_name
 
 
 def colour_audio(p):
-    coloured_name = get_all_modifiers(p)
+    modifiers = get_all_modifiers(p)
+
     if p.is_symlink():
-        coloured_name += colour_string(p.name, [Colours.BPURPLE, Colours.FWHITE])
+        coloured_name = colour_string(p.name, modifiers + [Colours.BPURPLE, Colours.FWHITE])
     else:
-        coloured_name += colour_string(p.name, [Colours.FPURPLE])
-    return coloured_name, len(coloured_name) - len(p.name)
+        coloured_name = colour_string(p.name, modifiers + [Colours.FPURPLE])
+
+    return coloured_name
 
 
 def colour_config(p):
-    coloured_name = get_all_modifiers(p)
+    modifiers = get_all_modifiers(p)
+
     if p.is_symlink():
-        coloured_name += colour_string(p.name, [Colours.BCYAN, Colours.FWHITE])
+        coloured_name = colour_string(p.name, modifiers + [Colours.BCYAN, Colours.FWHITE])
     else:
-        coloured_name += colour_string(p.name, [Colours.FCYAN])
-    return coloured_name, len(coloured_name) - len(p.name)
+        coloured_name = colour_string(p.name, modifiers + [Colours.FCYAN])
+
+    return coloured_name
 
 
 def colour_virt(p):
-    coloured_name = get_all_modifiers(p)
+    modifiers = get_all_modifiers(p)
+
     if p.is_symlink():
-        coloured_name += colour_string(p.name, [Colours.BSTEEL, Colours.FWHITE])
+        coloured_name = colour_string(p.name, modifiers + [Colours.BSTEEL, Colours.FWHITE])
     else:
-        coloured_name += colour_string(p.name, [Colours.FSTEEL])
-    return coloured_name, len(coloured_name) - len(p.name)
+        coloured_name = colour_string(p.name, modifiers + [Colours.FSTEEL])
+
+    return coloured_name
 
 
 def colour(p: PosixPath):

@@ -1,5 +1,6 @@
 #!/usr/bin/env -S python3 -S -OO
-from math import floor
+import sys
+from math import floor, ceil
 from pathlib import PosixPath
 from subprocess import run
 from sys import argv, stderr, exit
@@ -8,75 +9,78 @@ from typing import Iterator
 from fcolour import colour, Colours
 
 
-class Column:
-    def __init__(self, elements: list[PosixPath] = None, subcolumns: list = None):
-        if subcolumns is None:
-            subcolumns = []
-        if elements is None:
-            elements = []
-        self.subcolumns: list = subcolumns
-        self.elements: list[PosixPath] = elements
-        self.max = 0
-        for e in elements:
-            self.max = max(self.max, len(str(e.name)))
+class Formatter:
+    # spaces inbetween columns
+    PADDING = 1
+    TOLERANCE = .10
 
-    def get_col_indices(self) -> list[int]:
-        subc_maxes = []
-        for subc in self.subcolumns:
-            subc_maxes.append(*subc.get_col_indices())
-        return [self.max, *subc_maxes]
+    def __init__(self, directories: list[PosixPath], files: list[PosixPath]):
+        self.directories = directories
+        self.files = files
 
-    def get_row_indices(self) -> list[int]:
-        subc_maxes = []
-        for subc in self.subcolumns:
-            subc_maxes.append(*subc.get_row_indices())
-        return [len(self.elements), *subc_maxes]
+        self.max_directories_word_length = len(max(directories, key=lambda e: len(e.name)).name) if directories else 0
+        self.max_files_word_length = len(max(files, key=lambda e: len(e.name)).name) if files else 0
 
-    def __len__(self) -> int:
-        """Count of elements."""
-        return len(self.elements)
+    def get_ideal_elements_per_line(self, element_count: int, element_size: int) -> int | None:
+        """
+        :returns: elements per line
+        """
+        terminal_lines, terminal_columns = Formatter.term_size()
 
-    def get_ideal_rows_columns(self, mc, ml, tr) -> tuple[int, int]:
-        columns = floor(tr / ml) + 1
-        rows = ml + (tr % columns)
-        return columns, rows
+        # minimum WORD columns needed to display everything inside the terminal viewport
+        min_word_columns_needed = ceil(element_count / terminal_lines)
 
-    def get_row_elements(self, max_cols, max_lines) -> Iterator[tuple[str, int]]:
-        columns, rows = self.get_ideal_rows_columns(max_cols, max_lines, max(self.get_row_indices()))
+        # max WORD columns with the max name length (+ inbetween padding) that fit inside the terminal viewport
+        max_word_columns_fitting = floor(terminal_columns / (element_size + Formatter.PADDING))
 
-        subgenerators = []
-        for sub in self.subcolumns:
-            subgenerators.append(sub.get_row_elements(max_cols, max_lines))
+        # minimum TERMINAL columns needed
+        min_terminal_columns_needed = ceil(
+            element_size * min_word_columns_needed + Formatter.PADDING * min_word_columns_needed
+        )
 
-        element_index = 0
-        for i in range(rows):
-            line = ""
-            # this is essentially padding
-            line_overhead = 1
+        # maximum TERMINAL columns needed to fit everything
+        # FIXME remove: max_terminal_columns_fitting = floor(max_word_columns_fitting / (element_size + Formatter.PADDING ))
 
-            for j in range(columns):
-                word = ""
-                if element_index < len(self.elements):
-                    word_temp, overhead = colour(self.elements[element_index])
-                    word += word_temp
+        if min_word_columns_needed > max_word_columns_fitting:
+            print(f"max columns {min_terminal_columns_needed} > {max_word_columns_fitting}")
+            return max_word_columns_fitting
 
-                    line += word + Colours.NOCOLOUR + " " * (self.max - len(word) + overhead)
-                    line_overhead += overhead
-                    element_index += 1
-                else:
-                    # pad the row if not enough elements to fill the column
-                    line += " " * self.max
+        if floor(terminal_lines / 2) <= element_count and (min_word_columns_needed + 1) <= max_word_columns_fitting:
+            return min_word_columns_needed + 1
 
-            for subg in subgenerators:
-                word, overhead = next(subg)
-                line_overhead += overhead
-                line += word
+        return min_word_columns_needed
 
-            yield line, line_overhead
+    def output(self) -> Iterator[str | None]:
+        # https://stackoverflow.com/questions/2414667/python-string-class-like-stringbuilder-in-c
+        max_element_size = max(self.max_files_word_length, self.max_directories_word_length)
+        elements_per_line = self.get_ideal_elements_per_line(
+            len(self.files) + len(self.directories),
+            max_element_size
+        )
 
-        # return only padded elements if they keep asking for more...
+        current_iterable = self.directories + self.files
+
         while True:
-            yield " " * self.max * columns, 0
+            if not current_iterable:
+                break
+
+            line: list[str] = []
+            for _ in range(elements_per_line):
+                element = current_iterable.pop(0)
+                line.append(colour(element) + ' ' * (max_element_size - len(element.name)))
+
+                if not current_iterable:
+                    break
+
+            yield ' '.join(line)
+
+    @staticmethod
+    def term_size() -> tuple[int, int]:
+        # if for some reason the terminal tput cols/lines doesn't work, return 0, so we can at least *not* crash.
+        lines = run(["tput", "lines"], capture_output=True, encoding="utf-8").stdout.replace("\n", "") or 0
+        cols = run(["tput", "cols"], capture_output=True, encoding="utf-8").stdout.replace("\n", "") or 0
+        # -1 for padding
+        return int(lines) - 1, int(cols) - 1
 
 
 def run_subshell(command: list[str]) -> tuple[int, str]:
@@ -109,14 +113,7 @@ def git_status(directory: str):
     return status
 
 
-def term_size() -> tuple[int, int]:
-    # if for some reason the terminal tput cols/lines doesn't work, return 0, so we can at least *not* crash.
-    lines = run(["tput", "lines"], capture_output=True, encoding="utf-8").stdout.replace("\n", "") or 0
-    cols = run(["tput", "cols"], capture_output=True, encoding="utf-8").stdout.replace("\n", "") or 0
-    return int(lines), int(cols)
-
-
-def get_all_elements(directory: PosixPath) -> tuple[list[PosixPath], list[PosixPath]]:
+def get_all_elements_sorted(directory: PosixPath) -> tuple[list[PosixPath], list[PosixPath]]:
     elements = directory.glob("*")
     dirs = []
     files = []
@@ -126,6 +123,9 @@ def get_all_elements(directory: PosixPath) -> tuple[list[PosixPath], list[PosixP
             continue
 
         files.append(e)
+
+    dirs.sort()
+    files.sort()
     return dirs, files
 
 
@@ -136,22 +136,17 @@ if __name__ == "__main__":
         print(f"\"{cwd}\" is not a directory, or not enough permissions.", file=stderr)
         exit(2)
 
-    term_lines, term_cols = term_size()
-    dirs, files = get_all_elements(cwd)
-    dirs.sort()
-    files.sort()
-
-    dir_column = Column(elements=dirs)
-    files_column = Column(elements=files)
-    output_column = Column(subcolumns=[dir_column, files_column])
+    dirs, files = get_all_elements_sorted(cwd)
+    formatter = Formatter(dirs, files)
 
     print(f"{top_level_string(len(dirs), len(files))}. {git_status(str(cwd))}")
     if len(dirs) == 0 and len(files) == 0:
         exit(0)
 
-    for line in output_column.get_row_elements(term_cols, term_lines - 3):
-        row: str = line[0]
-        overhead: int = line[1]
-        if not row or row.isspace():
-            exit(0)
-        print(row[:term_cols + overhead])
+    rows, cols = Formatter.term_size()
+    if rows < 10 and cols < 20:
+        # not enough space, exit gracefully
+        exit(0)
+
+    for s in formatter.output():
+        print(s, file=sys.stdout)
