@@ -92,6 +92,15 @@ def run_subshell(command: list[str]) -> tuple[int, str]:
     return res.returncode, res.stdout
 
 
+def top_level_string(directory_count, file_count) -> str:
+    directory_cnt_str = f"{directory_count if directory_count > 0 else 'No'}"
+    directory_desc_str = f"{'directories' if directory_count != 1 else 'directory'}"
+    directory_str = "{}"
+    file_cnt_str = f"{file_count if file_count > 0 else 'no'}"
+    file_desc_str = f"{'files' if file_count != 1 else 'file'}"
+    return f"{directory_cnt_str} {directory_desc_str}, {file_cnt_str} {file_desc_str}"
+
+
 def git_status(directory: str):
     status = "Working tree clean."
     ret_code, toplevel = run_subshell(["git", "-C", directory, "rev-parse", "--show-toplevel"])
@@ -146,9 +155,7 @@ if __name__ == "__main__":
     files_column = Column(elements=files, permissions=permissions)
     output_column = Column(subcolumns=[dir_column, files_column], permissions=permissions)
 
-    print(f"{len(dirs)} {'directories' if len(dirs) > 1 else 'directory'}, "
-          f"{len(files)} {'files' if len(files) > 1 else 'file'}. "
-          f"{git_status(str(cwd))}")
+    print(f"{top_level_string(len(dirs), len(files))}. {git_status(str(cwd))}")
     if len(dirs) == 0 and len(files) == 0:
         exit(0)
 
