@@ -16,13 +16,6 @@ if ! ping -q -c 1 -W 1 google.com > /dev/null; then
     exit 1
 fi
 
-apply-wayland-gdm-patch () (
-    # this is an obscure bug where Wayland is skipped (often on NVIDIA machines, but not confirmed!)
-    #  due to a condition not being met, see journalctl for:
-    #  GNOME Shell on Wayland was skipped because of an unmet condition check (ConditionEnvironment=XDG_SESSION_TYPE=wayland)
-    mv /run/gdm/custom.conf /run/gdm/Xcustom.conf 
-)
-
 # fs thingies
 readonly ROOT_FS=$(stat -f --format=%T /)
 readonly REAL_USER_HOME_FS=$(stat -f --format=%T "$REAL_USER_HOME")
@@ -165,6 +158,7 @@ winetricks \
 protontricks \
 vulkan-loader \
 vulkan-loader.i686 \
+xorg-x11-drv-nvidia-power \
 "
 
 #######################################################################################################
@@ -244,10 +238,9 @@ if [[ ! -z "$GPU" && $(lsmod | grep nouveau) ]]; then
     else
         echo "UEFI not found; please restart & use UEFI..."
     fi
-    dnf-install "$INSTALLABLE_NVIDIA_DRIVERS" --exclude="xorg-x11-drv-nvidia-power"
+    dnf-install "$INSTALLABLE_NVIDIA_DRIVERS"
     
     akmods --force && dracut --force
-    apply-wayland-gdm-patch
     
     # check arch wiki, these enable DRM
     grubby --update-kernel=ALL --args="nvidia-drm.modeset=1 nvidia-drm.fbdev=1"
