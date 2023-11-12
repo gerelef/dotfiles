@@ -405,12 +405,19 @@ ssh-keygen -t rsa -b 4096 -C "$REAL_USER@$DISTRIBUTION_NAME" -f "$SSH_ROOT/id_rs
 
 #######################################################################################################
 
-if [[ -z $(cat /etc/default/grub | grep "GRUB_HIDDEN_TIMEOUT") ]]; then 
+# if we haven't modified GRUB already, go ahead...
+readonly DEFAULT_GRUB_CFG="/etc/default/grub"
+if [[ -z $(cat $DEFAULT_GRUB_CFG | grep "GRUB_HIDDEN_TIMEOUT") ]]; then
+    out="$(sed -r 's/GRUB_TERMINAL_OUTPUT=.+/GRUB_TERMINAL_OUTPUT="gfxterm"/' < $DEFAULT_GRUB_CFG)" 
+    echo "$out" | dd of="$DEFAULT_GRUB_CFG"
+    
     echo 'GRUB_HIDDEN_TIMEOUT=0' >> /etc/default/grub
     echo 'GRUB_HIDDEN_TIMEOUT_QUIET=true' >> /etc/default/grub
     echo 'GRUB_GFXPAYLOAD_LINUX="keep"' >> /etc/default/grub
     echo 'GRUB_GFXMODE="1920x1080x32"' >> /etc/default/grub
-    [[ -n $(locate grub.cfg | grep /boot | head -n 1) ]] && grub2-mkconfig --output="$(locate grub.cfg | grep /boot | head -n 1)"
+    
+    readonly GRUB_OUT_LOCATION="$(locate grub.cfg | grep /boot | head -n 1)"
+    [[ -n $GRUB_OUT_LOCATION ]] && grub2-mkconfig --output="$GRUB_OUT_LOCATION"
 fi
 
 #######################################################################################################
