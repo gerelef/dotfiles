@@ -19,7 +19,7 @@ fi
 # fs thingies
 readonly ROOT_FS=$(stat -f --format=%T /)
 readonly REAL_USER_HOME_FS=$(stat -f --format=%T "$REAL_USER_HOME")
-readonly DISTRIBUTION_NAME="fedora"
+readonly DISTRIBUTION_NAME="fedora$(rpm -E %fedora)"
 
 readonly INSTALLABLE_PACKAGES="\
 flatpak \
@@ -395,8 +395,8 @@ echo "Created sudoers.d convenience defaults."
 echo "Done."
 
 #######################################################################################################
-
-ssh-keygen -t rsa -b 4096 -C "$REAL_USER@$DISTRIBUTION_NAME" -f "$SSH_ROOT/id_rsa" -P "" && cat "$SSH_ROOT/id_rsa.pub"
+ssh-keygen -q -t rsa -b 4096 -N '' -C "$REAL_USER@$DISTRIBUTION_NAME" -f "$SSH_ROOT/id_rsa" -P "" <<< $'\ny' >/dev/null 2>&1
+cat "$SSH_ROOT/id_rsa.pub"
 
 #######################################################################################################
 
@@ -421,7 +421,7 @@ fi
 
 systemctl restart NetworkManager
 timedatectl set-local-rtc '0' # for fixing dual boot time inconsistencies
-hostnamectl hostname "$DISTRIBUTION_NAME$(rpm -E %fedora)"
+hostnamectl hostname "$DISTRIBUTION_NAME"
 # if the statement below doesnt work, check this out
 #  https://old.reddit.com/r/linuxhardware/comments/ng166t/s3_deep_sleep_not_working/
 systemctl disable NetworkManager-wait-online.service # stop network manager from waiting until online, improves boot times
