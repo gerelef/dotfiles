@@ -22,7 +22,7 @@ export DOTNET_CLI_TELEMETRY_OPTOUT=1
 export HISTFILESIZE=100000
 export HISTSIZE=10000
 export HISTCONTROL=erasedups:ignoredups:ignorespace
-export SUDO_PROMPT="$(tput setaf 4)Root password:$(tput sgr0)"
+export SUDO_PROMPT="$(tput setaf 4)root:$(tput sgr0)"
 #############################################################
 # package management
 
