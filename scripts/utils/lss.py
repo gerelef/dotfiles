@@ -1,10 +1,9 @@
 #!/usr/bin/env -S python3 -S -OO
 from math import floor
 from pathlib import PosixPath
-from stat import filemode
 from subprocess import run
 from sys import argv, stderr, exit
-from typing import Generator
+from typing import Iterator
 
 from fcolour import colour, Colours
 
@@ -33,7 +32,8 @@ class Column:
             subc_maxes.append(*subc.get_row_indices())
         return [len(self.elements), *subc_maxes]
 
-    def size(self) -> int:
+    def __len__(self) -> int:
+        """Count of elements."""
         return len(self.elements)
 
     def get_ideal_rows_columns(self, mc, ml, tr) -> tuple[int, int]:
@@ -41,10 +41,7 @@ class Column:
         rows = ml + (tr % columns)
         return columns, rows
 
-    def get_permission(self, pp: PosixPath):
-        return filemode(pp.lstat().st_mode)
-
-    def get_row_elements(self, max_cols, max_lines) -> Generator[tuple[str, int], None, None]:
+    def get_row_elements(self, max_cols, max_lines) -> Iterator[tuple[str, int]]:
         columns, rows = self.get_ideal_rows_columns(max_cols, max_lines, max(self.get_row_indices()))
 
         subgenerators = []
