@@ -87,7 +87,6 @@ def run_subshell(command: list[str]) -> tuple[int, str]:
 def top_level_string(directory_count, file_count) -> str:
     directory_cnt_str = f"{directory_count if directory_count > 0 else 'No'}"
     directory_desc_str = f"{'directories' if directory_count != 1 else 'directory'}"
-    directory_str = "{}"
     file_cnt_str = f"{file_count if file_count > 0 else 'no'}"
     file_desc_str = f"{'files' if file_count != 1 else 'file'}"
     return f"{directory_cnt_str} {directory_desc_str}, {file_cnt_str} {file_desc_str}"
