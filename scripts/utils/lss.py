@@ -4,6 +4,7 @@ from pathlib import PosixPath
 from stat import filemode
 from subprocess import run
 from sys import argv, stderr, exit
+from typing import Generator
 
 from fcolour import colour, Colours
 
@@ -43,7 +44,7 @@ class Column:
     def get_permission(self, pp: PosixPath):
         return filemode(pp.lstat().st_mode)
 
-    def get_row_elements(self, max_cols, max_lines):
+    def get_row_elements(self, max_cols, max_lines) -> Generator[tuple[str, int], None, None]:
         columns, rows = self.get_ideal_rows_columns(max_cols, max_lines, max(self.get_row_indices()))
 
         subgenerators = []
@@ -106,7 +107,7 @@ def git_status(directory: str):
     if toplevel:
         _, has_changes = run_subshell(["git", "-C", directory, "status", "-s", "--ignored=no"])
         if has_changes:
-            status = "Uncommited changes."
+            status = "Uncommitted changes."
 
     return status
 
