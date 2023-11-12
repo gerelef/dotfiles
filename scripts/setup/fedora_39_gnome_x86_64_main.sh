@@ -205,20 +205,15 @@ echo "-------------------INSTALLING---------------- $INSTALLABLE_PACKAGES" | tr 
 dnf-remove "$UNINSTALLABLE_BLOAT"
 dnf-install "$INSTALLABLE_PACKAGES"
 
-case "btrfs" in
-    "$ROOT_FS" | "$REAL_USER_HOME_FS")
-        echo "Found BTRFS, installing tools"
-        dnf-install "$INSTALLABLE_BTRFS_TOOLS"
-        ;;
-    *)
-        echo "BTRFS not found; continuing as usual..."
-        ;;
-esac
+if [[ "btrfs" == $ROOT_FS || "btrfs" == $REAL_USER_HOME_FS ]]; then
+    echo "Found BTRFS, installing tools..."
+    dnf-install "$INSTALLABLE_BTRFS_TOOLS"
+fi
 
-readonly GPU=$(lspci | grep -i vga | grep NVIDIA)
-if [[ ! -z "$GPU" && $(lsmod | grep nouveau) ]]; then
+readonly NVIDIA_GPU=$(lspci | grep -i vga | grep NVIDIA)
+if [[ -n "$NVIDIA_GPU" && $(lsmod | grep nouveau) ]]; then
     echo "-------------------INSTALLING NVIDIA DRIVERS----------------"
-    echo "Found NVIDIA GPU $GPU running with nouveau drivers"
+    echo "Found $NVIDIA_GPU running with nouveau drivers!"
     if [[ "$BIOS_MODE" == "UEFI" && $(mokutil --sb-state 2> /dev/null) ]]; then
         # https://blog.monosoul.dev/2022/05/17/automatically-sign-nvidia-kernel-module-in-fedora-36/
         while : ; do
@@ -413,8 +408,10 @@ if [[ -z $(cat $DEFAULT_GRUB_CFG | grep "GRUB_HIDDEN_TIMEOUT") ]]; then
     
     echo 'GRUB_HIDDEN_TIMEOUT=0' >> /etc/default/grub
     echo 'GRUB_HIDDEN_TIMEOUT_QUIET=true' >> /etc/default/grub
-    echo 'GRUB_GFXPAYLOAD_LINUX="keep"' >> /etc/default/grub
-    echo 'GRUB_GFXMODE="1920x1080x32"' >> /etc/default/grub
+    echo 'GRUB_GFXPAYLOAD_LINUX=keep' >> /etc/default/grub
+    top_res="$(hwinfo --framebuffer | tail -n 2 | grep -E -o '[0-9]{3,4}x[0-9]{3,4}')"
+    top_dep="$(hwinfo --framebuffer | tail -n 2 | grep Mode | grep -E -o ', [0-9]{2} bits' | grep -E -o '[0-9]{2}')"
+    echo "GRUB_GFXMODE=$top_res x $top_dep" | tr -d ' ' >> /etc/default/grub
     
     readonly GRUB_OUT_LOCATION="$(locate grub.cfg | grep /boot | head -n 1)"
     [[ -n $GRUB_OUT_LOCATION ]] && grub2-mkconfig --output="$GRUB_OUT_LOCATION"
@@ -437,28 +434,20 @@ if ! [ $? -eq 0 ]; then
 fi
 
 #######################################################################################################
+# if we haven't created /swapfile, go ahead...
+if [[ -z $(cat /etc/fstab | grep "/swapfile swap swap defaults 0 0") ]]; then
+    kbs=$(cat /proc/meminfo | grep MemTotal | grep -E -o "[0-9]+")
+    fallocate -l "$kbs"KB /swapfile && sudo chmod 600 /swapfile && sudo chown root /swapfile && sudo mkswap /swapfile && sudo swapon /swapfile
+    echo "/swapfile swap swap defaults 0 0" >> /etc/fstab
+fi
+
 echo "--------------------------- GNOME ---------------------------"
 echo "Make sure to get the legacy GTK3 Theme Auto Switcher"
 echo "  https://extensions.gnome.org/extension/4998/legacy-gtk3-theme-scheme-auto-switcher/"
 echo "--------------------------- FSTAB ---------------------------"
-echo "Remember to add a permanent mount point for permanently mounted partitions."
-echo "Standard fstab USER mount arguments:"
-echo "  rw,user,exec,nosuid,nodev,nofail,auto,x-gvfs-show"
-echo "Standard fstab ROOT mount arguments:"
-echo "  nouser,nosuid,nodev,nofail,x-gvfs-show,x-udisks-auth"
-echo "--------------------------- SWAP ---------------------------"
-echo "If using ext4 in /, create a swapfile with these commands:"
-echo "16GB:"
-echo "  sudo fallocate -l 16G /swapfile && sudo chmod 600 /swapfile && sudo chown root /swapfile && sudo mkswap /swapfile && sudo swapon /swapfile"
-echo "32GB:"
-echo "  sudo fallocate -l 32G /swapfile && sudo chmod 600 /swapfile && sudo chown root /swapfile && sudo mkswap /swapfile && sudo swapon /swapfile"
-echo "64GB:"
-echo "  sudo fallocate -l 64G /swapfile && sudo chmod 600 /swapfile && sudo chown root /swapfile && sudo mkswap /swapfile && sudo swapon /swapfile"
-echo "It's possible this swapfile won't persist after reboots; confirm with:"
-echo "  sudo swapon --show"
-echo "If this is the case, make permanent by appending this line in /etc/fstab:"
-echo "  /swapfile swap swap defaults 0 0"
+echo "User fstab mount arguments: rw,user,exec,nosuid,nodev,nofail,auto,x-gvfs-show"
 echo "------------------------------------------------------"
+echo "Remember to add a permanent mount point for internal storage partitions."
 echo "Make sure to restart your PC after making all the necessary adjustments."
 
 #######################################################################################################
