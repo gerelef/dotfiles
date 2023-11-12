@@ -253,6 +253,8 @@ if [[ $CHASSIS_TYPE == "Sub Notebook" || $CHASSIS_TYPE == "Laptop" || $CHASSIS_T
     powertop --auto-tune
 fi
 
+[[ $CHASSIS_TYPE == "Desktop" ]] && systemctl disable nvidia-powerd.service
+
 echo "Done."
 
 echo "-------------------INSTALLING CODECS / H/W VIDEO ACCELERATION----------------"
