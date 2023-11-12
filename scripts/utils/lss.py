@@ -38,9 +38,6 @@ class Formatter:
             element_size * min_word_columns_needed + Formatter.PADDING * min_word_columns_needed
         )
 
-        # maximum TERMINAL columns needed to fit everything
-        # FIXME remove: max_terminal_columns_fitting = floor(max_word_columns_fitting / (element_size + Formatter.PADDING ))
-
         if min_word_columns_needed > max_word_columns_fitting:
             print(f"max columns {min_terminal_columns_needed} > {max_word_columns_fitting}")
             return max_word_columns_fitting
