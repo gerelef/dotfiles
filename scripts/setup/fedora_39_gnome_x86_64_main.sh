@@ -253,6 +253,7 @@ if [[ $CHASSIS_TYPE == "Sub Notebook" || $CHASSIS_TYPE == "Laptop" || $CHASSIS_T
     powertop --auto-tune
 fi
 
+# https://forums.developer.nvidia.com/t/no-matching-gpu-found-with-510-47-03/202315/5
 [[ $CHASSIS_TYPE == "Desktop" ]] && systemctl disable nvidia-powerd.service
 
 echo "Done."
