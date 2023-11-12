@@ -39,7 +39,6 @@ class Formatter:
         )
 
         if min_word_columns_needed > max_word_columns_fitting:
-            print(f"max columns {min_terminal_columns_needed} > {max_word_columns_fitting}")
             return max_word_columns_fitting
 
         if floor(terminal_lines / 2) <= element_count and (min_word_columns_needed + 1) <= max_word_columns_fitting:
