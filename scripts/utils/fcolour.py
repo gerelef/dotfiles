@@ -104,6 +104,7 @@ def colour_path(p: PosixPath):
 
 # there are more options, but they're undocumented as far as I can tell;
 #  we probably have to look into `ls` source code to figure it out
+# http://www.bigsoft.co.uk/blog/2008/04/11/configuring-ls_colors
 __ls_colors_special_keys = {
     "no": __colour_default,
     "fi": __colour_file,
