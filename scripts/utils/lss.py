@@ -6,7 +6,7 @@ from subprocess import run
 from sys import argv, stderr, exit
 from typing import Iterator
 
-from fcolour import colour, Colours
+from fcolour import colour_path
 
 
 class Formatter:
@@ -63,7 +63,7 @@ class Formatter:
             line: list[str] = []
             for _ in range(elements_per_line):
                 element = current_iterable.pop(0)
-                line.append(colour(element) + ' ' * (max_element_size - len(element.name)))
+                line.append(colour_path(element) + ' ' * (max_element_size - len(element.name)))
 
                 if not current_iterable:
                     break
