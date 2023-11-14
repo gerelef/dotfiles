@@ -6,7 +6,7 @@ from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from datetime import datetime
 from re import search as regex_search
-from typing import Generator, Sequence, Callable, Optional, TypeAlias, Self
+from typing import Generator, Sequence, Callable, Optional, Self
 
 try:
     import requests
@@ -93,8 +93,8 @@ class Exceptions:
         pass
 
 
-Filename: TypeAlias = str
-URL: TypeAlias = str
+type Filename = str
+type URL = str
 
 
 def get_request(url: URL, *args, **kwargs):
@@ -133,8 +133,8 @@ class HTTPStatus(enum.Enum):
     CLIENT_ERROR = 399  # starts at > 400
     SERVER_ERROR = 499  # starts at > 500
 
-    @classmethod
-    def create(cls, code: int) -> Self:
+    @staticmethod
+    def create(code: int) -> Self:
         """
         :param code: HTTP Status Code.
         :returns: Group Status Class. For more information:
@@ -162,8 +162,8 @@ class SupportedAPI(enum.Enum):
 
     # GITLAB_API_REGEXR = r"(gitlab[\.a-zA-Z]*\.com\/api\/)+" NOT SUPPORTED YET
 
-    @classmethod
-    def match(cls, url: URL) -> Self | None:
+    @staticmethod
+    def match(url: URL) -> Self | None:
         """
         Match a URL to a provider.
         :returns: the supported Provider, or None if there are no matches.
@@ -174,7 +174,7 @@ class SupportedAPI(enum.Enum):
         return None
 
 
-Filter: TypeAlias = Callable[[Release], bool]
+type Filter = Callable[[Release], bool]
 
 
 class Provider:
@@ -240,8 +240,8 @@ class ProviderFactory:
     def __init__(self):
         raise RuntimeError("Cannot instantiate static factory!")
 
-    @classmethod
-    def create(cls, url) -> Provider:
+    @staticmethod
+    def create(url: URL) -> Provider:
         match (SupportedAPI.match(url)):
             case SupportedAPI.GITHUB_API:
                 return GitHubProvider(url=url)
