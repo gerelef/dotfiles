@@ -2,6 +2,8 @@
 import enum
 import os
 import sys
+import subprocess
+import argparse as ap
 from copy import deepcopy
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
@@ -99,7 +101,7 @@ type URL = str
 
 
 def get_request(url: URL, *args, **kwargs):
-    version_header = { "X-GitHub-Api-Version" : "2022-11-28" }
+    version_header = {"X-GitHub-Api-Version": "2022-11-28"}
     return requests.get(url, verify=True, allow_redirects=True, headers=version_header, *args, **kwargs)
 
 
@@ -134,8 +136,8 @@ class HTTPStatus(enum.IntEnum):
     CLIENT_ERROR = 399  # starts at > 400
     SERVER_ERROR = 499  # starts at > 500
 
-    @staticmethod
-    def create(code: int) -> Self:
+    @classmethod
+    def create(cls, code: int) -> Self:
         """
         :param code: HTTP Status Code.
         :returns: Group Status Class. For more information:
@@ -163,8 +165,8 @@ class SupportedAPI(enum.StrEnum):
 
     # GITLAB_API_REGEXR = r"(gitlab[\.a-zA-Z]*\.com\/api\/)+" NOT SUPPORTED YET
 
-    @staticmethod
-    def match(url: URL) -> Self | None:
+    @classmethod
+    def match(cls, url: URL) -> Self | None:
         """
         Match a URL to a provider.
         :returns: the supported Provider, or None if there are no matches.
@@ -206,7 +208,8 @@ class Provider:
         raise NotImplementedError
 
     @abstractmethod
-    def download(self, url: URL, chunk_size=1024 * 1024) -> Generator[tuple[HTTPStatus, int, int, bytes | None], None, None]:
+    def download(self, url: URL, chunk_size=1024 * 1024) -> Generator[
+        tuple[HTTPStatus, int, int, bytes | None], None, None]:
         """
         Downloads a packet of size chunk_size from URL, which belongs to the provider defined previously.
         Generator that returns a binary data packet of size chunk_size, iteratively requested from url.
@@ -294,7 +297,8 @@ class GitHubProvider(Provider):
 
         return None
 
-    def download(self, url: URL, chunk_size=1024 * 1024) -> Generator[tuple[HTTPStatus, int, int, bytes | None], None, None]:
+    def download(self, url: URL, chunk_size=1024 * 1024) -> Generator[
+        tuple[HTTPStatus, int, int, bytes | None], None, None]:
         with get_request(url, stream=True) as req:
             if HTTPStatus.create(req.status_code) != HTTPStatus.SUCCESS:
                 yield HTTPStatus.create(req.status_code), -1, -1, None
@@ -473,51 +477,55 @@ type Package = str
 
 class Distribution(ABC):
     # FIXME add documentation
-    
+
     @abstractmethod
-    def check(packages: list[Package]) -> list[Package]:
+    def check(self, packages: list[Package]) -> list[Package]:
         # FIXME add documentation
         pass
-    
+
     @abstractmethod
-    def install(packages: list[Package]) -> tuple[bool, str, str]:
+    def install(self, packages: list[Package]) -> tuple[bool, str, str]:
         # FIXME add documentation
         pass
+
 
 class Debian(Distribution):
     # FIXME add documentation
-    
-    def check(packages: list[Package]) -> list[Package]:
+
+    def check(self, packages: list[Package]) -> list[Package]:
         pass
-    
-    def install(packages: list[Package]) -> tuple[bool, str, str]:
+
+    def install(self, packages: list[Package]) -> tuple[bool, str, str]:
         pass
+
 
 class OpenSUSE(Distribution):
     # FIXME add documentation
-    
-    def check(packages: list[Package]) -> list[Package]:
+
+    def check(self, packages: list[Package]) -> list[Package]:
         pass
-    
-    def install(packages: list[Package]) -> tuple[bool, str, str]:
+
+    def install(self, packages: list[Package]) -> tuple[bool, str, str]:
         pass
-        
+
+
 class Fedora(Distribution):
     # FIXME add documentation
-    
-    def check(packages: list[Package]) -> list[Package]:
+
+    def check(self, packages: list[Package]) -> list[Package]:
         pass
-    
-    def install(packages: list[Package]) -> tuple[bool, str, str]:
+
+    def install(self, packages: list[Package]) -> tuple[bool, str, str]:
         pass
+
 
 class Arch(Distribution):
     # FIXME add documentation
-    
-    def check(packages: list[Package]) -> list[Package]:
+
+    def check(self, packages: list[Package]) -> list[Package]:
         pass
-    
-    def install(packages: list[Package]) -> tuple[bool, str, str]:
+
+    def install(self, packages: list[Package]) -> tuple[bool, str, str]:
         pass
 
 
@@ -526,11 +534,11 @@ class SupportedDistribution(enum.StrEnum):
     OPENSUSE = "zypper"
     FEDORA = "dnf"
     ARCH = "pacman"
-    
+
     @staticmethod
     def create() -> Distribution | None:
         # FIXME add documentation
-        script= [
+        script = [
             "bash", "--norc", "-c", """
             [[ -n \"$(command -v apt)\" ]] && echo \"apt\" && exit 0;
             [[ -n \"$(command -v dnf)\" ]] && echo \"dnf\" && exit 0;
@@ -540,8 +548,8 @@ class SupportedDistribution(enum.StrEnum):
         ]
         status, stdout, _ = run_subprocess(script)
         if status:
-            stdout_stripped = stdout.strip() 
-            match (stdout_stripped):
+            stdout_stripped = stdout.strip()
+            match stdout_stripped:
                 case SupportedDistribution.DEBIAN:
                     return Debian()
                 case SupportedDistribution.OPENSUSE:
@@ -590,7 +598,6 @@ DEFAULT_FLAGS = {
 # TODO add compgen generator from ArgumentParser
 def get_default_argparser(description, version=True, keep=True, temporary=True, destination=True, unsafe=True):
     # FIXME add documentation
-    import argparse as ap
     flags_dict = deepcopy(DEFAULT_FLAGS)
     if not version:
         del flags_dict["--version"]
@@ -602,7 +609,7 @@ def get_default_argparser(description, version=True, keep=True, temporary=True, 
         del flags_dict["--destination"]
     if not unsafe:
         del flags_dict["--unsafe"]
-        
+
     p = ap.ArgumentParser(description=description)
     for argname, argopts in flags_dict.items():
         p.add_argument(argname, **argopts)
@@ -616,19 +623,19 @@ def run_subprocess(commands: Sequence[str] | str, cwd: Filename = "~") -> tuple[
     :parm cwd: working directory for subshell
     :returns: status code (True on success, False on error), stdout, stderr 
     """
-    import subprocess
     result = subprocess.run(
-                commands, 
-                cwd=os.path.abspath(os.path.expanduser(cwd)),
-                capture_output=True,
-                text=True,
+        commands,
+        cwd=os.path.abspath(os.path.expanduser(cwd)),
+        capture_output=True,
+        text=True,
     )
-    return (result.returncode == 0, result.stdout, result.stderr)
+    return result.returncode == 0, result.stdout, result.stderr
 
 
 def euid_is_root() -> bool:
     """Returns True if script is running as root."""
     return os.geteuid() == 0
+
 
 if __name__ == "__main__":
     print(SupportedDistribution.create())
