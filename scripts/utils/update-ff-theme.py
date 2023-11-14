@@ -135,7 +135,8 @@ def join_userchromes(appender: Filename, appendee: Filename):
 def unzip(zipfile: Filename, destination):
     # unzip path/to/archive1.zip path/to/archive2.zip ... -d path/to/output
     command = ["unzip", "-o", os.path.abspath(os.path.expanduser(zipfile)), "-d", f"{destination}"]
-    if not ut.run_subprocess(command):
+    status, _, _ = ut.run_subprocess(command)
+    if not status:
         raise RuntimeError(f"{' '.join(command)} errored! !")
 
 

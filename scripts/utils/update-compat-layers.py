@@ -57,7 +57,8 @@ class CompatibilityManager(ut.Manager):
             # there should be only one match
             checksum_command = CompatibilityManager.SHA_CHECKSUM_REGEX.findall(fname)[0].lower()
             command = [checksum_command, "-c", fname]
-            results.append(ut.run_subprocess(command, cwd=self.download_dir))
+            status, _, _ = ut.run_subprocess(command, cwd=self.download_dir)
+            results.append(status)
         return False not in results
 
     def install(self, files: list[ut.Filename]):
@@ -66,7 +67,8 @@ class CompatibilityManager(ut.Manager):
         tars = list(map(lambda fn: os.path.join(self.download_dir, fn), filter(lambda fn: "tar" in fn, files)))
         for tarball in tars:
             command = ["tar", "-xPf", tarball, f"--directory={self.install_dir}"]
-            if not ut.run_subprocess(command, cwd=self.download_dir):
+            status, _, _ = ut.run_subprocess(command, cwd=self.download_dir)
+            if not status:
                 raise RuntimeError(f"{' '.join(command)} errored! !")
 
     def cleanup(self, files: list[ut.Filename]):
