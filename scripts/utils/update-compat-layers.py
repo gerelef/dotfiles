@@ -131,7 +131,10 @@ def create_argparser():
 PROTON_GE_GITHUB_RELEASES_URL = "https://api.github.com/repos/GloriousEggroll/proton-ge-custom/releases"
 WINE_GE_GITHUB_RELEASES_URL = "https://api.github.com/repos/gloriouseggroll/wine-ge-custom/releases"
 LUXTORPEDA_GITHUB_RELEASES_URL = "https://api.github.com/repos/luxtorpeda-dev/luxtorpeda/releases"
-PROTON_GE_INSTALL_DIR = os.path.expanduser("~/.local/share/Steam/compatibilitytools.d/")
+STEAM_INSTALL_DIR = os.path.expanduser("~/.local/share/Steam/compatibilitytools.d/")
+STEAM_FLATPAK_INSTALL_DIR = os.path.expanduser(None) # FIXME
+LUTRIS_INSTALL_DIR = os.path.expanduser("~/.local/share/lutris/runners/wine")
+LUTRIS_FLATPAK_INSTALL_DIR = os.path.expanduser("~/.var/app/net.lutris.Lutris/data/lutris/runners/wine")
 DOWNLOAD_DIR = "/tmp/"
 
 

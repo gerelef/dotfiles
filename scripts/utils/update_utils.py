@@ -2,6 +2,7 @@
 import enum
 import os
 import sys
+from copy import deepcopy
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from datetime import datetime
@@ -552,7 +553,7 @@ class SupportedDistribution(enum.StrEnum):
         return None
 
 
-DEFAULT_ARGUMENTS = {
+DEFAULT_FLAGS = {
     "--version": {
         "help": "Specify a version to install. Default is latest.",
         "required": False,
@@ -587,10 +588,23 @@ DEFAULT_ARGUMENTS = {
 
 # TODO add ArgHandler so there's less ArgumentParser boilerplate in scripts...
 # TODO add compgen generator from ArgumentParser
-def get_default_argparser(description):
+def get_default_argparser(description, version=True, keep=True, temporary=True, destination=True, unsafe=True):
+    # FIXME add documentation
     import argparse as ap
+    flags_dict = deepcopy(DEFAULT_FLAGS)
+    if not version:
+        del flags_dict["--version"]
+    if not keep:
+        del flags_dict["--keep"]
+    if not temporary:
+        del flags_dict["--temporary"]
+    if not destination:
+        del flags_dict["--destination"]
+    if not unsafe:
+        del flags_dict["--unsafe"]
+        
     p = ap.ArgumentParser(description=description)
-    for argname, argopts in DEFAULT_ARGUMENTS.items():
+    for argname, argopts in flags_dict.items():
         p.add_argument(argname, **argopts)
     return p
 
