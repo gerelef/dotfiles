@@ -517,11 +517,9 @@ def run_subprocess(commands: Sequence[str] | str, cwd: Filename = "~") -> bool:
     :parm cwd: working directory for subshell
     """
     import subprocess
-    import os
-    return subprocess.run(commands, cwd=os.path.expanduser(cwd)).returncode == 0
+    return subprocess.run(commands, cwd=os.path.abspath(os.path.expanduser(cwd))).returncode == 0
 
 
 def euid_is_root() -> bool:
     """Returns True if script is running as root."""
-    import os
     return os.geteuid() == 0
