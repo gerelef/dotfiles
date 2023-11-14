@@ -91,9 +91,48 @@ class CompatibilityManager(ut.Manager):
 
 
 def create_argparser():
-    p = ut.get_default_argparser("Download & extract latest version of the most popular game compatibility layers.")
-    group = p.add_mutually_exclusive_group(required=True)
-    group.add_argument(
+    p = ut.get_default_argparser(
+        "Download & extract latest version of the most popular game compatibility layers.",
+        destination=False
+    )
+    destination_group = p.add_mutually_exclusive_group(required=True)
+    destination_group.add_argument(
+        "--destination",
+        help="Install @ custom installation directory",
+        required=False,
+        default=None,
+        type=str,
+    )
+    destination_group.add_argument(
+        "--steam",
+        help=f"Install @ default steam directory {STEAM_INSTALL_DIR}",
+        required=False,
+        default=None,
+        type=str,
+    )
+    destination_group.add_argument(
+        "--steam-flatpak",
+        help=f"Install @ default steam (flatpak) directory {STEAM_FLATPAK_INSTALL_DIR}",
+        required=False,
+        default=None,
+        type=str,
+    )
+    destination_group.add_argument(
+        "--lutris",
+        help=f"Install @ default lutris directory {LUTRIS_INSTALL_DIR}",
+        required=False,
+        default=None,
+        type=str,
+    )
+    destination_group.add_argument(
+        "--lutris-flatpak",
+        help=f"Install @ default lutris (flatpak) directory {LUTRIS_FLATPAK_INSTALL_DIR}",
+        required=False,
+        default=None,
+        type=str,
+    )
+    compat_group = p.add_mutually_exclusive_group(required=True)
+    compat_group.add_argument(
         "--luxtorpeda",
         help="Download & extract latest version of Luxtorpeda\n"
              "\thttps://github.com/luxtorpeda-dev/luxtorpeda",
@@ -101,7 +140,7 @@ def create_argparser():
         default=False,
         action="store_true"
     )
-    group.add_argument(
+    compat_group.add_argument(
         "--league",
         help="Download & extract latest version of Lutris-GE-X.x.x-LoL\n"
              "\thttps://github.com/gloriouseggroll/wine-ge-custom",
@@ -109,7 +148,7 @@ def create_argparser():
         default=False,
         action="store_true"
     )
-    group.add_argument(
+    compat_group.add_argument(
         "--wine",
         help="Download & extract latest version of Wine-GE-ProtonX-x\n"
              "\thttps://github.com/gloriouseggroll/wine-ge-custom",
@@ -117,7 +156,7 @@ def create_argparser():
         default=False,
         action="store_true"
     )
-    group.add_argument(
+    compat_group.add_argument(
         "--golden-egg",
         help="Download & extract latest version of GE-ProtonX-x\n"
              "\thttps://github.com/GloriousEggroll/proton-ge-custom",
@@ -131,10 +170,18 @@ def create_argparser():
 PROTON_GE_GITHUB_RELEASES_URL = "https://api.github.com/repos/GloriousEggroll/proton-ge-custom/releases"
 WINE_GE_GITHUB_RELEASES_URL = "https://api.github.com/repos/gloriouseggroll/wine-ge-custom/releases"
 LUXTORPEDA_GITHUB_RELEASES_URL = "https://api.github.com/repos/luxtorpeda-dev/luxtorpeda/releases"
-STEAM_INSTALL_DIR = os.path.expanduser("~/.local/share/Steam/compatibilitytools.d/")
-STEAM_FLATPAK_INSTALL_DIR = os.path.expanduser(None) # FIXME
-LUTRIS_INSTALL_DIR = os.path.expanduser("~/.local/share/lutris/runners/wine")
-LUTRIS_FLATPAK_INSTALL_DIR = os.path.expanduser("~/.var/app/net.lutris.Lutris/data/lutris/runners/wine")
+STEAM_INSTALL_DIR = os.path.expanduser(
+    "~/.local/share/Steam/compatibilitytools.d/"
+)
+STEAM_FLATPAK_INSTALL_DIR = os.path.expanduser(
+    "~/.var/app/com.valvesoftware.Valve/.local/share/Steam/compatibilitytools.d/"
+)
+LUTRIS_INSTALL_DIR = os.path.expanduser(
+    "~/.local/share/lutris/runners/wine/"
+)
+LUTRIS_FLATPAK_INSTALL_DIR = os.path.expanduser(
+    "~/.var/app/net.lutris.Lutris/data/lutris/runners/wine/"
+)
 DOWNLOAD_DIR = "/tmp/"
 
 
@@ -142,7 +189,7 @@ def setup_argument_options(args: dict[str, Any]) -> CompatibilityManager:
     remote = None
     _filter = CompatibilityManager.Filter()
     temp_dir = DOWNLOAD_DIR
-    install_dir = PROTON_GE_INSTALL_DIR
+    install_dir = STEAM_INSTALL_DIR
     # pick the first version by default
     filter_method = CompatibilityManager.FILTER_FIRST
     verification_method = CompatibilityManager.verify
