@@ -406,6 +406,7 @@ cat "$SSH_ROOT/id_rsa.pub"
 # if we haven't modified GRUB already, go ahead...
 readonly DEFAULT_GRUB_CFG="/etc/default/grub"
 if [[ -z $(cat $DEFAULT_GRUB_CFG | grep "GRUB_HIDDEN_TIMEOUT") ]]; then
+    dnf-install "hwinfo"
     out="$(sed -r 's/GRUB_TERMINAL_OUTPUT=.+/GRUB_TERMINAL_OUTPUT="gfxterm"/' < $DEFAULT_GRUB_CFG)" 
     echo "$out" | dd of="$DEFAULT_GRUB_CFG"
     
@@ -440,7 +441,11 @@ fi
 # if we haven't created /swapfile, go ahead...
 if [[ -z $(cat /etc/fstab | grep "/swapfile swap swap defaults 0 0") ]]; then
     kbs=$(cat /proc/meminfo | grep MemTotal | grep -E -o "[0-9]+")
-    fallocate -l "$kbs"KB /swapfile && sudo chmod 600 /swapfile && sudo chown root /swapfile && sudo mkswap /swapfile && sudo swapon /swapfile
+    fallocate -l "$kbs"KB /swapfile 
+    chmod 600 /swapfile 
+    chown root /swapfile 
+    mkswap /swapfile 
+    swapon /swapfile
     echo "/swapfile swap swap defaults 0 0" >> /etc/fstab
 fi
 
