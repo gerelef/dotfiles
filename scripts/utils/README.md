@@ -8,9 +8,11 @@ Utility scripts, meant to make life easier. In detail, by descending order of co
 - `update-compat-layers.py`
     - utility script meant to install all compatibility layers; plans to reach feature parity with `protonup-qt`, but not necessarily;
     see `update-compat-layers.py --help` for more. Appropriate compgen function should be in `.bashrc`, and if it isn't, it's being worked on.
+    Based on `update_utils.py`.
 - `update-ff-theme.py`
     - utility script meant to install a few popular, actively maintained firefox themes; 
     see `update-ff-theme.py --help` for more. Appropriate compgen function should be in `.bashrc`, and if it isn't, it's being worked on.
+    Based on `update_utils.py`.
 - `lss.py`
     - `ls` adjacent-"replacement" of choice; it's not really an `ls` replacement, it's just a greedy `ls -la` display essentially, 
     meant to maximize available terminal lines/cols usage when possible, instead of forcing you to scroll, or wrapping text around. 
