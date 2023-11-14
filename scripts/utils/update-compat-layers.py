@@ -101,35 +101,35 @@ def create_argparser():
         help="Install @ custom installation directory",
         required=False,
         default=None,
-        type=str,
+        type=str
     )
     destination_group.add_argument(
         "--steam",
-        help=f"Install @ default steam directory {STEAM_INSTALL_DIR}",
+        help=f"Install @ default steam directory\n\t{STEAM_INSTALL_DIR}",
         required=False,
         default=None,
-        type=str,
+        action="store_true"
     )
     destination_group.add_argument(
         "--steam-flatpak",
-        help=f"Install @ default steam (flatpak) directory {STEAM_FLATPAK_INSTALL_DIR}",
+        help=f"Install @ default steam (flatpak) directory\n\t{STEAM_FLATPAK_INSTALL_DIR}",
         required=False,
         default=None,
-        type=str,
+        action="store_true"
     )
     destination_group.add_argument(
         "--lutris",
-        help=f"Install @ default lutris directory {LUTRIS_INSTALL_DIR}",
+        help=f"Install @ default lutris directory\n\t{LUTRIS_INSTALL_DIR}",
         required=False,
         default=None,
-        type=str,
+        action="store_true"
     )
     destination_group.add_argument(
         "--lutris-flatpak",
-        help=f"Install @ default lutris (flatpak) directory {LUTRIS_FLATPAK_INSTALL_DIR}",
+        help=f"Install @ default lutris (flatpak) directory\n\t{LUTRIS_FLATPAK_INSTALL_DIR}",
         required=False,
         default=None,
-        type=str,
+        action="store_true"
     )
     compat_group = p.add_mutually_exclusive_group(required=True)
     compat_group.add_argument(
@@ -189,7 +189,7 @@ def setup_argument_options(args: dict[str, Any]) -> CompatibilityManager:
     remote = None
     _filter = CompatibilityManager.Filter()
     temp_dir = DOWNLOAD_DIR
-    install_dir = STEAM_INSTALL_DIR
+    install_dir = None
     # pick the first version by default
     filter_method = CompatibilityManager.FILTER_FIRST
     verification_method = CompatibilityManager.verify
@@ -212,14 +212,26 @@ def setup_argument_options(args: dict[str, Any]) -> CompatibilityManager:
                 if args[arg]:
                     remote = LUXTORPEDA_GITHUB_RELEASES_URL
                     verification_method = CompatibilityManager.VERIFY_NOTHING
-            case "unsafe":
-                if args[arg]:
-                    verification_method = CompatibilityManager.VERIFY_NOTHING
             case "destination":
                 if args[arg]:
                     install_dir = os.path.abspath(os.path.expanduser(args[arg]))
                     if not os.path.exists(install_dir):
                         os.makedirs(install_dir)
+            case "steam":
+                if args[arg]:
+                    install_dir = STEAM_INSTALL_DIR
+            case "steam_flatpak":
+                if args[arg]:
+                    install_dir = STEAM_FLATPAK_INSTALL_DIR
+            case "lutris":
+                if args[arg]:
+                    install_dir = LUTRIS_INSTALL_DIR
+            case "lutris_flatpak":
+                if args[arg]:
+                    install_dir = LUTRIS_FLATPAK_INSTALL_DIR
+            case "unsafe":
+                if args[arg]:
+                    verification_method = CompatibilityManager.VERIFY_NOTHING
             case "temporary":
                 if args[arg]:
                     temp_dir = os.path.abspath(os.path.expanduser(args[arg]))
