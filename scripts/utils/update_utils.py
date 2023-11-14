@@ -123,7 +123,7 @@ class Release:
     is_prerelease: Optional[bool] = None
 
 
-class HTTPStatus(enum.Enum):
+class HTTPStatus(enum.IntEnum):
     """
     Group HTTP Status classes.
     """
@@ -140,19 +140,19 @@ class HTTPStatus(enum.Enum):
         :returns: Group Status Class. For more information:
         https://developer.mozilla.org/en-US/docs/Web/HTTP/Status
         """
-        if code > HTTPStatus.SERVER_ERROR.value:
+        if code > HTTPStatus.SERVER_ERROR:
             return HTTPStatus.SERVER_ERROR
-        if code > HTTPStatus.CLIENT_ERROR.value:
+        if code > HTTPStatus.CLIENT_ERROR:
             return HTTPStatus.CLIENT_ERROR
-        if code > HTTPStatus.REDIRECTION.value:
+        if code > HTTPStatus.REDIRECTION:
             return HTTPStatus.REDIRECTION
-        if code > HTTPStatus.SUCCESS.value:
+        if code > HTTPStatus.SUCCESS:
             return HTTPStatus.SUCCESS
-        if code > HTTPStatus.INFORMATIONAL.value:
+        if code > HTTPStatus.INFORMATIONAL:
             return HTTPStatus.INFORMATIONAL
 
 
-class SupportedAPI(enum.Enum):
+class SupportedAPI(enum.StrEnum):
     """
     Supported Git providers.
     """
@@ -168,7 +168,7 @@ class SupportedAPI(enum.Enum):
         Match a URL to a provider.
         :returns: the supported Provider, or None if there are no matches.
         """
-        if regex_search(SupportedAPI.GITHUB_API_REGEXR.value, url):
+        if regex_search(SupportedAPI.GITHUB_API_REGEXR, url):
             return SupportedAPI.GITHUB_API
 
         return None
@@ -228,7 +228,7 @@ class Provider:
         status: HTTPStatus
         release: Release
         for status, release in self.recurse_releases(self.repository):
-            if status.value == HTTPStatus.CLIENT_ERROR or status.value == HTTPStatus.SERVER_ERROR:
+            if status == HTTPStatus.CLIENT_ERROR or status == HTTPStatus.SERVER_ERROR:
                 return None
             if release is None:
                 continue
@@ -366,8 +366,8 @@ class Manager(ABC):
                 files.append(fn)
                 self.log(Manager.Level.PROGRESS, f"Downloading {fn}")
                 status = self.download(os.path.join(self.download_dir, fn), url)
-                if status.value == HTTPStatus.CLIENT_ERROR or status.value == HTTPStatus.SERVER_ERROR:
-                    raise RuntimeError(f"Got HTTPStatus {status.value}!")
+                if status == HTTPStatus.CLIENT_ERROR or status == HTTPStatus.SERVER_ERROR:
+                    raise RuntimeError(f"Got HTTPStatus {status}!")
 
             self.log(Manager.Level.PROGRESS, "Verifying...")
             if not self.verify(files):
@@ -411,7 +411,7 @@ class Manager(ABC):
         kilobytes_denominator = 1_000_000
         with open(filename, "wb") as out:
             for status, bread, btotal, data in self.provider.download(url):
-                if status.value == HTTPStatus.CLIENT_ERROR or status.value == HTTPStatus.SERVER_ERROR:
+                if status == HTTPStatus.CLIENT_ERROR or status == HTTPStatus.SERVER_ERROR:
                     return status
                 self.log(Manager.Level.PROGRESS_BAR,
                          f"\r{round(bread / kilobytes_denominator)}"
@@ -467,6 +467,91 @@ class Manager(ABC):
         raise NotImplementedError
 
 
+type Package = str
+
+
+class Distribution(ABC):
+    # FIXME add documentation
+    
+    @abstractmethod
+    def check(packages: list[Package]) -> list[Package]:
+        # FIXME add documentation
+        pass
+    
+    @abstractmethod
+    def install(packages: list[Package]) -> tuple[bool, str, str]:
+        # FIXME add documentation
+        pass
+
+class Debian(Distribution):
+    # FIXME add documentation
+    
+    def check(packages: list[Package]) -> list[Package]:
+        pass
+    
+    def install(packages: list[Package]) -> tuple[bool, str, str]:
+        pass
+
+class OpenSUSE(Distribution):
+    # FIXME add documentation
+    
+    def check(packages: list[Package]) -> list[Package]:
+        pass
+    
+    def install(packages: list[Package]) -> tuple[bool, str, str]:
+        pass
+        
+class Fedora(Distribution):
+    # FIXME add documentation
+    
+    def check(packages: list[Package]) -> list[Package]:
+        pass
+    
+    def install(packages: list[Package]) -> tuple[bool, str, str]:
+        pass
+
+class Arch(Distribution):
+    # FIXME add documentation
+    
+    def check(packages: list[Package]) -> list[Package]:
+        pass
+    
+    def install(packages: list[Package]) -> tuple[bool, str, str]:
+        pass
+
+
+class SupportedDistribution(enum.StrEnum):
+    DEBIAN = "apt"
+    OPENSUSE = "zypper"
+    FEDORA = "dnf"
+    ARCH = "pacman"
+    
+    @staticmethod
+    def create() -> Distribution | None:
+        # FIXME add documentation
+        script= [
+            "bash", "--norc", "-c", """
+            [[ -n \"$(command -v apt)\" ]] && echo \"apt\" && exit 0;
+            [[ -n \"$(command -v dnf)\" ]] && echo \"dnf\" && exit 0;
+            [[ -n \"$(command -v zypper)\" ]] && echo \"zypper\" && exit 0;
+            [[ -n \"$(command -v pacman)\" ]] && echo \"pacman\" && exit 0;
+            exit 1;"""
+        ]
+        status, stdout, _ = run_subprocess(script)
+        if status:
+            stdout_stripped = stdout.strip() 
+            match (stdout_stripped):
+                case SupportedDistribution.DEBIAN:
+                    return Debian()
+                case SupportedDistribution.OPENSUSE:
+                    return OpenSUSE()
+                case SupportedDistribution.FEDORA:
+                    return Fedora()
+                case SupportedDistribution.ARCH:
+                    return Arch()
+        return None
+
+
 DEFAULT_ARGUMENTS = {
     "--version": {
         "help": "Specify a version to install. Default is latest.",
@@ -510,16 +595,26 @@ def get_default_argparser(description):
     return p
 
 
-def run_subprocess(commands: Sequence[str] | str, cwd: Filename = "~") -> bool:
+def run_subprocess(commands: Sequence[str] | str, cwd: Filename = "~") -> tuple[bool, str, str]:
     """
     :param cwd: current working directory
     :param commands: commands to run in subshell, sequence of or singular string(s)
     :parm cwd: working directory for subshell
+    :returns: status code (True on success, False on error), stdout, stderr 
     """
     import subprocess
-    return subprocess.run(commands, cwd=os.path.abspath(os.path.expanduser(cwd))).returncode == 0
+    result = subprocess.run(
+                commands, 
+                cwd=os.path.abspath(os.path.expanduser(cwd)),
+                capture_output=True,
+                text=True,
+    )
+    return (result.returncode == 0, result.stdout, result.stderr)
 
 
 def euid_is_root() -> bool:
     """Returns True if script is running as root."""
     return os.geteuid() == 0
+
+if __name__ == "__main__":
+    print(SupportedDistribution.create())
