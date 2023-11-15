@@ -42,7 +42,6 @@ class CompatibilityManager(ut.Manager):
             keyword_matches = self.keyword in lower_tag_name
         return version_matches and keyword_matches
 
-    # TODO create a specific function for each distinct repository required and assign to this
     def get_assets(self, r: ut.Release) -> dict[ut.Filename, ut.URL]:
         items = {}
         for fname, url in r.assets.items():
