@@ -1,15 +1,14 @@
 #!/usr/bin/env python3
+import argparse as ap
 import enum
 import os
-import sys
 import subprocess
-import argparse as ap
-from copy import deepcopy
+import sys
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from datetime import datetime
 from re import search as regex_search
-from typing import Generator, Sequence, Callable, Optional, Self
+from typing import Sequence, Callable, Optional, Self, Iterator
 
 try:
     import requests
@@ -155,28 +154,6 @@ class HTTPStatus(enum.IntEnum):
             return HTTPStatus.INFORMATIONAL
 
 
-class SupportedAPI(enum.StrEnum):
-    """
-    Supported Git providers.
-    """
-    GITHUB_API = "api.github.com/"
-    # GITLAB_API = "gitlab.com/api/" NOT SUPPORTED YET
-    GITHUB_API_REGEXR = r"(api\.github\.com\/)+"
-
-    # GITLAB_API_REGEXR = r"(gitlab[\.a-zA-Z]*\.com\/api\/)+" NOT SUPPORTED YET
-
-    @classmethod
-    def match(cls, url: URL) -> Self | None:
-        """
-        Match a URL to a provider.
-        :returns: the supported Provider, or None if there are no matches.
-        """
-        if regex_search(SupportedAPI.GITHUB_API_REGEXR, url):
-            return SupportedAPI.GITHUB_API
-
-        return None
-
-
 type Filter = Callable[[Release], bool]
 
 
@@ -195,11 +172,11 @@ class Provider:
         self.repository = url
 
     @abstractmethod
-    def recurse_releases(self, url: URL) -> Generator[tuple[HTTPStatus, Release | None], None, None]:
+    def recurse_releases(self, url: URL) -> Iterator[HTTPStatus, Release | None]:
         """
         Generator to get all GitHub releases for a given project.
         :param url: project endpoint
-        :returns: Generator[HTTPStatus, Release]
+        :returns: Iterator[HTTPStatus, Release | None]:
         :raises requests.exceptions.JSONDecodeError: Raised if unable to decode Json due to mangled data
         :raises requests.ConnectionError:
         :raises requests.Timeout:
@@ -208,12 +185,11 @@ class Provider:
         raise NotImplementedError
 
     @abstractmethod
-    def download(self, url: URL, chunk_size=1024 * 1024) -> Generator[
-        tuple[HTTPStatus, int, int, bytes | None], None, None]:
+    def download(self, url: URL, chunk_size=1024 * 1024) -> Iterator[HTTPStatus, int, int, bytes | None]:
         """
         Downloads a packet of size chunk_size from URL, which belongs to the provider defined previously.
         Generator that returns a binary data packet of size chunk_size, iteratively requested from url.
-        :returns: Generator[(HTTPStatus, CurrentBytesRead, TotalBytesToRead, Data), None, None]
+        :returns: Iterator[HTTPStatus, int, int, bytes | None]:
         :raises requests.ConnectionError:
         :raises requests.Timeout:
         :raises requests.TooManyRedirects:
@@ -240,23 +216,8 @@ class Provider:
                 return release
 
 
-class ProviderFactory:
-    def __init__(self):
-        raise RuntimeError("Cannot instantiate static factory!")
-
-    @staticmethod
-    def create(url: URL) -> Provider:
-        match (SupportedAPI.match(url)):
-            case SupportedAPI.GITHUB_API:
-                return GitHubProvider(url=url)
-            case _:
-                raise Exceptions.UnknownProviderException(
-                    f"Couldn't match repository URL to any supported provider!"
-                )
-
-
 class GitHubProvider(Provider):
-    def recurse_releases(self, url: URL) -> Generator[tuple[HTTPStatus, Release | None], None, None]:
+    def recurse_releases(self, url: URL) -> Iterator[HTTPStatus, Release | None]:
         while True:
             try:
                 with get_request(url) as req:
@@ -297,8 +258,7 @@ class GitHubProvider(Provider):
 
         return None
 
-    def download(self, url: URL, chunk_size=1024 * 1024) -> Generator[
-        tuple[HTTPStatus, int, int, bytes | None], None, None]:
+    def download(self, url: URL, chunk_size=1024 * 1024) -> Iterator[HTTPStatus, int, int, bytes | None]:
         with get_request(url, stream=True) as req:
             if HTTPStatus.create(req.status_code) != HTTPStatus.SUCCESS:
                 yield HTTPStatus.create(req.status_code), -1, -1, None
@@ -311,8 +271,44 @@ class GitHubProvider(Provider):
         return
 
 
+class ProviderFactory:
+    """
+    Supported Git provider factory.
+    """
+    GITHUB_API = "api.github.com/"
+    # GITLAB_API = "gitlab.com/api/" NOT SUPPORTED YET
+    GITHUB_API_REGEXR = r"(api\.github\.com\/)+"
+
+    # GITLAB_API_REGEXR = r"(gitlab[\.a-zA-Z]*\.com\/api\/)+" NOT SUPPORTED YET
+
+    def __init__(self):
+        raise RuntimeError("Cannot instantiate static factory!")
+
+    @classmethod
+    def match(cls, url: URL) -> Self | None:
+        """
+        Match a URL to a provider.
+        :returns: the supported Provider, or None if there are no matches.
+        """
+        if regex_search(ProviderFactory.GITHUB_API_REGEXR, url):
+            return ProviderFactory.GITHUB_API
+
+        return None
+
+    @staticmethod
+    def create(url: URL) -> Provider:
+        match (ProviderFactory.match(url)):
+            case ProviderFactory.GITHUB_API:
+                return GitHubProvider(url=url)
+            case _:
+                raise Exceptions.UnknownProviderException(
+                    f"Couldn't match repository URL to any supported provider!"
+                )
+
+
 @auto_str
 class Manager(ABC):
+    # FIXME add documentation
     # If you're going to be overriding functions using any of the functions below, this will be an important need
     # https://stackoverflow.com/questions/23082509/how-is-the-self-argument-magically-passed-to-instance-methods
     # https://stackoverflow.com/questions/1015307/how-to-bind-an-unbound-method-without-calling-it
@@ -481,55 +477,39 @@ class Distribution(ABC):
     @abstractmethod
     def check(self, packages: list[Package]) -> list[Package]:
         # FIXME add documentation
-        pass
-
-    @abstractmethod
-    def install(self, packages: list[Package]) -> tuple[bool, str, str]:
-        # FIXME add documentation
-        pass
+        raise NotImplementedError
 
 
 class Debian(Distribution):
     # FIXME add documentation
 
     def check(self, packages: list[Package]) -> list[Package]:
-        pass
-
-    def install(self, packages: list[Package]) -> tuple[bool, str, str]:
-        pass
+        raise NotImplementedError
 
 
 class OpenSUSE(Distribution):
     # FIXME add documentation
 
     def check(self, packages: list[Package]) -> list[Package]:
-        pass
-
-    def install(self, packages: list[Package]) -> tuple[bool, str, str]:
-        pass
+        raise NotImplementedError
 
 
 class Fedora(Distribution):
     # FIXME add documentation
 
     def check(self, packages: list[Package]) -> list[Package]:
-        pass
-
-    def install(self, packages: list[Package]) -> tuple[bool, str, str]:
-        pass
+        raise NotImplementedError
 
 
 class Arch(Distribution):
     # FIXME add documentation
 
     def check(self, packages: list[Package]) -> list[Package]:
-        pass
-
-    def install(self, packages: list[Package]) -> tuple[bool, str, str]:
-        pass
+        raise NotImplementedError
 
 
-class SupportedDistribution(enum.StrEnum):
+class DistributionFactory:
+    # FIXME add documentation on supported distributions
     DEBIAN = "apt"
     OPENSUSE = "zypper"
     FEDORA = "dnf"
@@ -550,70 +530,111 @@ class SupportedDistribution(enum.StrEnum):
         if status:
             stdout_stripped = stdout.strip()
             match stdout_stripped:
-                case SupportedDistribution.DEBIAN:
+                case DistributionFactory.DEBIAN:
                     return Debian()
-                case SupportedDistribution.OPENSUSE:
+                case DistributionFactory.OPENSUSE:
                     return OpenSUSE()
-                case SupportedDistribution.FEDORA:
+                case DistributionFactory.FEDORA:
                     return Fedora()
-                case SupportedDistribution.ARCH:
+                case DistributionFactory.ARCH:
                     return Arch()
         return None
 
 
-DEFAULT_FLAGS = {
-    "--version": {
-        "help": "Specify a version to install. Default is latest.",
-        "required": False,
-        "default": None
-    },
-    "--keep": {
-        "help": "Specify if downloaded files will be kept after finishing.",
-        "required": False,
-        "default": False,
-        "action": "store_true"
-    },
-    "--temporary": {
-        "help": "Specify temporary directory files will be downloaded at. Default is /tmp/",
-        "required": False,
-        "default": None,
-        "type": str
-    },
-    "--destination": {
-        "help": "Specify installation directory.",
-        "required": False,
-        "default": None,
-        "type": str
-    },
-    "--unsafe": {
-        "help": "Specify if file verification will be skipped. Set by default if unsupported by the repository.",
-        "required": False,
-        "default": False,
-        "action": "store_true"
-    },
-}
-
-
-# TODO add ArgHandler so there's less ArgumentParser boilerplate in scripts...
+# TODO add ArgHandler so there's less ArgumentParser boilerplate in scripts..
 # TODO add compgen generator from ArgumentParser
-def get_default_argparser(description, version=True, keep=True, temporary=True, destination=True, unsafe=True):
+class ArgumentParserBuilder:
     # FIXME add documentation
-    flags_dict = deepcopy(DEFAULT_FLAGS)
-    if not version:
-        del flags_dict["--version"]
-    if not keep:
-        del flags_dict["--keep"]
-    if not temporary:
-        del flags_dict["--temporary"]
-    if not destination:
-        del flags_dict["--destination"]
-    if not unsafe:
-        del flags_dict["--unsafe"]
+    DEFAULT_VERSION: tuple[(str, ...), dict[...]] = (
+        ("-v", "--version"),
+        {
+            "help": "Specify a version to install.",
+            "required": False,
+            "default": None
+        }
+    )
 
-    p = ap.ArgumentParser(description=description)
-    for argname, argopts in flags_dict.items():
-        p.add_argument(argname, **argopts)
-    return p
+    DEFAULT_KEEP: tuple[(str, ...), dict[...]] = (
+        ("-k", "--keep"),
+        {
+            "help": "Specify if temporary file cleanup will be performed.",
+            "required": False,
+            "default": False,
+            "action": "store_true"
+        }
+    )
+
+    DEFAULT_TEMPORARY: tuple[(str, ...), dict[...]] = (
+        ("-t", "--temporary"),
+        {
+            "help": "Specify temporary (download) directory files.",
+            "required": False,
+            "default": None,
+            "type": str
+        }
+    )
+
+    DEFAULT_DESTINATION: tuple[(str, ...), dict[...]] = (
+        ("-d", "--destination"),
+        {
+            "help": "Specify installation directory.",
+            "required": False,
+            "default": None,
+            "type": str
+        }
+    )
+
+    DEFAULT_UNSAFE: tuple[(str, ...), dict[...]] = (
+        ("-u", "--unsafe"),
+        {
+            "help": "Specify if file verification will be skipped.",
+            "required": False,
+            "default": False,
+            "action": "store_true"
+        }
+    )
+
+    def __init__(self, description: str):
+        self.parser = ap.ArgumentParser(description=description)
+
+    def add_version(self) -> Self:
+        flags, kwargs = ArgumentParserBuilder.DEFAULT_VERSION
+        self.parser.add_argument(*flags, **kwargs)
+        return self
+
+    def add_keep(self) -> Self:
+        flags, kwargs = ArgumentParserBuilder.DEFAULT_KEEP
+        self.parser.add_argument(*flags, **kwargs)
+        return self
+
+    def add_temporary(self) -> Self:
+        flags, kwargs = ArgumentParserBuilder.DEFAULT_TEMPORARY
+        self.parser.add_argument(*flags, **kwargs)
+        return self
+
+    def add_destination(self) -> Self:
+        flags, kwargs = ArgumentParserBuilder.DEFAULT_DESTINATION
+        self.parser.add_argument(*flags, **kwargs)
+        return self
+
+    def add_unsafe(self) -> Self:
+        flags, kwargs = ArgumentParserBuilder.DEFAULT_UNSAFE
+        self.parser.add_argument(*flags, **kwargs)
+        return self
+
+    def add_arguments(self, flags_kwargs_dict: dict[(str, ...), dict[...]]) -> Self:
+        for flags, argopts in flags_kwargs_dict.items():
+            self.parser.add_argument(*flags, **argopts)
+        return self
+
+    def add_mutually_exclusive_group(self, flags_kwargs_dict: dict[(str, ...), dict[...]], required=True) -> Self:
+        meg = self.parser.add_mutually_exclusive_group(required=required)
+        for flags, argopts in flags_kwargs_dict.items():
+            meg.add_argument(*flags, **argopts)
+        return self
+
+    def build(self) -> ap.ArgumentParser:
+        return self.parser
 
 
 def run_subprocess(commands: Sequence[str] | str, cwd: Filename = "~") -> tuple[bool, str, str]:
@@ -635,7 +656,3 @@ def run_subprocess(commands: Sequence[str] | str, cwd: Filename = "~") -> tuple[
 def euid_is_root() -> bool:
     """Returns True if script is running as root."""
     return os.geteuid() == 0
-
-
-if __name__ == "__main__":
-    print(SupportedDistribution.create())
