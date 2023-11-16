@@ -90,80 +90,82 @@ class CompatibilityManager(ut.Manager):
 
 
 def create_argparser():
-    p = ut.get_default_argparser(
-        "Download & extract latest version of the most popular game compatibility layers.",
-        destination=False
+    ap_builder = (
+        ut.ArgumentParserBuilder(
+            "Download & extract latest version of the most popular game compatibility layers."
+        )
+        .add_version()
+        .add_keep()
+        .add_unsafe()
+        .add_temporary()
+        .add_mutually_exclusive_group(
+            required=True,
+            flags_kwargs_dict={
+                ("-d", "--destination"): {
+                    "help": "Install @ custom installation directory",
+                    "required": False,
+                    "default": None,
+                    "type": str
+                },
+                ("--steam",): {
+                    "help": f"Install @ default steam directory\n{STEAM_INSTALL_DIR}",
+                    "required": False,
+                    "default": None,
+                    "action": "store_true"
+                },
+                ("--steam-flatpak",): {
+                    "help": f"Install @ default steam (flatpak) directory\n{STEAM_FLATPAK_INSTALL_DIR}",
+                    "required": False,
+                    "default": None,
+                    "action": "store_true"
+                },
+                ("--lutris",): {
+                    "help": f"Install @ default lutris directory\n{LUTRIS_INSTALL_DIR}",
+                    "required": False,
+                    "default": None,
+                    "action": "store_true"
+                },
+                ("--lutris-flatpak",): {
+                    "help": f"Install @ default lutris (flatpak) directory\n{LUTRIS_FLATPAK_INSTALL_DIR}",
+                    "required": False,
+                    "default": None,
+                    "action": "store_true"
+                }
+            }
+        )
+        .add_mutually_exclusive_group(
+            required=True,
+            flags_kwargs_dict={
+                ("--golden-egg",): {
+                    "help": "Download & extract latest version of GE-ProtonX-x\n"
+                            "https://github.com/GloriousEggroll/proton-ge-custom",
+                    "required": False,
+                    "default": False,
+                    "action": "store_true"},
+                ("--luxtorpeda",): {
+                    "help": "Download & extract latest version of Luxtorpeda\n"
+                            "https://github.com/luxtorpeda-dev/luxtorpeda",
+                    "required": False,
+                    "default": False,
+                    "action": "store_true"
+                },
+                ("--league",): {
+                    "help ": "Download & extract latest version of Lutris-GE-X.x.x-LoL\n"
+                             "https://github.com/gloriouseggroll/wine-ge-custom",
+                    "required": False,
+                    "default": False,
+                    "action": "store_true"},
+                ("--wine",): {
+                    "help": "Download & extract latest version of Wine-GE-ProtonX-x\n"
+                            "https://github.com/gloriouseggroll/wine-ge-custom",
+                    "required": False,
+                    "default": False,
+                    "action": "store_true"
+                }
+            }
+        )
     )
-    destination_group = p.add_mutually_exclusive_group(required=True)
-    destination_group.add_argument(
-        "--destination",
-        help="Install @ custom installation directory",
-        required=False,
-        default=None,
-        type=str
-    )
-    destination_group.add_argument(
-        "--steam",
-        help=f"Install @ default steam directory\n\t{STEAM_INSTALL_DIR}",
-        required=False,
-        default=None,
-        action="store_true"
-    )
-    destination_group.add_argument(
-        "--steam-flatpak",
-        help=f"Install @ default steam (flatpak) directory\n\t{STEAM_FLATPAK_INSTALL_DIR}",
-        required=False,
-        default=None,
-        action="store_true"
-    )
-    destination_group.add_argument(
-        "--lutris",
-        help=f"Install @ default lutris directory\n\t{LUTRIS_INSTALL_DIR}",
-        required=False,
-        default=None,
-        action="store_true"
-    )
-    destination_group.add_argument(
-        "--lutris-flatpak",
-        help=f"Install @ default lutris (flatpak) directory\n\t{LUTRIS_FLATPAK_INSTALL_DIR}",
-        required=False,
-        default=None,
-        action="store_true"
-    )
-    compat_group = p.add_mutually_exclusive_group(required=True)
-    compat_group.add_argument(
-        "--luxtorpeda",
-        help="Download & extract latest version of Luxtorpeda\n"
-             "\thttps://github.com/luxtorpeda-dev/luxtorpeda",
-        required=False,
-        default=False,
-        action="store_true"
-    )
-    compat_group.add_argument(
-        "--league",
-        help="Download & extract latest version of Lutris-GE-X.x.x-LoL\n"
-             "\thttps://github.com/gloriouseggroll/wine-ge-custom",
-        required=False,
-        default=False,
-        action="store_true"
-    )
-    compat_group.add_argument(
-        "--wine",
-        help="Download & extract latest version of Wine-GE-ProtonX-x\n"
-             "\thttps://github.com/gloriouseggroll/wine-ge-custom",
-        required=False,
-        default=False,
-        action="store_true"
-    )
-    compat_group.add_argument(
-        "--golden-egg",
-        help="Download & extract latest version of GE-ProtonX-x\n"
-             "\thttps://github.com/GloriousEggroll/proton-ge-custom",
-        required=False,
-        default=False,
-        action="store_true"
-    )
-    return p
+    return ap_builder.build()
 
 
 PROTON_GE_GITHUB_RELEASES_URL = "https://api.github.com/repos/GloriousEggroll/proton-ge-custom/releases"

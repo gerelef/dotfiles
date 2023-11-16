@@ -34,15 +34,16 @@ class ThemeManager(ut.Manager):
         return version_matches
 
     def get_assets(self, r: Release) -> dict[Filename, URL]:
-        # don't implement this, as there's no real "default" way to get assets
-        pass
+        # there's no real "default" way to get assets
+        raise NotImplemented
 
     def verify(self, files: list[Filename]) -> bool:
-        pass
+        # no repository supports checksums
+        raise NotImplemented
 
     def install(self, files: list[Filename]):
-        # don't implement this, as there's no real "default" installation method
-        pass
+        # there's no real "default" installation method
+        raise NotImplemented
 
     def cleanup(self, files: list[Filename]):
         for filename in files:
@@ -140,39 +141,47 @@ def unzip(zipfile: Filename, destination):
         raise RuntimeError(f"{' '.join(command)} errored! !")
 
 
-def create_argparse():
-    p = ut.get_default_argparser(
-        description="Download & extract latest version of any firefox theme"
+def create_argparser():
+    ap_builder = (
+        ut.ArgumentParserBuilder(
+            "Download & extract latest version of any firefox theme"
+        ).add_version()
+        .add_keep()
+        .add_temporary()
+        .add_destination()
+        .add_arguments(
+            flags_kwargs_dict={
+                ("-r", "--resource"): {
+                    "help": "Resource override file to include into UserChrome.css",
+                    "required": False
+                }
+            }
+        )
+        .add_mutually_exclusive_group(
+            required=True,
+            flags_kwargs_dict={
+                "--gnome": {
+                    "help": "Download & extract latest version of firefox-gnome-theme\n"
+                            "https://github.com/rafaelmardojai/firefox-gnome-theme",
+                    "required": False,
+                    "action": "store_true"
+                },
+                "--blur": {
+                    "help ": "Download & extract latest version of Firefox-Mod-Blur\n"
+                             "https://github.com/datguypiko/Firefox-Mod-Blur",
+                    "required": False,
+                    "action": "store_true"
+                },
+                "--mono": {
+                    "help": "Download & extract latest version of mono-firefox-theme\n"
+                            "https://github.com/witalihirsch/Mono-firefox-theme",
+                    "required": False,
+                    "action": "store_true"
+                }
+            }
+        )
     )
-    p.add_argument(
-        "--resource",
-        help="Resource override file to include into UserChrome.css",
-        required=False
-    )
-    group = p.add_mutually_exclusive_group(required=True)
-    group.add_argument(
-        "--gnome",
-        help="Download & extract latest version of firefox-gnome-theme\n"
-             "\thttps://github.com/rafaelmardojai/firefox-gnome-theme",
-        required=False,
-        action="store_true"
-    )
-    group.add_argument(
-        "--blur",
-        help="Download & extract latest version of Firefox-Mod-Blur\n"
-             "\thttps://github.com/datguypiko/Firefox-Mod-Blur",
-        required=False,
-        action="store_true"
-    )
-    group.add_argument(
-        "--mono",
-        help="Download & extract latest version of mono-firefox-theme\n"
-             "\thttps://github.com/witalihirsch/Mono-firefox-theme",
-        required=False,
-        action="store_true"
-    )
-
-    return p
+    return ap_builder.build()
 
 
 def get_install_dirs() -> list[str]:
@@ -204,7 +213,7 @@ def setup_argument_options(args: dict[str, Any]) -> ThemeManager:
     install_method = None
     get_assets_method = None
     filter_method = ThemeManager.FILTER_FIRST
-    verification_method = ThemeManager.verify
+    verification_method = ThemeManager.VERIFY_NOTHING
     cleanup_method = ThemeManager.cleanup
 
     for arg in args:
@@ -217,22 +226,16 @@ def setup_argument_options(args: dict[str, Any]) -> ThemeManager:
                     remote = GNOME_THEME_GITHUB_RELEASES_URL
                     get_assets_method = get_source_assets
                     install_method = install_gnome
-                    verification_method = ThemeManager.VERIFY_NOTHING
             case "blur":
                 if args[arg]:
                     remote = BLUR_THEME_GITHUB_RELEASES_URL
                     get_assets_method = get_regular_assets
                     install_method = install_blur
-                    verification_method = ThemeManager.VERIFY_NOTHING
             case "mono":
                 if args[arg]:
                     remote = MONO_THEME_GITHUB_RELEASES_URL
                     get_assets_method = get_regular_assets
                     install_method = install_mono
-                    verification_method = ThemeManager.VERIFY_NOTHING
-            case "unsafe":
-                if args[arg]:
-                    verification_method = ThemeManager.VERIFY_NOTHING
             case "destination":
                 if args[arg]:
                     install_dirs = [args[arg]]
@@ -270,7 +273,7 @@ if ut.euid_is_root():
     exit(2)
 
 if __name__ == "__main__":
-    parser = create_argparse()
+    parser = create_argparser()
     theme_manager = setup_argument_options(vars(parser.parse_args()))
 
     print("""
