@@ -5,8 +5,7 @@ import types
 import shutil
 from typing import Any
 
-import update_utils as ut
-from update_utils import Filename, Release, URL
+import modules.update_utils as ut
 
 try:
     import requests
@@ -17,14 +16,14 @@ except NameError:
 
 class ThemeManager(ut.Manager):
 
-    def __init__(self, repository: URL, temp_dir: Filename, install_dirs: list[Filename], version: str = None,
+    def __init__(self, repository: ut.URL, temp_dir: ut.Filename, install_dirs: list[ut.Filename], version: str = None,
                  resource_file: str = None):
         super().__init__(repository, temp_dir)
         self.install_dirs = install_dirs
         self.version = version
         self.resource_file = resource_file
 
-    def filter(self, release: Release) -> bool:
+    def filter(self, release: ut.Release) -> bool:
         lower_tag_name = release.tag_name.lower()
 
         version_matches = True
@@ -33,19 +32,19 @@ class ThemeManager(ut.Manager):
 
         return version_matches
 
-    def get_assets(self, r: Release) -> dict[Filename, URL]:
+    def get_assets(self, r: ut.Release) -> dict[ut.Filename, ut.URL]:
         # there's no real "default" way to get assets
         raise NotImplemented
 
-    def verify(self, files: list[Filename]) -> bool:
+    def verify(self, files: list[ut.Filename]) -> bool:
         # no repository supports checksums
         raise NotImplemented
 
-    def install(self, files: list[Filename]):
+    def install(self, files: list[ut.Filename]):
         # there's no real "default" installation method
         raise NotImplemented
 
-    def cleanup(self, files: list[Filename]):
+    def cleanup(self, files: list[ut.Filename]):
         for filename in files:
             real_path = os.path.join(self.download_dir, filename)
             if os.path.exists(real_path):
@@ -65,7 +64,7 @@ class ThemeManager(ut.Manager):
 
 
 # for blur and mono
-def get_regular_assets(self: ThemeManager, r: Release) -> dict[Filename, URL]:
+def get_regular_assets(self: ThemeManager, r: ut.Release) -> dict[ut.Filename, ut.URL]:
     td = {}
     for fn, url in r.assets.items():
         if "zip" in fn or "userChrome" in fn:
@@ -74,14 +73,14 @@ def get_regular_assets(self: ThemeManager, r: Release) -> dict[Filename, URL]:
 
 
 # for gnome theme
-def get_source_assets(self: ThemeManager, r: Release) -> dict[Filename, URL] | None:
+def get_source_assets(self: ThemeManager, r: ut.Release) -> dict[ut.Filename, ut.URL] | None:
     for url in r.src:
         if "zipball" in url:
             return {r.tag_name.lower(): url}
     return None
 
 
-def install_gnome(self: ThemeManager, files: list[Filename]):
+def install_gnome(self: ThemeManager, files: list[ut.Filename]):
     zipfile = files[0]
     for destination in self.install_dirs:
         if not os.path.exists(destination):
@@ -101,7 +100,7 @@ def install_gnome(self: ThemeManager, files: list[Filename]):
             join_userchromes(source_userchrome, destination_userchrome)
 
 
-def install_blur(self: ThemeManager, files: list[Filename]):
+def install_blur(self: ThemeManager, files: list[ut.Filename]):
     zipfile = [fn for fn in files if ".zip" in fn][0]
     for destination in self.install_dirs:
         if not os.path.exists(destination):
@@ -114,7 +113,7 @@ def install_blur(self: ThemeManager, files: list[Filename]):
             join_userchromes(source_userchrome, destination_userchrome)
 
 
-def install_mono(self: ThemeManager, files: list[Filename]):
+def install_mono(self: ThemeManager, files: list[ut.Filename]):
     zipfile = files[0]
     for destination in self.install_dirs:
         if not os.path.exists(destination):
@@ -127,13 +126,13 @@ def install_mono(self: ThemeManager, files: list[Filename]):
             join_userchromes(source_userchrome, destination_userchrome)
 
 
-def join_userchromes(appender: Filename, appendee: Filename):
+def join_userchromes(appender: ut.Filename, appendee: ut.Filename):
     with open(appender, "r") as resource_file:
         with open(appendee, "a+") as main:
             main.write(resource_file.read())
 
 
-def unzip(zipfile: Filename, destination):
+def unzip(zipfile: ut.Filename, destination):
     # unzip path/to/archive1.zip path/to/archive2.zip ... -d path/to/output
     command = ["unzip", "-o", os.path.abspath(os.path.expanduser(zipfile)), "-d", f"{destination}"]
     status, _, _ = ut.run_subprocess(command)

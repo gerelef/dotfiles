@@ -6,7 +6,7 @@ from subprocess import run
 from sys import argv, stderr, exit
 from typing import Iterator
 
-from fcolour import colour_path
+from modules.fcolour import colour_path
 
 
 class Formatter:

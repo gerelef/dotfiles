@@ -1,9 +1,8 @@
 #!/usr/bin/env -S python3 -S -OO
-from enum import StrEnum
+from functools import partial
 from os import environ
 from pathlib import PosixPath
 from typing import Callable, Iterator
-from functools import partial
 
 type Colour = str
 

@@ -6,7 +6,7 @@ import types
 from dataclasses import dataclass
 
 from typing import Any, Optional
-import update_utils as ut
+from modules import update_utils as ut
 
 try:
     import requests
