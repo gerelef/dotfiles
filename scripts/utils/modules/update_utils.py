@@ -537,7 +537,6 @@ class DistributionFactory:
             "bash", "--norc", "-c", """
             [[ -n \"$(command -v apt)\" ]] && echo \"apt\" && exit 0;
             [[ -n \"$(command -v dnf)\" ]] && echo \"dnf\" && exit 0;
-            [[ -n \"$(command -v zypper)\" ]] && echo \"zypper\" && exit 0;
             [[ -n \"$(command -v pacman)\" ]] && echo \"pacman\" && exit 0;
             exit 1;"""
         ]
