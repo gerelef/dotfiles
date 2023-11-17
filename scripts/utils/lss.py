@@ -28,38 +28,41 @@ class Formatter:
         """
         :returns: elements per line
         """
-        # minimum WORD columns needed to display everything inside the terminal viewport
-        min_word_columns_needed = ceil(element_count / self.terminal_lines)
+        # minimum WORD lines needed to display everything inside the terminal viewport
+        min_word_lines_needed = ceil(element_count / self.terminal_lines)
 
         # max WORD columns with the max name length (+ inbetween padding) that fit inside the terminal viewport
         max_word_columns_fitting = floor(self.terminal_columns / (max_element_size + Formatter.PADDING))
 
         # minimum TERMINAL columns needed
         min_terminal_columns_needed = ceil(
-            max_element_size * min_word_columns_needed + Formatter.PADDING * min_word_columns_needed
+            max_element_size * min_word_lines_needed + Formatter.PADDING * min_word_lines_needed
         )
 
-        if min_word_columns_needed > max_word_columns_fitting:
-            return min_word_columns_needed
+        # if the minimum word lines we need to display everything are more
+        #  than the maximum word columns that fit, and it's > 0
+        if min_word_lines_needed > max_word_columns_fitting > 0:
+            return max_word_columns_fitting
 
         columns_can_overfit = floor(self.terminal_lines / 2) <= element_count
-        overfit_wont_overflow = (min_word_columns_needed + 1) <= max_word_columns_fitting
+        overfit_wont_overflow = (min_word_lines_needed + 1) <= max_word_columns_fitting
         if columns_can_overfit and overfit_wont_overflow:
-            return min_word_columns_needed + 1
+            return min_word_lines_needed + 1
 
-        return min_word_columns_needed
+        return min_word_lines_needed
 
     def output(self) -> Iterator[str | None]:
         # https://stackoverflow.com/questions/2414667/python-string-class-like-stringbuilder-in-c
         # if the elements won't fit at all, we'll make them fit with .crop() on our own anyways
-        max_element_size = min(max(self.max_files_word_length, self.max_directories_word_length), self.terminal_columns)
+        max_element_size = min(
+            max(self.max_files_word_length, self.max_directories_word_length),
+            self.terminal_columns
+        )
+
         elements_per_line = self.get_ideal_elements_per_line(
             len(self.files) + len(self.directories),
             max_element_size
         )
-
-        if elements_per_line < 1:
-            elements_per_line = 1
 
         current_iterable = self.directories + self.files
 
