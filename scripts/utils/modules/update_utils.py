@@ -13,8 +13,19 @@ from typing import Sequence, Callable, Optional, Self, Iterator
 try:
     import requests
 except NameError:
-    print("Couldn't find requests library! Is it installed in the current environment?", file=sys.stderr)
+    print(
+        "Couldn't find requests library! Is it installed in the current environment?",
+        file=sys.stderr
+    )
     exit(1)
+
+try:
+    import dasbus as dbus
+except NameError:
+    print(
+        "`dasbus` is not installed. Install if you want automatic package checking/installing available.",
+        file=sys.stderr
+    )
 
 
 # Writing boilerplate code to avoid writing boilerplate code!
@@ -182,7 +193,7 @@ class Provider:
         :raises requests.Timeout:
         :raises requests.TooManyRedirects:
         """
-        raise NotImplementedError
+        raise NotImplemented
 
     @abstractmethod
     def download(self, url: URL, chunk_size=1024 * 1024) -> Iterator[HTTPStatus, int, int, bytes | None]:
@@ -194,7 +205,7 @@ class Provider:
         :raises requests.Timeout:
         :raises requests.TooManyRedirects:
         """
-        raise NotImplementedError
+        raise NotImplemented
 
     def get_release(self, f: Filter) -> Release | None:
         """
@@ -388,7 +399,7 @@ class Manager(ABC):
         :param release:
         :returns bool: True if attributes match what we want to download, false otherwise.
         """
-        raise NotImplementedError
+        raise NotImplemented
 
     @abstractmethod
     def get_assets(self, r: Release) -> dict[Filename, URL]:
@@ -396,7 +407,7 @@ class Manager(ABC):
         Get the assets that we'll download from a specific Release.
         :returns dict[Filename, URL]: a dict where filenames match the URL we'll download from
         """
-        raise NotImplementedError
+        raise NotImplemented
 
     def download(self, filename: Filename, url: URL) -> HTTPStatus:
         """
@@ -433,7 +444,7 @@ class Manager(ABC):
         :param files:
         :returns bool: True if everything's verified, false otherwise.
         """
-        raise NotImplementedError
+        raise NotImplemented
 
     @abstractmethod
     def install(self, files: list[Filename]):
@@ -443,7 +454,7 @@ class Manager(ABC):
         Remember to bind the function to your instance with types.MethodType(DO_NOTHING, instance)
         :param files: files to install
         """
-        raise NotImplementedError
+        raise NotImplemented
 
     @abstractmethod
     def cleanup(self, files: list[Filename]):
@@ -454,7 +465,7 @@ class Manager(ABC):
         :param files: downloaded files; interact with os.path.join(self.download_dir, filename)
         Note: it's not guaranteed the files exist!
         """
-        raise NotImplementedError
+        raise NotImplemented
 
     @abstractmethod
     def log(self, level: Level, msg: str):
@@ -465,7 +476,7 @@ class Manager(ABC):
         :param level: Log level
         :param msg: string to log
         """
-        raise NotImplementedError
+        raise NotImplemented
 
 
 type Package = str
@@ -477,41 +488,45 @@ class Distribution(ABC):
     @abstractmethod
     def check(self, packages: list[Package]) -> list[Package]:
         # FIXME add documentation
-        raise NotImplementedError
+        raise NotImplemented
+
+    @abstractmethod
+    def install(self, packages: list[Package]):
+        raise NotImplemented
 
 
 class Debian(Distribution):
     # FIXME add documentation
-
     def check(self, packages: list[Package]) -> list[Package]:
-        raise NotImplementedError
+        raise NotImplemented
 
-
-class OpenSUSE(Distribution):
-    # FIXME add documentation
-
-    def check(self, packages: list[Package]) -> list[Package]:
-        raise NotImplementedError
+    def install(self, packages: list[Package]):
+        raise NotImplemented
 
 
 class Fedora(Distribution):
     # FIXME add documentation
 
     def check(self, packages: list[Package]) -> list[Package]:
-        raise NotImplementedError
+        raise NotImplemented
+
+    def install(self, packages: list[Package]):
+        raise NotImplemented
 
 
 class Arch(Distribution):
     # FIXME add documentation
 
     def check(self, packages: list[Package]) -> list[Package]:
-        raise NotImplementedError
+        raise NotImplemented
+
+    def install(self, packages: list[Package]):
+        raise NotImplemented
 
 
 class DistributionFactory:
     # FIXME add documentation on supported distributions
     DEBIAN = "apt"
-    OPENSUSE = "zypper"
     FEDORA = "dnf"
     ARCH = "pacman"
 
@@ -532,8 +547,6 @@ class DistributionFactory:
             match stdout_stripped:
                 case DistributionFactory.DEBIAN:
                     return Debian()
-                case DistributionFactory.OPENSUSE:
-                    return OpenSUSE()
                 case DistributionFactory.FEDORA:
                     return Fedora()
                 case DistributionFactory.ARCH:
