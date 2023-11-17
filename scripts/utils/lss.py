@@ -8,7 +8,7 @@ from subprocess import run
 from sys import argv, stderr, exit
 from typing import Iterator
 
-from modules.fcolour import colour_path, POSIXColouredString
+from modules.fcolour import colour_path, PosixColouredString
 
 
 class Formatter:
@@ -40,7 +40,7 @@ class Formatter:
         )
 
         # if the minimum word lines we need to display everything are more
-        #  than the maximum word columns that fit, and it's > 0
+        #  than the maximum word columns that fit, and at least one column fits (> 0)
         if min_word_lines_needed > max_word_columns_fitting > 0:
             return max_word_columns_fitting
 
@@ -70,7 +70,7 @@ class Formatter:
             if not current_iterable:
                 break
 
-            line: list[POSIXColouredString] = []
+            line: list[PosixColouredString] = []
             for _ in range(elements_per_line):
                 element = current_iterable.pop(0)
                 out = colour_path(element)
