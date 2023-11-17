@@ -390,6 +390,7 @@
   },
   "ver": "5.0.0",
   "keybindings": {
-    "_execute_sidebar_action": "F1"
+    "_execute_sidebar_action": "F1",
+    "search": "F2"
   }
 }
