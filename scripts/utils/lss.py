@@ -1,58 +1,65 @@
 #!/usr/bin/env -S python3 -S -OO
+import os
 import sys
 from math import floor, ceil
 from pathlib import PosixPath
+from stat import S_ISFIFO
 from subprocess import run
 from sys import argv, stderr, exit
 from typing import Iterator
 
-from modules.fcolour import colour_path
+from modules.fcolour import colour_path, POSIXColouredString
 
 
 class Formatter:
     # spaces inbetween columns
     PADDING = 1
-    TOLERANCE = .10
 
     def __init__(self, directories: list[PosixPath], files: list[PosixPath]):
         self.directories = directories
         self.files = files
 
+        self.terminal_lines, self.terminal_columns = Formatter.term_size()
+
         self.max_directories_word_length = len(max(directories, key=lambda e: len(e.name)).name) if directories else 0
         self.max_files_word_length = len(max(files, key=lambda e: len(e.name)).name) if files else 0
 
-    def get_ideal_elements_per_line(self, element_count: int, element_size: int) -> int | None:
+    def get_ideal_elements_per_line(self, element_count: int, max_element_size: int) -> int | None:
         """
         :returns: elements per line
         """
-        terminal_lines, terminal_columns = Formatter.term_size()
-
         # minimum WORD columns needed to display everything inside the terminal viewport
-        min_word_columns_needed = ceil(element_count / terminal_lines)
+        min_word_columns_needed = ceil(element_count / self.terminal_lines)
 
         # max WORD columns with the max name length (+ inbetween padding) that fit inside the terminal viewport
-        max_word_columns_fitting = floor(terminal_columns / (element_size + Formatter.PADDING))
+        max_word_columns_fitting = floor(self.terminal_columns / (max_element_size + Formatter.PADDING))
 
         # minimum TERMINAL columns needed
         min_terminal_columns_needed = ceil(
-            element_size * min_word_columns_needed + Formatter.PADDING * min_word_columns_needed
+            max_element_size * min_word_columns_needed + Formatter.PADDING * min_word_columns_needed
         )
 
         if min_word_columns_needed > max_word_columns_fitting:
-            return max_word_columns_fitting
+            return min_word_columns_needed
 
-        if floor(terminal_lines / 2) <= element_count and (min_word_columns_needed + 1) <= max_word_columns_fitting:
+        columns_can_overfit = floor(self.terminal_lines / 2) <= element_count
+        overfit_wont_overflow = (min_word_columns_needed + 1) <= max_word_columns_fitting
+        if columns_can_overfit and overfit_wont_overflow:
             return min_word_columns_needed + 1
 
         return min_word_columns_needed
 
     def output(self) -> Iterator[str | None]:
         # https://stackoverflow.com/questions/2414667/python-string-class-like-stringbuilder-in-c
-        max_element_size = max(self.max_files_word_length, self.max_directories_word_length)
+        # if the elements won't fit at all, we'll make them fit with .crop() on our own anyways
+        max_element_size = min(max(self.max_files_word_length, self.max_directories_word_length), self.terminal_columns)
         elements_per_line = self.get_ideal_elements_per_line(
             len(self.files) + len(self.directories),
             max_element_size
         )
+
+        if elements_per_line < 1:
+            elements_per_line = 1
 
         current_iterable = self.directories + self.files
 
@@ -60,23 +67,28 @@ class Formatter:
             if not current_iterable:
                 break
 
-            line: list[str] = []
+            line: list[POSIXColouredString] = []
             for _ in range(elements_per_line):
                 element = current_iterable.pop(0)
-                line.append(colour_path(element) + ' ' * (max_element_size - len(element.name)))
+                out = colour_path(element)
+                out.crop(self.terminal_columns)
+                out.append(' ' * (max_element_size - len(element.name)))
+
+                line.append(out)
 
                 if not current_iterable:
                     break
 
-            yield ' '.join(line)
+            yield ' '.join(map(str, line))
 
     @staticmethod
     def term_size() -> tuple[int, int]:
+        # NOTE: piperror occurs here, but detecting if stdout is a pipe is more bothersome than worth it;
+        #  if you want to chain commands, use file redirection >.
         # if for some reason the terminal tput cols/lines doesn't work, return 0, so we can at least *not* crash.
         lines = run(["tput", "lines"], capture_output=True, encoding="utf-8").stdout.replace("\n", "") or 0
         cols = run(["tput", "cols"], capture_output=True, encoding="utf-8").stdout.replace("\n", "") or 0
-        # -1 for padding
-        return int(lines) - 1, int(cols) - 1
+        return int(lines), int(cols)
 
 
 def run_subshell(command: list[str]) -> tuple[int, str]:

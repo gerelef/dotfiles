@@ -5,10 +5,49 @@ from pathlib import PosixPath
 from typing import Callable, Iterator
 
 type Colour = str
+type POSIXColouredString = POSIXColouredString
 
 
-def __colour_string(text: str, c: Colour):
-    return f"\033[{c}m{text}\033[0m" if c else text
+class POSIXColouredString:
+    def __init__(self, text: str | POSIXColouredString, colour_codes: list[Colour] = None, ):
+        if colour_codes is None:
+            colour_codes = []
+        self.colours = colour_codes
+
+        self.string: str | POSIXColouredString = text
+        if isinstance(text, POSIXColouredString):
+            self.string: str = text.string
+            self.colours.append(text.colours)
+
+        if not isinstance(self.string, str):
+            raise RuntimeError("self.string not string?!")
+
+        self.appendix = ''
+
+    def crop(self, length):
+        if len(self.string) < length:
+            return
+
+        if len(self.string) > 6:
+            self.string = self.string[0:length - 3] + "..."
+            return
+        self.string = self.string[0:length]
+
+    def append(self, appendix: str):
+        self.appendix = appendix
+
+    def __len__(self):
+        return len(self.string)
+
+    def __str__(self):
+        if self.colours:
+            return f"\033[{self.colours}m{self.string}\033[0m{self.appendix}"
+
+        return f"{self.string}{self.appendix}"
+
+
+def __colour_string(text: str, c: Colour) -> POSIXColouredString:
+    return POSIXColouredString(text, c)
 
 
 def __colour_default(p: PosixPath, colour: Colour):
@@ -95,7 +134,7 @@ def __cascade_specials(p: PosixPath, specials_iterator: Iterator):
         return ""
 
 
-def colour_path(p: PosixPath):
+def colour_path(p: PosixPath) -> POSIXColouredString:
     try:
         if "." in p.name:
             extl = p.name.split(".")[1:]
@@ -134,8 +173,8 @@ __ls_colors_special_keys = {
     "ec": __colour_endcode,
 }
 
-__special_colour_functions: list[Callable[[str], str]] = []
-__extension_colour_functions: dict[str, Callable[[str], str]] = {}
+__special_colour_functions: list[Callable[[str], POSIXColouredString]] = []
+__extension_colour_functions: dict[str, Callable[[str], POSIXColouredString]] = {}
 
 _ls_colors = environ["LS_COLORS"].split(":")
 for colour_set in _ls_colors:
