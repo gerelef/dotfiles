@@ -19,14 +19,6 @@ except NameError:
     )
     exit(1)
 
-try:
-    import dasbus as dbus
-except NameError:
-    print(
-        "`dasbus` is not installed. Install if you want automatic package checking/installing available.",
-        file=sys.stderr
-    )
-
 
 # Writing boilerplate code to avoid writing boilerplate code!
 # https://stackoverflow.com/questions/32910096/is-there-a-way-to-auto-generate-a-str-implementation-in-python
@@ -103,6 +95,9 @@ class Exceptions:
         pass
 
     class NoAssetsFound(Exception):
+        pass
+
+    class DependencyMissing(Exception):
         pass
 
 
@@ -183,11 +178,11 @@ class Provider:
         self.repository = url
 
     @abstractmethod
-    def recurse_releases(self, url: URL) -> Iterator[HTTPStatus, Release | None]:
+    def recurse_releases(self, url: URL) -> Iterator[tuple[HTTPStatus, Release | None]]:
         """
         Generator to get all GitHub releases for a given project.
         :param url: project endpoint
-        :returns: Iterator[HTTPStatus, Release | None]:
+        :returns: Iterator[tuple[HTTPStatus, Release | None]]:
         :raises requests.exceptions.JSONDecodeError: Raised if unable to decode Json due to mangled data
         :raises requests.ConnectionError:
         :raises requests.Timeout:
@@ -196,11 +191,11 @@ class Provider:
         raise NotImplemented
 
     @abstractmethod
-    def download(self, url: URL, chunk_size=1024 * 1024) -> Iterator[HTTPStatus, int, int, bytes | None]:
+    def download(self, url: URL, chunk_size=1024 * 1024) -> Iterator[tuple[HTTPStatus, int, int, bytes | None]]:
         """
         Downloads a packet of size chunk_size from URL, which belongs to the provider defined previously.
         Generator that returns a binary data packet of size chunk_size, iteratively requested from url.
-        :returns: Iterator[HTTPStatus, int, int, bytes | None]:
+        :returns: Iterator[tuple[HTTPStatus, int, int, bytes | None]]:
         :raises requests.ConnectionError:
         :raises requests.Timeout:
         :raises requests.TooManyRedirects:
@@ -228,7 +223,7 @@ class Provider:
 
 
 class GitHubProvider(Provider):
-    def recurse_releases(self, url: URL) -> Iterator[HTTPStatus, Release | None]:
+    def recurse_releases(self, url: URL) -> Iterator[tuple[HTTPStatus, Release | None]]:
         while True:
             try:
                 with get_request(url) as req:
@@ -269,7 +264,7 @@ class GitHubProvider(Provider):
 
         return None
 
-    def download(self, url: URL, chunk_size=1024 * 1024) -> Iterator[HTTPStatus, int, int, bytes | None]:
+    def download(self, url: URL, chunk_size=1024 * 1024) -> Iterator[tuple[HTTPStatus, int, int, bytes | None]]:
         with get_request(url, stream=True) as req:
             if HTTPStatus.create(req.status_code) != HTTPStatus.SUCCESS:
                 yield HTTPStatus.create(req.status_code), -1, -1, None
@@ -482,45 +477,56 @@ class Manager(ABC):
 type Package = str
 
 
+@dataclass
+class Dependencies:
+    debian: list[Package]
+    fedora: list[Package]
+    arch: list[Package]
+
+
 class Distribution(ABC):
     # FIXME add documentation
+    def __init__(self, deps: Dependencies):
+        self.dependencies = deps
 
     @abstractmethod
-    def check(self, packages: list[Package]) -> list[Package]:
+    def check(self) -> list[Package]:
         # FIXME add documentation
         raise NotImplemented
 
     @abstractmethod
-    def install(self, packages: list[Package]):
+    def install(self):
+        # FIXME add documentation
         raise NotImplemented
 
 
+@auto_str
 class Debian(Distribution):
     # FIXME add documentation
-    def check(self, packages: list[Package]) -> list[Package]:
+    def check(self) -> list[Package]:
         raise NotImplemented
 
-    def install(self, packages: list[Package]):
+    def install(self):
         raise NotImplemented
 
 
+@auto_str
 class Fedora(Distribution):
     # FIXME add documentation
-
-    def check(self, packages: list[Package]) -> list[Package]:
+    def check(self) -> list[Package]:
         raise NotImplemented
 
-    def install(self, packages: list[Package]):
+    def install(self):
         raise NotImplemented
 
 
+@auto_str
 class Arch(Distribution):
     # FIXME add documentation
-
-    def check(self, packages: list[Package]) -> list[Package]:
+    def check(self) -> list[Package]:
         raise NotImplemented
 
-    def install(self, packages: list[Package]):
+    def install(self):
         raise NotImplemented
 
 
@@ -531,8 +537,12 @@ class DistributionFactory:
     ARCH = "pacman"
 
     @staticmethod
-    def create() -> Distribution | None:
+    def create(deps: Dependencies) -> Distribution | None:
         # FIXME add documentation
+
+        # FIXME add check if dbus dep is installed
+        # FIXME add check if PackageKit is installed, and cache the result
+        # FIXME add cache for distribution detectedt
         script = [
             "bash", "--norc", "-c", """
             [[ -n \"$(command -v apt)\" ]] && echo \"apt\" && exit 0;
@@ -545,11 +555,11 @@ class DistributionFactory:
             stdout_stripped = stdout.strip()
             match stdout_stripped:
                 case DistributionFactory.DEBIAN:
-                    return Debian()
+                    return Debian(deps)
                 case DistributionFactory.FEDORA:
-                    return Fedora()
+                    return Fedora(deps)
                 case DistributionFactory.ARCH:
-                    return Arch()
+                    return Arch(deps)
         return None
 
 
@@ -668,3 +678,19 @@ def run_subprocess(commands: Sequence[str] | str, cwd: Filename = "~") -> tuple[
 def euid_is_root() -> bool:
     """Returns True if script is running as root."""
     return os.geteuid() == 0
+
+
+if __name__ == "__main__":
+    deps = Dependencies(
+        debian=[
+            "testing-debian"
+        ],
+        fedora=[
+            "testing-fedora"
+        ],
+        arch=[
+            "testing-arch"
+        ]
+    )
+    distro = DistributionFactory.create(deps)
+    print(distro)
