@@ -6,6 +6,9 @@ import types
 from dataclasses import dataclass
 
 from typing import Any, Optional
+
+import requests
+
 from modules import update_utils as ut
 
 
@@ -104,25 +107,25 @@ def create_argparser():
                 ("--steam",): {
                     "help": f"Install @ default steam directory\n{STEAM_INSTALL_DIR}",
                     "required": False,
-                    "default": None,
+                    "default": False,
                     "action": "store_true"
                 },
                 ("--steam-flatpak",): {
                     "help": f"Install @ default steam (flatpak) directory\n{STEAM_FLATPAK_INSTALL_DIR}",
                     "required": False,
-                    "default": None,
+                    "default": False,
                     "action": "store_true"
                 },
                 ("--lutris",): {
                     "help": f"Install @ default lutris directory\n{LUTRIS_INSTALL_DIR}",
                     "required": False,
-                    "default": None,
+                    "default": False,
                     "action": "store_true"
                 },
                 ("--lutris-flatpak",): {
                     "help": f"Install @ default lutris (flatpak) directory\n{LUTRIS_FLATPAK_INSTALL_DIR}",
                     "required": False,
-                    "default": None,
+                    "default": False,
                     "action": "store_true"
                 }
             }
@@ -135,23 +138,25 @@ def create_argparser():
                             "https://github.com/GloriousEggroll/proton-ge-custom",
                     "required": False,
                     "default": False,
-                    "action": "store_true"},
-                ("--luxtorpeda",): {
-                    "help": "Download & extract latest version of Luxtorpeda\n"
-                            "https://github.com/luxtorpeda-dev/luxtorpeda",
+                    "action": "store_true"
+                },
+                ("--league",): {
+                    "help": "Download & extract latest version of Lutris-GE-X.x.x-LoL\n"
+                            "https://github.com/gloriouseggroll/wine-ge-custom",
                     "required": False,
                     "default": False,
                     "action": "store_true"
                 },
-                ("--league",): {
-                    "help ": "Download & extract latest version of Lutris-GE-X.x.x-LoL\n"
-                             "https://github.com/gloriouseggroll/wine-ge-custom",
-                    "required": False,
-                    "default": False,
-                    "action": "store_true"},
                 ("--wine",): {
                     "help": "Download & extract latest version of Wine-GE-ProtonX-x\n"
                             "https://github.com/gloriouseggroll/wine-ge-custom",
+                    "required": False,
+                    "default": False,
+                    "action": "store_true"
+                },
+                ("--luxtorpeda",): {
+                    "help": "Download & extract latest version of Luxtorpeda\n"
+                            "https://github.com/luxtorpeda-dev/luxtorpeda",
                     "required": False,
                     "default": False,
                     "action": "store_true"

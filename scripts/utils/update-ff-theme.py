@@ -159,19 +159,19 @@ def create_argparser():
         .add_mutually_exclusive_group(
             required=True,
             flags_kwargs_dict={
-                "--gnome": {
+                ("--gnome",): {
                     "help": "Download & extract latest version of firefox-gnome-theme\n"
                             "https://github.com/rafaelmardojai/firefox-gnome-theme",
                     "required": False,
                     "action": "store_true"
                 },
-                "--blur": {
-                    "help ": "Download & extract latest version of Firefox-Mod-Blur\n"
+                ("--blur",): {
+                    "help": "Download & extract latest version of Firefox-Mod-Blur\n"
                              "https://github.com/datguypiko/Firefox-Mod-Blur",
                     "required": False,
                     "action": "store_true"
                 },
-                "--mono": {
+                ("--mono",): {
                     "help": "Download & extract latest version of mono-firefox-theme\n"
                             "https://github.com/witalihirsch/Mono-firefox-theme",
                     "required": False,
