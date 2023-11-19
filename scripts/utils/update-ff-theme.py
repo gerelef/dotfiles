@@ -90,8 +90,7 @@ def install_gnome(self: ThemeManager, files: list[ut.Filename]):
         unzip(realpath_zipfile, self.download_dir)
         extracted_src = [d for d in os.listdir(self.download_dir) if "rafaelmardojai-firefox-gnome-theme" in d][0]
         src_contents = os.path.join(self.download_dir, extracted_src)
-        for file in os.listdir(src_contents):
-            shutil.move(os.path.join(src_contents, file), os.path.join(destination, file))
+        shutil.copytree(src_contents, destination, dirs_exist_ok=True)
 
         if self.resource_file:
             source_userchrome = os.path.abspath(os.path.expanduser(self.resource_file))
