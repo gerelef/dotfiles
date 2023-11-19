@@ -258,10 +258,10 @@ def setup_argument_options(args: dict[str, Any]) -> ThemeManager:
         resource_file=resource_file
     )
 
-    manager.install = types.MethodType(install_method, manager)
-    manager.get_assets = types.MethodType(get_assets_method, manager)
     manager.filter = types.MethodType(filter_method, manager)
+    manager.get_assets = types.MethodType(get_assets_method, manager)
     manager.verify = types.MethodType(verification_method, manager)
+    manager.install = types.MethodType(install_method, manager)
     manager.cleanup = types.MethodType(cleanup_method, manager)
     return manager
 
