@@ -163,7 +163,7 @@ lss () (
 complete -A directory lss
 
 update-ff-theme () (
-    $DOTFILES_DIR/scripts/utils/update-ff-theme.py update-ff-theme --resource "~/dotfiles/.config/mozilla/userChrome.css" "$@"
+    $DOTFILES_DIR/scripts/utils/update-ff-theme.py --resource "~/dotfiles/.config/mozilla/userChrome.css" "$@"
 )
 
 update-compat-layers () (
