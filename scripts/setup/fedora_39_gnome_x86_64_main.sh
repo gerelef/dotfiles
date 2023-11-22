@@ -216,13 +216,7 @@ if [[ -n "$NVIDIA_GPU" && $(lsmod | grep nouveau) ]]; then
     echo "Found $NVIDIA_GPU running with nouveau drivers!"
     if [[ "$BIOS_MODE" == "UEFI" && $(mokutil --sb-state 2> /dev/null) ]]; then
         # https://blog.monosoul.dev/2022/05/17/automatically-sign-nvidia-kernel-module-in-fedora-36/
-        while : ; do
-            read -p "Do you want to enroll MOK and restart?[Y/n] " -n 1 -r
-            [[ ! $REPLY =~ ^[YyNn]$ ]] || break
-        done
-        
-        echo ""
-        if [[ $REPLY =~ ^[Yy]$ ]]; then
+        if ask-user 'Do you want to enroll MOK and restart?'; then
             echo "Signing GPU drivers..."
             kmodgenca -a
             mokutil --import /etc/pki/akmods/certs/public_key.der
@@ -285,41 +279,22 @@ echo "Done."
 
 #######################################################################################################
 
-echo "-------------------INSTALLING---------------- $INSTALLABLE_EXTRAS $INSTALLABLE_EXTRAS_FLATPAK" | tr " " "\n"
-while : ; do
-    read -p "Are you sure you want to install extras?[Y/n] " -n 1 -r
-    [[ ! $REPLY =~ ^[YyNn]$ ]] || break
-done
-
-echo ""
-if [[ $REPLY =~ ^[Yy]$ ]]; then
+if ask-user 'Are you sure you want to install extras?'; then    
+    echo "-------------------INSTALLING---------------- $INSTALLABLE_EXTRAS $INSTALLABLE_EXTRAS_FLATPAK" | tr " " "\n"
     dnf-install "$INSTALLABLE_EXTRAS"
     dnf-install "$INSTALLABLE_OBS_STUDIO"
     flatpak-install "$INSTALLABLE_EXTRAS_FLATPAK"
     echo "Done."
 fi
 
-echo "-------------------INSTALLING---------------- $INSTALLABLE_WINE_GE_CUSTOM_PKGS" | tr " " "\n"
-while : ; do
-    read -p "Are you sure you want to install the Wine Compatibility layer?[Y/n] " -n 1 -r
-    [[ ! $REPLY =~ ^[YyNn]$ ]] || break
-done
-
-echo ""
-if [[ $REPLY =~ ^[Yy]$ ]]; then
-    echo "Installing tools for Wine..."
+if ask-user "Are you sure you want to install the Wine Compatibility layer?"; then
+    echo "-------------------INSTALLING---------------- $INSTALLABLE_WINE_GE_CUSTOM_PKGS" | tr " " "\n"
     dnf-install "$INSTALLABLE_WINE_GE_CUSTOM_PKGS"
     echo "Done."
 fi
 
-echo "-------------------INSTALLING---------------- $INSTALLABLE_IDE_FLATPAKS $INSTALLABLE_DEV_PKGS" | tr " " "\n"
-while : ; do
-    read -p "Are you sure you want to install Community IDEs & Jetbrains Toolbox?[Y/n] " -n 1 -r
-    [[ ! $REPLY =~ ^[YyNn]$ ]] || break
-done
-
-echo ""
-if [[ $REPLY =~ ^[Yy]$ ]]; then
+if ask-user "Are you sure you want to install Community IDEs & Jetbrains Toolbox?"; then
+    echo "-------------------INSTALLING---------------- $INSTALLABLE_IDE_FLATPAKS $INSTALLABLE_DEV_PKGS" | tr " " "\n"
     dnf groupinstall -y --best --allowerasing "C Development Tools and Libraries"
     dnf groupinstall -y --best --allowerasing "Development Tools"
 
@@ -343,14 +318,8 @@ fi
 
 #######################################################################################################
 
-echo "-------------------INSTALLING---------------- $INSTALLABLE_EXTENSIONS" | tr " " "\n"
-while : ; do
-    read -p "Do you want to install extensions?[Y/n] " -n 1 -r
-    ! [[ $REPLY =~ ^[YyNn]$ ]] || break
-done
-echo ""
-
-if [[ $REPLY =~ ^[Yy]$ ]]; then
+if ask-user "Do you want to install extensions?"; then
+    echo "-------------------INSTALLING---------------- $INSTALLABLE_EXTENSIONS" | tr " " "\n"
     dnf-install "$INSTALLABLE_EXTENSIONS"
     echo "Done."
 fi
@@ -361,10 +330,7 @@ fi
 echo "https://www.suse.com/support/kb/doc/?id=000017060"
 while : ; do
     change-ownership-recursive "$MZL_ROOT"
-    read -p "Please run firefox as a user to create it's configuration directories; let it load fully, then close it.[Y/n] " -n 1 -r
-    
-    echo ""
-    if [[ $REPLY =~ ^[Yy]$ ]]; then
+    if ask-user "Please run firefox as a user to create it's configuration directories; let it load fully, then close it."; then
         copy-ff-rc-files
         echo "Done."
         break

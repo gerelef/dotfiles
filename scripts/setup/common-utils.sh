@@ -37,6 +37,16 @@ readonly RND_ROOT="$REAL_USER_HOME/random"
 #  since everything here will be owned by "root" 
 mkdir -p "$PPW_ROOT" "$MZL_ROOT" "$SSH_ROOT" "$BIN_ROOT" "$WRK_ROOT" "$SMR_ROOT" "$RND_ROOT"
 
+ask-user () (
+    while : ; do
+        read -p "$* [Y/n]: " -n 1 -r
+        echo ""
+        [[ $REPLY =~ ^[Yy]$ ]] && return 0
+        [[ $REPLY =~ ^[Nn]$ ]] && return 1
+        echo "Invalid reply \"$REPLY\", please answer with Y/y for Yes, or N/n for No."
+    done
+)
+
 dnf-install () (
     [[ $# -eq 0 ]] && return 2
     
