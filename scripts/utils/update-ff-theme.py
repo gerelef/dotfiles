@@ -3,6 +3,7 @@ import os
 import sys
 import types
 import shutil
+from functools import partial
 from typing import Any
 
 import modules.update_utils as ut
@@ -16,7 +17,10 @@ except NameError:
 
 class ThemeManager(ut.Manager):
 
-    def __init__(self, repository: ut.URL, temp_dir: ut.Filename, install_dirs: list[ut.Filename], version: str = None,
+    def __init__(self, repository: ut.URL,
+                 temp_dir: ut.Filename,
+                 install_dirs: list[ut.Filename],
+                 version: str = None,
                  resource_file: str = None):
         super().__init__(repository, temp_dir)
         self.install_dirs = install_dirs
@@ -34,15 +38,15 @@ class ThemeManager(ut.Manager):
 
     def get_assets(self, r: ut.Release) -> dict[ut.Filename, ut.URL]:
         # there's no real "default" way to get assets
-        raise NotImplemented
+        raise NotImplementedError
 
     def verify(self, files: list[ut.Filename]) -> bool:
         # no repository supports checksums
-        raise NotImplemented
+        raise NotImplementedError
 
     def install(self, files: list[ut.Filename]):
         # there's no real "default" installation method
-        raise NotImplemented
+        raise NotImplementedError
 
     def cleanup(self, files: list[ut.Filename]):
         for filename in files:
@@ -63,11 +67,19 @@ class ThemeManager(ut.Manager):
         print(msg)
 
 
-# for blur and mono
+# for blur, mono, gx
 def get_regular_assets(self: ThemeManager, r: ut.Release) -> dict[ut.Filename, ut.URL]:
     td = {}
     for fn, url in r.assets.items():
         if "zip" in fn or "userChrome" in fn:
+            td[fn] = url
+    return td
+
+
+def get_keyword_uwp_assets(self: ThemeManager, r: ut.Release, keyword) -> dict[ut.Filename, ut.URL]:
+    td = {}
+    for fn, url in r.assets.items():
+        if keyword in fn.lower():
             td[fn] = url
     return td
 
@@ -89,6 +101,7 @@ def install_gnome(self: ThemeManager, files: list[ut.Filename]):
         realpath_zipfile = os.path.join(self.download_dir, zipfile)
         unzip(realpath_zipfile, self.download_dir)
         extracted_src = [d for d in os.listdir(self.download_dir) if "rafaelmardojai-firefox-gnome-theme" in d][0]
+
         src_contents = os.path.join(self.download_dir, extracted_src)
         shutil.copytree(src_contents, destination, dirs_exist_ok=True)
 
@@ -96,7 +109,7 @@ def install_gnome(self: ThemeManager, files: list[ut.Filename]):
             source_userchrome = os.path.abspath(os.path.expanduser(self.resource_file))
             destination_userchrome = os.path.join(destination, "userChrome.css")
             self.log(ThemeManager.Level.PROGRESS, f"Joined {source_userchrome} to {destination_userchrome}")
-            join_userchromes(source_userchrome, destination_userchrome)
+            join_files(source_userchrome, destination_userchrome)
 
 
 def install_blur(self: ThemeManager, files: list[ut.Filename]):
@@ -109,7 +122,7 @@ def install_blur(self: ThemeManager, files: list[ut.Filename]):
             source_userchrome = os.path.abspath(os.path.expanduser(self.resource_file))
             destination_userchrome = os.path.join(destination, "userChrome.css")
             self.log(ThemeManager.Level.PROGRESS, f"Joined {source_userchrome} to {destination_userchrome}")
-            join_userchromes(source_userchrome, destination_userchrome)
+            join_files(source_userchrome, destination_userchrome)
 
 
 def install_mono(self: ThemeManager, files: list[ut.Filename]):
@@ -122,10 +135,64 @@ def install_mono(self: ThemeManager, files: list[ut.Filename]):
             source_userchrome = os.path.abspath(os.path.expanduser(self.resource_file))
             destination_userchrome = os.path.join(destination, "userChrome.css")
             self.log(ThemeManager.Level.PROGRESS, f"Joined {source_userchrome} to {destination_userchrome}")
-            join_userchromes(source_userchrome, destination_userchrome)
+            join_files(source_userchrome, destination_userchrome)
 
 
-def join_userchromes(appender: ut.Filename, appendee: ut.Filename):
+def install_gx(self: ThemeManager, files: list[ut.Filename]):
+    zipfile = files[0]
+    for destination in self.install_dirs:
+        if not os.path.exists(destination):
+            os.makedirs(destination)
+
+        zip_realpath = os.path.join(self.download_dir, zipfile)
+        unzipped_realpath = os.path.join(self.download_dir, "firefox-gx-out")
+        unzip(zip_realpath, unzipped_realpath)
+
+        src_contents =  os.path.join(unzipped_realpath, os.listdir(unzipped_realpath)[0], "chrome")
+        shutil.copytree(src_contents, destination, dirs_exist_ok=True)
+
+        if self.resource_file:
+            source_userchrome = os.path.abspath(os.path.expanduser(self.resource_file))
+            destination_userchrome = os.path.join(destination, "userChrome.css")
+            self.log(ThemeManager.Level.PROGRESS, f"Joined {source_userchrome} to {destination_userchrome}")
+            join_files(source_userchrome, destination_userchrome)
+
+        print(f"This specific theme might require a custom `user.js` in "
+              f"{os.path.abspath(os.path.join(destination, ".."))}, make sure you install it manually!")
+
+
+def install_ui_fix(self: ThemeManager, files: list[ut.Filename]):
+    zipfile = files[0]
+    for destination in self.install_dirs:
+        if not os.path.exists(destination):
+            os.makedirs(destination)
+
+        zip_realpath = os.path.join(self.download_dir, zipfile)
+        unzipped_realpath = os.path.join(self.download_dir, "ui-fix-out")
+        unzip(zip_realpath, unzipped_realpath)
+
+        src_contents = os.path.join(unzipped_realpath, "chrome")
+        shutil.copytree(src_contents, destination, dirs_exist_ok=True)
+
+        if self.resource_file:
+            source_userchrome = os.path.abspath(os.path.expanduser(self.resource_file))
+            destination_userchrome = os.path.join(destination, "userChrome.css")
+            self.log(ThemeManager.Level.PROGRESS, f"Joined {source_userchrome} to {destination_userchrome}")
+            join_files(source_userchrome, destination_userchrome)
+
+        print(f"This specific theme might require a custom `user.js` in "
+              f"{os.path.abspath(os.path.join(destination, ".."))}, make sure you install it manually!")
+
+
+def install_uwp(self: ThemeManager, files: list[ut.Filename]):
+    raise NotImplementedError
+
+
+def install_cascade(self: ThemeManager, files: list[ut.Filename]):
+    raise NotImplementedError
+
+
+def join_files(appender: ut.Filename, appendee: ut.Filename):
     with open(appender, "r") as resource_file:
         with open(appendee, "a+") as main:
             main.write(resource_file.read())
@@ -166,7 +233,7 @@ def create_argparser():
                 },
                 ("--blur",): {
                     "help": "Download & extract latest version of Firefox-Mod-Blur\n"
-                             "https://github.com/datguypiko/Firefox-Mod-Blur",
+                            "https://github.com/datguypiko/Firefox-Mod-Blur",
                     "required": False,
                     "action": "store_true"
                 },
@@ -175,10 +242,65 @@ def create_argparser():
                             "https://github.com/witalihirsch/Mono-firefox-theme",
                     "required": False,
                     "action": "store_true"
+                },
+                ("--gx",): {
+                    "help": "Download & extract latest version of firefox-gx\n"
+                            "https://github.com/Godiesc/firefox-gx",
+                    "required": False,
+                    "action": "store_true"
+                },
+                ("--esr-lepton-photon",): {
+                    "help": "Download & extract latest version of esr-photon from firefox-ui-fix\n"
+                            "https://github.com/black7375/Firefox-UI-Fix",
+                    "required": False,
+                    "action": "store_true"
+                },
+                ("--esr-lepton-proton",): {
+                    "help": "Download & extract latest version of esr-proton from firefox-ui-fix\n"
+                            "https://github.com/black7375/Firefox-UI-Fix",
+                    "required": False,
+                    "action": "store_true"
+                },
+                ("--esr-lepton",): {
+                    "help": "Download & extract latest version of esr-lepton from firefox-ui-fix\n"
+                            "https://github.com/black7375/Firefox-UI-Fix",
+                    "required": False,
+                    "action": "store_true"
+                },
+                ("--lepton-photon",): {
+                    "help": "Download & extract latest version of lepton-photon from firefox-ui-fix\n"
+                            "https://github.com/black7375/Firefox-UI-Fix",
+                    "required": False,
+                    "action": "store_true"
+                },
+                ("--lepton-proton",): {
+                    "help": "Download & extract latest version of lepton-proton from firefox-ui-fix\n"
+                            "https://github.com/black7375/Firefox-UI-Fix",
+                    "required": False,
+                    "action": "store_true"
+                },
+                ("--lepton",): {
+                    "help": "Download & extract latest version of lepton from firefox-ui-fix\n"
+                            "https://github.com/black7375/Firefox-UI-Fix",
+                    "required": False,
+                    "action": "store_true"
+                },
+                ("--uwp",): {
+                    "help": "Download & extract latest version of firefox-uwp-style\n"
+                            "https://github.com/Guerra24/Firefox-UWP-Style",
+                    "required": False,
+                    "action": "store_true"
+                },
+                ("--cascade",): {
+                    "help": "Download & extract latest version of cascade\n"
+                            "https://github.com/andreasgrafen/cascade",
+                    "required": False,
+                    "action": "store_true"
                 }
             }
         )
     )
+
     return ap_builder.build()
 
 
@@ -197,6 +319,10 @@ def get_install_dirs() -> list[str]:
 MONO_THEME_GITHUB_RELEASES_URL = "https://api.github.com/repos/witalihirsch/Mono-firefox-theme/releases"
 GNOME_THEME_GITHUB_RELEASES_URL = "https://api.github.com/repos/rafaelmardojai/firefox-gnome-theme/releases"
 BLUR_THEME_GITHUB_RELEASES_URL = "https://api.github.com/repos/datguypiko/Firefox-Mod-Blur/releases"
+GX_THEME_GITHUB_RELEASES_URL = "https://api.github.com/repos/Godiesc/firefox-gx/releases"
+UI_FIX_THEME_GITHUB_RELEASES_URL = "https://api.github.com/repos/black7375/Firefox-UI-Fix/releases"
+UWP_THEME_GITHUB_BRANCHES_URL = "https://api.github.com/repos/Guerra24/Firefox-UWP-Style/branches"
+CASCADE_THEME_GITHUB_BRANCHES_URL = "https://api.github.com/repos/andreasgrafen/cascade/branches"
 DEFAULT_INSTALL_DIRECTORIES: list[str] = get_install_dirs()
 DOWNLOAD_DIR: str = "/tmp/"
 
@@ -234,6 +360,51 @@ def setup_argument_options(args: dict[str, Any]) -> ThemeManager:
                     remote = MONO_THEME_GITHUB_RELEASES_URL
                     get_assets_method = get_regular_assets
                     install_method = install_mono
+            case "gx":
+                if args[arg]:
+                    remote = GX_THEME_GITHUB_RELEASES_URL
+                    get_assets_method = get_regular_assets
+                    install_method = install_gx
+            # there's alot of duplication here: there must be a smarter way to solve this...!
+            case "esr_lepton_photon":
+                if args[arg]:
+                    remote = UI_FIX_THEME_GITHUB_RELEASES_URL
+                    get_assets_method = partial(get_keyword_uwp_assets, keyword="esr-lepton-photon")
+                    install_method = install_ui_fix
+            case "esr_lepton_proton":
+                if args[arg]:
+                    remote = UI_FIX_THEME_GITHUB_RELEASES_URL
+                    get_assets_method = partial(get_keyword_uwp_assets, keyword="esr-lepton-proton")
+                    install_method = install_ui_fix
+            case "esr_lepton":
+                if args[arg]:
+                    remote = UI_FIX_THEME_GITHUB_RELEASES_URL
+                    get_assets_method = partial(get_keyword_uwp_assets, keyword="esr-lepton.zip")
+                    install_method = install_ui_fix
+            case "lepton_photon":
+                if args[arg]:
+                    remote = UI_FIX_THEME_GITHUB_RELEASES_URL
+                    get_assets_method = partial(get_keyword_uwp_assets, keyword="lepton-photon.zip")
+                    install_method = install_ui_fix
+            case "lepton_proton":
+                if args[arg]:
+                    remote = UI_FIX_THEME_GITHUB_RELEASES_URL
+                    get_assets_method = partial(get_keyword_uwp_assets, keyword="lepton-proton.zip")
+                    install_method = install_ui_fix
+            case "lepton":
+                if args[arg]:
+                    remote = UI_FIX_THEME_GITHUB_RELEASES_URL
+                    get_assets_method = partial(get_keyword_uwp_assets, keyword="lepton.zip")
+                    install_method = install_ui_fix
+            case "uwp":
+                if args[arg]:
+                    raise NotImplementedError
+            case "cascade":
+                if args[arg]:
+                    raise NotImplementedError
+                    # remote = GX_THEME_GITHUB_RELEASES_URL
+                    # get_assets_method = get_regular_assets
+                    # install_method = install_gx
             case "destination":
                 if args[arg]:
                     install_dirs = [args[arg]]
@@ -255,7 +426,7 @@ def setup_argument_options(args: dict[str, Any]) -> ThemeManager:
         temp_dir=temp_dir,
         install_dirs=install_dirs,
         version=version,
-        resource_file=resource_file
+        resource_file=resource_file,
     )
 
     manager.filter = types.MethodType(filter_method, manager)

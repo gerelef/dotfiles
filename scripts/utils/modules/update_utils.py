@@ -2,12 +2,12 @@
 import argparse as ap
 import enum
 import os
+import re
 import subprocess
 import sys
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from datetime import datetime
-from re import search as regex_search
 from typing import Sequence, Callable, Optional, Self, Iterator
 
 try:
@@ -188,7 +188,7 @@ class Provider:
         :raises requests.Timeout:
         :raises requests.TooManyRedirects:
         """
-        raise NotImplemented
+        raise NotImplementedError
 
     @abstractmethod
     def download(self, url: URL, chunk_size=1024 * 1024) -> Iterator[tuple[HTTPStatus, int, int, bytes | None]]:
@@ -200,7 +200,7 @@ class Provider:
         :raises requests.Timeout:
         :raises requests.TooManyRedirects:
         """
-        raise NotImplemented
+        raise NotImplementedError
 
     def get_release(self, f: Filter) -> Release | None:
         """
@@ -222,7 +222,7 @@ class Provider:
                 return release
 
 
-class GitHubProvider(Provider):
+class GitHubReleasesProvider(Provider):
     def recurse_releases(self, url: URL) -> Iterator[tuple[HTTPStatus, Release | None]]:
         while True:
             try:
@@ -277,14 +277,20 @@ class GitHubProvider(Provider):
         return
 
 
+class GitHubBranchesProvider(Provider):
+    def recurse_releases(self, url: URL) -> Iterator[tuple[HTTPStatus, Release | None]]:
+        raise NotImplementedError
+
+    def download(self, url: URL, chunk_size=1024 * 1024) -> Iterator[tuple[HTTPStatus, int, int, bytes | None]]:
+        raise NotImplementedError
+
+
 class ProviderFactory:
     """
     Supported Git provider factory.
     """
-    GITHUB_API = "api.github.com/"
-    # GITLAB_API = "gitlab.com/api/" NOT SUPPORTED YET
-    GITHUB_API_REGEXR = r"(api\.github\.com\/)+"
-
+    GITHUB_RELEASES_API_REGEX = re.compile(r"https://api\.github\.com/repos/[a-zA-Z0-9-_]+/[a-zA-Z0-9-_]+/releases/?")
+    GITHUB_BRANCHES_API_REGEX = re.compile(r"https://api\.github\.com/repos/[a-zA-Z0-9-_]+/[a-zA-Z0-9-_]+/branches/?")
     # GITLAB_API_REGEXR = r"(gitlab[\.a-zA-Z]*\.com\/api\/)+" NOT SUPPORTED YET
 
     def __init__(self):
@@ -296,16 +302,20 @@ class ProviderFactory:
         Match a URL to a provider.
         :returns: the supported Provider, or None if there are no matches.
         """
-        if regex_search(ProviderFactory.GITHUB_API_REGEXR, url):
-            return ProviderFactory.GITHUB_API
+        if ProviderFactory.GITHUB_RELEASES_API_REGEX.search(url):
+            return ProviderFactory.GITHUB_RELEASES_API_REGEX
+        if ProviderFactory.GITHUB_BRANCHES_API_REGEX.search(url):
+            raise ProviderFactory.GITHUB_BRANCHES_API_REGEX
 
         return None
 
     @staticmethod
     def create(url: URL) -> Provider:
         match (ProviderFactory.match(url)):
-            case ProviderFactory.GITHUB_API:
-                return GitHubProvider(url=url)
+            case ProviderFactory.GITHUB_RELEASES_API_REGEX:
+                return GitHubReleasesProvider(url=url)
+            case ProviderFactory.GITHUB_BRANCHES_API_REGEX:
+                return GitHubBranchesProvider(url=url)
             case _:
                 raise Exceptions.UnknownProviderException(
                     f"Couldn't match repository URL to any supported provider!"
@@ -394,7 +404,7 @@ class Manager(ABC):
         :param release:
         :returns bool: True if attributes match what we want to download, false otherwise.
         """
-        raise NotImplemented
+        raise NotImplementedError
 
     @abstractmethod
     def get_assets(self, r: Release) -> dict[Filename, URL]:
@@ -402,7 +412,7 @@ class Manager(ABC):
         Get the assets that we'll download from a specific Release.
         :returns dict[Filename, URL]: a dict where filenames match the URL we'll download from
         """
-        raise NotImplemented
+        raise NotImplementedError
 
     def download(self, filename: Filename, url: URL) -> HTTPStatus:
         """
@@ -439,7 +449,7 @@ class Manager(ABC):
         :param files:
         :returns bool: True if everything's verified, false otherwise.
         """
-        raise NotImplemented
+        raise NotImplementedError
 
     @abstractmethod
     def install(self, files: list[Filename]):
@@ -449,7 +459,7 @@ class Manager(ABC):
         Remember to bind the function to your instance with types.MethodType(DO_NOTHING, instance)
         :param files: files to install
         """
-        raise NotImplemented
+        raise NotImplementedError
 
     @abstractmethod
     def cleanup(self, files: list[Filename]):
@@ -460,7 +470,7 @@ class Manager(ABC):
         :param files: downloaded files; interact with os.path.join(self.download_dir, filename)
         Note: it's not guaranteed the files exist!
         """
-        raise NotImplemented
+        raise NotImplementedError
 
     @abstractmethod
     def log(self, level: Level, msg: str):
@@ -471,7 +481,7 @@ class Manager(ABC):
         :param level: Log level
         :param msg: string to log
         """
-        raise NotImplemented
+        raise NotImplementedError
 
 
 # TODO add ArgHandler so there's less ArgumentParser boilerplate in scripts..
