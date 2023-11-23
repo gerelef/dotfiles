@@ -28,7 +28,7 @@ class CompatibilityManager(ut.Manager):
         self.last_msg_lvl = None
 
     def filter(self, release: ut.Release) -> bool:
-        lower_tag_name = release.tag_name.lower()
+        lower_tag_name = release.name.lower()
 
         version_matches = True
         if self.version:

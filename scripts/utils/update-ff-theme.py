@@ -28,7 +28,7 @@ class ThemeManager(ut.Manager):
         self.resource_file = resource_file
 
     def filter(self, release: ut.Release) -> bool:
-        lower_tag_name = release.tag_name.lower()
+        lower_tag_name = release.name.lower()
 
         version_matches = True
         if self.version:
@@ -88,7 +88,7 @@ def get_keyword_uwp_assets(self: ThemeManager, r: ut.Release, keyword) -> dict[u
 def get_source_assets(self: ThemeManager, r: ut.Release) -> dict[ut.Filename, ut.URL] | None:
     for url in r.src:
         if "zipball" in url:
-            return {r.tag_name.lower(): url}
+            return {r.name_human_readable.lower(): url}
     return None
 
 

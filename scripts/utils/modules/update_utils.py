@@ -110,25 +110,127 @@ def get_request(url: URL, *args, **kwargs):
     return requests.get(url, verify=True, allow_redirects=True, headers=version_header, *args, **kwargs)
 
 
-@auto_str
-@auto_eq
-@dataclass
-class Release:
-    id: int
-    author_login: str
+class Release(ABC):
+    """
+    Common interface for Releass.
+    They may either be actual Releases, or specific commits from *any* branch.
+    """
 
-    tag_name: str
-    name: str
+    @property
+    @abstractmethod
+    def assets(self) -> Optional[dict[Filename, URL]]:
+        raise NotImplementedError
 
-    body: Optional[str]
-    created_at: str
-    published_at: str
+    @property
+    @abstractmethod
+    def src(self) -> Optional[list[URL]]:
+        raise NotImplementedError
 
-    assets: Optional[dict[Filename, URL]]
-    src: Optional[list[URL]]
+    @property
+    @abstractmethod
+    def name(self) -> str:
+        raise NotImplementedError
 
-    is_draft: Optional[bool] = None
-    is_prerelease: Optional[bool] = None
+    @property
+    @abstractmethod
+    def name_human_readable(self) -> str:
+        raise NotImplementedError
+
+    @property
+    @abstractmethod
+    def description(self) -> Optional[str]:
+        raise NotImplementedError
+
+    @property
+    @abstractmethod
+    def committer(self) -> str:
+        raise NotImplementedError
+
+    @property
+    @abstractmethod
+    def date(self) -> str:
+        raise NotImplementedError
+
+
+class Commit(Release):
+
+    def __init__(self):
+        raise NotImplementedError
+
+    @property
+    def assets(self) -> Optional[dict[Filename, URL]]:
+        raise NotImplementedError
+
+    @property
+    def src(self) -> Optional[list[URL]]:
+        raise NotImplementedError
+
+    @property
+    def name(self) -> str:
+        raise NotImplementedError
+
+    @property
+    def name_human_readable(self) -> str:
+        raise NotImplementedError
+
+    @property
+    def description(self) -> Optional[str]:
+        raise NotImplementedError
+
+    @property
+    def committer(self) -> str:
+        raise NotImplementedError
+
+    @property
+    def date(self) -> str:
+        raise NotImplementedError
+
+
+class Tag(Release):
+
+    def __init__(self,
+                 author: str,
+                 tag: str,
+                 name: str,
+                 body: str,
+                 date: str,
+                 assets: dict[str, str],
+                 src: list[str]):
+        self.__author = author
+        self.__tag = tag
+        self.__name = name
+        self.__body = body
+        self.__date = date
+        self.__assets = assets
+        self.__src = src
+
+    @property
+    def name(self) -> str:
+        return self.__tag
+
+    @property
+    def name_human_readable(self) -> str:
+        return self.__name
+
+    @property
+    def description(self) -> Optional[str]:
+        return self.__body
+
+    @property
+    def committer(self) -> str:
+        return self.__author
+
+    @property
+    def date(self) -> str:
+        return self.__date
+
+    @property
+    def assets(self) -> Optional[dict[Filename, URL]]:
+        return self.__assets
+
+    @property
+    def src(self) -> Optional[list[URL]]:
+        return self.__src
 
 
 class HTTPStatus(enum.IntEnum):
@@ -240,17 +342,13 @@ class GitHubReleasesProvider(Provider):
                         for asset in version["assets"]:
                             downloadables[asset["name"]] = asset["browser_download_url"]
 
-                        yield status, Release(
-                            id=int(version["id"]),
-                            author_login=version["author"]["login"],
-                            tag_name=version["tag_name"],
+                        yield status, Tag(
+                            author=version["author"]["login"],
+                            tag=version["tag_name"],
                             name=version["name"],
                             body=version["body"],
-                            is_draft=bool(version["draft"]),
-                            is_prerelease=bool(version["prerelease"]),
                             # https://stackoverflow.com/a/36236080/10007109
-                            created_at=datetime.strptime(version["created_at"], "%Y-%m-%dT%H:%M:%SZ"),
-                            published_at=datetime.strptime(version["published_at"], "%Y-%m-%dT%H:%M:%SZ"),
+                            date=version["published_at"],
                             assets=downloadables,
                             src=[version["tarball_url"], version["zipball_url"]]
                         )
@@ -291,6 +389,7 @@ class ProviderFactory:
     """
     GITHUB_RELEASES_API_REGEX = re.compile(r"https://api\.github\.com/repos/[a-zA-Z0-9-_]+/[a-zA-Z0-9-_]+/releases/?")
     GITHUB_BRANCHES_API_REGEX = re.compile(r"https://api\.github\.com/repos/[a-zA-Z0-9-_]+/[a-zA-Z0-9-_]+/branches/?")
+
     # GITLAB_API_REGEXR = r"(gitlab[\.a-zA-Z]*\.com\/api\/)+" NOT SUPPORTED YET
 
     def __init__(self):
