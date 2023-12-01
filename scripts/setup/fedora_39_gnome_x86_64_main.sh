@@ -324,6 +324,12 @@ if ask-user "Do you want to install extensions?"; then
     echo "Done."
 fi
 
+if ask-user "Do you want to install gnome backgrounds?"; then
+    echo "-------------------INSTALLING----------------" | tr " " "\n"
+    dnf install -y --best --allowerasing f*-backgrounds-gnome*
+    echo "Done."
+fi
+
 #######################################################################################################
 
 
