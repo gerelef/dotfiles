@@ -93,6 +93,36 @@
           "active": true,
           "type": 1,
           "url": "/(steampowered\\.com)|(steamcommunity.com)/"
+        },
+        {
+          "id": "JSkyQZSB0hUP",
+          "active": true,
+          "type": 1,
+          "url": "leetify.com/"
+        },
+        {
+          "id": "BFUNLvJulmUP",
+          "active": true,
+          "type": 1,
+          "url": "scope.gg"
+        },
+        {
+          "id": "atBXahzeUqUP",
+          "active": true,
+          "type": 1,
+          "url": "csstats.gg/"
+        },
+        {
+          "id": "Tuua5C0dxsUP",
+          "active": true,
+          "type": 1,
+          "url": "faceit.com/"
+        },
+        {
+          "id": "GO32RSRtQ-UP",
+          "active": true,
+          "type": 1,
+          "url": "allstar.gg/"
         }
       ],
       "userAgentActive": false,
@@ -128,7 +158,7 @@
     "subPanelBookmarks": true,
     "subPanelHistory": true,
     "groupLayout": "grid",
-    "containersSortByName": false,
+    "containersSortByName": true,
     "skipEmptyPanels": true,
     "dndTabAct": true,
     "dndTabActDelay": 500,
