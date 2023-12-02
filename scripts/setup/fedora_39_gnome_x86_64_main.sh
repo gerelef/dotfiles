@@ -370,8 +370,8 @@ echo "Created sudoers.d convenience defaults."
 echo "Done."
 
 #######################################################################################################
-ssh-keygen -q -t rsa -b 4096 -N '' -C "$REAL_USER@$DISTRIBUTION_NAME" -f "$SSH_ROOT/id_rsa" -P "" <<< $'\ny' >/dev/null 2>&1
-cat "$SSH_ROOT/id_rsa.pub"
+ssh-keygen -q -t ed25519 -N '' -C "$REAL_USER@$DISTRIBUTION_NAME" -f "$SSH_ROOT/id_ed25519" -P "" <<< $'\ny' >/dev/null 2>&1
+cat "$SSH_ROOT/id_ed25519.pub"
 
 #######################################################################################################
 
