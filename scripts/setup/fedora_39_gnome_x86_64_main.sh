@@ -95,7 +95,7 @@ com.raggesilver.BlackBox \
 de.haeckerfelix.Fragments \
 org.gtk.Gtk3theme.adw-gtk3 \
 org.gtk.Gtk3theme.adw-gtk3-dark \
-io.gitlab.daikhan.stable \
+com.github.rafostar.Clapper \
 io.gitlab.theevilskeleton.Upscaler \
 page.codeberg.Imaginer.Imaginer \
 net.cozic.joplin_desktop \
