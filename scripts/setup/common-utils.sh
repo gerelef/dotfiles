@@ -33,10 +33,6 @@ readonly WRK_ROOT="$REAL_USER_HOME/work"
 readonly SMR_ROOT="$REAL_USER_HOME/seminar"
 readonly RND_ROOT="$REAL_USER_HOME/random"
 
-# there should be a matching change-ownership-recursive after everything's done in the script
-#  since everything here will be owned by "root" 
-mkdir -p "$PPW_ROOT" "$MZL_ROOT" "$SSH_ROOT" "$BIN_ROOT" "$WRK_ROOT" "$SMR_ROOT" "$RND_ROOT"
-
 ask-user () (
     while : ; do
         read -p "$* [Y/n]: " -n 1 -r
@@ -45,6 +41,34 @@ ask-user () (
         [[ $REPLY =~ ^[Nn]$ ]] && return 1
         echo "Invalid reply \"$REPLY\", please answer with Y/y for Yes, or N/n for No."
     done
+)
+
+add-gsettings-shortcut () (
+    [[ $# -ne 3 ]] && return 2
+    # $1 is the name
+    # $2 is the command
+    # $3 is the bind, in <Modifier>Key format
+    
+    custom_keybinds_enum="$(gsettings get org.gnome.settings-daemon.plugins.media-keys custom-keybindings | tr "'" "\"")"
+    custom_keybinds_length="$(echo "$custom_keybinds_enum"  | jq ". | length")"
+
+    keybind_version="custom$custom_keybinds_length"
+    new_keybind_enumerator="/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/$keybind_version/"
+    
+    new_custom_keybinds_enum="$(echo "$custom_keybinds_enum" | jq -c ". += [\"$new_keybind_enumerator\"]" | tr '"' "'")"
+    new_keybind_name="gsettings set org.gnome.settings-daemon.plugins.media-keys.custom-keybinding:/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/$keybind_version/ name $1"
+    new_keybind_command="gsettings set org.gnome.settings-daemon.plugins.media-keys.custom-keybinding:/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/$keybind_version/ command $2"
+    new_keybind_bind="gsettings set org.gnome.settings-daemon.plugins.media-keys.custom-keybinding:/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/$keybind_version/ binding $3"
+    
+    gsettings set $new_custom_keybinds_enum
+    gsettings set $new_keybind_name
+    gsettings set $new_keybind_command
+    gsettings set $new_keybind_bind
+    
+    #gsettings set org.gnome.settings-daemon.plugins.media-keys custom-keybindings "[<altered_list>]"
+    #gsettings set org.gnome.settings-daemon.plugins.media-keys.custom-keybinding:/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom0/ name '<newname>'
+    #gsettings set org.gnome.settings-daemon.plugins.media-keys.custom-keybinding:/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom0/ command '<newcommand>'
+    #gsettings set org.gnome.settings-daemon.plugins.media-keys.custom-keybinding:/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom0/ binding '<key_combination>'
 )
 
 dnf-install () (
@@ -116,6 +140,7 @@ change-ownership () (
     chmod 700 "$@"
 )
 
+
 change-ownership-recursive () (
     [[ $# -eq 0 ]] && return 2
     [[ -z "$REAL_USER" ]] && return 2
@@ -136,6 +161,12 @@ change-group-recursive () (
     [[ -z "$REAL_USER" ]] && return 2
     
     chgrp -R "$REAL_USER" "$@"
+)
+
+create-default-locations () (
+    # there should be a matching change-ownership-recursive after everything's done in the script
+    #  since everything here will be owned by "root" 
+    mkdir -p "$PPW_ROOT" "$MZL_ROOT" "$SSH_ROOT" "$BIN_ROOT" "$WRK_ROOT" "$SMR_ROOT" "$RND_ROOT"
 )
 
 copy-dnf () (

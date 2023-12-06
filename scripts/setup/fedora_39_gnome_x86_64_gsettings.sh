@@ -5,24 +5,20 @@ if [ $(id -u) = 0 ]; then
     exit 1
 fi
 
+readonly DIR=$(dirname -- "$BASH_SOURCE")
+source "$DIR/common-utils.sh"
+
 #gnome-system-monitor "gnome-system-monitor" "<Shift><Control>Escape"
 #alacritty "alacritty --config-file $REAL_USER_HOME/dotfiles/rc/alacritty.yml" "<Shift><Control>KP_Plus"
-#gsettings set org.gnome.settings-daemon.plugins.media-keys custom-keybindings "[<altered_list>]"
-#gsettings set org.gnome.settings-daemon.plugins.media-keys.custom-keybinding:/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom0/ name '<newname>'
-#gsettings set org.gnome.settings-daemon.plugins.media-keys.custom-keybinding:/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom0/ command '<newcommand>'
-#gsettings set org.gnome.settings-daemon.plugins.media-keys.custom-keybinding:/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom0/ binding '<key_combination>'
+
 echo "-------------------GSETTINGS----------------"
 gsettings set org.gnome.desktop.interface cursor-theme 'Adwaita'
 gsettings set org.gnome.desktop.interface icon-theme 'Adwaita'
 gsettings set org.gnome.desktop.interface gtk-theme 'adw-gtk3-dark'
 gsettings set org.gnome.desktop.interface color-scheme 'prefer-dark'
-gsettings set org.gnome.settings-daemon.plugins.media-keys custom-keybindings "['/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom0/', '/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom1/']"
-gsettings set org.gnome.settings-daemon.plugins.media-keys.custom-keybinding:/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom0/ name 'blackbox'
-gsettings set org.gnome.settings-daemon.plugins.media-keys.custom-keybinding:/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom0/ command "/usr/bin/flatpak run --branch=stable --arch=x86_64 --command=blackbox com.raggesilver.BlackBox"
-gsettings set org.gnome.settings-daemon.plugins.media-keys.custom-keybinding:/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom0/ binding '<Shift><Control>KP_Add'
-gsettings set org.gnome.settings-daemon.plugins.media-keys.custom-keybinding:/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom1/ name 'gnome-system-monitor'
-gsettings set org.gnome.settings-daemon.plugins.media-keys.custom-keybinding:/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom1/ command 'gnome-system-monitor'
-gsettings set org.gnome.settings-daemon.plugins.media-keys.custom-keybinding:/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom1/ binding '<Shift><Control>Escape'
+add-gsettings-shortcut "blackbox" "/usr/bin/flatpak run --branch=stable --arch=x86_64 --command=blackbox com.raggesilver.BlackBox" "<Shift><Control>KP_Add"
+add-gsettings-shortcut "gnome-system-monitor" "gnome-system-monitor" "<Shift><Control>Escape"
+add-gsettings-shortcut "flameshot" "flameshot gui" "Print"
 ############################################################################################################################################
 FORGE="$HOME/.local/share/gnome-shell/extensions/forge@jmmaranan.com/schemas/"
 gsettings --schemadir $FORGE set org.gnome.shell.extensions.forge.keybindings prefs-tiling-toggle ['<Super>y']
@@ -121,6 +117,9 @@ gsettings set org.gtk.gtk4.Settings.FileChooser type-format 'category'
 gsettings set org.gtk.gtk4.Settings.FileChooser view-type 'list'
 gsettings set org.gtk.gtk4.Settings.FileChooser sort-directories-first true
 ############################################################################################################################################
+gsettings set org.gnome.shell.keybindings screenshot "[]"
+gsettings set org.gnome.shell.keybindings screenshot-window "[]"
+gsettings set org.gnome.shell.keybindings show-screenshot-ui "[]"
 gsettings set org.gnome.desktop.wm.keybindings activate-window-menu "['Menu']"
 gsettings set org.gnome.desktop.wm.keybindings always-on-top  "[]"
 gsettings set org.gnome.desktop.wm.keybindings begin-move  "[]"

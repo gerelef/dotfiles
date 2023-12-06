@@ -1,8 +1,10 @@
 #!/usr/bin/env bash
 
 readonly DIR=$(dirname -- "$BASH_SOURCE")
-
 source "$DIR/common-utils.sh"
+
+# create default directories that should exist on all my systems
+create-default-locations 
 
 # ref: https://askubuntu.com/a/30157/8698
 if ! [ $(id -u) = 0 ]; then
@@ -24,6 +26,7 @@ readonly DISTRIBUTION_NAME="fedora$(rpm -E %fedora)"
 readonly INSTALLABLE_PACKAGES="\
 flatpak \
 adw-gtk3-theme \
+flameshot \
 git \
 meson \
 curl \
