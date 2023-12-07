@@ -139,7 +139,6 @@ readonly INSTALLABLE_DEV_PKGS="\
 cmake \
 ninja-build \
 clang \
-scrcpy \
 bless \
 "
 
@@ -183,8 +182,8 @@ echo "Done."
 dnf copr remove -y --skip-broken phracek/PyCharm
 # i don't want google chrome ma boi please stahp
 dnf config-manager --set-disabled google-chrome 
-dnf-install "https://download1.rpmfusion.org/free/fedora/rpmfusion-free-release-$(rpm -E %fedora).noarch.rpm" # free rpmfusion
-dnf-install "https://download1.rpmfusion.org/nonfree/fedora/rpmfusion-nonfree-release-$(rpm -E %fedora).noarch.rpm" # nonfree rpmfusion
+dnf install -y --best --allowerasing"https://download1.rpmfusion.org/free/fedora/rpmfusion-free-release-$(rpm -E %fedora).noarch.rpm" # free rpmfusion
+dnf install -y --best --allowerasing"https://download1.rpmfusion.org/nonfree/fedora/rpmfusion-nonfree-release-$(rpm -E %fedora).noarch.rpm" # nonfree rpmfusion
 
 #######################################################################################################
 
@@ -307,7 +306,6 @@ if ask-user "Are you sure you want to install Community IDEs & Jetbrains Toolbox
     dnf groupinstall -y --best --allowerasing "C Development Tools and Libraries"
     dnf groupinstall -y --best --allowerasing "Development Tools"
 
-    dnf copr enable -y zeno/scrcpy
     dnf-install "$INSTALLABLE_DEV_PKGS"
     
     flatpak-install "$INSTALLABLE_IDE_FLATPAKS"
@@ -323,6 +321,12 @@ if ask-user "Are you sure you want to install Community IDEs & Jetbrains Toolbox
         echo "sha512sum mismatch"
     fi
     echo "Done."
+fi
+
+if ask-user "Are you sure you want to install zeno/scrcpy?"; then
+    echo "Installing zeno/scrcpy ..."
+    dnf copr enable -y zeno/scrcpy
+    dnf-install scrcpy
 fi
 
 #######################################################################################################
