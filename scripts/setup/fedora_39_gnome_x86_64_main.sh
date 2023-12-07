@@ -77,18 +77,24 @@ powertop \
 "
 
 readonly UNINSTALLABLE_BLOAT="\
-rhythmbox* \
+rhythmbox \
 totem \
 cheese \
 gnome-tour \
+gnome-weather \
+gnome-software \
+gnome-remote-desktop \
+gnome-font-viewer \
+gnome-characters \
+gnome-classic-session \
+gnome-initial-setup \
 gnome-terminal \
-gnome-terminal-* \
-gnome-boxes* \
-gnome-calculator* \
-gnome-calendar* \
-gnome-color-manager* \
-gnome-contacts* \
-gnome-maps* \
+gnome-boxes \
+gnome-calculator \
+gnome-calendar \
+gnome-color-manager \
+gnome-contacts \
+gnome-maps \
 "
 
 readonly INSTALLABLE_FLATPAKS="\
@@ -121,7 +127,6 @@ timeshift \
 "
 
 readonly INSTALLABLE_EXTRAS="\
-mixxx \
 steam \
 gamescope \
 "
