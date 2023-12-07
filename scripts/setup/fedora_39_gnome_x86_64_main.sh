@@ -188,6 +188,8 @@ dnf-install "https://download1.rpmfusion.org/nonfree/fedora/rpmfusion-nonfree-re
 # Make home directory private
 change-ownership "$REAL_USER_HOME"
 systemctl enable fstrim.timer
+# make sure we're booting into a DE next time we reboot
+systemctl set-default graphical.target
 
 #######################################################################################################
 dnf-update-refresh
