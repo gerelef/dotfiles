@@ -98,19 +98,18 @@ gnome-maps \
 "
 
 readonly INSTALLABLE_FLATPAKS="\
-org.gnome.Snapshot \
 com.spotify.Client \
 com.raggesilver.BlackBox \
-de.haeckerfelix.Fragments \
-org.gtk.Gtk3theme.adw-gtk3 \
-org.gtk.Gtk3theme.adw-gtk3-dark \
 com.github.rafostar.Clapper \
-io.gitlab.theevilskeleton.Upscaler \
-page.codeberg.Imaginer.Imaginer \
 net.cozic.joplin_desktop \
+de.haeckerfelix.Fragments \
 com.skype.Client \
 us.zoom.Zoom \
+io.gitlab.theevilskeleton.Upscaler \
+org.gtk.Gtk3theme.adw-gtk3 \
+org.gtk.Gtk3theme.adw-gtk3-dark \
 com.github.tchx84.Flatseal \
+org.gnome.Snapshot \
 "
 
 readonly INSTALLABLE_EXTENSIONS="\
