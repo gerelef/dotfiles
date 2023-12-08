@@ -1,5 +1,3 @@
-#!/usr/bin/env bash
-
 if [[ -n "$__UTILS_LOADED" ]]; then
     return 0
 fi
@@ -15,8 +13,11 @@ else
     REAL_USER="$(whoami)"
 fi
 
+# https://stackoverflow.com/a/47126974
+readonly REAL_USER_UID=$(id -u ${REAL_USER})
 # https://unix.stackexchange.com/questions/247576/how-to-get-home-given-user
 readonly REAL_USER_HOME=$(eval echo "~$REAL_USER")
+readonly REAL_USER_DBUS_ADDRESS="unix:path=/run/user/${REAL_USER_UID}/bus"
 # dotfiles directories
 # https://stackoverflow.com/questions/59895/how-do-i-get-the-directory-where-a-bash-script-is-located-from-within-the-script
 readonly SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
@@ -35,7 +36,7 @@ readonly RND_ROOT="$REAL_USER_HOME/random"
 
 ask-user () (
     while : ; do
-        read -p "$* [Y/n]: " -n 1 -r
+        read -p "$* [Y/n]: " -r
         echo ""
         [[ $REPLY =~ ^[Yy]$ ]] && return 0
         [[ $REPLY =~ ^[Nn]$ ]] && return 1
@@ -56,14 +57,14 @@ add-gsettings-shortcut () (
     new_keybind_enumerator="/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/$keybind_version/"
     
     new_custom_keybinds_enum="$(echo "$custom_keybinds_enum" | jq -c ". += [\"$new_keybind_enumerator\"]" | tr '"' "'")"
-    new_keybind_name="gsettings set org.gnome.settings-daemon.plugins.media-keys.custom-keybinding:/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/$keybind_version/ name $1"
-    new_keybind_command="gsettings set org.gnome.settings-daemon.plugins.media-keys.custom-keybinding:/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/$keybind_version/ command $2"
-    new_keybind_bind="gsettings set org.gnome.settings-daemon.plugins.media-keys.custom-keybinding:/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/$keybind_version/ binding $3"
+    new_keybind_name=( "org.gnome.settings-daemon.plugins.media-keys.custom-keybinding:/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/$keybind_version/" "name" "$1" )
+    new_keybind_command=( "org.gnome.settings-daemon.plugins.media-keys.custom-keybinding:/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/$keybind_version/" "command" "$2" )
+    new_keybind_bind=( "org.gnome.settings-daemon.plugins.media-keys.custom-keybinding:/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/$keybind_version/" "binding" "$3" )
     
-    gsettings set $new_custom_keybinds_enum
-    gsettings set $new_keybind_name
-    gsettings set $new_keybind_command
-    gsettings set $new_keybind_bind
+    gsettings set "org.gnome.settings-daemon.plugins.media-keys" "custom-keybindings" "$new_custom_keybinds_enum"
+    gsettings set "${new_keybind_name[@]}"
+    gsettings set "${new_keybind_command[@]}"
+    gsettings set "${new_keybind_bind[@]}"
     
     #gsettings set org.gnome.settings-daemon.plugins.media-keys custom-keybindings "[<altered_list>]"
     #gsettings set org.gnome.settings-daemon.plugins.media-keys.custom-keybinding:/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom0/ name '<newname>'
@@ -210,7 +211,7 @@ cap-nproc-count () (
 )
 
 cap-max-logins-system () (
-    echo "* - maxsyslogins 5" > "/etc/security/limits.d/90-maxsyslogins.conf"
+    echo "* - maxsyslogins 20" > "/etc/security/limits.d/90-maxsyslogins.conf"
 )
 
 create-convenience-sudoers () (
