@@ -82,19 +82,6 @@ dnf-install () (
     echo "Finished installing."
 )
 
-# DEPRECATED!!!
-# NOTE: This is here for legacy reasons! DO NOT USE! Reason: genuinely terrible.
-dnf-install-group () (
-    echo "USING DEPRECATED SUBSHELL FUNCTION dnf-install-group! DO NOT USE\!\!\!"
-    [[ $# -eq 0 ]] && return 2
-    
-    echo "-------------------DNF-GROUP-INSTALL---------------- $*" | tr " " "\n"
-    while : ; do
-        dnf groupinstall -y --best --allowerasing $@ && break
-    done
-    echo "Finished group-installing."
-)
-
 dnf-groupupdate () (
     [[ $# -eq 0 ]] && return 2
     
