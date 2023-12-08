@@ -6,14 +6,36 @@ if ! [ $(id -u) = 0 ]; then
     exit 2
 fi
 
+readonly DIR=$(dirname -- "$BASH_SOURCE")
+source "$DIR/common-utils.sh"
+
+if [[ -z $(ps -aux | grep gnome-shell | head -n 1 | awk '{ print $NF }') ]]; then
+    echo "gnome-shell must be initialized & running before we continue."
+    if ask-user "Would you like to install gnome-shell?"; then
+        echo "Rerun this script after booting into gnome-shell."
+        echo "Installing gnome-shell..."
+        dnf install -y --best --allowerasing @base-x gnome-shell
+        dnf install -y --best --allowerasing @fonts
+        dnf install -y --best --allowerasing @hardware-support
+        dnf install -y --best --allowerasing @networkmanager-submodules
+        echo "Making sure we're booting into a DE next time we boot..."
+        systemctl set-default graphical.target
+        echo "Done."
+        echo "Starting gnome-shell..."
+        # run gnome-shell "detached" from our terminal instance 
+        #  it should be noted that it's not truly detached, however for all practical purposes it should be
+        #  check out this answer for more: https://superuser.com/a/705448
+        gnome-shell &; disown 
+    else
+        exit 1
+    fi
+fi
+
 if [[ -z $XDG_RUNTIME_DIR || -z $XDG_DATA_DIRS || -z $DBUS_SESSION_BUS_ADDRESS ]]; then
     echo "XDG_RUNTIME_DIR, XDG_DATA_DIRS, DBUS_SESSION_BUS_ADDRESS must be set for this script to work."
     echo "Check the script's shebang for more information on how to correctly run this script."
     exit 2
 fi
-
-readonly DIR=$(dirname -- "$BASH_SOURCE")
-source "$DIR/common-utils.sh"
 
 # create default directories that should exist on all my systems
 create-default-locations 
@@ -43,6 +65,7 @@ chromium \
 fedora-chromium-config \
 gimp \
 krita \
+evince \
 libreoffice \
 sqlitebrowser \
 gnome-system-monitor \
@@ -65,6 +88,7 @@ libvirt \
 virt-install \
 qemu-kvm \
 openvpn \
+openssl \
 pulseeffects \
 "
 
@@ -185,8 +209,6 @@ echo "Done."
 
 # for some reason this repository is added on every new install, i dont' care i have toolbox wtf
 dnf copr remove -y --skip-broken phracek/PyCharm
-# i don't want google chrome ma boi please stahp
-dnf config-manager --set-disabled google-chrome 
 dnf install -y --best --allowerasing "https://download1.rpmfusion.org/free/fedora/rpmfusion-free-release-$(rpm -E %fedora).noarch.rpm" # free rpmfusion
 dnf install -y --best --allowerasing "https://download1.rpmfusion.org/nonfree/fedora/rpmfusion-nonfree-release-$(rpm -E %fedora).noarch.rpm" # nonfree rpmfusion
 
@@ -196,8 +218,6 @@ dnf install -y --best --allowerasing "https://download1.rpmfusion.org/nonfree/fe
 # Make home directory private
 change-ownership "$REAL_USER_HOME"
 systemctl enable fstrim.timer
-# make sure we're booting into a DE next time we reboot
-systemctl set-default graphical.target
 
 #######################################################################################################
 dnf-update-refresh
@@ -249,19 +269,18 @@ if [[ -n "$NVIDIA_GPU" && $(lsmod | grep nouveau) ]]; then
 fi
 
 readonly CHASSIS_TYPE="$(dmidecode --string chassis-type)"
-if [[ $CHASSIS_TYPE == "Sub Notebook" || $CHASSIS_TYPE == "Laptop" || $CHASSIS_TYPE == "Notebook" || 
-      $CHASSIS_TYPE == "Hand Held" || $CHASSIS_TYPE == "Portable" ]]; then
+if [[ $CHASSIS_TYPE -eq "Desktop" ]]; then
+    # https://forums.developer.nvidia.com/t/no-matching-gpu-found-with-510-47-03/202315/5
+    systemctl disable nvidia-powerd.service
+else
     # s3 sleep
-    grubby --update-kernel=ALL --args="mem_sleep_default=s2idle" # modern standby
+    grubby --update-kernel=ALL --args="mem_sleep_default=s2idle"
     echo "-------------------OPTIMIZING BATTERY USAGE----------------"
     echo "Found laptop $CHASSIS_TYPE"
     dnf-install "$INSTALLABLE_PWR_MGMNT"
     systemctl mask power-profiles-daemon
     powertop --auto-tune
 fi
-
-# https://forums.developer.nvidia.com/t/no-matching-gpu-found-with-510-47-03/202315/5
-[[ $CHASSIS_TYPE == "Desktop" ]] && systemctl disable nvidia-powerd.service
 
 echo "Done."
 
@@ -272,11 +291,15 @@ dnf-groupupdate 'core' 'multimedia' 'sound-and-video' --setop='install_weak_deps
 dnf install -y --best --allowerasing gstreamer1-plugins-{bad-\*,good-\*,base}
 dnf install -y --best --allowerasing lame\* --exclude=lame-devel
 dnf-install "gstreamer1-plugin-openh264" "gstreamer1-libav" "--exclude=gstreamer1-plugins-bad-free-devel" "ffmpeg" "gstreamer-ffmpeg"
-dnf groupinstall -y --best --allowerasing --with-optional "Multimedia"
+dnf install -y --best --allowerasing --with-optional @multimedia
 
 dnf-install "ffmpeg" "ffmpeg-libs" "libva" "libva-utils"
 dnf config-manager --set-enabled fedora-cisco-openh264
 dnf-install "openh264" "gstreamer1-plugin-openh264" "mozilla-openh264"
+
+echo "-------------------INSTALLING PRINTING SUITE----------------"
+
+dnf install -y --best --allowerasing @printing
 
 #######################################################################################################
 # no requirement to add flathub ourselves anymore in f38; it should be enabled by default. however, it may not be, most likely by accident, so this is a failsafe
@@ -308,8 +331,8 @@ fi
 
 if ask-user "Are you sure you want to install Community IDEs & Jetbrains Toolbox?"; then
     echo "-------------------INSTALLING---------------- $INSTALLABLE_IDE_FLATPAKS $INSTALLABLE_DEV_PKGS" | tr " " "\n"
-    dnf groupinstall -y --best --allowerasing "C Development Tools and Libraries"
-    dnf groupinstall -y --best --allowerasing "Development Tools"
+    dnf install -y --best --allowerasing @"C Development Tools and Libraries"
+    dnf install -y --best --allowerasing @"Development Tools"
 
     dnf-install "$INSTALLABLE_DEV_PKGS"
     
@@ -674,7 +697,7 @@ sudo --preserve-env="XDG_RUNTIME_DIR" --preserve-env="XDG_DATA_DIRS" --preserve-
     gsettings set org.gnome.desktop.media-handling automount-open true
     gsettings set org.gnome.desktop.media-handling autorun-never true
     gsettings set org.gnome.desktop.notifications show-banners false
-    gsettings set org.gnome.desktop.notifications show-in-lock-screen true
+    gsettings set org.gnome.desktop.notifications show-in-lock-screen false
     gsettings set org.gnome.desktop.peripherals.keyboard numlock-state false
     gsettings set org.gnome.desktop.peripherals.keyboard remember-numlock-state false
     gsettings set org.gnome.desktop.peripherals.keyboard repeat true
@@ -683,7 +706,7 @@ sudo --preserve-env="XDG_RUNTIME_DIR" --preserve-env="XDG_DATA_DIRS" --preserve-
     gsettings set org.gnome.desktop.peripherals.mouse middle-click-emulation false
     gsettings set org.gnome.desktop.peripherals.mouse natural-scroll false
     gsettings set org.gnome.desktop.peripherals.mouse speed -0.2
-    gsettings set org.gnome.desktop.peripherals.touchpad disable-while-typing false
+    gsettings set org.gnome.desktop.peripherals.touchpad disable-while-typing true
     gsettings set org.gnome.desktop.privacy disable-camera true
     gsettings set org.gnome.desktop.privacy disable-microphone false
     gsettings set org.gnome.desktop.privacy disable-sound-output false
