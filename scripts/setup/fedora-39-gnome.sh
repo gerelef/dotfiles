@@ -496,8 +496,49 @@ sudo --preserve-env="XDG_RUNTIME_DIR" --preserve-env="XDG_DATA_DIRS" --preserve-
     dbus-send --session --print-reply=literal --dest=org.freedesktop.impl.portal.PermissionStore /org/freedesktop/impl/portal/PermissionStore org.freedesktop.impl.portal.PermissionStore.SetPermission string:'screenshot' boolean:true string:'screenshot' string:'flameshot' array:string:'yes'
     dbus-send --session --print-reply=literal --dest=org.freedesktop.impl.portal.PermissionStore /org/freedesktop/impl/portal/PermissionStore org.freedesktop.impl.portal.PermissionStore.Lookup string:'screenshot' string:'screenshot'
     add-gsettings-shortcut "flameshot" "flameshot gui" "Print"
-    
     flameshot config -m white
+    
+    gsettings set org.gnome.shell.extensions.forge.keybindings prefs-tiling-toggle ['<Super>y']
+    gsettings set org.gnome.shell.extensions.forge.keybindings con-split-horizontal "[]"
+    gsettings set org.gnome.shell.extensions.forge.keybindings con-split-layout-toggle "[]"
+    gsettings set org.gnome.shell.extensions.forge.keybindings con-split-vertical "[]"
+    gsettings set org.gnome.shell.extensions.forge.keybindings con-stacked-layout-toggle "[]"
+    gsettings set org.gnome.shell.extensions.forge.keybindings con-tabbed-layout-toggle "[]"
+    gsettings set org.gnome.shell.extensions.forge.keybindings con-tabbed-showtab-decoration-toggle "[]"
+    gsettings set org.gnome.shell.extensions.forge.keybindings focus-border-toggle "[]"
+    gsettings set org.gnome.shell.extensions.forge.keybindings mod-mask-mouse-tile 'None'
+    gsettings set org.gnome.shell.extensions.forge.keybindings prefs-open "[]"
+    gsettings set org.gnome.shell.extensions.forge.keybindings window-focus-down "[]"
+    gsettings set org.gnome.shell.extensions.forge.keybindings window-focus-left "[]"
+    gsettings set org.gnome.shell.extensions.forge.keybindings window-focus-right "[]"
+    gsettings set org.gnome.shell.extensions.forge.keybindings window-focus-up "[]"
+    gsettings set org.gnome.shell.extensions.forge.keybindings window-gap-size-decrease "[]"
+    gsettings set org.gnome.shell.extensions.forge.keybindings window-gap-size-increase "[]"
+    gsettings set org.gnome.shell.extensions.forge.keybindings window-move-down "[]"
+    gsettings set org.gnome.shell.extensions.forge.keybindings window-move-left "[]"
+    gsettings set org.gnome.shell.extensions.forge.keybindings window-move-right "[]"
+    gsettings set org.gnome.shell.extensions.forge.keybindings window-move-up "[]"
+    gsettings set org.gnome.shell.extensions.forge.keybindings window-resize-bottom-decrease "[]"
+    gsettings set org.gnome.shell.extensions.forge.keybindings window-resize-bottom-increase "[]"
+    gsettings set org.gnome.shell.extensions.forge.keybindings window-resize-left-decrease "[]"
+    gsettings set org.gnome.shell.extensions.forge.keybindings window-resize-left-increase "[]"
+    gsettings set org.gnome.shell.extensions.forge.keybindings window-resize-right-decrease "[]"
+    gsettings set org.gnome.shell.extensions.forge.keybindings window-resize-right-increase "[]"
+    gsettings set org.gnome.shell.extensions.forge.keybindings window-resize-top-decrease "[]"
+    gsettings set org.gnome.shell.extensions.forge.keybindings window-resize-top-increase "[]"
+    gsettings set org.gnome.shell.extensions.forge.keybindings window-snap-center "[]"
+    gsettings set org.gnome.shell.extensions.forge.keybindings window-snap-one-third-left "[]"
+    gsettings set org.gnome.shell.extensions.forge.keybindings window-snap-one-third-right "[]"
+    gsettings set org.gnome.shell.extensions.forge.keybindings window-snap-two-third-left "[]"
+    gsettings set org.gnome.shell.extensions.forge.keybindings window-snap-two-third-right "[]"
+    gsettings set org.gnome.shell.extensions.forge.keybindings window-swap-down "[]"
+    gsettings set org.gnome.shell.extensions.forge.keybindings window-swap-last-active "[]"
+    gsettings set org.gnome.shell.extensions.forge.keybindings window-swap-left "[]"
+    gsettings set org.gnome.shell.extensions.forge.keybindings window-swap-right "[]"
+    gsettings set org.gnome.shell.extensions.forge.keybindings window-swap-up "[]"
+    gsettings set org.gnome.shell.extensions.forge.keybindings window-toggle-always-float "[]"
+    gsettings set org.gnome.shell.extensions.forge.keybindings window-toggle-float "[]"
+    gsettings set org.gnome.shell.extensions.forge.keybindings workspace-active-tile-toggle "[]"
     flatpak run --branch=stable --arch=x86_64 --command=gsettings com.raggesilver.BlackBox set com.raggesilver.BlackBox command-as-login-shell true
     flatpak run --branch=stable --arch=x86_64 --command=gsettings com.raggesilver.BlackBox set com.raggesilver.BlackBox cursor-shape 1
     flatpak run --branch=stable --arch=x86_64 --command=gsettings com.raggesilver.BlackBox set com.raggesilver.BlackBox custom-shell-command ''
@@ -682,7 +723,7 @@ sudo --preserve-env="XDG_RUNTIME_DIR" --preserve-env="XDG_DATA_DIRS" --preserve-
     gsettings set org.gnome.TextEditor use-system-font true
     gsettings set org.gnome.TextEditor wrap-text false
     gsettings set org.gnome.desktop.interface clock-format '24h'
-    gsettings set org.gnome.desktop.interface clock-show-date false
+    gsettings set org.gnome.desktop.interface clock-show-date true
     gsettings set org.gnome.desktop.interface clock-show-seconds true
     gsettings set org.gnome.desktop.interface clock-show-weekday true
     gsettings set org.gnome.desktop.interface color-scheme 'default'
