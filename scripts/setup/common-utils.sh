@@ -229,12 +229,11 @@ create-private-gitconfig () (
 )
 
 copy-rc-files () (
-    ln -sf "$RC_DIR/.vimrc" "$REAL_USER_HOME/.vimrc"
     ln -sf "$RC_DIR/.bashrc" "$REAL_USER_HOME/.bashrc"
     ln -sf "$RC_DIR/.nanorc" "$REAL_USER_HOME/.nanorc"
     ln -sf "$CONFIG_DIR/.gitconfig" "$REAL_USER_HOME/.gitconfig"
-    change-ownership "$REAL_USER_HOME/.vimrc" "$REAL_USER_HOME/.bashrc" "$REAL_USER_HOME/.nanorc" "$REAL_USER_HOME/.gitconfig"
-    change-group "$REAL_USER_HOME/.vimrc" "$REAL_USER_HOME/.bashrc" "$REAL_USER_HOME/.nanorc" "$REAL_USER_HOME/.gitconfig"
+    change-ownership "$REAL_USER_HOME/.bashrc" "$REAL_USER_HOME/.nanorc" "$REAL_USER_HOME/.gitconfig"
+    change-group "$REAL_USER_HOME/.bashrc" "$REAL_USER_HOME/.nanorc" "$REAL_USER_HOME/.gitconfig"
 )
 
 copy-ff-rc-files () (
