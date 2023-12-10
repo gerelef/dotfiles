@@ -277,10 +277,11 @@ flatpak remote-delete fedora
 #######################################################################################################
 
 # declare desktop environment installers
-dei=(install-gnome-essentials \
-    install-cinnamon-essentials \
-    install-hyprland-essentials \
-    exit \
+dei=(
+install-gnome-essentials
+install-cinnamon-essentials
+install-hyprland-essentials
+exit
 )
 
 # if there's no desktop environment running...
@@ -326,6 +327,10 @@ setroubleshoot \
 setroubleshoot-plugins \
 openvpn \
 openssl \
+bluez \
+bluez-tools \
+blueman \
+python3-cairo \
 "
 
 readonly INSTALLABLE_APPLICATION_PACKAGES="\
