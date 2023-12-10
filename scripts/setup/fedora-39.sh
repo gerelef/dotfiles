@@ -4,15 +4,249 @@ readonly DIR=$(dirname -- "$BASH_SOURCE")
 source "$DIR/common-utils.sh"
 
 install-gnome-essentials () (
+    dnf-install "$INSTALLABLE_GNOME_ESSENTIAL_PACKAGES" "$INSTALLABLE_GNOME_APPLICATION_PACKAGES"
+    dnf-install "$INSTALLABLE_ADWAITA_PACKAGES" "$INSTALLABLE_GNOME_EXTENSIONS"
+    flatpak-install "$INSTALLABLE_GNOME_FLATPAKS"
+    
+    if ask-user "Do you want to install GNOME wallpapers?"; then
+        echo "-------------------INSTALLING----------------" | tr " " "\n"
+        dnf install -y --best --allowerasing f*-backgrounds-gnome*
+        echo "Done."
+    fi
 
+    configure-gdm-dconf
 )
 
 install-cinnamon-essentials () (
-
+    dnf-install "$INSTALLABLE_CINNAMON_ESSENTIAL_PACKAGES" 
+    dnf-install "$INSTALLABLE_CINNAMON_APPLICATION_PACKAGES"
+    dnf-install "$INSTALLABLE_CINNAMON_EXTENSIONS"
+    flatpak-install "$INSTALLABLE_CINNAMON_FLATPAKS" 
+    
+    if ask-user "Do you want to install Cinnamon wallpapers?"; then
+        echo "-------------------INSTALLING----------------" | tr " " "\n"
+        dnf install -y --best --allowerasing f*-backgrounds-gnome*
+        echo "Done."
+    fi
 )
 
 install-hyprland-essentials () (
+    dnf copr enable erikreider/SwayNotificationCenter
+    
+    dnf-install "$INSTALLABLE_HYPRLAND_ESSENTIAL_PACKAGES" --exclude="wofi kitty"
+    dnf-install "$INSTALLABLE_HYPRLAND_APPLICATION_PACKAGES"
+    dnf-install "$INSTALLABLE_HYPRLAND_EXTENSIONS"
+    flatpak-install "$INSTALLABLE_HYPRLAND_FLATPAKS"
+    
+    # FIXME add exec-once=nm-applet --indicator & disown
+)
 
+install-universal-necessities () (
+    echo "-------------------INSTALLING ESSENTIAL PACKAGES----------------" | tr " " "\n"
+    dnf-install --with-optional @fonts
+    dnf-install --with-optional @hardware-support
+    dnf-install --with-optional @networkmanager-submodules
+    dnf-install --with-optional @printing
+
+    dnf-install "$INSTALLABLE_ESSENTIAL_PACKAGES" "$INSTALLABLE_APPLICATION_PACKAGES" "$INSTALLABLE_PIPEWIRE_PACKAGES" 
+    flatpak-install "$INSTALLABLE_FLATPAKS"
+
+    if [[ "btrfs" == $ROOT_FS || "btrfs" == $REAL_USER_HOME_FS ]]; then
+        echo "Found BTRFS, installing tools..."
+        dnf-install "$INSTALLABLE_BTRFS_TOOLS"
+    fi
+    
+    echo "Done."
+)
+
+optimize-hardware () (
+    echo "-------------------OPTIMIZING HARDWARE----------------"
+    
+    readonly BIOS_MODE=$([ -d /sys/firmware/efi ] && echo UEFI || echo BIOS)
+    if [[ "$BIOS_MODE" == "UEFI" ]]; then
+        echo "Updating UEFI with fwupdmgr..."
+        fwupdmgr refresh --force -y
+        fwupdmgr get-updates -y
+        fwupdmgr update -y
+    fi
+
+    readonly NVIDIA_GPU=$(lspci | grep -i vga | grep NVIDIA)
+    if [[ -n "$NVIDIA_GPU" && $(lsmod | grep nouveau) ]]; then
+        echo "-------------------INSTALLING NVIDIA DRIVERS----------------"
+        echo "Found $NVIDIA_GPU running with nouveau drivers!"
+        if [[ "$BIOS_MODE" == "UEFI" && $(mokutil --sb-state 2> /dev/null) ]]; then
+            # https://blog.monosoul.dev/2022/05/17/automatically-sign-nvidia-kernel-module-in-fedora-36/
+            if ask-user 'Do you want to enroll MOK and restart?'; then
+                echo "Signing GPU drivers..."
+                kmodgenca -a
+                mokutil --import /etc/pki/akmods/certs/public_key.der
+                echo "Finished signing GPU drivers. Make sure you Enroll MOK when you restart."
+                echo "OK."
+                exit 0
+            fi
+        else
+            echo "UEFI not found; please restart & use UEFI..."
+        fi
+        dnf-install "$INSTALLABLE_NVIDIA_DRIVERS"
+        
+        akmods --force && dracut --force
+        
+        # check arch wiki, these enable DRM
+        grubby --update-kernel=ALL --args="nvidia-drm.modeset=1 nvidia-drm.fbdev=1"
+    fi
+
+    readonly CHASSIS_TYPE="$(dmidecode --string chassis-type)"
+    if [[ $CHASSIS_TYPE -eq "Desktop" ]]; then
+        # https://forums.developer.nvidia.com/t/no-matching-gpu-found-with-510-47-03/202315/5
+        systemctl disable nvidia-powerd.service
+    else
+        # s3 sleep
+        grubby --update-kernel=ALL --args="mem_sleep_default=s2idle"
+        echo "-------------------OPTIMIZING BATTERY USAGE----------------"
+        echo "Found laptop $CHASSIS_TYPE"
+        dnf-install "$INSTALLABLE_PWR_MGMNT"
+        systemctl mask power-profiles-daemon
+        powertop --auto-tune
+    fi
+
+    echo "Done."
+)
+
+install-media-codecs () (
+    echo "-------------------INSTALLING CODECS / H/W VIDEO ACCELERATION----------------"
+
+    # based on https://github.com/devangshekhawat/Fedora-39-Post-Install-Guide
+    dnf-groupupdate 'core' 'multimedia' 'sound-and-video' --setop='install_weak_deps=False' --exclude='PackageKit-gstreamer-plugin' --allowerasing && sync
+    dnf install -y --best --allowerasing gstreamer1-plugins-{bad-\*,good-\*,base}
+    dnf install -y --best --allowerasing lame\* --exclude=lame-devel
+    dnf-install "gstreamer1-plugin-openh264" "gstreamer1-libav" "--exclude=gstreamer1-plugins-bad-free-devel" "ffmpeg" "gstreamer-ffmpeg"
+    dnf install -y --best --allowerasing --with-optional @multimedia
+
+    dnf-install "ffmpeg" "ffmpeg-libs" "libva" "libva-utils"
+    dnf config-manager --set-enabled fedora-cisco-openh264
+    dnf-install "openh264" "gstreamer1-plugin-openh264" "mozilla-openh264"
+)
+
+install-gaming-packages () (
+    echo "-------------------INSTALLING----------------" | tr " " "\n"
+    dnf-install "$INSTALLABLE_EXTRAS" "$INSTALLABLE_WINE_GE_CUSTOM_PKGS" "$INSTALLABLE_OBS_STUDIO"
+    flatpak-install "$INSTALLABLE_EXTRAS_FLATPAK"
+    echo "Done."
+)
+
+install-dev-tools () (
+    echo "-------------------INSTALLING----------------" | tr " " "\n"
+    dnf-install "@C Development Tools and Libraries" "@Development Tools" "$INSTALLABLE_DEV_PKGS"
+    flatpak-install "$INSTALLABLE_IDE_FLATPAKS"
+    
+    echo "-------------------INSTALLING JETBRAINS TOOLBOX----------------"
+    readonly curlsum=$(curl -fsSL https://raw.githubusercontent.com/nagygergo/jetbrains-toolbox-install/master/jetbrains-toolbox.sh | sha512sum -)
+    readonly validsum="7eb50db1e6255eed35b27c119463513c44aee8e06f3014609a410033f397d2fd81d2605e4e5c243b1087a6c23651f6b549a7c4ee386d50a22cc9eab9e33c612e  -"
+    if [[ "$validsum" == "$curlsum" ]]; then
+        # we're overriding $HOME for this script since it doesn't know we're running as root
+        #  and looks for $HOME, ruining everything in whatever "$HOME/.local/share/JetBrains/Toolbox/bin" and "$HOME/.local/bin" resolve into
+        (HOME="$REAL_USER_HOME" && curl -fsSL https://raw.githubusercontent.com/nagygergo/jetbrains-toolbox-install/master/jetbrains-toolbox.sh | bash)
+    else
+        echo "sha512sum mismatch"
+        exit 2
+    fi
+    echo "Done."
+)
+
+install-config-files () (
+    echo "-------------------INSTALLING RC FILES----------------"
+
+    copy-pipewire
+    create-private-bashrc
+    create-private-gitconfig
+    copy-rc-files
+
+    echo "Done."
+)
+
+configure-system-defaults () (
+    echo "-------------------SETTING UP SYSTEM DEFAULTS----------------"
+    lower-swappiness
+    echo "Lowered swappiness."
+    raise-user-watches
+    echo "Raised user watches."
+    cap-nproc-count
+    echo "Capped maximum number of processes."
+    cap-max-logins-system
+    echo "Capped max system logins."
+    create-convenience-sudoers
+    echo "Created sudoers.d convenience defaults."
+
+    echo "Done."
+)
+
+tweak-minor-details () (
+    echo "-------------------TWEAKING MINOR DETAILS----------------"
+    
+    timedatectl set-local-rtc '0' # for fixing dual boot time inconsistencies
+    hostnamectl hostname "$DISTRIBUTION_NAME"
+    # if the statement below doesnt work, check this out
+    #  https://old.reddit.com/r/linuxhardware/comments/ng166t/s3_deep_sleep_not_working/
+    systemctl disable NetworkManager-wait-online.service # stop network manager from waiting until online, improves boot times
+    rm /etc/xdg/autostart/org.gnome.Software.desktop # stop this from updating in the background and eating ram, no reason
+
+    echo "Done."
+)
+
+modify-grub () (
+    # if we haven't modified GRUB already, go ahead...
+    readonly DEFAULT_GRUB_CFG="/etc/default/grub"
+    if [[ -z $(cat $DEFAULT_GRUB_CFG | grep "GRUB_HIDDEN_TIMEOUT") ]]; then
+        echo "-------------------MODIFYING GRUB----------------"
+        
+        dnf-install "hwinfo"
+        out="$(sed -r 's/GRUB_TERMINAL_OUTPUT=.+/GRUB_TERMINAL_OUTPUT="gfxterm"/' < $DEFAULT_GRUB_CFG)" 
+        echo "$out" | dd of="$DEFAULT_GRUB_CFG"
+        
+        echo 'GRUB_HIDDEN_TIMEOUT=0' >> /etc/default/grub
+        echo 'GRUB_HIDDEN_TIMEOUT_QUIET=true' >> /etc/default/grub
+        echo 'GRUB_GFXPAYLOAD_LINUX=keep' >> /etc/default/grub
+        top_res="$(hwinfo --framebuffer | tail -n 2 | grep -E -o '[0-9]{3,4}x[0-9]{3,4}')"
+        top_dep="$(hwinfo --framebuffer | tail -n 2 | grep Mode | grep -E -o ', [0-9]{2} bits' | grep -E -o '[0-9]{2}')"
+        echo "GRUB_GFXMODE=$top_res x $top_dep" | tr -d ' ' >> /etc/default/grub
+        
+        readonly GRUB_OUT_LOCATION="$(locate grub.cfg | grep /boot | head -n 1)"
+        [[ -n $GRUB_OUT_LOCATION ]] && grub2-mkconfig --output="$GRUB_OUT_LOCATION"
+        
+        echo "Done."
+    fi
+)
+
+create-swapfile () (
+    # if we haven't created /swapfile, go ahead...
+    if [[ -z $(cat /etc/fstab | grep "/swapfile swap swap defaults 0 0") ]]; then
+        echo "-------------------CREATING /swapfile----------------"
+        
+        kbs=$(cat /proc/meminfo | grep MemTotal | grep -E -o "[0-9]+")
+        fallocate -l "$kbs"KB /swapfile 
+        chmod 600 /swapfile 
+        chown root /swapfile 
+        mkswap /swapfile 
+        swapon /swapfile
+        echo "/swapfile swap swap defaults 0 0" >> /etc/fstab
+        
+        echo "Done."
+    fi
+)
+
+configure-gdm-dconf () (
+    echo "-------------------CONFIGURING GDM DCONF DB & USER GSETTINGS----------------"
+
+    (cat <<GDM_END
+user-db:user
+system-db:gdm
+file-db:/usr/share/gdm/greeter-dconf-defaults
+GDM_END
+    ) > "/etc/dconf/profile/gdm"
+
+    cp -f "$GDM_SETTINGS_FILE" "/etc/dconf/db/gdm.d/01-generic"
+
+    dconf update
 )
 
 # ref: https://askubuntu.com/a/30157/8698
@@ -26,6 +260,21 @@ if ! ping -q -c 1 -W 1 google.com > /dev/null; then
     echo "This script needs network connectivity to continue."
     exit 1
 fi
+
+#######################################################################################################
+# "optimize" dnf settings
+copy-dnf
+
+# for some reason this repository is added on every new install, i dont' care i have toolbox wtf
+dnf copr remove -y --skip-broken phracek/PyCharm
+dnf install -y --best --allowerasing "https://download1.rpmfusion.org/free/fedora/rpmfusion-free-release-$(rpm -E %fedora).noarch.rpm" # free rpmfusion
+dnf install -y --best --allowerasing "https://download1.rpmfusion.org/nonfree/fedora/rpmfusion-nonfree-release-$(rpm -E %fedora).noarch.rpm" # nonfree rpmfusion
+
+# no requirement to add flathub ourselves anymore in f38; it should be enabled by default. however, it may not be, most likely by accident, so this is a failsafe
+flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
+flatpak remote-delete fedora
+
+#######################################################################################################
 
 # declare desktop environment installers
 dei=(install-gnome-essentials \
@@ -64,12 +313,13 @@ create-default-locations
 readonly ROOT_FS=$(stat -f --format=%T /)
 readonly REAL_USER_HOME_FS=$(stat -f --format=%T "$REAL_USER_HOME")
 readonly DISTRIBUTION_NAME="fedora$(rpm -E %fedora)"
-readonly GDM_SETTINGS_FILE="$DIR/gnome-settings/f39-opts"
+readonly GDM_SETTINGS_FILE="$DIR/gnome-settings/f$(rpm -E %fedora)-opts"
 
 # TODO replace grub2 with systemd-boot when we get rid of all the issues 
 #  regarding proprietary NVIDIA Drivers, and signing them for UEFI
 # TODO add systemd-bsod when it becomes available on fedora
 readonly INSTALLABLE_ESSENTIAL_PACKAGES="\
+plocate \
 git \
 flatpak \
 setroubleshoot \
@@ -104,6 +354,70 @@ bridge-utils \
 libvirt \
 virt-install \
 qemu-kvm \
+qemu-audio-pipewire \
+"
+
+readonly INSTALLABLE_PIPEWIRE_PACKAGES="\
+pipewire \
+pipewire-alsa \
+pipewire-codec-aptx \
+pipewire-gstreamer \
+pipewire-libs \
+pipewire-pulseaudio \
+pipewire-utils \
+wireplumber \
+wireplumber-libs \
+"
+
+readonly INSTALLABLE_BTRFS_TOOLS="\
+btrfs-assistant \
+timeshift \
+"
+
+readonly INSTALLABLE_PWR_MGMNT="\
+tlp \
+tlp-rdw \
+powertop \
+"
+
+readonly INSTALLABLE_NVIDIA_DRIVERS="\
+gcc \
+kernel-headers \
+kernel-devel \
+akmod-nvidia \
+xorg-x11-drv-nvidia \
+xorg-x11-drv-nvidia-libs \ 
+xorg-x11-drv-nvidia-libs.i686 \
+xorg-x11-drv-nvidia-cuda \
+xorg-x11-drv-nvidia-power \
+"
+
+readonly INSTALLABLE_FLATPAKS="\
+com.spotify.Client \
+com.raggesilver.BlackBox \
+com.github.rafostar.Clapper \
+net.cozic.joplin_desktop \
+com.skype.Client \
+us.zoom.Zoom \
+io.gitlab.theevilskeleton.Upscaler \
+com.github.tchx84.Flatseal \
+"
+
+readonly INSTALLABLE_DEV_PKGS="\
+gcc \
+clang \
+vulkan \
+meson \
+curl \
+cmake \
+ninja-build \
+java-latest-openjdk \
+java-latest-openjdk-devel \
+bless \
+"
+
+readonly INSTALLABLE_IDE_FLATPAKS="\
+com.visualstudio.code \
 "
 
 readonly INSTALLABLE_OBS_STUDIO="\
@@ -114,10 +428,23 @@ obs-studio-plugin-webkitgtk \
 obs-studio-plugin-x264 \
 "
 
-readonly INSTALLABLE_PWR_MGMNT="\
-tlp \
-tlp-rdw \
-powertop \
+readonly INSTALLABLE_EXTRAS="\
+steam \
+gamescope \
+"
+
+readonly INSTALLABLE_EXTRAS_FLATPAK="\
+com.discordapp.Discord \
+com.teamspeak.TeamSpeak \
+"
+
+readonly INSTALLABLE_WINE_GE_CUSTOM_PKGS="\
+wine \
+vulkan \
+winetricks \
+protontricks \
+vulkan-loader \
+vulkan-loader.i686 \
 "
 
 # NOTE: these are global and should be treated as desktop agnostic
@@ -141,72 +468,6 @@ gnome-contacts \
 gnome-maps \
 "
 
-readonly INSTALLABLE_FLATPAKS="\
-com.spotify.Client \
-com.raggesilver.BlackBox \
-com.github.rafostar.Clapper \
-net.cozic.joplin_desktop \
-de.haeckerfelix.Fragments \
-com.skype.Client \
-us.zoom.Zoom \
-io.gitlab.theevilskeleton.Upscaler \
-com.github.tchx84.Flatseal \
-org.gnome.Snapshot \
-"
-
-readonly INSTALLABLE_BTRFS_TOOLS="\
-btrfs-assistant \
-timeshift \
-"
-
-readonly INSTALLABLE_EXTRAS="\
-steam \
-gamescope \
-"
-
-readonly INSTALLABLE_EXTRAS_FLATPAK="\
-com.discordapp.Discord \
-com.teamspeak.TeamSpeak \
-"
-
-readonly INSTALLABLE_DEV_PKGS="\
-gcc \
-clang \
-vulkan \
-meson \
-curl \
-cmake \
-ninja-build \
-java-latest-openjdk \
-java-latest-openjdk-devel \
-bless \
-"
-
-readonly INSTALLABLE_IDE_FLATPAKS="\
-ar.xjuan.Cambalache \
-com.visualstudio.code \
-"
-
-readonly INSTALLABLE_NVIDIA_DRIVERS="\
-gcc \
-kernel-headers \
-kernel-devel \
-akmod-nvidia \
-xorg-x11-drv-nvidia \
-xorg-x11-drv-nvidia-libs \ 
-xorg-x11-drv-nvidia-libs.i686 \
-xorg-x11-drv-nvidia-cuda \
-xorg-x11-drv-nvidia-power \
-"
-
-readonly INSTALLABLE_WINE_GE_CUSTOM_PKGS="\
-wine \
-winetricks \
-protontricks \
-vulkan-loader \
-vulkan-loader.i686 \
-"
-
 #######################################################################################################
 
 readonly INSTALLABLE_GNOME_ESSENTIAL_PACKAGES="\
@@ -214,7 +475,9 @@ gnome-shell \
 "
 
 readonly INSTALLABLE_GNOME_APPLICATION_PACKAGES="\
+nautilus \
 gnome-system-monitor \
+gnome-disk-utility \
 "
 
 readonly INSTALLABLE_ADWAITA_PACKAGES="\
@@ -232,6 +495,7 @@ readonly INSTALLABLE_GNOME_FLATPAKS="\
 org.gtk.Gtk3theme.adw-gtk3 \
 org.gtk.Gtk3theme.adw-gtk3-dark \
 org.kde.WaylandDecoration.QAdwaitaDecorations \
+de.haeckerfelix.Fragments \
 org.gnome.Snapshot \
 "
 
@@ -258,11 +522,15 @@ cinnamon-control-center \
 "
 
 readonly INSTALLABLE_CINNAMON_APPLICATION_PACKAGES="\
+nautilus \
 cinnamon-calendar-server \
 cinnamon-control-center-filesystem \
+gnome-system-monitor \
+gnome-disk-utility \
 "
 
 readonly INSTALLABLE_CINNAMON_FLATPAKS="\
+qbittorrent \
 "
 
 readonly INSTALLABLE_CINNAMON_EXTENSIONS="\
@@ -276,39 +544,40 @@ schroedinger-cat-backgrounds-gnome \
 
 # FIXME add sddm and swaylock
 # FIXME add systemd autostart https://old.reddit.com/r/hyprland/comments/127m3ef/starting_hyprland_directy_from_systemd_a_guide_to/
+# FIXME add autostart for anything applicable under here 
 readonly INSTALLABLE_HYPRLAND_ESSENTIAL_PACKAGES="\
 hyprland \
 xdg-desktop-portal-hyprland \
+xdg-desktop-portal-gtk \
+polkit-kde \
+SwayNotificationCenter \
+cliphist \
+wl-clip-persist \
+swaylock \
+greetd \
+gtkgreet
+waybar \
+swaybg \
 "
 
 readonly INSTALLABLE_HYPRLAND_APPLICATION_PACKAGES="\
+rofi-wayland \
+rofi-themes \
+bpytop \
+nautilus \
+qbittorrent \
 "
 
 readonly INSTALLABLE_HYPRLAND_FLATPAKS="\
 "
 
-# FIXME "hyprpm add https://github.com/hyprwm/hyprland-plugins" 
-# FIXME add "exec-once = hyprpm reload -n"
+# FIXME add confirm hyprpm works, and implement hyprpm-install 
 readonly INSTALLABLE_HYPRLAND_EXTENSIONS="\
-rofi-wayland \
-rofi-themes \
+csgo-vulkan-fix \
+hyprbars \
+hyprtrails \
+hyprgrass \
 "
-
-#######################################################################################################
-
-echo "-------------------DNF.CONF----------------"
-echo "Setting up dnf.conf..."
-
-copy-dnf
-
-echo "Done."
-
-#######################################################################################################
-
-# for some reason this repository is added on every new install, i dont' care i have toolbox wtf
-dnf copr remove -y --skip-broken phracek/PyCharm
-dnf install -y --best --allowerasing "https://download1.rpmfusion.org/free/fedora/rpmfusion-free-release-$(rpm -E %fedora).noarch.rpm" # free rpmfusion
-dnf install -y --best --allowerasing "https://download1.rpmfusion.org/nonfree/fedora/rpmfusion-nonfree-release-$(rpm -E %fedora).noarch.rpm" # nonfree rpmfusion
 
 #######################################################################################################
 
@@ -321,152 +590,38 @@ systemctl enable fstrim.timer
 
 dnf-update-refresh
 
-readonly BIOS_MODE=$([ -d /sys/firmware/efi ] && echo UEFI || echo BIOS)
-if [[ "$BIOS_MODE" == "UEFI" ]]; then
-    echo "Updating UEFI with fwupdmgr..."
-    fwupdmgr refresh --force -y
-    fwupdmgr get-updates -y
-    fwupdmgr update -y
-else
-    echo 'UEFI not found!'
-fi
-
-#######################################################################################################
 dnf-remove "$UNINSTALLABLE_BLOAT"
 
-echo "-------------------INSTALLING ESSENTIAL PACKAGES----------------" | tr " " "\n"
-dnf-install @fonts
-dnf-install @hardware-support
-dnf-install @networkmanager-submodules
+install-universal-necessities 
+optimize-hardware 
+install-media-codecs
 
-dnf-install "$INSTALLABLE_ESSENTIAL_PACKAGES"
-dnf-install "$INSTALLABLE_ADWAITA_PACKAGES"
-dnf-install "$INSTALLABLE_APPLICATION_PACKAGES"
-dnf-install "$INSTALLABLE_GNOME_APPLICATION_PACKAGES"
-dnf-install "$INSTALLABLE_VIRTUALIZATION_PACKAGES"
+configure-system-defaults
+tweak-minor-details
+modify-grub
+create-swapfile
 
-if [[ "btrfs" == $ROOT_FS || "btrfs" == $REAL_USER_HOME_FS ]]; then
-    echo "Found BTRFS, installing tools..."
-    dnf-install "$INSTALLABLE_BTRFS_TOOLS"
-fi
+ssh-keygen -q -t ed25519 -N '' -C "$REAL_USER@$DISTRIBUTION_NAME" -f "$SSH_ROOT/id_ed25519" -P "" <<< $'\ny' >/dev/null 2>&1
+cat "$SSH_ROOT/id_ed25519.pub"
 
 #######################################################################################################
 
-echo "-------------------OPTIMIZING HARDWARE----------------"
-
-readonly NVIDIA_GPU=$(lspci | grep -i vga | grep NVIDIA)
-if [[ -n "$NVIDIA_GPU" && $(lsmod | grep nouveau) ]]; then
-    echo "-------------------INSTALLING NVIDIA DRIVERS----------------"
-    echo "Found $NVIDIA_GPU running with nouveau drivers!"
-    if [[ "$BIOS_MODE" == "UEFI" && $(mokutil --sb-state 2> /dev/null) ]]; then
-        # https://blog.monosoul.dev/2022/05/17/automatically-sign-nvidia-kernel-module-in-fedora-36/
-        if ask-user 'Do you want to enroll MOK and restart?'; then
-            echo "Signing GPU drivers..."
-            kmodgenca -a
-            mokutil --import /etc/pki/akmods/certs/public_key.der
-            echo "Finished signing GPU drivers. Make sure you Enroll MOK when you restart."
-            echo "OK."
-            exit 0
-        fi
-    else
-        echo "UEFI not found; please restart & use UEFI..."
-    fi
-    dnf-install "$INSTALLABLE_NVIDIA_DRIVERS"
-    
-    akmods --force && dracut --force
-    
-    # check arch wiki, these enable DRM
-    grubby --update-kernel=ALL --args="nvidia-drm.modeset=1 nvidia-drm.fbdev=1"
-fi
-
-readonly CHASSIS_TYPE="$(dmidecode --string chassis-type)"
-if [[ $CHASSIS_TYPE -eq "Desktop" ]]; then
-    # https://forums.developer.nvidia.com/t/no-matching-gpu-found-with-510-47-03/202315/5
-    systemctl disable nvidia-powerd.service
-else
-    # s3 sleep
-    grubby --update-kernel=ALL --args="mem_sleep_default=s2idle"
-    echo "-------------------OPTIMIZING BATTERY USAGE----------------"
-    echo "Found laptop $CHASSIS_TYPE"
-    dnf-install "$INSTALLABLE_PWR_MGMNT"
-    systemctl mask power-profiles-daemon
-    powertop --auto-tune
-fi
-
-echo "Done."
-
-#######################################################################################################
-
-echo "-------------------INSTALLING CODECS / H/W VIDEO ACCELERATION----------------"
-
-# based on https://github.com/devangshekhawat/Fedora-39-Post-Install-Guide
-dnf-groupupdate 'core' 'multimedia' 'sound-and-video' --setop='install_weak_deps=False' --exclude='PackageKit-gstreamer-plugin' --allowerasing && sync
-dnf install -y --best --allowerasing gstreamer1-plugins-{bad-\*,good-\*,base}
-dnf install -y --best --allowerasing lame\* --exclude=lame-devel
-dnf-install "gstreamer1-plugin-openh264" "gstreamer1-libav" "--exclude=gstreamer1-plugins-bad-free-devel" "ffmpeg" "gstreamer-ffmpeg"
-dnf install -y --best --allowerasing --with-optional @multimedia
-
-dnf-install "ffmpeg" "ffmpeg-libs" "libva" "libva-utils"
-dnf config-manager --set-enabled fedora-cisco-openh264
-dnf-install "openh264" "gstreamer1-plugin-openh264" "mozilla-openh264"
-
-echo "-------------------INSTALLING PRINTING SUITE----------------"
-
-dnf-install @printing
-
-#######################################################################################################
-# no requirement to add flathub ourselves anymore in f38; it should be enabled by default. however, it may not be, most likely by accident, so this is a failsafe
-flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
-flatpak remote-delete fedora
-
-#######################################################################################################
-
-echo "-------------------INSTALLING---------------- $INSTALLABLE_FLATPAKS" | tr " " "\n"
-flatpak-install "$INSTALLABLE_FLATPAKS"
-
-echo "Done."
-
-#######################################################################################################
-
-if ask-user 'Are you sure you want to install extras?'; then    
-    echo "-------------------INSTALLING---------------- $INSTALLABLE_EXTRAS $INSTALLABLE_EXTRAS_FLATPAK" | tr " " "\n"
-    dnf-install "$INSTALLABLE_EXTRAS"
-    dnf-install "$INSTALLABLE_OBS_STUDIO"
-    flatpak-install "$INSTALLABLE_EXTRAS_FLATPAK"
+if ask-user 'Are you sure you want to install virtualization packages?'; then    
+    echo "-------------------INSTALLING----------------" | tr " " "\n"
+    dnf-install "$INSTALLABLE_VIRTUALIZATION_PACKAGES"
     echo "Done."
 fi
 
 #######################################################################################################
 
-if ask-user "Are you sure you want to install the Wine Compatibility layer?"; then
-    echo "-------------------INSTALLING---------------- $INSTALLABLE_WINE_GE_CUSTOM_PKGS" | tr " " "\n"
-    dnf-install "$INSTALLABLE_WINE_GE_CUSTOM_PKGS"
-    echo "Done."
+if ask-user 'Are you sure you want to install gaming packages?'; then    
+    install-gaming-packages
 fi
 
 #######################################################################################################
 
-if ask-user "Are you sure you want to install Community IDEs & Jetbrains Toolbox?"; then
-    echo "-------------------INSTALLING---------------- $INSTALLABLE_IDE_FLATPAKS $INSTALLABLE_DEV_PKGS" | tr " " "\n"
-    dnf-install "@C Development Tools and Libraries"
-    dnf-install "@Development Tools"
-
-    dnf-install "$INSTALLABLE_DEV_PKGS"
-    
-    flatpak-install "$INSTALLABLE_IDE_FLATPAKS"
-    echo "Finished installing IDEs."
-    echo "-------------------INSTALLING JETBRAINS TOOLBOX----------------"
-    readonly curlsum=$(curl -fsSL https://raw.githubusercontent.com/nagygergo/jetbrains-toolbox-install/master/jetbrains-toolbox.sh | sha512sum -)
-    readonly validsum="7eb50db1e6255eed35b27c119463513c44aee8e06f3014609a410033f397d2fd81d2605e4e5c243b1087a6c23651f6b549a7c4ee386d50a22cc9eab9e33c612e  -"
-    if [[ "$validsum" == "$curlsum" ]]; then
-        # we're overriding $HOME for this script since it doesn't know we're running as root
-        #  and looks for $HOME, ruining everything in whatever "$HOME/.local/share/JetBrains/Toolbox/bin" and "$HOME/.local/bin" resolve into
-        (HOME="$REAL_USER_HOME" && curl -fsSL https://raw.githubusercontent.com/nagygergo/jetbrains-toolbox-install/master/jetbrains-toolbox.sh | bash)
-    else
-        echo "sha512sum mismatch"
-        exit 2
-    fi
-    echo "Done."
+if ask-user "Are you sure you want to install development tools (IDEs)?"; then
+    install-dev-tools
 fi
 
 if ask-user "Are you sure you want to install zeno/scrcpy?"; then
@@ -477,118 +632,22 @@ fi
 
 #######################################################################################################
 
-if ask-user "Do you want to install extensions?"; then
-    echo "-------------------INSTALLING---------------- $INSTALLABLE_GNOME_EXTENSIONS" | tr " " "\n"
-    dnf-install "$INSTALLABLE_EXTENSIONS"
-    echo "Done."
-fi
-
-# TODO make sure these are applied/asked for the cinnamon set up as well
-if ask-user "Do you want to install gnome backgrounds?"; then
-    echo "-------------------INSTALLING----------------" | tr " " "\n"
-    dnf install -y --best --allowerasing f*-backgrounds-gnome*
-    echo "Done."
-fi
-
-#######################################################################################################
-
-
-echo "https://www.suse.com/support/kb/doc/?id=000017060"
-while : ; do
-    change-ownership-recursive "$MZL_ROOT"
-    if ask-user "Please run firefox as a user to create its configuration directories; let it load fully, then close it."; then
-        copy-ff-rc-files
-        echo "Done."
-        break
-    fi
-done
-
-#######################################################################################################
-
-echo "-------------------INSTALLING RC FILES----------------"
-
-copy-pipewire
-create-private-bashrc
-create-private-gitconfig
-copy-rc-files
-
-echo "Done."
-
-#######################################################################################################
-
-echo "-------------------SETTING UP SYSTEM DEFAULTS----------------"
-
-lower-swappiness
-echo "Lowered swappiness."
-raise-user-watches
-echo "Raised user watches."
-cap-nproc-count
-echo "Capped maximum number of processes."
-cap-max-logins-system
-echo "Capped max system logins."
-create-convenience-sudoers
-echo "Created sudoers.d convenience defaults."
-
-echo "Done."
-
-#######################################################################################################
-
-echo "-------------------TWEAKING MINOR DETAILS----------------"
-
-systemctl restart NetworkManager
-timedatectl set-local-rtc '0' # for fixing dual boot time inconsistencies
-hostnamectl hostname "$DISTRIBUTION_NAME"
-# if the statement below doesnt work, check this out
-#  https://old.reddit.com/r/linuxhardware/comments/ng166t/s3_deep_sleep_not_working/
-systemctl disable NetworkManager-wait-online.service # stop network manager from waiting until online, improves boot times
-rm /etc/xdg/autostart/org.gnome.Software.desktop # stop this from updating in the background and eating ram, no reason
-
-echo "Done."
-
-#######################################################################################################
-
-ssh-keygen -q -t ed25519 -N '' -C "$REAL_USER@$DISTRIBUTION_NAME" -f "$SSH_ROOT/id_ed25519" -P "" <<< $'\ny' >/dev/null 2>&1
-cat "$SSH_ROOT/id_ed25519.pub"
-
-#######################################################################################################
-
-# if we haven't modified GRUB already, go ahead...
-readonly DEFAULT_GRUB_CFG="/etc/default/grub"
-if [[ -z $(cat $DEFAULT_GRUB_CFG | grep "GRUB_HIDDEN_TIMEOUT") ]]; then
-    echo "-------------------MODIFYING GRUB----------------"
-    
-    dnf-install "hwinfo"
-    out="$(sed -r 's/GRUB_TERMINAL_OUTPUT=.+/GRUB_TERMINAL_OUTPUT="gfxterm"/' < $DEFAULT_GRUB_CFG)" 
-    echo "$out" | dd of="$DEFAULT_GRUB_CFG"
-    
-    echo 'GRUB_HIDDEN_TIMEOUT=0' >> /etc/default/grub
-    echo 'GRUB_HIDDEN_TIMEOUT_QUIET=true' >> /etc/default/grub
-    echo 'GRUB_GFXPAYLOAD_LINUX=keep' >> /etc/default/grub
-    top_res="$(hwinfo --framebuffer | tail -n 2 | grep -E -o '[0-9]{3,4}x[0-9]{3,4}')"
-    top_dep="$(hwinfo --framebuffer | tail -n 2 | grep Mode | grep -E -o ', [0-9]{2} bits' | grep -E -o '[0-9]{2}')"
-    echo "GRUB_GFXMODE=$top_res x $top_dep" | tr -d ' ' >> /etc/default/grub
-    
-    readonly GRUB_OUT_LOCATION="$(locate grub.cfg | grep /boot | head -n 1)"
-    [[ -n $GRUB_OUT_LOCATION ]] && grub2-mkconfig --output="$GRUB_OUT_LOCATION"
-    
-    echo "Done."
+if ask-user "Customize firefox? Compatible only with gerelef/dotfiles"; then
+    echo "https://www.suse.com/support/kb/doc/?id=000017060"
+    while : ; do
+        change-ownership-recursive "$MZL_ROOT"
+        if ask-user "Please run firefox as a user to create its configuration directories; let it load fully, then close it."; then
+            copy-ff-rc-files
+            echo "Done."
+            break
+        fi
+    done
 fi
 
 #######################################################################################################
 
-# if we haven't created /swapfile, go ahead...
-if [[ -z $(cat /etc/fstab | grep "/swapfile swap swap defaults 0 0") ]]; then
-    echo "-------------------CREATING /swapfile----------------"
-    
-    kbs=$(cat /proc/meminfo | grep MemTotal | grep -E -o "[0-9]+")
-    fallocate -l "$kbs"KB /swapfile 
-    chmod 600 /swapfile 
-    chown root /swapfile 
-    mkswap /swapfile 
-    swapon /swapfile
-    echo "/swapfile swap swap defaults 0 0" >> /etc/fstab
-    
-    echo "Done."
+if ask-user "Install default config files? Compatible only with gerelef/dotfiles"; then
+    install-config-files  
 fi
 
 #######################################################################################################
@@ -603,25 +662,29 @@ echo "Done."
 
 #######################################################################################################
 
-echo "-------------------CONFIGURING GDM DCONF DB & USER GSETTINGS----------------"
+updatedb 2> /dev/null
+if ! [ $? -eq 0 ]; then
+    echo "updatedb errored, retrying with absolute path"
+    /usr/sbin/updatedb
+fi
 
-(cat <<GDM_END
-user-db:user
-system-db:gdm
-file-db:/usr/share/gdm/greeter-dconf-defaults
-GDM_END
-) > "/etc/dconf/profile/gdm"
-
-cp -f "$GDM_SETTINGS_FILE" "/etc/dconf/db/gdm.d/01-generic"
-
-dconf update
+echo "Make sure to restart your PC after making all the necessary adjustments."
+echo "Remember to add a permanent mount point for internal storage partitions."
+echo "--------------------------- FSTAB ---------------------------"
+echo "User fstab mount arguments: rw,user,exec,nosuid,nodev,nofail,auto,x-gvfs-show"
 
 #######################################################################################################
 
-# user gsettings
-# heredocs
-# https://tldp.org/LDP/abs/html/here-docs.html
-sudo --preserve-env="XDG_RUNTIME_DIR" --preserve-env="XDG_DATA_DIRS" --preserve-env="DBUS_SESSION_BUS_ADDRESS" -u "$REAL_USER" bash <<-GSETTINGS_DELIMITER
+if [[ $XDG_CURRENT_DESKTOP -eq "GNOME" ]]; then
+    echo "--------------------------- GNOME ---------------------------"
+    echo "Make sure to get the legacy GTK3 Theme Auto Switcher"
+    echo "  https://extensions.gnome.org/extension/4998/legacy-gtk3-theme-scheme-auto-switcher/"
+
+    echo "Configuring all gsettings for user $REAL_USER . . ."
+    # user gsettings
+    # heredocs
+    # https://tldp.org/LDP/abs/html/here-docs.html
+    sudo --preserve-env="XDG_RUNTIME_DIR" --preserve-env="XDG_DATA_DIRS" --preserve-env="DBUS_SESSION_BUS_ADDRESS" -u "$REAL_USER" bash <<-GSETTINGS_DELIMITER
 source "$(dirname -- "$BASH_SOURCE")/common-utils.sh"
 
 gsettings set org.gnome.desktop.interface cursor-theme 'Adwaita'
@@ -925,22 +988,5 @@ gsettings set org.gnome.settings-daemon.plugins.color night-light-schedule-from 
 gsettings set org.gnome.settings-daemon.plugins.color night-light-schedule-to 6.0
 exit
 GSETTINGS_DELIMITER
-
-echo "Done."
-
-#######################################################################################################
-
-updatedb 2> /dev/null
-if ! [ $? -eq 0 ]; then
-    echo "updatedb errored, retrying with absolute path"
-    /usr/sbin/updatedb
+    echo "Done."
 fi
-
-echo "--------------------------- GNOME ---------------------------"
-echo "Make sure to get the legacy GTK3 Theme Auto Switcher"
-echo "  https://extensions.gnome.org/extension/4998/legacy-gtk3-theme-scheme-auto-switcher/"
-echo "--------------------------- FSTAB ---------------------------"
-echo "User fstab mount arguments: rw,user,exec,nosuid,nodev,nofail,auto,x-gvfs-show"
-echo "------------------------------------------------------"
-echo "Remember to add a permanent mount point for internal storage partitions."
-echo "Make sure to restart your PC after making all the necessary adjustments."
