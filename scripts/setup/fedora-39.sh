@@ -48,7 +48,6 @@ if [[ -z $XDG_CURRENT_DESKTOP ]]; then
     reboot
 fi
 
-# FIXME remove (?)
 if [[ -z $XDG_RUNTIME_DIR || -z $XDG_DATA_DIRS || -z $DBUS_SESSION_BUS_ADDRESS ]]; then
     echo "The following environment variables must be set for this script to work:"
     echo "\$XDG_RUNTIME_DIR ($XDG_RUNTIME_DIR), \$XDG_DATA_DIRS ($XDG_DATA_DIRS), \$DBUS_SESSION_BUS_ADDRESS ($DBUS_SESSION_BUS_ADDRESS)"
@@ -65,7 +64,7 @@ create-default-locations
 readonly ROOT_FS=$(stat -f --format=%T /)
 readonly REAL_USER_HOME_FS=$(stat -f --format=%T "$REAL_USER_HOME")
 readonly DISTRIBUTION_NAME="fedora$(rpm -E %fedora)"
-readonly GDM_SETTINGS_FILE="$DIR/01-generic"
+readonly GDM_SETTINGS_FILE="$DIR/gnome-settings/f39-opts"
 
 # TODO replace grub2 with systemd-boot when we get rid of all the issues 
 #  regarding proprietary NVIDIA Drivers, and signing them for UEFI
