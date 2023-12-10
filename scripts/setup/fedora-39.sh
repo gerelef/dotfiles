@@ -4,10 +4,11 @@ readonly DIR=$(dirname -- "$BASH_SOURCE")
 source "$DIR/common-utils.sh"
 
 install-gnome-essentials () (
-    dnf-install "$INSTALLABLE_GNOME_ESSENTIAL_PACKAGES" "$INSTALLABLE_GNOME_APPLICATION_PACKAGES"
+    dnf-install "$INSTALLABLE_GNOME_ESSENTIAL_PACKAGES"
+    dnf-install "$INSTALLABLE_GNOME_APPLICATION_PACKAGES"
     dnf-install "$INSTALLABLE_ADWAITA_PACKAGES" "$INSTALLABLE_GNOME_EXTENSIONS"
     flatpak-install "$INSTALLABLE_GNOME_FLATPAKS"
-    
+
     if ask-user "Do you want to install GNOME wallpapers?"; then
         echo "-------------------INSTALLING----------------" | tr " " "\n"
         dnf install -y --best --allowerasing f*-backgrounds-gnome*
@@ -18,11 +19,11 @@ install-gnome-essentials () (
 )
 
 install-cinnamon-essentials () (
-    dnf-install "$INSTALLABLE_CINNAMON_ESSENTIAL_PACKAGES" 
+    dnf-install "$INSTALLABLE_CINNAMON_ESSENTIAL_PACKAGES"
     dnf-install "$INSTALLABLE_CINNAMON_APPLICATION_PACKAGES"
     dnf-install "$INSTALLABLE_CINNAMON_EXTENSIONS"
-    flatpak-install "$INSTALLABLE_CINNAMON_FLATPAKS" 
-    
+    flatpak-install "$INSTALLABLE_CINNAMON_FLATPAKS"
+
     if ask-user "Do you want to install Cinnamon wallpapers?"; then
         echo "-------------------INSTALLING----------------" | tr " " "\n"
         dnf install -y --best --allowerasing f*-backgrounds-gnome*
@@ -48,7 +49,9 @@ install-universal-necessities () (
     dnf-install --with-optional @networkmanager-submodules
     dnf-install --with-optional @printing
 
-    dnf-install "$INSTALLABLE_ESSENTIAL_PACKAGES" "$INSTALLABLE_APPLICATION_PACKAGES" "$INSTALLABLE_PIPEWIRE_PACKAGES" 
+    dnf-install "$INSTALLABLE_ESSENTIAL_PACKAGES"
+    dnf-install "$INSTALLABLE_APPLICATION_PACKAGES"
+    dnf-install "$INSTALLABLE_PIPEWIRE_PACKAGES"
     flatpak-install "$INSTALLABLE_FLATPAKS"
 
     if [[ "btrfs" == $ROOT_FS || "btrfs" == $REAL_USER_HOME_FS ]]; then
@@ -88,9 +91,9 @@ optimize-hardware () (
             echo "UEFI not found; please restart & use UEFI..."
         fi
         dnf-install "$INSTALLABLE_NVIDIA_DRIVERS"
-        
+
         akmods --force && dracut --force
-        
+
         # check arch wiki, these enable DRM
         grubby --update-kernel=ALL --args="nvidia-drm.modeset=1 nvidia-drm.fbdev=1"
     fi
@@ -138,7 +141,7 @@ install-dev-tools () (
     echo "-------------------INSTALLING----------------" | tr " " "\n"
     dnf-install "@C Development Tools and Libraries" "@Development Tools" "$INSTALLABLE_DEV_PKGS"
     flatpak-install "$INSTALLABLE_IDE_FLATPAKS"
-    
+
     echo "-------------------INSTALLING JETBRAINS TOOLBOX----------------"
     readonly curlsum=$(curl -fsSL https://raw.githubusercontent.com/nagygergo/jetbrains-toolbox-install/master/jetbrains-toolbox.sh | sha512sum -)
     readonly validsum="7eb50db1e6255eed35b27c119463513c44aee8e06f3014609a410033f397d2fd81d2605e4e5c243b1087a6c23651f6b549a7c4ee386d50a22cc9eab9e33c612e  -"
@@ -262,7 +265,7 @@ if ! ping -q -c 1 -W 1 google.com > /dev/null; then
 fi
 
 #######################################################################################################
-# "optimize" dnf settings
+# improve dnf performance
 copy-dnf
 
 # for some reason this repository is added on every new install, i dont' care i have toolbox wtf
@@ -597,8 +600,8 @@ dnf-update-refresh
 
 dnf-remove "$UNINSTALLABLE_BLOAT"
 
-install-universal-necessities 
-optimize-hardware 
+install-universal-necessities
+optimize-hardware
 install-media-codecs
 
 configure-system-defaults
@@ -611,7 +614,7 @@ cat "$SSH_ROOT/id_ed25519.pub"
 
 #######################################################################################################
 
-if ask-user 'Are you sure you want to install virtualization packages?'; then    
+if ask-user 'Are you sure you want to install virtualization packages?'; then
     echo "-------------------INSTALLING----------------" | tr " " "\n"
     dnf-install "$INSTALLABLE_VIRTUALIZATION_PACKAGES"
     echo "Done."
@@ -619,7 +622,7 @@ fi
 
 #######################################################################################################
 
-if ask-user 'Are you sure you want to install gaming packages?'; then    
+if ask-user 'Are you sure you want to install gaming packages?'; then
     install-gaming-packages
 fi
 
@@ -652,7 +655,7 @@ fi
 #######################################################################################################
 
 if ask-user "Install default config files? Compatible only with gerelef/dotfiles"; then
-    install-config-files  
+    install-config-files
 fi
 
 #######################################################################################################
