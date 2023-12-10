@@ -1,22 +1,29 @@
 {
   "containers": {
-    "firefox-container-6": {
-      "id": "firefox-container-6",
-      "cookieStoreId": "firefox-container-6",
+    "firefox-container-11": {
+      "id": "firefox-container-11",
+      "cookieStoreId": "firefox-container-11",
       "name": "Google Suite | Personal",
       "icon": "briefcase",
       "color": "blue",
       "colorCode": "#37adff",
       "proxified": false,
       "proxy": null,
-      "reopenRulesActive": false,
-      "reopenRules": [],
+      "reopenRulesActive": true,
+      "reopenRules": [
+        {
+          "id": "OnzQD93ruX1u",
+          "active": true,
+          "type": 1,
+          "url": "musixmatch.com/"
+        }
+      ],
       "userAgentActive": false,
       "userAgent": ""
     },
-    "firefox-container-7": {
-      "id": "firefox-container-7",
-      "cookieStoreId": "firefox-container-7",
+    "firefox-container-12": {
+      "id": "firefox-container-12",
+      "cookieStoreId": "firefox-container-12",
       "name": "Google Suite | Work",
       "icon": "briefcase",
       "color": "purple",
@@ -28,9 +35,9 @@
       "userAgentActive": false,
       "userAgent": ""
     },
-    "firefox-container-8": {
-      "id": "firefox-container-8",
-      "cookieStoreId": "firefox-container-8",
+    "firefox-container-13": {
+      "id": "firefox-container-13",
+      "cookieStoreId": "firefox-container-13",
       "name": "Google Suite | University",
       "icon": "briefcase",
       "color": "orange",
@@ -42,9 +49,9 @@
       "userAgentActive": false,
       "userAgent": ""
     },
-    "firefox-container-9": {
-      "id": "firefox-container-9",
-      "cookieStoreId": "firefox-container-9",
+    "firefox-container-14": {
+      "id": "firefox-container-14",
+      "cookieStoreId": "firefox-container-14",
       "name": "Brazil [Instagram, Facebook, TikTok]",
       "icon": "dollar",
       "color": "green",
@@ -63,9 +70,9 @@
       "userAgentActive": false,
       "userAgent": ""
     },
-    "firefox-container-11": {
-      "id": "firefox-container-11",
-      "cookieStoreId": "firefox-container-11",
+    "firefox-container-16": {
+      "id": "firefox-container-16",
+      "cookieStoreId": "firefox-container-16",
       "name": "Discord Personal",
       "icon": "fingerprint",
       "color": "purple",
@@ -77,9 +84,9 @@
       "userAgentActive": false,
       "userAgent": ""
     },
-    "firefox-container-12": {
-      "id": "firefox-container-12",
-      "cookieStoreId": "firefox-container-12",
+    "firefox-container-17": {
+      "id": "firefox-container-17",
+      "cookieStoreId": "firefox-container-17",
       "name": "Steam",
       "icon": "dollar",
       "color": "blue",
@@ -417,6 +424,12 @@
         "srcPanelConfig": null
       }
     }
+  },
+  "contextMenu": {
+    "tabs": [],
+    "tabsPanel": [],
+    "bookmarks": [],
+    "bookmarksPanel": []
   },
   "ver": "5.0.0",
   "keybindings": {
