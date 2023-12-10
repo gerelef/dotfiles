@@ -20,10 +20,10 @@ if [[ -z $(ps -aux | grep gnome-shell | head -n 1 | awk '{ print $NF }') ]]; the
     if ask-user "Would you like to install gnome-shell?"; then
         echo "Rerun this script after booting into gnome-shell."
         echo "Installing gnome-shell..."
-        dnf install -y --best --allowerasing @base-x gnome-shell
-        dnf install -y --best --allowerasing @fonts
-        dnf install -y --best --allowerasing @hardware-support
-        dnf install -y --best --allowerasing @networkmanager-submodules
+        dnf-install gnome-shell
+        dnf-install @fonts
+        dnf-install @hardware-support
+        dnf-install @networkmanager-submodules
         echo "Making sure we're booting into a DE next time we boot..."
         systemctl set-default graphical.target
         echo "Done."
@@ -56,18 +56,29 @@ readonly REAL_USER_HOME_FS=$(stat -f --format=%T "$REAL_USER_HOME")
 readonly DISTRIBUTION_NAME="fedora$(rpm -E %fedora)"
 readonly GDM_SETTINGS_FILE="$DIR/01-generic"
 
-readonly INSTALLABLE_PACKAGES="\
-flatpak \
-adw-gtk3-theme \
-flameshot \
+# TODO replace grub2 with systemd-boot when we get rid of all the issues 
+#  regarding proprietary NVIDIA Drivers, and signing them for UEFI
+# TODO add systemd-bsod when it becomes available
+readonly INSTALLABLE_ESSENTIAL_PACKAGES="\
 git \
-meson \
-curl \
-java-latest-openjdk \
-java-latest-openjdk-devel \
+flatpak \
+setroubleshoot \
+setroubleshoot-plugins \
+openvpn \
+openssl \
+"
+
+readonly INSTALLABLE_THEMING_PACKAGES="\
+adw-gtk3-theme \
+adwaita-qt5 \
+adwaita-qt6 \
+"
+
+readonly INSTALLABLE_APPLICATION_PACKAGES="\
 firefox \
 chromium \
 fedora-chromium-config \
+flameshot \
 gimp \
 krita \
 evince \
@@ -75,12 +86,10 @@ libreoffice \
 sqlitebrowser \
 gnome-system-monitor \
 piper \
-qt5-qtbase \
-adwaita-qt5 \
-adwaita-qt6 \
-setroubleshoot \
-setroubleshoot-plugins \
-vulkan \
+pulseeffects \
+"
+
+readonly INSTALLABLE_VIRTUALIZATION_PACKAGES="\
 swtpm \
 swtpm-tools \
 virt-manager \
@@ -92,9 +101,6 @@ bridge-utils \
 libvirt \
 virt-install \
 qemu-kvm \
-openvpn \
-openssl \
-pulseeffects \
 "
 
 readonly INSTALLABLE_OBS_STUDIO="\
@@ -146,7 +152,7 @@ com.github.tchx84.Flatseal \
 org.gnome.Snapshot \
 "
 
-readonly INSTALLABLE_EXTENSIONS="\
+readonly INSTALLABLE_GNOME_EXTENSIONS="\
 gnome-shell-extension-places-menu \
 gnome-shell-extension-forge \
 gnome-shell-extension-dash-to-panel \
@@ -170,9 +176,15 @@ com.teamspeak.TeamSpeak \
 "
 
 readonly INSTALLABLE_DEV_PKGS="\
+gcc \
+clang \
+vulkan \
+meson \
+curl \
 cmake \
 ninja-build \
-clang \
+java-latest-openjdk \
+java-latest-openjdk-devel \
 bless \
 "
 
@@ -239,10 +251,13 @@ else
 fi
 
 #######################################################################################################
-
-echo "-------------------INSTALLING---------------- $INSTALLABLE_PACKAGES" | tr " " "\n"
 dnf-remove "$UNINSTALLABLE_BLOAT"
-dnf-install "$INSTALLABLE_PACKAGES"
+
+echo "-------------------INSTALLING ESSENTIAL PACKAGES----------------" | tr " " "\n"
+dnf-install "$INSTALLABLE_ESSENTIAL_PACKAGES"
+dnf-install "$INSTALLABLE_THEMING_PACKAGES"
+dnf-install "$INSTALLABLE_APPLICATION_PACKAGES"
+dnf-install "$INSTALLABLE_VIRTUALIZATION_PACKAGES"
 
 if [[ "btrfs" == $ROOT_FS || "btrfs" == $REAL_USER_HOME_FS ]]; then
     echo "Found BTRFS, installing tools..."
@@ -311,7 +326,7 @@ dnf-install "openh264" "gstreamer1-plugin-openh264" "mozilla-openh264"
 
 echo "-------------------INSTALLING PRINTING SUITE----------------"
 
-dnf install -y --best --allowerasing @printing
+dnf-install @printing
 
 #######################################################################################################
 # no requirement to add flathub ourselves anymore in f38; it should be enabled by default. however, it may not be, most likely by accident, so this is a failsafe
@@ -347,8 +362,8 @@ fi
 
 if ask-user "Are you sure you want to install Community IDEs & Jetbrains Toolbox?"; then
     echo "-------------------INSTALLING---------------- $INSTALLABLE_IDE_FLATPAKS $INSTALLABLE_DEV_PKGS" | tr " " "\n"
-    dnf install -y --best --allowerasing @"C Development Tools and Libraries"
-    dnf install -y --best --allowerasing @"Development Tools"
+    dnf-install "@C Development Tools and Libraries"
+    dnf-install "@Development Tools"
 
     dnf-install "$INSTALLABLE_DEV_PKGS"
     
@@ -377,7 +392,7 @@ fi
 #######################################################################################################
 
 if ask-user "Do you want to install extensions?"; then
-    echo "-------------------INSTALLING---------------- $INSTALLABLE_EXTENSIONS" | tr " " "\n"
+    echo "-------------------INSTALLING---------------- $INSTALLABLE_GNOME_EXTENSIONS" | tr " " "\n"
     dnf-install "$INSTALLABLE_EXTENSIONS"
     echo "Done."
 fi
