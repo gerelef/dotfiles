@@ -421,7 +421,6 @@ cmake \
 ninja-build \
 java-latest-openjdk \
 java-latest-openjdk-devel \
-io.github.achetagames.epic_asset_manager \
 bless \
 tldr \
 "
