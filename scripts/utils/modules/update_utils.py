@@ -55,7 +55,7 @@ def auto_eq(cls):
             for sk, ok in zip(s_keys, o_keys):
                 sv = self.__dict__[sk]
                 ov = other.__dict__[ok]
-                if type(sv) is float and type(ov) is float:
+                if isinstance(sv, float) and isinstance(ov, float):
                     if not self.__is_close__(sv, ov):
                         return False
                     continue
