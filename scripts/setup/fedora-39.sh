@@ -422,6 +422,7 @@ ninja-build \
 java-latest-openjdk \
 java-latest-openjdk-devel \
 bless \
+tldr \
 "
 
 readonly INSTALLABLE_IDE_FLATPAKS="\
