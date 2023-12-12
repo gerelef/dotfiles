@@ -4,7 +4,7 @@
 #   https://github.com/anordal/shellharden/blob/master/how_to_do_things_safely_in_bash.md
 #   https://tldp.org/HOWTO/Man-Page/q2.html
 
-REQUIRE_DEPENDENCIES+="tldr openssl bat "
+REQUIRE_DEPENDENCIES+="openssl bat "
 
 #############################################################
 
@@ -183,16 +183,6 @@ _journalctl () (
 
 alias journalctl="_journalctl"
 complete -A service journalctl
-
-# tldr wrapper for ease of use
-_tldr () (
-    [[ $# -eq 0 ]] && (command tldr tldr) | less -R && return
-    [[ $# -eq 1 ]] && (command tldr "$1") | less -R && return
-    command tldr "$@"
-)
-
-alias tldr="_tldr"
-complete -A command tldr
 
 # Automatically do an ls after each cd
 cd () {
