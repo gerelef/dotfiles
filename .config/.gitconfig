@@ -24,3 +24,5 @@
     path = .gitconfig-gitlab
 [includeIf "hasconfig:remote.*.url:git@ssh.gitlab.gnome.org*/**"]
     path = .gitconfig-gnome
+[color]
+	ui = auto
