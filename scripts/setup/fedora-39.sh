@@ -36,7 +36,7 @@ install-hyprland-essentials () (
     
     dnf-install "$INSTALLABLE_HYPRLAND_ESSENTIAL_PACKAGES" --exclude="wofi kitty"
     dnf-install "$INSTALLABLE_HYPRLAND_APPLICATION_PACKAGES"
-    dnf-install "$INSTALLABLE_HYPRLAND_EXTENSIONS"
+    # FIXME dnf-install "$INSTALLABLE_HYPRLAND_EXTENSIONS"
     flatpak-install "$INSTALLABLE_HYPRLAND_FLATPAKS"
     
     # FIXME add exec-once=nm-applet --indicator & disown
@@ -581,10 +581,10 @@ readonly INSTALLABLE_HYPRLAND_FLATPAKS="\
 "
 
 # FIXME add confirm hyprpm works, and implement hyprpm-install 
+#  https://wiki.hyprland.org/Plugins/Using-Plugins/
 readonly INSTALLABLE_HYPRLAND_EXTENSIONS="\
 csgo-vulkan-fix \
 hyprbars \
-hyprtrails \
 hyprgrass \
 "
 
