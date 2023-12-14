@@ -163,11 +163,11 @@ lss () (
 complete -A directory lss
 
 update-ff-theme () (
-    $DOTFILES_DIR/scripts/utils/update-ff-theme.py --resource "~/dotfiles/.config/mozilla/userChrome.css" "$@"
+    curl -fsSL https:// #FIXME | bash -s -- "~/dotfiles/.config/mozilla/userChrome.css" "$@"
 )
 
 update-compat-layers () (
-    $DOTFILES_DIR/scripts/utils/update-compat-layers.py "$@"
+    curl -fsSL https:// #FIXME | bash -s -- "$@"
 )
 
 #############################################################
