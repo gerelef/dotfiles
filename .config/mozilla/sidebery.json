@@ -21,20 +21,6 @@
       "userAgentActive": false,
       "userAgent": ""
     },
-    "firefox-container-12": {
-      "id": "firefox-container-12",
-      "cookieStoreId": "firefox-container-12",
-      "name": "Google Suite | Work",
-      "icon": "briefcase",
-      "color": "purple",
-      "colorCode": "#37adff",
-      "proxified": false,
-      "proxy": null,
-      "reopenRulesActive": false,
-      "reopenRules": [],
-      "userAgentActive": false,
-      "userAgent": ""
-    },
     "firefox-container-13": {
       "id": "firefox-container-13",
       "cookieStoreId": "firefox-container-13",
@@ -132,6 +118,20 @@
           "url": "allstar.gg/"
         }
       ],
+      "userAgentActive": false,
+      "userAgent": ""
+    },
+    "firefox-container-18": {
+      "id": "firefox-container-18",
+      "cookieStoreId": "firefox-container-18",
+      "name": "Microsoft Suite | Work",
+      "icon": "briefcase",
+      "color": "purple",
+      "colorCode": "#37adff",
+      "proxified": false,
+      "proxy": null,
+      "reopenRulesActive": false,
+      "reopenRules": [],
       "userAgentActive": false,
       "userAgent": ""
     }
