@@ -6,7 +6,13 @@ import shutil
 from functools import partial
 from typing import Any
 
-import modules.update_utils as ut
+from modules.sela.releases.release import Release
+from modules.sela.manager import Manager
+from modules.sela.helpers import run_subprocess, euid_is_root
+from modules.sela.arguments.builder import ArgumentParserBuilder
+
+import modules.sela.exceptions as exceptions
+from modules.sela.definitions import Filename, URL
 
 try:
     import requests
@@ -15,11 +21,11 @@ except NameError:
     exit(1)
 
 
-class ThemeManager(ut.Manager):
+class ThemeManager(Manager):
 
-    def __init__(self, repository: ut.URL,
-                 temp_dir: ut.Filename,
-                 install_dirs: list[ut.Filename],
+    def __init__(self, repository: URL,
+                 temp_dir: Filename,
+                 install_dirs: list[Filename],
                  version: str = None,
                  resource_file: str = None):
         super().__init__(repository, temp_dir)
@@ -27,7 +33,7 @@ class ThemeManager(ut.Manager):
         self.version = version
         self.resource_file = resource_file
 
-    def filter(self, release: ut.Release) -> bool:
+    def filter(self, release: Release) -> bool:
         lower_tag_name = release.name.lower()
 
         version_matches = True
@@ -36,25 +42,25 @@ class ThemeManager(ut.Manager):
 
         return version_matches
 
-    def get_assets(self, r: ut.Release) -> dict[ut.Filename, ut.URL]:
+    def get_assets(self, r: Release) -> dict[Filename, URL]:
         # there's no real "default" way to get assets
         raise NotImplementedError
 
-    def verify(self, files: list[ut.Filename]) -> bool:
+    def verify(self, files: list[Filename]) -> bool:
         # no repository supports checksums
         raise NotImplementedError
 
-    def install(self, files: list[ut.Filename]):
+    def install(self, files: list[Filename]):
         # there's no real "default" installation method
         raise NotImplementedError
 
-    def cleanup(self, files: list[ut.Filename]):
+    def cleanup(self, files: list[Filename]):
         for filename in files:
             real_path = os.path.join(self.download_dir, filename)
             if os.path.exists(real_path):
                 os.remove(real_path)
 
-    def log(self, level: ut.Manager.Level, msg: str):
+    def log(self, level: Manager.Level, msg: str):
         # print debug info into stderr
         if level.value >= level.INFO:
             print(msg, file=sys.stderr)
@@ -68,7 +74,8 @@ class ThemeManager(ut.Manager):
 
 
 # for blur, mono, gx
-def get_regular_assets(self: ThemeManager, r: ut.Release) -> dict[ut.Filename, ut.URL]:
+# noinspection PyUnusedLocal
+def get_regular_assets(self: ThemeManager, r: Release) -> dict[Filename, URL]:
     td = {}
     for fn, url in r.assets.items():
         if "zip" in fn or "userChrome" in fn:
@@ -76,7 +83,8 @@ def get_regular_assets(self: ThemeManager, r: ut.Release) -> dict[ut.Filename, u
     return td
 
 
-def get_keyword_uwp_assets(self: ThemeManager, r: ut.Release, keyword) -> dict[ut.Filename, ut.URL]:
+# noinspection PyUnusedLocal
+def get_keyword_uwp_assets(self: ThemeManager, r: Release, keyword) -> dict[Filename, URL]:
     td = {}
     for fn, url in r.assets.items():
         if keyword in fn.lower():
@@ -85,14 +93,15 @@ def get_keyword_uwp_assets(self: ThemeManager, r: ut.Release, keyword) -> dict[u
 
 
 # for gnome theme
-def get_source_assets(self: ThemeManager, r: ut.Release) -> dict[ut.Filename, ut.URL] | None:
+# noinspection PyUnusedLocal
+def get_source_assets(self: ThemeManager, r: Release) -> dict[Filename, URL] | None:
     for url in r.src:
         if "zipball" in url:
             return {r.name_human_readable.lower(): url}
     return None
 
 
-def install_gnome(self: ThemeManager, files: list[ut.Filename]):
+def install_gnome(self: ThemeManager, files: list[Filename]):
     zipfile = files[0]
     for destination in self.install_dirs:
         if not os.path.exists(destination):
@@ -112,7 +121,7 @@ def install_gnome(self: ThemeManager, files: list[ut.Filename]):
             join_files(source_userchrome, destination_userchrome)
 
 
-def install_blur(self: ThemeManager, files: list[ut.Filename]):
+def install_blur(self: ThemeManager, files: list[Filename]):
     zipfile = [fn for fn in files if ".zip" in fn][0]
     for destination in self.install_dirs:
         if not os.path.exists(destination):
@@ -125,7 +134,7 @@ def install_blur(self: ThemeManager, files: list[ut.Filename]):
             join_files(source_userchrome, destination_userchrome)
 
 
-def install_mono(self: ThemeManager, files: list[ut.Filename]):
+def install_mono(self: ThemeManager, files: list[Filename]):
     zipfile = files[0]
     for destination in self.install_dirs:
         if not os.path.exists(destination):
@@ -138,7 +147,7 @@ def install_mono(self: ThemeManager, files: list[ut.Filename]):
             join_files(source_userchrome, destination_userchrome)
 
 
-def install_gx(self: ThemeManager, files: list[ut.Filename]):
+def install_gx(self: ThemeManager, files: list[Filename]):
     zipfile = files[0]
     for destination in self.install_dirs:
         if not os.path.exists(destination):
@@ -148,7 +157,7 @@ def install_gx(self: ThemeManager, files: list[ut.Filename]):
         unzipped_realpath = os.path.join(self.download_dir, "firefox-gx-out")
         unzip(zip_realpath, unzipped_realpath)
 
-        src_contents =  os.path.join(unzipped_realpath, os.listdir(unzipped_realpath)[0], "chrome")
+        src_contents = os.path.join(unzipped_realpath, os.listdir(unzipped_realpath)[0], "chrome")
         shutil.copytree(src_contents, destination, dirs_exist_ok=True)
 
         if self.resource_file:
@@ -161,7 +170,7 @@ def install_gx(self: ThemeManager, files: list[ut.Filename]):
               f"{os.path.abspath(os.path.join(destination, ".."))}, make sure you install it manually!")
 
 
-def install_ui_fix(self: ThemeManager, files: list[ut.Filename]):
+def install_ui_fix(self: ThemeManager, files: list[Filename]):
     zipfile = files[0]
     for destination in self.install_dirs:
         if not os.path.exists(destination):
@@ -184,121 +193,120 @@ def install_ui_fix(self: ThemeManager, files: list[ut.Filename]):
               f"{os.path.abspath(os.path.join(destination, ".."))}, make sure you install it manually!")
 
 
-def install_uwp(self: ThemeManager, files: list[ut.Filename]):
+def install_uwp(self: ThemeManager, files: list[Filename]):
     raise NotImplementedError
 
 
-def install_cascade(self: ThemeManager, files: list[ut.Filename]):
+def install_cascade(self: ThemeManager, files: list[Filename]):
     raise NotImplementedError
 
 
-def join_files(appender: ut.Filename, appendee: ut.Filename):
+def join_files(appender: Filename, appendee: Filename):
     with open(appender, "r") as resource_file:
         with open(appendee, "a+") as main:
             main.write(resource_file.read())
 
 
-def unzip(zipfile: ut.Filename, destination):
+def unzip(zipfile: Filename, destination):
     # unzip path/to/archive1.zip path/to/archive2.zip ... -d path/to/output
     command = ["unzip", "-o", os.path.abspath(os.path.expanduser(zipfile)), "-d", f"{destination}"]
-    status, _, _ = ut.run_subprocess(command)
+    status, _, _ = run_subprocess(command)
     if not status:
         raise RuntimeError(f"{' '.join(command)} errored! !")
 
 
+# noinspection PyTypeChecker
 def create_argparser():
-    ap_builder = (
-        ut.ArgumentParserBuilder(
-            "Download & extract latest version of any firefox theme"
-        ).add_version()
-        .add_keep()
-        .add_temporary()
-        .add_destination()
-        .add_arguments(
-            flags_kwargs_dict={
-                ("-r", "--resource"): {
-                    "help": "Resource override file to include into UserChrome.css",
-                    "required": False
-                }
+    ap_builder = (ArgumentParserBuilder("Download & extract latest version of any firefox theme")
+    .add_version()
+    .add_keep()
+    .add_temporary()
+    .add_destination()
+    .add_arguments(
+        flags_kwargs_dict={
+            ("-r", "--resource"): {
+                "help": "Resource override file to include into UserChrome.css",
+                "required": False
             }
-        )
-        .add_mutually_exclusive_group(
-            required=True,
-            flags_kwargs_dict={
-                ("--gnome",): {
-                    "help": "Download & extract latest version of firefox-gnome-theme\n"
-                            "https://github.com/rafaelmardojai/firefox-gnome-theme",
-                    "required": False,
-                    "action": "store_true"
-                },
-                ("--blur",): {
-                    "help": "Download & extract latest version of Firefox-Mod-Blur\n"
-                            "https://github.com/datguypiko/Firefox-Mod-Blur",
-                    "required": False,
-                    "action": "store_true"
-                },
-                ("--mono",): {
-                    "help": "Download & extract latest version of mono-firefox-theme\n"
-                            "https://github.com/witalihirsch/Mono-firefox-theme",
-                    "required": False,
-                    "action": "store_true"
-                },
-                ("--gx",): {
-                    "help": "Download & extract latest version of firefox-gx\n"
-                            "https://github.com/Godiesc/firefox-gx",
-                    "required": False,
-                    "action": "store_true"
-                },
-                ("--esr-lepton-photon",): {
-                    "help": "Download & extract latest version of esr-photon from firefox-ui-fix\n"
-                            "https://github.com/black7375/Firefox-UI-Fix",
-                    "required": False,
-                    "action": "store_true"
-                },
-                ("--esr-lepton-proton",): {
-                    "help": "Download & extract latest version of esr-proton from firefox-ui-fix\n"
-                            "https://github.com/black7375/Firefox-UI-Fix",
-                    "required": False,
-                    "action": "store_true"
-                },
-                ("--esr-lepton",): {
-                    "help": "Download & extract latest version of esr-lepton from firefox-ui-fix\n"
-                            "https://github.com/black7375/Firefox-UI-Fix",
-                    "required": False,
-                    "action": "store_true"
-                },
-                ("--lepton-photon",): {
-                    "help": "Download & extract latest version of lepton-photon from firefox-ui-fix\n"
-                            "https://github.com/black7375/Firefox-UI-Fix",
-                    "required": False,
-                    "action": "store_true"
-                },
-                ("--lepton-proton",): {
-                    "help": "Download & extract latest version of lepton-proton from firefox-ui-fix\n"
-                            "https://github.com/black7375/Firefox-UI-Fix",
-                    "required": False,
-                    "action": "store_true"
-                },
-                ("--lepton",): {
-                    "help": "Download & extract latest version of lepton from firefox-ui-fix\n"
-                            "https://github.com/black7375/Firefox-UI-Fix",
-                    "required": False,
-                    "action": "store_true"
-                },
-                ("--uwp",): {
-                    "help": "Download & extract latest version of firefox-uwp-style\n"
-                            "https://github.com/Guerra24/Firefox-UWP-Style",
-                    "required": False,
-                    "action": "store_true"
-                },
-                ("--cascade",): {
-                    "help": "Download & extract latest version of cascade\n"
-                            "https://github.com/andreasgrafen/cascade",
-                    "required": False,
-                    "action": "store_true"
-                }
+        }
+    )
+    .add_mutually_exclusive_group(
+        required=True,
+        flags_kwargs_dict={
+            ("--gnome",): {
+                "help": "Download & extract latest version of firefox-gnome-theme\n"
+                        "https://github.com/rafaelmardojai/firefox-gnome-theme",
+                "required": False,
+                "action": "store_true"
+            },
+            ("--blur",): {
+                "help": "Download & extract latest version of Firefox-Mod-Blur\n"
+                        "https://github.com/datguypiko/Firefox-Mod-Blur",
+                "required": False,
+                "action": "store_true"
+            },
+            ("--mono",): {
+                "help": "Download & extract latest version of mono-firefox-theme\n"
+                        "https://github.com/witalihirsch/Mono-firefox-theme",
+                "required": False,
+                "action": "store_true"
+            },
+            ("--gx",): {
+                "help": "Download & extract latest version of firefox-gx\n"
+                        "https://github.com/Godiesc/firefox-gx",
+                "required": False,
+                "action": "store_true"
+            },
+            ("--esr-lepton-photon",): {
+                "help": "Download & extract latest version of esr-photon from firefox-ui-fix\n"
+                        "https://github.com/black7375/Firefox-UI-Fix",
+                "required": False,
+                "action": "store_true"
+            },
+            ("--esr-lepton-proton",): {
+                "help": "Download & extract latest version of esr-proton from firefox-ui-fix\n"
+                        "https://github.com/black7375/Firefox-UI-Fix",
+                "required": False,
+                "action": "store_true"
+            },
+            ("--esr-lepton",): {
+                "help": "Download & extract latest version of esr-lepton from firefox-ui-fix\n"
+                        "https://github.com/black7375/Firefox-UI-Fix",
+                "required": False,
+                "action": "store_true"
+            },
+            ("--lepton-photon",): {
+                "help": "Download & extract latest version of lepton-photon from firefox-ui-fix\n"
+                        "https://github.com/black7375/Firefox-UI-Fix",
+                "required": False,
+                "action": "store_true"
+            },
+            ("--lepton-proton",): {
+                "help": "Download & extract latest version of lepton-proton from firefox-ui-fix\n"
+                        "https://github.com/black7375/Firefox-UI-Fix",
+                "required": False,
+                "action": "store_true"
+            },
+            ("--lepton",): {
+                "help": "Download & extract latest version of lepton from firefox-ui-fix\n"
+                        "https://github.com/black7375/Firefox-UI-Fix",
+                "required": False,
+                "action": "store_true"
+            },
+            ("--uwp",): {
+                "help": "Download & extract latest version of firefox-uwp-style\n"
+                        "https://github.com/Guerra24/Firefox-UWP-Style",
+                "required": False,
+                "action": "store_true"
+            },
+            ("--cascade",): {
+                "help": "Download & extract latest version of cascade\n"
+                        "https://github.com/andreasgrafen/cascade",
+                "required": False,
+                "action": "store_true"
             }
-        )
+        }
+    )
     )
 
     return ap_builder.build()
@@ -437,7 +445,7 @@ def setup_argument_options(args: dict[str, Any]) -> ThemeManager:
     return manager
 
 
-if ut.euid_is_root():
+if euid_is_root():
     print("Do NOT run this script as root.", file=sys.stderr)
     exit(2)
 
@@ -466,13 +474,13 @@ if __name__ == "__main__":
     except KeyboardInterrupt:
         print("Aborted by user. Exiting...")
         exit(130)
-    except ut.Exceptions.NoReleaseFound as e:
+    except exceptions.NoReleaseFound as e:
         print("Couldn't find a matching release! Exiting...", file=sys.stderr)
         exit(1)
-    except ut.Exceptions.NoAssetsFound as e:
+    except exceptions.NoAssetsFound as e:
         print("Couldn't get assets from release! Exiting...", file=sys.stderr)
         exit(1)
-    except ut.Exceptions.FileVerificationFailed as e:
+    except exceptions.FileVerificationFailed as e:
         print("Couldn't verify the downloaded files! Exiting...", file=sys.stderr)
         exit(1)
     except RuntimeError as e:

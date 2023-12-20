@@ -9,10 +9,15 @@ from typing import Any, Optional
 
 import requests
 
-from modules import update_utils as ut
+from modules.sela import exceptions
+from modules.sela.arguments.builder import ArgumentParserBuilder
+from modules.sela.helpers import run_subprocess, euid_is_root
+from modules.sela.manager import Manager
+from modules.sela.releases.release import Release
+from modules.sela.definitions import Filename, URL
 
 
-class CompatibilityManager(ut.Manager):
+class CompatibilityManager(Manager):
     @dataclass
     class Filter:
         version: Optional[str] = None
@@ -20,14 +25,14 @@ class CompatibilityManager(ut.Manager):
 
     SHA_CHECKSUM_REGEX = re.compile(r".*(sha[0-9][0-9]?[0-9]?sum)", flags=re.IGNORECASE & re.DOTALL)
 
-    def __init__(self, repository: ut.URL, install_dir: ut.Filename, temp_dir: ut.Filename, _filter: Filter = Filter()):
+    def __init__(self, repository: URL, install_dir: Filename, temp_dir: Filename, _filter: Filter = Filter()):
         super().__init__(repository, temp_dir)
         self.install_dir = install_dir
         self.keyword = _filter.keyword
         self.version = _filter.version
         self.last_msg_lvl = None
 
-    def filter(self, release: ut.Release) -> bool:
+    def filter(self, release: Release) -> bool:
         lower_tag_name = release.name.lower()
 
         version_matches = True
@@ -39,41 +44,41 @@ class CompatibilityManager(ut.Manager):
             keyword_matches = self.keyword in lower_tag_name
         return version_matches and keyword_matches
 
-    def get_assets(self, r: ut.Release) -> dict[ut.Filename, ut.URL]:
+    def get_assets(self, r: Release) -> dict[Filename, URL]:
         items = {}
         for fname, url in r.assets.items():
             if "tar" in fname or CompatibilityManager.SHA_CHECKSUM_REGEX.match(fname):
                 items[fname] = url
         return items
 
-    def verify(self, files: list[ut.Filename]) -> bool:
+    def verify(self, files: list[Filename]) -> bool:
         checksums = filter(lambda fn: bool(CompatibilityManager.SHA_CHECKSUM_REGEX.match(fn)), files)
         results: list[bool] = []
         for fname in checksums:
             # there should be only one match
             checksum_command = CompatibilityManager.SHA_CHECKSUM_REGEX.findall(fname)[0].lower()
             command = [checksum_command, "-c", fname]
-            status, _, _ = ut.run_subprocess(command, cwd=self.download_dir)
+            status, _, _ = run_subprocess(command, cwd=self.download_dir)
             results.append(status)
         return False not in results
 
-    def install(self, files: list[ut.Filename]):
+    def install(self, files: list[Filename]):
         if not os.path.exists(self.install_dir):
             os.makedirs(self.install_dir)
         tars = list(map(lambda fn: os.path.join(self.download_dir, fn), filter(lambda fn: "tar" in fn, files)))
         for tarball in tars:
             command = ["tar", "-xPf", tarball, f"--directory={self.install_dir}"]
-            status, _, _ = ut.run_subprocess(command, cwd=self.download_dir)
+            status, _, _ = run_subprocess(command, cwd=self.download_dir)
             if not status:
                 raise RuntimeError(f"{' '.join(command)} errored! !")
 
-    def cleanup(self, files: list[ut.Filename]):
+    def cleanup(self, files: list[Filename]):
         for filename in files:
             real_path = os.path.join(self.download_dir, filename)
             if os.path.exists(real_path):
                 os.remove(real_path)
 
-    def log(self, level: ut.Manager.Level, msg: str):
+    def log(self, level: Manager.Level, msg: str):
         # print debug info into stderr
         if level.value >= level.INFO:
             print(msg, file=sys.stderr)
@@ -86,84 +91,80 @@ class CompatibilityManager(ut.Manager):
         print(msg)
 
 
+# noinspection PyTypeChecker
 def create_argparser():
-    ap_builder = (
-        ut.ArgumentParserBuilder(
-            "Download & extract latest version of the most popular game compatibility layers."
-        )
-        .add_version()
-        .add_keep()
-        .add_unsafe()
-        .add_temporary()
-        .add_mutually_exclusive_group(
-            required=True,
-            flags_kwargs_dict={
-                ("-d", "--destination"): {
-                    "help": "Install @ custom installation directory",
-                    "required": False,
-                    "default": None,
-                    "type": str
-                },
-                ("--steam",): {
-                    "help": f"Install @ default steam directory\n{STEAM_INSTALL_DIR}",
-                    "required": False,
-                    "default": False,
-                    "action": "store_true"
-                },
-                ("--steam-flatpak",): {
-                    "help": f"Install @ default steam (flatpak) directory\n{STEAM_FLATPAK_INSTALL_DIR}",
-                    "required": False,
-                    "default": False,
-                    "action": "store_true"
-                },
-                ("--lutris",): {
-                    "help": f"Install @ default lutris directory\n{LUTRIS_INSTALL_DIR}",
-                    "required": False,
-                    "default": False,
-                    "action": "store_true"
-                },
-                ("--lutris-flatpak",): {
-                    "help": f"Install @ default lutris (flatpak) directory\n{LUTRIS_FLATPAK_INSTALL_DIR}",
-                    "required": False,
-                    "default": False,
-                    "action": "store_true"
-                }
+    ap_builder = (ArgumentParserBuilder("Download & extract latest version of numerous game compatibility layers.")
+    .add_keep()
+    .add_unsafe()
+    .add_temporary()
+    .add_mutually_exclusive_group(
+        required=True,
+        flags_kwargs_dict={
+            ("-d", "--destination"): {
+                "help": "Install @ custom installation directory",
+                "required": False,
+                "default": None,
+                "type": str
+            },
+            ("--steam",): {
+                "help": f"Install @ default steam directory\n{STEAM_INSTALL_DIR}",
+                "required": False,
+                "default": False,
+                "action": "store_true"
+            },
+            ("--steam-flatpak",): {
+                "help": f"Install @ default steam (flatpak) directory\n{STEAM_FLATPAK_INSTALL_DIR}",
+                "required": False,
+                "default": False,
+                "action": "store_true"
+            },
+            ("--lutris",): {
+                "help": f"Install @ default lutris directory\n{LUTRIS_INSTALL_DIR}",
+                "required": False,
+                "default": False,
+                "action": "store_true"
+            },
+            ("--lutris-flatpak",): {
+                "help": f"Install @ default lutris (flatpak) directory\n{LUTRIS_FLATPAK_INSTALL_DIR}",
+                "required": False,
+                "default": False,
+                "action": "store_true"
             }
-        )
-        .add_mutually_exclusive_group(
-            required=True,
-            flags_kwargs_dict={
-                ("--golden-egg",): {
-                    "help": "Download & extract latest version of GE-ProtonX-x\n"
-                            "https://github.com/GloriousEggroll/proton-ge-custom",
-                    "required": False,
-                    "default": False,
-                    "action": "store_true"
-                },
-                ("--league",): {
-                    "help": "Download & extract latest version of Lutris-GE-X.x.x-LoL\n"
-                            "https://github.com/gloriouseggroll/wine-ge-custom",
-                    "required": False,
-                    "default": False,
-                    "action": "store_true"
-                },
-                ("--wine",): {
-                    "help": "Download & extract latest version of Wine-GE-ProtonX-x\n"
-                            "https://github.com/gloriouseggroll/wine-ge-custom",
-                    "required": False,
-                    "default": False,
-                    "action": "store_true"
-                },
-                ("--luxtorpeda",): {
-                    "help": "Download & extract latest version of Luxtorpeda\n"
-                            "https://github.com/luxtorpeda-dev/luxtorpeda",
-                    "required": False,
-                    "default": False,
-                    "action": "store_true"
-                }
-            }
-        )
+        }
     )
+    .add_mutually_exclusive_group(
+        required=True,
+        flags_kwargs_dict={
+            ("--golden-egg",): {
+                "help": "Download & extract latest version of GE-ProtonX-x\n"
+                        "https://github.com/GloriousEggroll/proton-ge-custom",
+                "required": False,
+                "default": False,
+                "action": "store_true"
+            },
+            ("--league",): {
+                "help": "Download & extract latest version of Lutris-GE-X.x.x-LoL\n"
+                        "https://github.com/gloriouseggroll/wine-ge-custom",
+                "required": False,
+                "default": False,
+                "action": "store_true"
+            },
+            ("--wine",): {
+                "help": "Download & extract latest version of Wine-GE-ProtonX-x\n"
+                        "https://github.com/gloriouseggroll/wine-ge-custom",
+                "required": False,
+                "default": False,
+                "action": "store_true"
+            },
+            ("--luxtorpeda",): {
+                "help": "Download & extract latest version of Luxtorpeda\n"
+                        "https://github.com/luxtorpeda-dev/luxtorpeda",
+                "required": False,
+                "default": False,
+                "action": "store_true"
+            }
+        }
+    ))
     return ap_builder.build()
 
 
@@ -259,7 +260,7 @@ def setup_argument_options(args: dict[str, Any]) -> CompatibilityManager:
     return manager
 
 
-if ut.euid_is_root():
+if euid_is_root():
     print("Do NOT run this script as root!", file=sys.stderr)
     exit(2)
 
@@ -289,13 +290,13 @@ if __name__ == "__main__":
     except KeyboardInterrupt:
         print("Aborted by user. Exiting...")
         exit(130)
-    except ut.Exceptions.NoReleaseFound as e:
+    except exceptions.NoReleaseFound as e:
         print("Couldn't find a matching release! Exiting...", file=sys.stderr)
         exit(1)
-    except ut.Exceptions.NoAssetsFound as e:
+    except exceptions.NoAssetsFound as e:
         print("Couldn't get assets from release! Exiting...", file=sys.stderr)
         exit(1)
-    except ut.Exceptions.FileVerificationFailed as e:
+    except exceptions.FileVerificationFailed as e:
         print("Couldn't verify the downloaded files! Exiting...", file=sys.stderr)
         exit(1)
     except RuntimeError as e:
