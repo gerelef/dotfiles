@@ -6,12 +6,11 @@ import shutil
 from functools import partial
 from typing import Any
 
+from modules.sela import exceptions
 from modules.sela.releases.release import Release
 from modules.sela.manager import Manager
 from modules.sela.helpers import run_subprocess, euid_is_root
 from modules.sela.arguments.builder import ArgumentParserBuilder
-
-import modules.sela.exceptions as exceptions
 from modules.sela.definitions import Filename, URL
 
 try:

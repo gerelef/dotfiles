@@ -7,14 +7,18 @@ from dataclasses import dataclass
 
 from typing import Any, Optional
 
-import requests
-
 from modules.sela import exceptions
 from modules.sela.arguments.builder import ArgumentParserBuilder
 from modules.sela.helpers import run_subprocess, euid_is_root
 from modules.sela.manager import Manager
 from modules.sela.releases.release import Release
 from modules.sela.definitions import Filename, URL
+
+try:
+    import requests
+except NameError:
+    print("Couldn't find requests library! Is it installed in the current environment?", file=sys.stderr)
+    exit(1)
 
 
 class CompatibilityManager(Manager):
