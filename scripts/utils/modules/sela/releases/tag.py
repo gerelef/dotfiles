@@ -1,7 +1,7 @@
 from typing import Optional
 
-from modules.sela.sela.definitions import Filename, URL
-from modules.sela.sela.releases.release import Release
+from modules.sela.definitions import Filename, URL
+from modules.sela.releases.release import Release
 
 
 class Tag(Release):

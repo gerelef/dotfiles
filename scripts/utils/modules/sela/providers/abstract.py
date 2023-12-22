@@ -34,10 +34,12 @@ class Provider:
         raise NotImplementedError
 
     @abstractmethod
-    def download(self, chunk_size=1024 * 1024) -> Iterator[tuple[HTTPStatus, int, int, bytes | None]]:
+    def download(self, url: URL, chunk_size=1024 * 1024) -> Iterator[tuple[HTTPStatus, int, int, bytes | None]]:
         """
         Downloads a packet of size chunk_size from URL, which belongs to the provider defined previously.
         Generator that returns a binary data packet of size chunk_size, iteratively requested from url.
+        :param url: URL to download content from.
+        :param chunk_size: max chunk size to download per iteration
         :returns: Iterator[tuple[HTTPStatus, int, int, bytes | None]]:
         :raises requests.ConnectionError:
         :raises requests.Timeout:
@@ -63,3 +65,13 @@ class Provider:
                 continue
             if f(release):
                 return release
+
+    @staticmethod
+    @abstractmethod
+    def match(u: URL) -> bool:
+        """
+        Matches whether a url is supported by this specific Provider concrete implementation.
+        :param u: URL to match.
+        :returns: True if this url is supported.
+        """
+        raise NotImplementedError

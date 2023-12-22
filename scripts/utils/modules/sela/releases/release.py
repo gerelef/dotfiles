@@ -2,7 +2,7 @@ import sys
 from abc import ABC, abstractmethod
 from typing import Optional
 
-from modules.sela.sela.definitions import Filename, URL
+from modules.sela.definitions import Filename, URL
 
 
 class Release(ABC):

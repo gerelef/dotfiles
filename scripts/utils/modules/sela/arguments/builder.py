@@ -2,7 +2,6 @@ import argparse as ap
 from typing import Self
 
 
-# TODO add ArgHandler so there's less ArgumentParser boilerplate in scripts..
 # TODO add compgen generator from ArgumentParser
 class ArgumentParserBuilder:
     # FIXME add documentation

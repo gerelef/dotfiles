@@ -4,7 +4,7 @@ import sys
 import types
 import shutil
 from functools import partial
-from typing import Any
+from typing import Any, override
 
 from modules.sela import exceptions
 from modules.sela.releases.release import Release
@@ -32,6 +32,7 @@ class ThemeManager(Manager):
         self.version = version
         self.resource_file = resource_file
 
+    @override
     def filter(self, release: Release) -> bool:
         lower_tag_name = release.name.lower()
 
@@ -41,24 +42,29 @@ class ThemeManager(Manager):
 
         return version_matches
 
+    @override
     def get_assets(self, r: Release) -> dict[Filename, URL]:
         # there's no real "default" way to get assets
         raise NotImplementedError
 
+    @override
     def verify(self, files: list[Filename]) -> bool:
         # no repository supports checksums
         raise NotImplementedError
 
+    @override
     def install(self, files: list[Filename]):
         # there's no real "default" installation method
         raise NotImplementedError
 
+    @override
     def cleanup(self, files: list[Filename]):
         for filename in files:
             real_path = os.path.join(self.download_dir, filename)
             if os.path.exists(real_path):
                 os.remove(real_path)
 
+    @override
     def log(self, level: Manager.Level, msg: str):
         # print debug info into stderr
         if level.value >= level.INFO:

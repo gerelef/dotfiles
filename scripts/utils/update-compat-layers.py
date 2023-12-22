@@ -5,7 +5,7 @@ import sys
 import types
 from dataclasses import dataclass
 
-from typing import Any, Optional
+from typing import Any, Optional, override
 
 from modules.sela import exceptions
 from modules.sela.arguments.builder import ArgumentParserBuilder
@@ -36,6 +36,7 @@ class CompatibilityManager(Manager):
         self.version = _filter.version
         self.last_msg_lvl = None
 
+    @override
     def filter(self, release: Release) -> bool:
         lower_tag_name = release.name.lower()
 
@@ -48,6 +49,7 @@ class CompatibilityManager(Manager):
             keyword_matches = self.keyword in lower_tag_name
         return version_matches and keyword_matches
 
+    @override
     def get_assets(self, r: Release) -> dict[Filename, URL]:
         items = {}
         for fname, url in r.assets.items():
@@ -55,6 +57,7 @@ class CompatibilityManager(Manager):
                 items[fname] = url
         return items
 
+    @override
     def verify(self, files: list[Filename]) -> bool:
         checksums = filter(lambda fn: bool(CompatibilityManager.SHA_CHECKSUM_REGEX.match(fn)), files)
         results: list[bool] = []
@@ -66,6 +69,7 @@ class CompatibilityManager(Manager):
             results.append(status)
         return False not in results
 
+    @override
     def install(self, files: list[Filename]):
         if not os.path.exists(self.install_dir):
             os.makedirs(self.install_dir)
@@ -76,12 +80,14 @@ class CompatibilityManager(Manager):
             if not status:
                 raise RuntimeError(f"{' '.join(command)} errored! !")
 
+    @override
     def cleanup(self, files: list[Filename]):
         for filename in files:
             real_path = os.path.join(self.download_dir, filename)
             if os.path.exists(real_path):
                 os.remove(real_path)
 
+    @override
     def log(self, level: Manager.Level, msg: str):
         # print debug info into stderr
         if level.value >= level.INFO:
