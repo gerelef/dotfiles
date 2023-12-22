@@ -1,9 +1,9 @@
 from typing import Iterator
 
-from modules.sela.sela.definitions import HTTPStatus
-from modules.sela.providers import Provider
-from modules.sela.sela.releases.release import get_request, Release
-from modules.sela.sela.releases.tag import Tag
+from modules.sela.definitions import HTTPStatus
+from modules.sela.providers.abstract import Provider
+from modules.sela.releases.release import get_request, Release
+from modules.sela.releases.tag import Tag
 
 
 class GitHubReleasesProvider(Provider):

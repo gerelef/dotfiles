@@ -1,12 +1,12 @@
 import enum
 import re
 
-from modules.sela.sela import exceptions
-from modules.sela.sela.definitions import URL
-from modules.sela.sela.factories.abstract import ProviderFactory
-from modules.sela.providers import Provider
-from modules.sela.providers import GitHubBranchesProvider
-from modules.sela.providers import GitHubReleasesProvider
+from modules.sela import exceptions
+from modules.sela.definitions import URL
+from modules.sela.factories.abstract import ProviderFactory
+from modules.sela.providers.abstract import Provider
+from modules.sela.providers.branches import GitHubBranchesProvider
+from modules.sela.providers.releases import GitHubReleasesProvider
 
 
 class GitHubProviderFactory(ProviderFactory):

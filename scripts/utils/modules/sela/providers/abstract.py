@@ -1,8 +1,8 @@
 from abc import abstractmethod
 from typing import Iterator, Callable
 
-from modules.sela.sela.definitions import URL, HTTPStatus
-from modules.sela.sela.releases.release import Release
+from modules.sela.definitions import URL, HTTPStatus
+from modules.sela.releases.release import Release
 
 type Filter = Callable[[Release], bool]
 

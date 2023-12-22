@@ -4,7 +4,7 @@ import os
 import subprocess
 from typing import Sequence
 
-from modules.sela.sela.definitions import Filename
+from modules.sela.definitions import Filename
 
 
 def auto_str(cls):

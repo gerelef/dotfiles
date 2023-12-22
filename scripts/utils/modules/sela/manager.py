@@ -3,12 +3,12 @@ import os
 from abc import ABC, abstractmethod
 from typing import Callable
 
-from modules.sela.sela import exceptions
-from modules.sela.sela.definitions import HTTPStatus, Filename, URL
-from modules.sela.sela.factories.abstract import ProviderFactory
-from modules.sela.sela.factories.github import GitHubProviderFactory
-from modules.sela.sela.helpers import auto_str
-from modules.sela.sela.releases.release import Release
+from modules.sela import exceptions
+from modules.sela.definitions import HTTPStatus, Filename, URL
+from modules.sela.factories.abstract import ProviderFactory
+from modules.sela.factories.github import GitHubProviderFactory
+from modules.sela.helpers import auto_str
+from modules.sela.releases.release import Release
 
 
 @auto_str

@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 
-from modules.sela.sela.definitions import URL
-from modules.sela.providers import Provider
+from modules.sela.definitions import URL
+from modules.sela.providers.abstract import Provider
 
 
 class ProviderFactory(ABC):
