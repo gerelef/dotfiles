@@ -1,16 +1,15 @@
 #!/usr/bin/env python3
 import os
 import sys
-import types
 import shutil
 from functools import partial
-from typing import Any, override
+from typing import Any, override, final
 
 from modules.sela import exceptions
 from modules.sela.releases.abstract import Release
 from modules.sela.manager import Manager
 from modules.sela.helpers import run_subprocess, euid_is_root
-from modules.sela.arguments.builder import ArgumentParserBuilder
+from modules.builder import ArgumentParserBuilder
 from modules.sela.definitions import Filename, URL
 
 try:
@@ -20,6 +19,7 @@ except NameError:
     exit(1)
 
 
+@final
 class ThemeManager(Manager):
 
     def __init__(self, repository: URL,
@@ -441,12 +441,16 @@ def setup_argument_options(args: dict[str, Any]) -> ThemeManager:
         version=version,
         resource_file=resource_file,
     )
-
-    manager.filter = types.MethodType(filter_method, manager)
-    manager.get_assets = types.MethodType(get_assets_method, manager)
-    manager.verify = types.MethodType(verification_method, manager)
-    manager.install = types.MethodType(install_method, manager)
-    manager.cleanup = types.MethodType(cleanup_method, manager)
+    # noinspection PyTypeChecker
+    Manager.bind(manager, manager.filter, filter_method)
+    # noinspection PyTypeChecker
+    Manager.bind(manager, manager.get_assets, get_assets_method)
+    # noinspection PyTypeChecker
+    Manager.bind(manager, manager.verify, verification_method)
+    # noinspection PyTypeChecker
+    Manager.bind(manager, manager.install, install_method)
+    # noinspection PyTypeChecker
+    Manager.bind(manager, manager.cleanup, cleanup_method)
     return manager
 
 

@@ -1,6 +1,6 @@
 import enum
 from abc import ABC, abstractmethod
-from typing import Self
+from typing import Self, final
 
 from modules.sela.helpers import auto_str
 
@@ -152,6 +152,7 @@ class HTTPGroup(enum.IntEnum):
         return DESCRIPTIONS[code]
 
 
+@final
 @auto_str
 class HTTPStatus:
     def __init__(self, code: int, rate: Rate = None) -> None:

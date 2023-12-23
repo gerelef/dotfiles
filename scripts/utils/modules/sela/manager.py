@@ -1,7 +1,8 @@
 import enum
 import os
+import types
 from abc import ABC, abstractmethod
-from typing import Callable
+from typing import Callable, Self
 
 from modules.sela import exceptions
 from modules.sela.definitions import Filename, URL
@@ -146,12 +147,12 @@ class Manager(ABC):
         raise NotImplementedError
 
     @abstractmethod
-    def install(self, files: list[Filename]):
+    def install(self, downloaded_files: list[Filename]):
         """
         Install the release to the system.
         Note: if this is not needed, override with Manager.DO_NOTHING!
         Remember to bind the function to your instance with types.MethodType(DO_NOTHING, instance)
-        :param files: files to install
+        :param downloaded_files: downloaded files to install
         """
         raise NotImplementedError
 
@@ -176,3 +177,13 @@ class Manager(ABC):
         :param msg: string to log
         """
         raise NotImplementedError
+
+    # unfortunately, there is no BoundMethod type in python yet, womp womp
+    @classmethod
+    def bind(cls, manager: Self, method: types.MethodType, fn: Callable[[Self, ...], ...]):
+        """
+        Binds a Callable to a Manager instance, overriding method m
+        Equivalent to writing manager.foo = types.MethodType(foo, manager)
+        Note that the linter might show the type is wrong if you pass the bound method -- the linter's wrong.
+        """
+        setattr(manager, method.__name__, types.MethodType(fn, manager))

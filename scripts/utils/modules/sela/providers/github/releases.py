@@ -1,5 +1,5 @@
 import re
-from typing import Iterator, override
+from typing import Iterator, override, final
 
 from modules.sela.definitions import URL
 from modules.sela.status import HTTPStatus
@@ -10,6 +10,7 @@ from modules.sela.releases.abstract import Release
 from modules.sela.releases.tag import Tag
 
 
+@final
 class GitHubReleasesProvider(Provider):
     def __init__(self, url: URL):
         super().__init__(url)

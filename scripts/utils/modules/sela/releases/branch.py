@@ -1,10 +1,11 @@
-from typing import Optional
+from typing import Optional, final
 
 from modules.sela.definitions import Filename, URL
 from modules.sela.helpers import auto_str
 from modules.sela.releases.abstract import Release
 
 
+@final
 @auto_str
 class Branch(Release):
     def __init__(self,

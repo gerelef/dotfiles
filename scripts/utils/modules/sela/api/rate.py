@@ -1,6 +1,9 @@
+from typing import final
+
 from modules.sela.status import Rate
 
 
+@final
 class GitHubRate(Rate):
     def __init__(self, total_limit: int, remaining_limit: int, limit_reset: int):
         """

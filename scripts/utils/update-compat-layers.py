@@ -2,13 +2,12 @@
 import os
 import re
 import sys
-import types
 from dataclasses import dataclass
 
-from typing import Any, Optional, override
+from typing import Any, Optional, override, final
 
 from modules.sela import exceptions
-from modules.sela.arguments.builder import ArgumentParserBuilder
+from modules.builder import ArgumentParserBuilder
 from modules.sela.helpers import run_subprocess, euid_is_root
 from modules.sela.manager import Manager
 from modules.sela.releases.abstract import Release
@@ -21,6 +20,7 @@ except NameError:
     exit(1)
 
 
+@final
 class CompatibilityManager(Manager):
     @dataclass
     class Filter:
@@ -145,7 +145,7 @@ def create_argparser():
     .add_mutually_exclusive_group(
         required=True,
         flags_kwargs_dict={
-            ("--golden-egg",): {
+            ("--golden-egg", "--proton-ge"): {
                 "help": "Download & extract latest version of GE-ProtonX-x\n"
                         "https://github.com/GloriousEggroll/proton-ge-custom",
                 "required": False,
@@ -208,7 +208,7 @@ def setup_argument_options(args: dict[str, Any]) -> CompatibilityManager:
 
     for arg in args:
         match arg:
-            case "golden_egg":
+            case "golden_egg" | "proton_ge":
                 if args[arg]:
                     remote = PROTON_GE_GITHUB_RELEASES_URL
             case "wine":
@@ -263,10 +263,12 @@ def setup_argument_options(args: dict[str, Any]) -> CompatibilityManager:
         temp_dir=temp_dir,
         _filter=_filter
     )
-    # these new methods need to be bound to the instance of the class in order to use self
-    manager.filter = types.MethodType(filter_method, manager)
-    manager.verify = types.MethodType(verification_method, manager)
-    manager.cleanup = types.MethodType(cleanup_method, manager)
+    # noinspection PyTypeChecker
+    Manager.bind(manager, manager.filter, filter_method)
+    # noinspection PyTypeChecker
+    Manager.bind(manager, manager.verify, verification_method)
+    # noinspection PyTypeChecker
+    Manager.bind(manager, manager.cleanup, cleanup_method)
     return manager
 
 

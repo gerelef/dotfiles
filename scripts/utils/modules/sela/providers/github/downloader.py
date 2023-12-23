@@ -1,10 +1,11 @@
-from typing import Iterator
+from typing import Iterator, final
 
 from modules.sela.api.github import get_request
 from modules.sela.definitions import URL
 from modules.sela.status import HTTPStatus
 
 
+@final
 class GitHubDownloader:
     def __init__(self, download_url: URL):
         self.url = download_url

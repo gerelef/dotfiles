@@ -1,4 +1,4 @@
-from typing import override
+from typing import override, final
 
 from modules.sela import exceptions
 from modules.sela.definitions import URL
@@ -8,8 +8,8 @@ from modules.sela.providers.github.nightly import GitHubNightlyProvider
 from modules.sela.providers.github.releases import GitHubReleasesProvider
 
 
+@final
 class GitHubProviderFactory(ProviderFactory):
-
     def __init__(self, url: URL):
         super().__init__(url)
         # noinspection PyTypeChecker

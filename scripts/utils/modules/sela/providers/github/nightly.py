@@ -1,5 +1,5 @@
 import re
-from typing import Iterator, override
+from typing import Iterator, override, final
 
 from modules.sela import exceptions
 from modules.sela.definitions import URL
@@ -12,6 +12,7 @@ from modules.sela.releases.branch import Branch
 from modules.sela.releases.commit import Commit
 
 
+@final
 class GitHubNightlyProvider(Provider):
     BRANCHES = r"https://api\.github\.com/repos/[a-zA-Z0-9-_]+/[a-zA-Z0-9-_]+/branches/?"
     COMMITS = r"https://api\.github\.com/repos/[a-zA-Z0-9-_]+/[a-zA-Z0-9-_]+/commits\?sha=[0-9a-zA-Z-_]+"
