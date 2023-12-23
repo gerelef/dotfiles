@@ -551,6 +551,7 @@ schroedinger-cat-backgrounds-gnome \
 
 #######################################################################################################
 
+# FIXME add copying hyprland config to ~/.config/...
 # FIXME add sddm and swaylock
 # FIXME add systemd autostart https://old.reddit.com/r/hyprland/comments/127m3ef/starting_hyprland_directy_from_systemd_a_guide_to/
 # FIXME add autostart for anything applicable under here 
@@ -564,9 +565,10 @@ cliphist \
 wl-clip-persist \
 swaylock \
 greetd \
-gtkgreet
+gtkgreet \
 waybar \
 swaybg \
+qt6ct \
 "
 
 readonly INSTALLABLE_HYPRLAND_APPLICATION_PACKAGES="\
