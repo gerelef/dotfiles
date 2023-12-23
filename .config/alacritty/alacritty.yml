@@ -1,12 +1,8 @@
-# my alacritty yml, dump in ~/alacritty/alacrity.yml
+# my alacritty yml, dump in ~/.config/alacritty/alacrity.yml
 dynamic_title: true
 live_config_reload: true
 
 window:
-    dimensions:
-        columns: 107
-        lines: 30
-
     padding:
         x: 0
         y: 0
