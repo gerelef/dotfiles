@@ -20,16 +20,17 @@ except NameError:
     exit(1)
 
 
+@dataclass
+class Criteria:
+    version: Optional[str] = None
+    keyword: Optional[str] = None
+
+
 @final
 class CompatibilityManager(Manager):
-    @dataclass
-    class Filter:
-        version: Optional[str] = None
-        keyword: Optional[str] = None
-
     SHA_CHECKSUM_REGEX = re.compile(r".*(sha[0-9][0-9]?[0-9]?sum)", flags=re.IGNORECASE & re.DOTALL)
 
-    def __init__(self, repository: URL, install_dir: Filename, temp_dir: Filename, _filter: Filter = Filter()):
+    def __init__(self, repository: URL, install_dir: Filename, temp_dir: Filename, _filter: Criteria):
         super().__init__(repository, temp_dir)
         self.install_dir = install_dir
         self.keyword = _filter.keyword
@@ -198,7 +199,7 @@ DOWNLOAD_DIR = "/tmp/"
 
 def setup_argument_options(args: dict[str, Any]) -> CompatibilityManager:
     remote = None
-    _filter = CompatibilityManager.Filter()
+    _filter = Criteria()
     temp_dir = DOWNLOAD_DIR
     install_dir = None
     # pick the first version by default
