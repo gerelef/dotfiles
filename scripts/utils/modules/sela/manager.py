@@ -16,8 +16,19 @@ from modules.sela.releases.abstract import Release
 
 @auto_str
 class Manager(ABC):
-    # FIXME add documentation
-    # If you're going to be overriding functions using any of the functions below, this will be an important need
+    """
+    The main Manager class. This class serves as the entry point to the framework; just extend and implement the
+    abstract methods. After extending, instantiate and call .run(). There are a few functions that should help with
+    very common functionality; see the detailed docstrings in each abstract method to guide your way. Most of the
+    process is automated & encapsulated to prevent accidental tampering, however you can easily extend this with very
+    custom functionality, starting with a custom ProviderFactory instance. The internals should be well documented,
+    and pretty simple to understand; I'll try my best to write complete documentation any time I get. If you think
+    some documentation is incomplete, or an implementation is not obvious at all, open an issue, so we can talk about
+    it.
+    """
+    # If you're going to be overriding methods using any of the functions below, this will be an important need
+    # An alternative would be to use them directly inside the method bodies, or to use the purpose-specific
+    #  Manager.bind(manager, manager.foo, do_the_thing) static method.
     # https://stackoverflow.com/questions/23082509/how-is-the-self-argument-magically-passed-to-instance-methods
     # https://stackoverflow.com/questions/1015307/how-to-bind-an-unbound-method-without-calling-it
     LOG_NOTHING: Callable[[object, str], None] = lambda _, s: None
@@ -25,7 +36,13 @@ class Manager(ABC):
     FILTER_FIRST: Callable[[object, Release], bool] = lambda _, r: True
     DO_NOTHING: Callable[[object, list[Filename]], bool] = lambda _, f: None
 
+    factory_cls: type[ProviderFactory] = GitHubProviderFactory
+
     class Level(enum.IntEnum):
+        """
+        Log level errors. To be used in the logging function implementation.
+        Logs flagged with PROGRESS_BAR should probably be written to stdout (or stderr) directly, with sys.stdout.write.
+        """
         ERROR = 32
         WARNING = 16
         DEBUG = 8
@@ -33,16 +50,16 @@ class Manager(ABC):
         PROGRESS_BAR = 2
         PROGRESS = 1
 
-    def __init__(self, repository: URL, temp_dir: Filename, factory_cls: type[ProviderFactory] = GitHubProviderFactory):
+    def __init__(self, repository: URL, download_dir: Filename):
         """
         :param repository: direct URL to the repository to make requests
-        :param temp_dir: temporary download directory path
+        :param download_dir: temporary download directory path
         :raises FileNotFoundError: raised if download_dir doesn't exist, or not enough permissions to execute os.stat(d)
         """
         self.repository = repository
-        self.provider = factory_cls(repository).create()
+        self.provider = Manager.factory_cls(repository).create()
 
-        self.download_dir = temp_dir
+        self.download_dir = download_dir
         if not os.path.exists(self.download_dir):
             raise FileNotFoundError(
                 f"Couldn't find, or not enough permissions to use os.stat(), on {self.download_dir}"
@@ -91,8 +108,8 @@ class Manager(ABC):
     def filter(self, release: Release) -> bool:
         """
         Check if this is the release we want to download.
-        Note: if you just need the latest available release, override with FILTER_FIRST!
-        Remember to bind the function to your instance with types.MethodType(FILTER_FIRST, instance)
+        Note: if you just need the latest available release, override with FILTER_FIRST (or just call it here)!
+        Remember to bind the function to your instance with types.MethodType(FILTER_FIRST, instance) or Manager.bind
         :param release:
         :returns bool: True if attributes match what we want to download, false otherwise.
         """
@@ -108,7 +125,7 @@ class Manager(ABC):
 
     def download(self, filename: Filename, url: URL) -> HTTPStatus:
         """
-        Downloads a specific file fromn url, stored in directory + filename.
+        Downloads a specific file from the url, stored in directory + filename.
         Finishes early upon HTTPStatus error.
         :param filename: absolute path to the filename we're going to write
         :param url: url to download from
@@ -136,11 +153,11 @@ class Manager(ABC):
 
     @abstractmethod
     def verify(self, files: list[Filename]) -> bool:
-        # hashfile used by md5sum and sha*sum tools format is: checksum filename.ext, 1 file per line.
+        #
         """
         Verify that files match their checksum.
-        Note: if this is not needed, override with Manager.VERIFY_NOTHING!
-        Remember to bind the function to your instance with types.MethodType(VERIFY_NOTHING, instance)
+        Note: if this is not needed, override with Manager.VERIFY_NOTHING (or just call it here)!
+        Remember to bind the function to your instance with types.MethodType(VERIFY_NOTHING, instance) or Manager.bind
         :param files:
         :returns bool: True if everything's verified, false otherwise.
         """
@@ -150,8 +167,8 @@ class Manager(ABC):
     def install(self, downloaded_files: list[Filename]):
         """
         Install the release to the system.
-        Note: if this is not needed, override with Manager.DO_NOTHING!
-        Remember to bind the function to your instance with types.MethodType(DO_NOTHING, instance)
+        Note: if this is not needed, override with Manager.DO_NOTHING (or just call it here)!
+        Remember to bind the function to your instance with types.MethodType(DO_NOTHING, instance) or Manager.bind
         :param downloaded_files: downloaded files to install
         """
         raise NotImplementedError
@@ -159,9 +176,9 @@ class Manager(ABC):
     @abstractmethod
     def cleanup(self, files: list[Filename]):
         """
-        Cleanup downloaded (and/or installed) files.
-        Note: if this is not needed, override with Manager.DO_NOTHING!
-        Remember to bind the function to your instance with types.MethodType(DO_NOTHING, instance)
+        Cleanup files.
+        Note: if this is not needed, override with Manager.DO_NOTHING (or just call it here)!
+        Remember to bind the function to your instance with types.MethodType(DO_NOTHING, instance) or Manager.bind
         :param files: downloaded files; interact with os.path.join(self.download_dir, filename)
         Note: it's not guaranteed the files exist!
         """
@@ -170,9 +187,9 @@ class Manager(ABC):
     @abstractmethod
     def log(self, level: Level, msg: str):
         """
-        Log internal strings. Provide concrete implementation to redirect to whatever sink is appropriate.
-        Note: if this is not needed, override with Manager.LOG_NOTHING!
-        Remember to bind the function to your instance with types.MethodType(LOG_NOTHING, instance)
+        Log internal messages. Provide concrete implementation to redirect to whatever sink is appropriate.
+        Note: if this is not needed, override with Manager.LOG_NOTHING (or just call it here)!
+        Remember to bind the function to your instance with types.MethodType(LOG_NOTHING, instance) or Manager.bind
         :param level: Log level
         :param msg: string to log
         """
@@ -182,7 +199,7 @@ class Manager(ABC):
     @classmethod
     def bind(cls, manager: Self, method: types.MethodType, fn: Callable[[Self, ...], ...]):
         """
-        Binds a Callable to a Manager instance, overriding method m
+        Binds a Callable to a Manager instance, overriding the original method.
         Equivalent to writing manager.foo = types.MethodType(foo, manager)
         Note that the linter might show the type is wrong if you pass the bound method -- the linter's wrong.
         """
