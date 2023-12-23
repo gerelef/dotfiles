@@ -1,10 +1,12 @@
 import re
 from typing import Iterator, override
 
-from modules.sela.definitions import HTTPStatus, URL
+from modules.sela.definitions import URL
+from modules.sela.status import HTTPStatus
 from modules.sela.providers.abstract import Provider
-from modules.sela.providers.github.helpers import GitHubDownloader, GitHubPager
-from modules.sela.releases.release import Release
+from modules.sela.providers.github.downloader import GitHubDownloader
+from modules.sela.providers.github.paging import GitHubPager
+from modules.sela.releases.abstract import Release
 from modules.sela.releases.tag import Tag
 
 
@@ -17,7 +19,7 @@ class GitHubReleasesProvider(Provider):
         pager = GitHubPager(self.repository).recurse()
         for status, version in pager:
             # if a request fails, it probably means either the server or our net is down, abort!
-            if status != HTTPStatus.SUCCESS:
+            if not status.is_successful():
                 return status, None
 
             downloadables = {}

@@ -7,7 +7,7 @@ from functools import partial
 from typing import Any, override
 
 from modules.sela import exceptions
-from modules.sela.releases.release import Release
+from modules.sela.releases.abstract import Release
 from modules.sela.manager import Manager
 from modules.sela.helpers import run_subprocess, euid_is_root
 from modules.sela.arguments.builder import ArgumentParserBuilder

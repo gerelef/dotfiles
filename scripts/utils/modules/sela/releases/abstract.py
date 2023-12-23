@@ -1,4 +1,3 @@
-import sys
 from abc import ABC, abstractmethod
 from typing import Optional
 
@@ -45,16 +44,3 @@ class Release(ABC):
     @abstractmethod
     def date(self) -> str:
         raise NotImplementedError
-
-
-def get_request(url: URL, *args, **kwargs):
-    try:
-        import requests
-    except NameError:
-        print(
-            "Couldn't find requests library! Is it installed in the current environment?",
-            file=sys.stderr
-        )
-        exit(1)
-    version_header = {"X-GitHub-Api-Version": "2022-11-28"}
-    return requests.get(url, verify=True, allow_redirects=True, headers=version_header, *args, **kwargs)

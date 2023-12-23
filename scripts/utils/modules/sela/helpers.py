@@ -86,5 +86,5 @@ def run_subprocess(commands: Sequence[str] | str, cwd: Filename = "~") -> tuple[
 
 
 def euid_is_root() -> bool:
-    """Returns True if script is running as root."""
+    """Returns True if the current process is effectively running as root."""
     return os.geteuid() == 0

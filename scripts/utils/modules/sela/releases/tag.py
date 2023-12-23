@@ -1,11 +1,12 @@
 from typing import Optional
 
 from modules.sela.definitions import Filename, URL
-from modules.sela.releases.release import Release
+from modules.sela.helpers import auto_str
+from modules.sela.releases.abstract import Release
 
 
+@auto_str
 class Tag(Release):
-
     def __init__(self,
                  author: str,
                  tag: str,

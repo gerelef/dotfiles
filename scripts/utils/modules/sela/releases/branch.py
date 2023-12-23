@@ -6,18 +6,19 @@ from modules.sela.releases.abstract import Release
 
 
 @auto_str
-class Commit(Release):
+class Branch(Release):
     def __init__(self,
                  author: str,
                  date: str,
                  message: str,
+                 name: str,
                  sha: str,
-                 tarball: str,
-                 zipball: str):
+                 src: Optional[str]):
         """
         :param author: author of the latest commit in the current branch
         :param date: date of the latest commit
         :param message: message of the latest commit
+        :param name: author name of the latest commit
         :param sha: sha of the latest commit
         :param tarball: URL to download the tarball from, should point to the latest commit in the current branch
         :param zipball: URL to download the zipball from, should point to the latest commit in the current branch
@@ -25,9 +26,9 @@ class Commit(Release):
         self.__author = author
         self.__date = date
         self.__message = message
+        self.__name = name
         self.__sha = sha
-        self.__tarball = tarball
-        self.__zipball = zipball
+        self.__src = src
 
     @property
     def assets(self) -> Optional[dict[Filename, URL]]:
@@ -35,7 +36,7 @@ class Commit(Release):
 
     @property
     def src(self) -> Optional[list[URL]]:
-        return [self.__zipball, self.__tarball]
+        return self.__src
 
     @property
     def name(self) -> str:
@@ -43,7 +44,7 @@ class Commit(Release):
 
     @property
     def name_human_readable(self) -> str:
-        return self.__sha[:8]
+        return self.__name
 
     @property
     def description(self) -> Optional[str]:

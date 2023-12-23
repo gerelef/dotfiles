@@ -4,7 +4,7 @@ from modules.sela import exceptions
 from modules.sela.definitions import URL
 from modules.sela.factories.abstract import ProviderFactory
 from modules.sela.providers.abstract import Provider
-from modules.sela.providers.github.branches import GitHubBranchesProvider
+from modules.sela.providers.github.nightly import GitHubNightlyProvider
 from modules.sela.providers.github.releases import GitHubReleasesProvider
 
 
@@ -24,8 +24,8 @@ class GitHubProviderFactory(ProviderFactory):
             self._cache = GitHubReleasesProvider
             return GitHubReleasesProvider(url=self.repository)
 
-        if GitHubBranchesProvider.match(self.repository):
-            self._cache = GitHubBranchesProvider
-            return GitHubBranchesProvider(url=self.repository)
+        if GitHubNightlyProvider.match(self.repository):
+            self._cache = GitHubNightlyProvider
+            return GitHubNightlyProvider(url=self.repository)
 
         raise exceptions.UnknownProviderException(f"Couldn't match repository URL to any supported provider!")

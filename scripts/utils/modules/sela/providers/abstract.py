@@ -1,8 +1,10 @@
 from abc import abstractmethod
 from typing import Iterator, Callable
 
-from modules.sela.definitions import URL, HTTPStatus
-from modules.sela.releases.release import Release
+from modules.sela import exceptions
+from modules.sela.definitions import URL
+from modules.sela.status import HTTPStatus
+from modules.sela.releases.abstract import Release
 
 type Filter = Callable[[Release], bool]
 
@@ -47,10 +49,10 @@ class Provider:
         """
         raise NotImplementedError
 
-    def get_release(self, f: Filter) -> Release | None:
+    def get_release(self, fltr: Filter) -> tuple[HTTPStatus, Release | None]:
         """
-        :param f: filter to use in order to match the correct release
-        :returns Release | None:
+        :param fltr: filter to use in order to match the correct release
+        :raises exceptions.NoReleaseFound:
         :raises requests.exceptions.JSONDecodeError:
         :raises requests.ConnectionError:
         :raises requests.Timeout:
@@ -59,12 +61,14 @@ class Provider:
         status: HTTPStatus
         release: Release
         for status, release in self.recurse_releases():
-            if status == HTTPStatus.CLIENT_ERROR or status == HTTPStatus.SERVER_ERROR:
-                return None
+            if not status.is_successful():
+                return status, None
             if release is None:
                 continue
-            if f(release):
-                return release
+            if fltr(release):
+                return status, release
+
+        raise exceptions.NoReleaseFound("No release found, or matched!")
 
     @staticmethod
     @abstractmethod

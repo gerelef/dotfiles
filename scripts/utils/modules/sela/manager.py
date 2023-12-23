@@ -4,11 +4,13 @@ from abc import ABC, abstractmethod
 from typing import Callable
 
 from modules.sela import exceptions
-from modules.sela.definitions import HTTPStatus, Filename, URL
+from modules.sela.definitions import Filename, URL
+from modules.sela.status import HTTPStatus
+from modules.sela.exceptions import UnsuccessfulRequest
 from modules.sela.factories.abstract import ProviderFactory
 from modules.sela.factories.github import GitHubProviderFactory
 from modules.sela.helpers import auto_str
-from modules.sela.releases.release import Release
+from modules.sela.releases.abstract import Release
 
 
 @auto_str
@@ -42,14 +44,15 @@ class Manager(ABC):
         self.download_dir = temp_dir
         if not os.path.exists(self.download_dir):
             raise FileNotFoundError(
-                f"Couldn't find, or not enough permissions to use os.stat(), on {self.download_dir}")
+                f"Couldn't find, or not enough permissions to use os.stat(), on {self.download_dir}"
+            )
 
     def run(self) -> None:
         """
-        :raises RuntimeError: raised when download requests errored or ended abruptly with HTTP Status != 200
-        :raises Exceptions.NoReleaseFound: raised when no release matched
-        :raises Exceptions.NoAssetsFound: raised when no assets are available/returned
-        :raises Exceptions.FileVerificationFailed: raised when file verification failed
+        :raises UnsuccessfulRequest: raised when a critical request errored
+        :raises exceptions.NoReleaseFound: raised when no release matched
+        :raises exceptions.NoAssetsFound: raised when no assets are available/returned
+        :raises exceptions.FileVerificationFailed: raised when file verification failed
         :raises requests.JSONDecodeError: raised when there's malformed JSON in the response
         :raises requests.ConnectionError:
         :raises requests.Timeout:
@@ -58,9 +61,9 @@ class Manager(ABC):
         files: list[Filename] = []
         self.log(Manager.Level.PROGRESS, "Starting preprocessing...")
         try:
-            r = self.provider.get_release(self.filter)
-            if not r:
-                raise exceptions.NoReleaseFound("No release found, or matched! Is everything OK?")
+            status, r = self.provider.get_release(self.filter)
+            if not status.is_successful():
+                raise UnsuccessfulRequest("Couldn't get release from remote!", status)
 
             downloadables = self.get_assets(r)
             if not downloadables:
@@ -71,8 +74,8 @@ class Manager(ABC):
                 files.append(fn)
                 self.log(Manager.Level.PROGRESS, f"Downloading {fn}")
                 status = self.download(os.path.join(self.download_dir, fn), url)
-                if status == HTTPStatus.CLIENT_ERROR or status == HTTPStatus.SERVER_ERROR:
-                    raise RuntimeError(f"Got HTTPStatus {status}!")
+                if not status.is_successful():
+                    raise UnsuccessfulRequest(f"Couldn't download asset at url {url}", status)
 
             self.log(Manager.Level.PROGRESS, "Verifying...")
             if not self.verify(files):
@@ -116,13 +119,16 @@ class Manager(ABC):
         kilobytes_denominator = 1_000_000
         with open(filename, "wb") as out:
             for status, bread, btotal, data in self.provider.download(url):
-                if status == HTTPStatus.CLIENT_ERROR or status == HTTPStatus.SERVER_ERROR:
+                if not status.is_successful():
                     return status
-                self.log(Manager.Level.PROGRESS_BAR,
-                         f"\r{round(bread / kilobytes_denominator)}"
-                         f"/{round(btotal / kilobytes_denominator)} MB "
-                         f"| {round((bread / btotal) * 100, 1)}% | {filename}"
-                         )
+
+                self.log(
+                    Manager.Level.PROGRESS_BAR,
+                    f"\r{round(bread / kilobytes_denominator)}"
+                    f"/{round(btotal / kilobytes_denominator)} MB "
+                    f"| {round((bread / btotal) * 100, 1)}% | {filename}"
+                )
+
                 out.write(data)
             self.log(Manager.Level.PROGRESS_BAR, f"\n")
             return status
