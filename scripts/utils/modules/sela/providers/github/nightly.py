@@ -102,12 +102,3 @@ class GitHubNightlyProvider(Provider):
                 tarball=f"{base_tarball_url}/{json["sha"]}"
             )
         return
-
-
-if __name__ == "__main__":
-    gbp = GitHubNightlyProvider(r"https://api.github.com/repos/Guerra24/Firefox-UWP-Style/branches")
-
-    for st, r in gbp.recurse_releases():
-        assert r is not None
-        assert st.is_successful()
-        print(str(r))
