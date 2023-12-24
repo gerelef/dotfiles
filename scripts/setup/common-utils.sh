@@ -28,7 +28,6 @@ readonly RC_MZL_DIR="$CONFIG_DIR/mozilla"
 # home directories to create
 readonly PPW_ROOT="$REAL_USER_HOME/.config/pipewire/"
 readonly MZL_ROOT="$REAL_USER_HOME/.mozilla/firefox"
-readonly SSH_ROOT="$REAL_USER_HOME/.ssh"
 readonly BIN_ROOT="$REAL_USER_HOME/bin"
 readonly WRK_ROOT="$REAL_USER_HOME/work"
 readonly SMR_ROOT="$REAL_USER_HOME/seminar"
@@ -182,20 +181,29 @@ change-group-recursive () (
 )
 
 create-default-locations () (
-    # there should be a matching change-ownership-recursive after everything's done in the script
+    # there should be a matching change-ownership-recursive after everything's done later
     #  since everything here will be owned by "root" 
-    mkdir -p "$PPW_ROOT" "$MZL_ROOT" "$SSH_ROOT" "$BIN_ROOT" "$WRK_ROOT" "$SMR_ROOT" "$RND_ROOT"
+    mkdir -p "$PPW_ROOT" "$MZL_ROOT" "$BIN_ROOT" "$WRK_ROOT" "$SMR_ROOT" "$RND_ROOT"
 )
 
 copy-dnf () (
-    command cp -r "$CONFIG_DIR/dnf.conf" "/etc/dnf/dnf.conf"
-    chown root "/etc/dnf/dnf.conf"
-    chmod 644 "/etc/dnf/dnf.conf"
+    (cat <<-DNF_EOF 
+[main]
+gpgcheck=1
+installonly_limit=5
+clean_requirements_on_remove=True
+best=False
+deltarpm=False
+skip_if_unavailable=True
+max_parallel_downloads=10
+metadata_expire=1
+keepcache=true
+DNF_EOF
+    ) > "/etc/dnf/dnf.conf"
 )
 
 copy-pipewire () (    
     ln -sf "$CONFIG_DIR/pipewire.conf" "$PPW_ROOT/pipewire.conf"
-    change-ownership "$PPW/pipewire.conf"
 )
 
 # man 5 sysctl.d
@@ -240,30 +248,18 @@ create-convenience-sudoers () (
 
 create-private-bashrc () (
     touch "$REAL_USER_HOME/.bashrc-private"
-    change-ownership "$REAL_USER_HOME/.bashrc-private"
-    change-group "$REAL_USER_HOME/.bashrc-private"
 )
 
 create-private-gitconfig () (
     touch "$REAL_USER_HOME/.gitconfig-github"
     touch "$REAL_USER_HOME/.gitconfig-gitlab"
     touch "$REAL_USER_HOME/.gitconfig-gnome"
-    
-    change-ownership "$REAL_USER_HOME/.gitconfig-github"
-    change-ownership "$REAL_USER_HOME/.gitconfig-gitlab"
-    change-ownership "$REAL_USER_HOME/.gitconfig-gnome"
-    
-    change-group "$REAL_USER_HOME/.gitconfig-github"
-    change-group "$REAL_USER_HOME/.gitconfig-gitlab"
-    change-group "$REAL_USER_HOME/.gitconfig-gnome"
 )
 
 copy-rc-files () (
     ln -sf "$RC_DIR/.bashrc" "$REAL_USER_HOME/.bashrc"
     ln -sf "$RC_DIR/.nanorc" "$REAL_USER_HOME/.nanorc"
     ln -sf "$CONFIG_DIR/.gitconfig" "$REAL_USER_HOME/.gitconfig"
-    change-ownership "$REAL_USER_HOME/.bashrc" "$REAL_USER_HOME/.nanorc" "$REAL_USER_HOME/.gitconfig"
-    change-group "$REAL_USER_HOME/.bashrc" "$REAL_USER_HOME/.nanorc" "$REAL_USER_HOME/.gitconfig"
 )
 
 copy-ff-rc-files () (

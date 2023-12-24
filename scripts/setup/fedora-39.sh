@@ -1,6 +1,8 @@
 #!/usr/bin/env -S sudo --preserve-env="XDG_RUNTIME_DIR" --preserve-env="XDG_DATA_DIRS" --preserve-env="DBUS_SESSION_BUS_ADDRESS" bash
 
 readonly DIR=$(dirname -- "$BASH_SOURCE")
+
+[[ -f "$DIR/common-utils.sh" ]] || ( echo "$DIR/common-utils.sh doesn't exist! exiting..." && exit 2 ) 
 source "$DIR/common-utils.sh"
 
 install-gnome-essentials () (
@@ -137,6 +139,12 @@ install-gaming-packages () (
     echo "Done."
 )
 
+install-virtualization-packages () (
+    echo "-------------------INSTALLING----------------" | tr " " "\n"
+    dnf-install "$INSTALLABLE_VIRTUALIZATION_PACKAGES"
+    echo "Done."
+)
+
 install-dev-tools () (
     echo "-------------------INSTALLING----------------" | tr " " "\n"
     dnf-install "@C Development Tools and Libraries" "@Development Tools" "$INSTALLABLE_DEV_PKGS"
@@ -246,8 +254,33 @@ system-db:gdm
 file-db:/usr/share/gdm/greeter-dconf-defaults
 GDM_END
     ) > "/etc/dconf/profile/gdm"
+    
+    (cat <<-GDM_END
+[org/gnome/desktop/interface] 
+clock-format='24h'
+clock-show-date=true
+clock-show-seconds=true
+clock-show-weekday=true
+font-antialiasing='rgba'
+font-hinting='full'
+show-battery-percentage=true
 
-    cp -f "$GDM_SETTINGS_FILE" "/etc/dconf/db/gdm.d/01-generic"
+[org/gnome/desktop/peripherals/keyboard] 
+numlock-state=false
+remember-numlock-state=false
+repeat=true
+repeat-interval=25
+
+[org/gnome/desktop/peripherals/mouse]
+double-click=250
+middle-click-emulation=false
+natural-scroll=false
+speed=-0.2
+
+[org/gnome/desktop/peripherals/touchpad]
+disable-while-typing=true
+GDM_END
+    ) > "/etc/dconf/db/gdm.d/01-generic"
 
     dconf update
 )
@@ -308,16 +341,12 @@ if [[ -z $XDG_RUNTIME_DIR || -z $XDG_DATA_DIRS || -z $DBUS_SESSION_BUS_ADDRESS ]
     exit 2
 fi
 
-#######################################################################################################
-
-# create default directories that should exist on all my systems
-create-default-locations 
+####################################################################################################### 
 
 # fs thingies
 readonly ROOT_FS=$(stat -f --format=%T /)
 readonly REAL_USER_HOME_FS=$(stat -f --format=%T "$REAL_USER_HOME")
 readonly DISTRIBUTION_NAME="fedora$(rpm -E %fedora)"
-readonly GDM_SETTINGS_FILE="$DIR/gnome-settings/f$(rpm -E %fedora)-opts"
 
 # TODO replace grub2 with systemd-boot when we get rid of all the issues 
 #  regarding proprietary NVIDIA Drivers, and signing them for UEFI
@@ -612,15 +641,14 @@ tweak-minor-details
 modify-grub
 create-swapfile
 
-ssh-keygen -q -t ed25519 -N '' -C "$REAL_USER@$DISTRIBUTION_NAME" -f "$SSH_ROOT/id_ed25519" -P "" <<< $'\ny' >/dev/null 2>&1
-cat "$SSH_ROOT/id_ed25519.pub"
+mkdir -p "$REAL_USER_HOME/.ssh"
+ssh-keygen -q -t ed25519 -N '' -C "$REAL_USER@$DISTRIBUTION_NAME" -f "$REAL_USER_HOME/.ssh/id_ed25519" -P "" <<< $'\ny' >/dev/null 2>&1
+cat "$REAL_USER_HOME/.ssh/id_ed25519.pub"
 
 #######################################################################################################
 
 if ask-user 'Are you sure you want to install virtualization packages?'; then
-    echo "-------------------INSTALLING----------------" | tr " " "\n"
-    dnf-install "$INSTALLABLE_VIRTUALIZATION_PACKAGES"
-    echo "Done."
+    install-virtualization-packages
 fi
 
 #######################################################################################################
@@ -644,6 +672,9 @@ fi
 #######################################################################################################
 
 if ask-user "Customize firefox? Compatible only with gerelef/dotfiles"; then
+    # create default directories that should exist on all my systems
+    create-default-locations 
+    
     echo "https://www.suse.com/support/kb/doc/?id=000017060"
     while : ; do
         change-ownership-recursive "$MZL_ROOT"
@@ -658,6 +689,9 @@ fi
 #######################################################################################################
 
 if ask-user "Install default config files? Compatible only with gerelef/dotfiles"; then
+    # create default directories that should exist on all my systems
+    create-default-locations
+    
     install-config-files
 fi
 
