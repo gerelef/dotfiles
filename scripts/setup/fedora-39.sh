@@ -504,6 +504,8 @@ gnome-calendar \
 gnome-color-manager \
 gnome-contacts \
 gnome-maps \
+gnome-shell-extension-gamemode \
+gnome-shell-extension-background-logo \
 "
 
 #######################################################################################################
@@ -538,10 +540,11 @@ org.gnome.Snapshot \
 "
 
 readonly INSTALLABLE_GNOME_EXTENSIONS="\
+gnome-extensions-app \
 gnome-shell-extension-places-menu \
 gnome-shell-extension-forge \
 gnome-shell-extension-dash-to-panel \
-gnome-extensions-app \
+gnome-shell-extension-caffeine \
 f$(rpm -E %fedora)-backgrounds-gnome \
 f$(rpm -E %fedora)-backgrounds-extras-gnome \
 schroedinger-cat-backgrounds-extras-gnome \
