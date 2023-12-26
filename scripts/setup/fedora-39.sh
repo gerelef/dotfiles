@@ -24,7 +24,6 @@ install-cinnamon-essentials () (
     dnf-install "$INSTALLABLE_CINNAMON_ESSENTIAL_PACKAGES"
     dnf-install "$INSTALLABLE_CINNAMON_APPLICATION_PACKAGES"
     dnf-install "$INSTALLABLE_CINNAMON_EXTENSIONS"
-    flatpak-install "$INSTALLABLE_CINNAMON_FLATPAKS"
 
     if ask-user "Do you want to install Cinnamon wallpapers?"; then
         echo "-------------------INSTALLING----------------" | tr " " "\n"
@@ -516,14 +515,11 @@ cinnamon-control-center \
 
 readonly INSTALLABLE_CINNAMON_APPLICATION_PACKAGES="\
 nautilus \
+qbittorrent \
 cinnamon-calendar-server \
 cinnamon-control-center-filesystem \
 gnome-system-monitor \
 gnome-disk-utility \
-"
-
-readonly INSTALLABLE_CINNAMON_FLATPAKS="\
-qbittorrent \
 "
 
 readonly INSTALLABLE_CINNAMON_EXTENSIONS="\
