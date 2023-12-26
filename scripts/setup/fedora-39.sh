@@ -25,6 +25,9 @@ install-cinnamon-essentials () (
     dnf-install "$INSTALLABLE_CINNAMON_APPLICATION_PACKAGES"
     dnf-install "$INSTALLABLE_CINNAMON_EXTENSIONS"
 
+    dnf-install lightdm 
+    systemctl enable lightdm -f
+    
     if ask-user "Do you want to install Cinnamon wallpapers?"; then
         echo "-------------------INSTALLING----------------" | tr " " "\n"
         dnf install -y --best --allowerasing f*-backgrounds-gnome*
@@ -192,6 +195,10 @@ configure-system-defaults () (
 
 tweak-minor-details () (
     echo "-------------------TWEAKING MINOR DETAILS----------------"
+    # https://github.com/tommytran732/Linux-Setup-Scripts/blob/main/Fedora-Workstation-36.sh
+    # Make home directory private
+    change-ownership "$REAL_USER_HOME"
+    systemctl enable fstrim.timer
     
     timedatectl set-local-rtc '0' # for fixing dual boot time inconsistencies
     hostnamectl hostname "$DISTRIBUTION_NAME"
@@ -584,6 +591,8 @@ dnf install -y --best --allowerasing "https://download1.rpmfusion.org/nonfree/fe
 flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
 flatpak remote-delete fedora
 
+dnf-update-refresh
+
 #######################################################################################################
 
 # declare desktop environment installers
@@ -608,7 +617,7 @@ if [[ -z $XDG_CURRENT_DESKTOP ]]; then
     echo "Making sure we're booting into a DE next time we boot..."
     systemctl set-default graphical.target
     
-    reboot
+    systemctl reboot
 fi
 
 if [[ -z $XDG_RUNTIME_DIR || -z $XDG_DATA_DIRS || -z $DBUS_SESSION_BUS_ADDRESS ]]; then
@@ -619,15 +628,6 @@ if [[ -z $XDG_RUNTIME_DIR || -z $XDG_DATA_DIRS || -z $DBUS_SESSION_BUS_ADDRESS ]
 fi
 
 #######################################################################################################
-
-# https://github.com/tommytran732/Linux-Setup-Scripts/blob/main/Fedora-Workstation-36.sh
-# Make home directory private
-change-ownership "$REAL_USER_HOME"
-systemctl enable fstrim.timer
-
-#######################################################################################################
-
-dnf-update-refresh
 
 dnf-remove "$UNINSTALLABLE_BLOAT"
 
