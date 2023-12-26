@@ -9,6 +9,7 @@ install-gnome-essentials () (
     dnf-install "$INSTALLABLE_ESSENTIAL_DESKTOP_PACKAGES"
     # FIXME gnome currently supports X11; when xorg is not supported anymore by 
     #  redhat (circa 2025 or something), this will need to be removed
+    # FIXME is this needed now?
     dnf install -y --best --allowerasing "@base-x"
     
     dnf-install "$INSTALLABLE_GNOME_ESSENTIAL_PACKAGES"
@@ -31,6 +32,7 @@ install-cinnamon-essentials () (
     dnf-install "$INSTALLABLE_ESSENTIAL_DESKTOP_PACKAGES"
     # FIXME cinnamon is currently X11 only; when xorg is not supported anymore by 
     #  redhat (circa 2025 or something), this will need to be removed
+    # FIXME is this needed now?
     dnf install -y --best --allowerasing "@base-x"
     
     dnf-install "$INSTALLABLE_CINNAMON_ESSENTIAL_PACKAGES"
