@@ -35,6 +35,7 @@ install-cinnamon-essentials () (
     # FIXME is this needed now?
     dnf install -y --best --allowerasing "@base-x"
     
+    # FIXME for some reason, this installs gnome, check if it is the case
     dnf-install "$INSTALLABLE_CINNAMON_ESSENTIAL_PACKAGES"
     dnf-install "$INSTALLABLE_CINNAMON_APPLICATION_PACKAGES"
     dnf-install "$INSTALLABLE_CINNAMON_EXTENSIONS"
@@ -325,7 +326,6 @@ fi
 readonly ROOT_FS=$(stat -f --format=%T /)
 readonly REAL_USER_HOME_FS=$(stat -f --format=%T "$REAL_USER_HOME")
 readonly DISTRIBUTION_NAME="fedora$(rpm -E %fedora)"
-
 
 readonly INSTALLABLE_ESSENTIAL_DESKTOP_PACKAGES="\
 glx-utils \
