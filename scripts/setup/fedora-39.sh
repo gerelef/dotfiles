@@ -18,8 +18,6 @@ install-gnome-essentials () (
     fi
 
     configure-gdm-dconf
-    # stop this from updating in the background and eating ram, no reason
-    rm /etc/xdg/autostart/org.gnome.Software.desktop
 )
 
 install-cinnamon-essentials () (
@@ -728,7 +726,10 @@ if [[ $XDG_CURRENT_DESKTOP -eq "GNOME" ]]; then
     echo "--------------------------- GNOME ---------------------------"
     echo "Make sure to get the legacy GTK3 Theme Auto Switcher"
     echo "  https://extensions.gnome.org/extension/4998/legacy-gtk3-theme-scheme-auto-switcher/"
-
+    
+    # stop this from updating in the background and eating ram, no reason
+    rm /etc/xdg/autostart/org.gnome.Software.desktop
+    
     echo "Configuring all gsettings for user $REAL_USER . . ."
     # user gsettings
     # heredocs
