@@ -18,6 +18,8 @@ install-gnome-essentials () (
     fi
 
     configure-gdm-dconf
+    # stop this from updating in the background and eating ram, no reason
+    rm /etc/xdg/autostart/org.gnome.Software.desktop
 )
 
 install-cinnamon-essentials () (
@@ -199,7 +201,6 @@ tweak-minor-details () (
     # if the statement below doesnt work, check this out
     #  https://old.reddit.com/r/linuxhardware/comments/ng166t/s3_deep_sleep_not_working/
     systemctl disable NetworkManager-wait-online.service # stop network manager from waiting until online, improves boot times
-    rm /etc/xdg/autostart/org.gnome.Software.desktop # stop this from updating in the background and eating ram, no reason
 
     echo "Done."
 )
