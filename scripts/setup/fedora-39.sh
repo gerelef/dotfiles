@@ -115,7 +115,8 @@ optimize-hardware () (
         akmods --force && dracut --force
 
         # check arch wiki, these enable DRM
-        grubby --update-kernel=ALL --args="nvidia-drm.modeset=1 nvidia-drm.fbdev=1"
+        grubby --update-kernel=ALL --args="nvidia-drm.modeset=1"
+        grubby --update-kernal=ALL --args="nvidia-drm.fbdev=1"
     fi
 
     readonly CHASSIS_TYPE="$(dmidecode --string chassis-type)"
