@@ -307,9 +307,6 @@ readonly DISTRIBUTION_NAME="fedora$(rpm -E %fedora)"
 #  regarding proprietary NVIDIA Drivers, and signing them for UEFI
 # TODO add systemd-bsod when it becomes available on fedora
 readonly INSTALLABLE_ESSENTIAL_PACKAGES="\
-plocate \
-git \
-flatpak \
 setroubleshoot \
 setroubleshoot-plugins \
 openvpn \
@@ -603,6 +600,9 @@ exit
 
 # if there's no desktop environment running...
 if [[ -z $XDG_CURRENT_DESKTOP ]]; then
+    dnf-install plocate git flatpak
+    clear
+    
     echo "After installation of a desktop environment finishes, the system will immediately reboot."
     echo "You will need to re-run this script afterwards to complete the setup."
     choice=$(ask-user-multiple-questions "${dei[@]}" )
