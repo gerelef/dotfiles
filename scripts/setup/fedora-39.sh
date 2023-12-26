@@ -1,4 +1,4 @@
-#!/usr/bin/env -S sudo --preserve-env="XDG_RUNTIME_DIR" --preserve-env="XDG_DATA_DIRS" --preserve-env="DBUS_SESSION_BUS_ADDRESS" bash
+#!/usr/bin/env -S sudo --preserve-env="XDG_CURRENT_DESKTOP" --preserve-env="XDG_RUNTIME_DIR" --preserve-env="XDG_DATA_DIRS" --preserve-env="DBUS_SESSION_BUS_ADDRESS" bash
 
 readonly DIR=$(dirname -- "$BASH_SOURCE")
 
@@ -9,7 +9,7 @@ install-gnome-essentials () (
     dnf-install "$INSTALLABLE_ESSENTIAL_DESKTOP_PACKAGES"
     # FIXME gnome currently supports X11; when xorg is not supported anymore by 
     #  redhat (circa 2025 or something), this will need to be removed
-    dnf-install "@base-x"
+    dnf install -y --best --allowerasing "@base-x"
     
     dnf-install "$INSTALLABLE_GNOME_ESSENTIAL_PACKAGES"
     dnf-install "$INSTALLABLE_GNOME_APPLICATION_PACKAGES"
@@ -31,7 +31,7 @@ install-cinnamon-essentials () (
     dnf-install "$INSTALLABLE_ESSENTIAL_DESKTOP_PACKAGES"
     # FIXME cinnamon is currently X11 only; when xorg is not supported anymore by 
     #  redhat (circa 2025 or something), this will need to be removed
-    dnf-install "@base-x"
+    dnf install -y --best --allowerasing "@base-x"
     
     dnf-install "$INSTALLABLE_CINNAMON_ESSENTIAL_PACKAGES"
     dnf-install "$INSTALLABLE_CINNAMON_APPLICATION_PACKAGES"
@@ -61,10 +61,10 @@ install-hyprland-essentials () (
 
 install-universal-necessities () (
     echo "-------------------INSTALLING ESSENTIAL PACKAGES----------------" | tr " " "\n"
-    dnf-install --with-optional @fonts
-    dnf-install --with-optional @hardware-support
-    dnf-install --with-optional @networkmanager-submodules
-    dnf-install --with-optional @printing
+    dnf install -y --best --allowerasing --with-optional @fonts
+    dnf install -y --best --allowerasing --with-optional @hardware-support
+    dnf install -y --best --allowerasing --with-optional @networkmanager-submodules
+    dnf install -y --best --allowerasing --with-optional @printing
 
     dnf-install "$INSTALLABLE_ESSENTIAL_PACKAGES"
     dnf-install "$INSTALLABLE_APPLICATION_PACKAGES"
@@ -162,7 +162,9 @@ install-virtualization-packages () (
 
 install-dev-tools () (
     echo "-------------------INSTALLING----------------" | tr " " "\n"
-    dnf-install "@C Development Tools and Libraries" "@Development Tools" "$INSTALLABLE_DEV_PKGS"
+    dnf install -y --best --allowerasing --with-optional "@C Development Tools and Libraries" 
+    dnf install -y --best --allowerasing --with-optional "@Development Tools" 
+    dnf-install "$INSTALLABLE_DEV_PKGS"
     flatpak-install "$INSTALLABLE_IDE_FLATPAKS"
 
     echo "-------------------INSTALLING JETBRAINS TOOLBOX----------------"
@@ -642,9 +644,9 @@ if [[ -z $XDG_CURRENT_DESKTOP ]]; then
     systemctl reboot
 fi
 
-if [[ -z $XDG_RUNTIME_DIR || -z $XDG_DATA_DIRS || -z $DBUS_SESSION_BUS_ADDRESS ]]; then
+if [[ -z $XDG_CURRENT_DESKTOP || -z $XDG_RUNTIME_DIR || -z $XDG_DATA_DIRS || -z $DBUS_SESSION_BUS_ADDRESS ]]; then
     echo "The following environment variables must be set for this script to work:"
-    echo "\$XDG_RUNTIME_DIR ($XDG_RUNTIME_DIR), \$XDG_DATA_DIRS ($XDG_DATA_DIRS), \$DBUS_SESSION_BUS_ADDRESS ($DBUS_SESSION_BUS_ADDRESS)"
+    echo "\$XDG_CURRENT_DESKTOP ($XDG_CURRENT_DESKTOP), \$XDG_RUNTIME_DIR ($XDG_RUNTIME_DIR), \$XDG_DATA_DIRS ($XDG_DATA_DIRS), \$DBUS_SESSION_BUS_ADDRESS ($DBUS_SESSION_BUS_ADDRESS)"
     echo "Check the shebang for more information on how to correctly run this script."
     exit 2
 fi
