@@ -296,50 +296,6 @@ if ! ping -q -c 1 -W 1 google.com > /dev/null; then
     exit 1
 fi
 
-#######################################################################################################
-# improve dnf performance
-copy-dnf
-
-# for some reason this repository is added on every new install, i dont' care i have toolbox wtf
-dnf copr remove -y --skip-broken phracek/PyCharm
-dnf install -y --best --allowerasing "https://download1.rpmfusion.org/free/fedora/rpmfusion-free-release-$(rpm -E %fedora).noarch.rpm" # free rpmfusion
-dnf install -y --best --allowerasing "https://download1.rpmfusion.org/nonfree/fedora/rpmfusion-nonfree-release-$(rpm -E %fedora).noarch.rpm" # nonfree rpmfusion
-
-# no requirement to add flathub ourselves anymore in f38; it should be enabled by default. however, it may not be, most likely by accident, so this is a failsafe
-flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
-flatpak remote-delete fedora
-
-#######################################################################################################
-
-# declare desktop environment installers
-dei=(
-install-gnome-essentials
-install-cinnamon-essentials
-install-hyprland-essentials
-exit
-)
-
-# if there's no desktop environment running...
-if [[ -z $XDG_CURRENT_DESKTOP ]]; then
-    echo "After installation of a desktop environment finishes, the system will immediately reboot."
-    echo "You will need to re-run this script afterwards to complete the setup."
-    choice=$(ask-user-multiple-questions "${dei[@]}" )
-    # run installer ...
-    ${dei[$choice]}
-    
-    echo "Making sure we're booting into a DE next time we boot..."
-    systemctl set-default graphical.target
-    
-    reboot
-fi
-
-if [[ -z $XDG_RUNTIME_DIR || -z $XDG_DATA_DIRS || -z $DBUS_SESSION_BUS_ADDRESS ]]; then
-    echo "The following environment variables must be set for this script to work:"
-    echo "\$XDG_RUNTIME_DIR ($XDG_RUNTIME_DIR), \$XDG_DATA_DIRS ($XDG_DATA_DIRS), \$DBUS_SESSION_BUS_ADDRESS ($DBUS_SESSION_BUS_ADDRESS)"
-    echo "Check the shebang for more information on how to correctly run this script."
-    exit 2
-fi
-
 ####################################################################################################### 
 
 # fs thingies
@@ -506,6 +462,50 @@ gnome-maps \
 gnome-shell-extension-gamemode \
 gnome-shell-extension-background-logo \
 "
+
+#######################################################################################################
+# improve dnf performance
+copy-dnf
+
+# for some reason this repository is added on every new install, i dont' care i have toolbox wtf
+dnf copr remove -y --skip-broken phracek/PyCharm
+dnf install -y --best --allowerasing "https://download1.rpmfusion.org/free/fedora/rpmfusion-free-release-$(rpm -E %fedora).noarch.rpm" # free rpmfusion
+dnf install -y --best --allowerasing "https://download1.rpmfusion.org/nonfree/fedora/rpmfusion-nonfree-release-$(rpm -E %fedora).noarch.rpm" # nonfree rpmfusion
+
+# no requirement to add flathub ourselves anymore in f38; it should be enabled by default. however, it may not be, most likely by accident, so this is a failsafe
+flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
+flatpak remote-delete fedora
+
+#######################################################################################################
+
+# declare desktop environment installers
+dei=(
+install-gnome-essentials
+install-cinnamon-essentials
+install-hyprland-essentials
+exit
+)
+
+# if there's no desktop environment running...
+if [[ -z $XDG_CURRENT_DESKTOP ]]; then
+    echo "After installation of a desktop environment finishes, the system will immediately reboot."
+    echo "You will need to re-run this script afterwards to complete the setup."
+    choice=$(ask-user-multiple-questions "${dei[@]}" )
+    # run installer ...
+    ${dei[$choice]}
+    
+    echo "Making sure we're booting into a DE next time we boot..."
+    systemctl set-default graphical.target
+    
+    reboot
+fi
+
+if [[ -z $XDG_RUNTIME_DIR || -z $XDG_DATA_DIRS || -z $DBUS_SESSION_BUS_ADDRESS ]]; then
+    echo "The following environment variables must be set for this script to work:"
+    echo "\$XDG_RUNTIME_DIR ($XDG_RUNTIME_DIR), \$XDG_DATA_DIRS ($XDG_DATA_DIRS), \$DBUS_SESSION_BUS_ADDRESS ($DBUS_SESSION_BUS_ADDRESS)"
+    echo "Check the shebang for more information on how to correctly run this script."
+    exit 2
+fi
 
 #######################################################################################################
 
