@@ -6,10 +6,17 @@ readonly DIR=$(dirname -- "$BASH_SOURCE")
 source "$DIR/common-utils.sh"
 
 install-gnome-essentials () (
+    dnf-install "$INSTALLABLE_ESSENTIAL_DESKTOP_PACKAGES"
+    # FIXME gnome currently supports X11; when xorg is not supported anymore by 
+    #  redhat (circa 2025 or something), this will need to be removed
+    dnf-install "@base-x"
+    
     dnf-install "$INSTALLABLE_GNOME_ESSENTIAL_PACKAGES"
     dnf-install "$INSTALLABLE_GNOME_APPLICATION_PACKAGES"
     dnf-install "$INSTALLABLE_ADWAITA_PACKAGES" "$INSTALLABLE_GNOME_EXTENSIONS"
     flatpak-install "$INSTALLABLE_GNOME_FLATPAKS"
+    
+    systemctl enable gdm
 
     if ask-user "Do you want to install GNOME wallpapers?"; then
         echo "-------------------INSTALLING----------------" | tr " " "\n"
@@ -21,12 +28,16 @@ install-gnome-essentials () (
 )
 
 install-cinnamon-essentials () (
+    dnf-install "$INSTALLABLE_ESSENTIAL_DESKTOP_PACKAGES"
+    # FIXME cinnamon is currently X11 only; when xorg is not supported anymore by 
+    #  redhat (circa 2025 or something), this will need to be removed
+    dnf-install "@base-x"
+    
     dnf-install "$INSTALLABLE_CINNAMON_ESSENTIAL_PACKAGES"
     dnf-install "$INSTALLABLE_CINNAMON_APPLICATION_PACKAGES"
     dnf-install "$INSTALLABLE_CINNAMON_EXTENSIONS"
 
-    dnf-install lightdm 
-    systemctl enable lightdm -f
+    systemctl enable gdm
     
     if ask-user "Do you want to install Cinnamon wallpapers?"; then
         echo "-------------------INSTALLING----------------" | tr " " "\n"
@@ -36,6 +47,8 @@ install-cinnamon-essentials () (
 )
 
 install-hyprland-essentials () (
+    dnf-install "$INSTALLABLE_ESSENTIAL_DESKTOP_PACKAGES"
+
     dnf copr enable erikreider/SwayNotificationCenter
     
     dnf-install "$INSTALLABLE_HYPRLAND_ESSENTIAL_PACKAGES" --exclude="wofi kitty"
@@ -309,6 +322,13 @@ readonly ROOT_FS=$(stat -f --format=%T /)
 readonly REAL_USER_HOME_FS=$(stat -f --format=%T "$REAL_USER_HOME")
 readonly DISTRIBUTION_NAME="fedora$(rpm -E %fedora)"
 
+
+readonly INSTALLABLE_ESSENTIAL_DESKTOP_PACKAGES="\
+glx-utils \
+mesa-dri-drivers \
+mesa-vulkan-drivers \
+plymouth-system-theme \
+"
 # TODO replace grub2 with systemd-boot when we get rid of all the issues 
 #  regarding proprietary NVIDIA Drivers, and signing them for UEFI
 # TODO add systemd-bsod when it becomes available on fedora
@@ -469,6 +489,7 @@ gnome-shell-extension-background-logo \
 #######################################################################################################
 
 readonly INSTALLABLE_GNOME_ESSENTIAL_PACKAGES="\
+gdm \
 gnome-shell \
 "
 
@@ -512,6 +533,7 @@ schroedinger-cat-backgrounds-gnome \
 #######################################################################################################
 
 readonly INSTALLABLE_CINNAMON_ESSENTIAL_PACKAGES="\
+gdm \
 cinnamon \
 cinnamon-desktop \
 cinnamon-screensaver \
