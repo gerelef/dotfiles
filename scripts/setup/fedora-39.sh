@@ -55,7 +55,7 @@ install-hyprland-essentials () (
     dnf-install "$INSTALLABLE_HYPRLAND_ESSENTIAL_PACKAGES" --exclude="wofi kitty"
     dnf-install "$INSTALLABLE_HYPRLAND_APPLICATION_PACKAGES"
     # FIXME dnf-install "$INSTALLABLE_HYPRLAND_EXTENSIONS"
-    flatpak-install "$INSTALLABLE_HYPRLAND_FLATPAKS"
+    # flatpak-install "$INSTALLABLE_HYPRLAND_FLATPAKS"
     
     # FIXME add exec-once=nm-applet --indicator & disown
 )
@@ -595,8 +595,9 @@ nautilus \
 qbittorrent \
 "
 
-readonly INSTALLABLE_HYPRLAND_FLATPAKS="\
-"
+# activate in the appropriate setup function as well!
+# readonly INSTALLABLE_HYPRLAND_FLATPAKS="\
+# "
 
 # FIXME add confirm hyprpm works, and implement hyprpm-install 
 #  https://wiki.hyprland.org/Plugins/Using-Plugins/
