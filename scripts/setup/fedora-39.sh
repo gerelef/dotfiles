@@ -35,7 +35,8 @@ install-cinnamon-essentials () (
     dnf-install "$INSTALLABLE_CINNAMON_ESSENTIAL_PACKAGES"
     dnf-install "$INSTALLABLE_CINNAMON_APPLICATION_PACKAGES"
     dnf-install "$INSTALLABLE_CINNAMON_EXTENSIONS"
-
+    flatpak-install "$INSTALLABLE_CINNAMON_FLATPAKS"
+    
     systemctl enable gdm
     
     if ask-user "Do you want to install Cinnamon wallpapers?"; then
@@ -472,6 +473,7 @@ totem \
 cheese \
 gnome-tour \
 gnome-weather \
+gnome-system-monitor \
 gnome-remote-desktop \
 gnome-font-viewer \
 gnome-characters \
@@ -497,7 +499,6 @@ gnome-shell \
 
 readonly INSTALLABLE_GNOME_APPLICATION_PACKAGES="\
 nautilus \
-gnome-system-monitor \
 gnome-disk-utility \
 "
 
@@ -516,6 +517,7 @@ readonly INSTALLABLE_GNOME_FLATPAKS="\
 org.gtk.Gtk3theme.adw-gtk3 \
 org.gtk.Gtk3theme.adw-gtk3-dark \
 org.kde.WaylandDecoration.QAdwaitaDecorations \
+net.nokyan.Resources \
 de.haeckerfelix.Fragments \
 org.gnome.Snapshot \
 "
@@ -549,8 +551,11 @@ nautilus \
 qbittorrent \
 cinnamon-calendar-server \
 cinnamon-control-center-filesystem \
-gnome-system-monitor \
 gnome-disk-utility \
+"
+
+readonly INSTALLABLE_CINNAMON_FLATPAKS="\
+net.nokyan.Resources \
 "
 
 readonly INSTALLABLE_CINNAMON_EXTENSIONS="\
@@ -764,7 +769,7 @@ gsettings set org.gnome.desktop.interface gtk-theme 'adw-gtk3-dark'
 gsettings set org.gnome.desktop.interface color-scheme 'prefer-dark'
 
 add-gsettings-shortcut "blackbox" "/usr/bin/flatpak run --branch=stable --arch=x86_64 --command=blackbox com.raggesilver.BlackBox" "<Shift><Control>KP_Add"
-add-gsettings-shortcut "gnome-system-monitor" "gnome-system-monitor" "<Shift><Control>Escape"
+add-gsettings-shortcut "resource-monitor" "/usr/bin/flatpak run --branch=stable --arch=x86_64 --command=resources net.nokyan.Resources" "<Shift><Control>Escape"
 
 # reference to fix https://github.com/flameshot-org/flameshot/issues/3326#issuecomment-1838662244
 dbus-send --session --print-reply=literal --dest=org.freedesktop.impl.portal.PermissionStore /org/freedesktop/impl/portal/PermissionStore org.freedesktop.impl.portal.PermissionStore.SetPermission string:'screenshot' boolean:true string:'screenshot' string:'flameshot' array:string:'yes'
