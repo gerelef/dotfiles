@@ -818,6 +818,32 @@ gsettings set org.gnome.shell.extensions.forge.keybindings window-swap-up "[]"
 gsettings set org.gnome.shell.extensions.forge.keybindings window-toggle-always-float "[]"
 gsettings set org.gnome.shell.extensions.forge.keybindings window-toggle-float "[]"
 gsettings set org.gnome.shell.extensions.forge.keybindings workspace-active-tile-toggle "[]"
+
+flatpak run --branch=stable --arch=x86_64 --command=gsettings net.nokyan.Resources set net.nokyan.Resources apps-show-cpu true
+flatpak run --branch=stable --arch=x86_64 --command=gsettings net.nokyan.Resources set net.nokyan.Resources apps-show-drive-read-speed false
+flatpak run --branch=stable --arch=x86_64 --command=gsettings net.nokyan.Resources set net.nokyan.Resources apps-show-drive-read-total false
+flatpak run --branch=stable --arch=x86_64 --command=gsettings net.nokyan.Resources set net.nokyan.Resources apps-show-drive-write-speed false
+flatpak run --branch=stable --arch=x86_64 --command=gsettings net.nokyan.Resources set net.nokyan.Resources apps-show-drive-write-total false
+flatpak run --branch=stable --arch=x86_64 --command=gsettings net.nokyan.Resources set net.nokyan.Resources apps-show-memory true
+flatpak run --branch=stable --arch=x86_64 --command=gsettings net.nokyan.Resources set net.nokyan.Resources base 'Decimal'
+flatpak run --branch=stable --arch=x86_64 --command=gsettings net.nokyan.Resources set net.nokyan.Resources is-maximized false
+flatpak run --branch=stable --arch=x86_64 --command=gsettings net.nokyan.Resources set net.nokyan.Resources network-bits false
+flatpak run --branch=stable --arch=x86_64 --command=gsettings net.nokyan.Resources set net.nokyan.Resources processes-show-cpu true
+flatpak run --branch=stable --arch=x86_64 --command=gsettings net.nokyan.Resources set net.nokyan.Resources processes-show-drive-read-speed true
+flatpak run --branch=stable --arch=x86_64 --command=gsettings net.nokyan.Resources set net.nokyan.Resources processes-show-drive-read-total false
+flatpak run --branch=stable --arch=x86_64 --command=gsettings net.nokyan.Resources set net.nokyan.Resources processes-show-drive-write-speed true
+flatpak run --branch=stable --arch=x86_64 --command=gsettings net.nokyan.Resources set net.nokyan.Resources processes-show-drive-write-total false
+flatpak run --branch=stable --arch=x86_64 --command=gsettings net.nokyan.Resources set net.nokyan.Resources processes-show-id true
+flatpak run --branch=stable --arch=x86_64 --command=gsettings net.nokyan.Resources set net.nokyan.Resources processes-show-memory true
+flatpak run --branch=stable --arch=x86_64 --command=gsettings net.nokyan.Resources set net.nokyan.Resources processes-show-user true
+flatpak run --branch=stable --arch=x86_64 --command=gsettings net.nokyan.Resources set net.nokyan.Resources refresh-speed 'Normal'
+flatpak run --branch=stable --arch=x86_64 --command=gsettings net.nokyan.Resources set net.nokyan.Resources show-logical-cpus true
+flatpak run --branch=stable --arch=x86_64 --command=gsettings net.nokyan.Resources set net.nokyan.Resources show-search-on-start true
+flatpak run --branch=stable --arch=x86_64 --command=gsettings net.nokyan.Resources set net.nokyan.Resources show-virtual-drives true
+flatpak run --branch=stable --arch=x86_64 --command=gsettings net.nokyan.Resources set net.nokyan.Resources show-virtual-network-interfaces false
+flatpak run --branch=stable --arch=x86_64 --command=gsettings net.nokyan.Resources set net.nokyan.Resources sidebar-details true
+flatpak run --branch=stable --arch=x86_64 --command=gsettings net.nokyan.Resources set net.nokyan.Resources temperature-unit 'Celsius'
+
 flatpak run --branch=stable --arch=x86_64 --command=gsettings com.raggesilver.BlackBox set com.raggesilver.BlackBox command-as-login-shell true
 flatpak run --branch=stable --arch=x86_64 --command=gsettings com.raggesilver.BlackBox set com.raggesilver.BlackBox cursor-shape 1
 flatpak run --branch=stable --arch=x86_64 --command=gsettings com.raggesilver.BlackBox set com.raggesilver.BlackBox custom-shell-command ''
