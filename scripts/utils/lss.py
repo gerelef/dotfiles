@@ -5,7 +5,7 @@ from math import floor, ceil
 from pathlib import PosixPath
 from stat import S_ISFIFO
 from subprocess import run
-from sys import argv, stderr, exit
+from sys import argv, exit
 from typing import Iterator
 
 from modules.fcolour import colour_path, PosixColouredString
@@ -142,7 +142,7 @@ def get_all_elements_sorted(directory: PosixPath) -> tuple[list[PosixPath], list
 if __name__ == "__main__":
     cwd = PosixPath(argv[1]) if len(argv) > 1 else PosixPath(PosixPath.cwd())
     if not cwd.is_dir():
-        print(f"\"{cwd}\" is not a directory, or not enough permissions.", file=stderr)
+        print(f"\"{cwd}\" is not a directory, or not enough permissions.", file=sys.stderr)
         exit(2)
 
     dirs, files = get_all_elements_sorted(cwd)
