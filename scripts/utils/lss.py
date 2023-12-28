@@ -160,7 +160,7 @@ if __name__ == "__main__":
     # for /home/username, and this is what caused the error
     # consider this a warning to anyone handling paths and expecting everything to be sane, I will have to
     # recheck any script I have that handles paths now. great!
-    cwd = PosixPath(argv[1]).expanduser() if len(argv) > 1 else PosixPath(PosixPath.cwd().expanduser())
+    cwd = PosixPath(argv[1]).expanduser() if len(argv) > 1 else PosixPath.cwd()
     if not cwd.is_dir():
         print(f"\"{cwd}\" is not a directory, or not enough permissions.", file=sys.stderr)
         exit(2)
