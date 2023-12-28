@@ -157,6 +157,7 @@ complete -F _restart-network-manager_completions restart-network-manager
 
 # call lss py implementation
 lss () (
+    export LINES && export COLUMNS
     $DOTFILES_DIR/scripts/utils/lss.py "$@"
 )
 

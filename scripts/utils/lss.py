@@ -86,17 +86,22 @@ class Formatter:
 
     @staticmethod
     def term_size() -> tuple[int, int]:
-        # NOTE: piperror occurs here, but detecting if stdout is a pipe is more bothersome than worth it;
-        #  if you want to chain commands, use file redirection >.
-        # if for some reason the terminal tput cols/lines doesn't work, return 0, so we can at least *not* crash.
-        lines = run(["tput", "lines"], capture_output=True, encoding="utf-8").stdout.replace("\n", "") or 0
-        cols = run(["tput", "cols"], capture_output=True, encoding="utf-8").stdout.replace("\n", "") or 0
-        return int(lines), int(cols)
+        if "LINES" not in os.environ or "COLUMNS" not in os.environ:
+            if not is_debugging():
+                print("$LINES and/or $COLUMNS are NOT defined in the environment!", file=sys.stderr)
+                print("For regular use, you might need to export LINES && export COLUMNS.", file=sys.stderr)
+                print("For developer work, run with a debugger active.", file=sys.stderr)
+                exit(1)
+
+            # debug lines/columns
+            return 15, 90
+
+        return int(os.environ["LINES"]), int(os.environ["COLUMNS"])
 
 
-def run_subshell(command: list[str]) -> tuple[int, str]:
-    res = run(command, capture_output=True, encoding="utf-8")
-    return res.returncode, res.stdout
+# https://stackoverflow.com/a/71527398
+def is_debugging() -> bool:
+    return (gettrace := getattr(sys, 'gettrace')) and gettrace()
 
 
 def top_level_string(directory_count, file_count) -> str:
@@ -108,6 +113,10 @@ def top_level_string(directory_count, file_count) -> str:
 
 
 def git_status(directory: str):
+    def run_subshell(command: list[str]) -> tuple[int, str]:
+        res = run(command, capture_output=True, encoding="utf-8")
+        return res.returncode, res.stdout
+
     status = "Working tree clean."
     ret_code, toplevel = run_subshell(["git", "-C", directory, "rev-parse", "--show-toplevel"])
 
@@ -140,7 +149,18 @@ def get_all_elements_sorted(directory: PosixPath) -> tuple[list[PosixPath], list
 
 
 if __name__ == "__main__":
-    cwd = PosixPath(argv[1]) if len(argv) > 1 else PosixPath(PosixPath.cwd())
+    # AUTHORS NOTE:
+    # for some godforsaken reason I do not want to know about, cwd.is_dir("~") is FALSE
+    # when running it from the IDE, however it's TRUE if we run it from a login shell
+    # there is no conceivable universe where this makes sense, and is likely a bug from the fact
+    # that (to my knowledge) the current IDE running configuration doesn't inhreit from the login shell
+    # however it still doesn't make sense, because cwd.expanduser().is_dir() has the correct effect regardless
+    # whether we're running it from the IDE or not.
+    # While running this block of text, I realized that it's likely that bash automatically substitutes ~
+    # for /home/username, and this is what caused the error
+    # consider this a warning to anyone handling paths and expecting everything to be sane, I will have to
+    # recheck any script I have that handles paths now. great!
+    cwd = PosixPath(argv[1]).expanduser() if len(argv) > 1 else PosixPath(PosixPath.cwd().expanduser())
     if not cwd.is_dir():
         print(f"\"{cwd}\" is not a directory, or not enough permissions.", file=sys.stderr)
         exit(2)
