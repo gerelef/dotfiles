@@ -11,13 +11,20 @@ _git-branch () (
     # if superfluous arguments return to prevent misuse
     [[ $# -gt 1 ]] && return 2
     
-    # these two commands are somewhat copy pasted from stack overflow... I can't find the exact link, it's been very long ago
-    if [[ -n "$1" ]]; then
-        git -C "$1" branch 2> /dev/null | sed -e '/^[^*]/d' -e 's/* \(.*\)/ (\1)/'
-        return
-    fi
     git branch 2> /dev/null | sed -e '/^[^*]/d' -e 's/* \(.*\)/ (\1)/'
+)
+
+_git-status () (
+    # path MUST be given
+    [[ $# -gt 1 ]] && return 2
+    
+    changed_files=$(git status -s --ignored=no 2> /dev/null)
+    [[ -z $changed_files ]] && return
+    
+    echo "(changes pending)"
 )
 
 export -f _git-branch
 complete -A directory _git-branch
+export -f _git-status
+complete -A directory _git-status

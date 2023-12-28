@@ -168,12 +168,6 @@ update-compat-layers () (
 #############################################################
 # WRAPPERS TO BUILTINS OR PATH EXECUTABLES
 
-lss () (
-    lsd --almost-all --icon never --icon-theme unicode --group-directories-first "$@"
-)
-
-complete -A directory lss
-
 # journalctl wrapper for ease of use
 _journalctl () (
     [[ $# -eq 0 ]] && command journalctl -e -n 2000 && return
@@ -181,6 +175,12 @@ _journalctl () (
     [[ $# -eq 1 ]] &&  command journalctl -e -n 5000 -u "$1" && return
     command journalctl "$@"
 )
+
+lss () (
+    lsd --almost-all --icon never --icon-theme unicode --group-directories-first "$@"
+)
+
+complete -A directory lss
 
 alias journalctl="_journalctl"
 complete -A service journalctl

@@ -48,7 +48,8 @@ function __setprompt
     
     PS1+="\[${_FLBLUE}\]\t\[${_NOCOLOUR}\]" # Time
     PS1+=" \[${_FYELLOW}\]\w\[${_NOCOLOUR}\]" # working directory
-    PS1+="\[${_FORANGE}\]$(_git-branch 2> /dev/null)\[${_NOCOLOUR}\]" # active branch
+    PS1+="\[${_FORANGE}\]$(_git-branch 2> /dev/null) \[${_NOCOLOUR}\]" # active branch
+    PS1+="\[$_FBROWN\]$(_git-status 2> /dev/null) \[${_NOCOLOUR}\]" # staging status
     PS1+="\n"
     
     VENV_STATUS="${VIRTUAL_ENV:-N/A}"
