@@ -141,7 +141,6 @@ def get_all_elements_sorted(directory: PosixPath) -> tuple[list[PosixPath], list
 
 if __name__ == "__main__":
     cwd = PosixPath(argv[1]) if len(argv) > 1 else PosixPath(PosixPath.cwd())
-
     if not cwd.is_dir():
         print(f"\"{cwd}\" is not a directory, or not enough permissions.", file=stderr)
         exit(2)
@@ -154,7 +153,7 @@ if __name__ == "__main__":
         exit(0)
 
     rows, cols = Formatter.term_size()
-    if rows < 10 and cols < 20:
+    if rows < 15 and cols < 50:
         # not enough space, exit gracefully
         exit(0)
 
