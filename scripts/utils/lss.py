@@ -3,14 +3,14 @@ import os
 import sys
 from math import floor, ceil
 from pathlib import PosixPath
-from stat import S_ISFIFO
 from subprocess import run
 from sys import argv, exit
-from typing import Iterator
+from typing import Iterator, final
 
 from modules.fcolour import colour_path, PosixColouredString
 
 
+@final
 class Formatter:
     # spaces inbetween columns
     PADDING = 1
@@ -21,10 +21,7 @@ class Formatter:
 
         self.terminal_lines, self.terminal_columns = Formatter.term_size()
 
-        self.max_directories_word_length = len(max(directories, key=lambda e: len(e.name)).name) if directories else 0
-        self.max_files_word_length = len(max(files, key=lambda e: len(e.name)).name) if files else 0
-
-    def get_ideal_elements_per_line(self, element_count: int, max_element_size: int) -> int | None:
+    def get_ideal_elements_per_line(self, element_count: int, max_horizontal_element_size: int) -> int | None:
         """
         :returns: elements per line
         """
@@ -32,11 +29,11 @@ class Formatter:
         min_word_lines_needed = ceil(element_count / self.terminal_lines)
 
         # max WORD columns with the max name length (+ inbetween padding) that fit inside the terminal viewport
-        max_word_columns_fitting = floor(self.terminal_columns / (max_element_size + Formatter.PADDING))
+        max_word_columns_fitting = floor(self.terminal_columns / (max_horizontal_element_size + Formatter.PADDING))
 
         # minimum TERMINAL columns needed
         min_terminal_columns_needed = ceil(
-            max_element_size * min_word_lines_needed + Formatter.PADDING * min_word_lines_needed
+            max_horizontal_element_size * min_word_lines_needed + Formatter.PADDING * min_word_lines_needed
         )
 
         # if the minimum word lines we need to display everything are more
@@ -52,16 +49,26 @@ class Formatter:
         return min_word_lines_needed
 
     def output(self) -> Iterator[str | None]:
+        max_directories_word_length = 0
+        if self.directories:
+            biggest_element = max(self.directories, key=lambda p: len(p.name))
+            max_directories_word_length = len(biggest_element.name)
+
+        max_files_word_length = 0
+        if self.files:
+            biggest_element = max(self.files, key=lambda p: len(p.name))
+            max_files_word_length = len(biggest_element.name)
+
         # https://stackoverflow.com/questions/2414667/python-string-class-like-stringbuilder-in-c
         # if the elements won't fit at all, we'll make them fit with .crop() on our own anyways
-        max_element_size = min(
-            max(self.max_files_word_length, self.max_directories_word_length),
+        max_horizontal_element_size = min(
+            max(max_files_word_length, max_directories_word_length),
             self.terminal_columns
         )
 
         elements_per_line = self.get_ideal_elements_per_line(
             len(self.files) + len(self.directories),
-            max_element_size
+            max_horizontal_element_size
         )
 
         current_iterable = self.directories + self.files
@@ -75,7 +82,7 @@ class Formatter:
                 element = current_iterable.pop(0)
                 out = colour_path(element)
                 out.crop(self.terminal_columns)
-                out.append(' ' * (max_element_size - len(element.name)))
+                out.append(' ' * (max_horizontal_element_size - len(element.name)))
 
                 line.append(out)
 
@@ -90,18 +97,20 @@ class Formatter:
             if not is_debugging():
                 print("$LINES and/or $COLUMNS are NOT defined in the environment!", file=sys.stderr)
                 print("For regular use, you might need to export LINES && export COLUMNS.", file=sys.stderr)
-                print("For developer work, run with a debugger active.", file=sys.stderr)
+                print("For developer work, run export LSS_DEBUG=true.", file=sys.stderr)
                 exit(1)
 
+            lines, columns = 15, 90
+            print(f"Running with DEBUG lines {lines}, columns {columns}")
             # debug lines/columns
-            return 15, 90
+            return lines, columns
 
         return int(os.environ["LINES"]), int(os.environ["COLUMNS"])
 
 
 # https://stackoverflow.com/a/71527398
 def is_debugging() -> bool:
-    return (gettrace := getattr(sys, 'gettrace')) and gettrace()
+    return "LSS_DEBUG" in os.environ and os.environ["LSS_DEBUG"] == "true"
 
 
 def top_level_string(directory_count, file_count) -> str:
