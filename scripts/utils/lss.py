@@ -148,12 +148,12 @@ if __name__ == "__main__":
     dirs, files = get_all_elements_sorted(cwd)
     formatter = Formatter(dirs, files)
 
-    print(f"{top_level_string(len(dirs), len(files))}. {git_status(str(cwd))}")
+    print(f"{top_level_string(len(dirs), len(files))}. {git_status(str(cwd))}", file=sys.stdout)
     if len(dirs) == 0 and len(files) == 0:
         exit(0)
 
     rows, cols = Formatter.term_size()
-    if rows < 15 and cols < 50:
+    if rows < 15 and cols < 60:
         # not enough space, exit gracefully
         exit(0)
 
