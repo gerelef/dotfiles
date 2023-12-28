@@ -4,7 +4,7 @@
 #   https://github.com/anordal/shellharden/blob/master/how_to_do_things_safely_in_bash.md
 #   https://tldp.org/HOWTO/Man-Page/q2.html
 
-REQUIRE_DEPENDENCIES+="openssl bat "
+REQUIRE_DEPENDENCIES+="openssl bat lsd "
 
 #############################################################
 
@@ -155,14 +155,6 @@ complete -F _restart-network-manager_completions restart-network-manager
 #############################################################
 # PYTHON SCRIPTS
 
-# call lss py implementation
-lss () (
-    export LINES && export COLUMNS
-    $DOTFILES_DIR/scripts/utils/lss.py "$@"
-)
-
-complete -A directory lss
-
 update-ff-theme () (
     # curl -fsSL https:// | bash -s -- "~/dotfiles/.config/mozilla/userChrome.css" "$@"
     return 1
@@ -175,6 +167,12 @@ update-compat-layers () (
 
 #############################################################
 # WRAPPERS TO BUILTINS OR PATH EXECUTABLES
+
+lss () (
+    lsd --almost-all --icon never --icon-theme unicode --group-directories-first "$@"
+)
+
+complete -A directory lss
 
 # journalctl wrapper for ease of use
 _journalctl () (
