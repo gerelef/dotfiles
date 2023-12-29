@@ -31,7 +31,7 @@ class CompatibilityManager(Manager):
     SHA_CHECKSUM_REGEX = re.compile(r".*(sha[0-9][0-9]?[0-9]?sum)", flags=re.IGNORECASE & re.DOTALL)
 
     def __init__(self, repository: URL, install_dir: Filename, temp_dir: Filename, _filter: Criteria):
-        super().__init__(repository, temp_dir)
+        super().__init__(repository, download_dir=temp_dir)
         self.install_dir = install_dir
         self.keyword = _filter.keyword
         self.version = _filter.version

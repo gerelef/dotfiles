@@ -1,5 +1,6 @@
 import enum
 import os
+import tempfile
 import types
 from abc import ABC, abstractmethod
 from typing import Callable, Self
@@ -50,7 +51,7 @@ class Manager(ABC):
         PROGRESS_BAR = 2
         PROGRESS = 1
 
-    def __init__(self, repository: URL, download_dir: Filename):
+    def __init__(self, repository: URL, download_dir: Filename = tempfile.gettempdir()):
         """
         :param repository: direct URL to the repository to make requests
         :param download_dir: temporary download directory path
