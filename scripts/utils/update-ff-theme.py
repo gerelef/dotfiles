@@ -26,7 +26,7 @@ class ThemeManager(Manager):
                  temp_dir: Filename,
                  install_dirs: list[Filename],
                  version: str = None,
-                  resource_file: str = None):
+                 resource_file: str = None):
         super().__init__(repository, download_dir=temp_dir)
         self.install_dirs = install_dirs
         self.version = version
