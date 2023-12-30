@@ -486,6 +486,8 @@ gnome-calendar \
 gnome-color-manager \
 gnome-contacts \
 gnome-maps \
+gnome-clocks \
+gnome-connections \
 gnome-shell-extension-gamemode \
 gnome-shell-extension-background-logo \
 "
@@ -495,11 +497,25 @@ gnome-shell-extension-background-logo \
 readonly INSTALLABLE_GNOME_ESSENTIAL_PACKAGES="\
 gdm \
 gnome-shell \
+gnome-session \
+gnome-session-wayland-session \
+gnome-keyring \
+gnome-keyring-pam \
+gnome-power-manager \
+xdg-desktop-portal-gnome \
+NetworkManager-openvpn-gnome \
+NetworkManager-ssh-gnome \
+gnome-bluetooth \
+gnome-bluetooth-libs \
+gnome-settings-daemon \
+gnome-browser-connector \
+gnome-logs \
 "
 
 readonly INSTALLABLE_GNOME_APPLICATION_PACKAGES="\
 nautilus \
 gnome-disk-utility \
+gnome-text-editor \
 "
 
 readonly INSTALLABLE_ADWAITA_PACKAGES="\
