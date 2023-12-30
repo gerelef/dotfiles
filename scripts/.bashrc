@@ -77,6 +77,7 @@ require-bashrc () {
     [[ -f "$_UTILITY_FFMPEG" ]] && source "$_UTILITY_FFMPEG"
     [[ -f "$_UTILITY_YTDL" ]] && source "$_UTILITY_YTDL"
     [[ -f "$_UTILITY_MATH" ]] && source "$_UTILITY_MATH"
+    [[ -f "~/.cargo/env" ]] && source "~/.cargo/env"
 
     # HARD DEPENDENCIES
     [[ -f "$_UTILITY_PROMPT" ]] && source "$_UTILITY_PROMPT"
