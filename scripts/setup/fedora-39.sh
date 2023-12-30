@@ -502,6 +502,7 @@ gnome-session-wayland-session \
 gnome-keyring \
 gnome-keyring-pam \
 gnome-power-manager \
+power-profiles-daemon \
 xdg-desktop-portal-gnome \
 NetworkManager-openvpn-gnome \
 NetworkManager-ssh-gnome \
