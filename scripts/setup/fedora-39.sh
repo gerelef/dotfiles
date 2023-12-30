@@ -16,8 +16,12 @@ install-gnome-essentials () (
     flatpak-install "$INSTALLABLE_GNOME_FLATPAKS"
     
     systemctl enable gdm
-    systemctl enable power-profiles-daemon.service
-
+    # FIXME verify this if statement works without enabling & starting the daemon beforehand
+    readonly PLACEHOLDER_COUNT = $(powerprofilesctl list | grep placeholder | wc -l)
+    if [[ $PLACEHOLDER_COUNT -lt 2 ]]; then
+        systemctl enable power-profiles-daemon.service
+    fi
+    
     if ask-user "Do you want to install GNOME wallpapers?"; then
         echo "-------------------INSTALLING----------------" | tr " " "\n"
         dnf install -y --best --allowerasing f*-backgrounds-gnome*
@@ -39,7 +43,11 @@ install-cinnamon-essentials () (
     flatpak-install "$INSTALLABLE_CINNAMON_FLATPAKS"
     
     systemctl enable gdm
-    systemctl enable power-profiles-daemon.service
+    # FIXME verify this if statement works without enabling & starting the daemon beforehand
+    readonly PLACEHOLDER_COUNT = $(powerprofilesctl list | grep placeholder | wc -l)
+    if [[ $PLACEHOLDER_COUNT -lt 2 ]]; then
+        systemctl enable power-profiles-daemon.service
+    fi
     
     if ask-user "Do you want to install Cinnamon wallpapers?"; then
         echo "-------------------INSTALLING----------------" | tr " " "\n"
@@ -53,7 +61,11 @@ install-hyprland-essentials () (
     # hyprland is wlroots based wayland only compositor, so base-x is not needed (thankfully)
     
     # FIXME enable the service for the current login manager
-    systemctl enable power-profiles-daemon.service
+    # FIXME verify this if statement works without enabling & starting the daemon beforehand
+    readonly PLACEHOLDER_COUNT = $(powerprofilesctl list | grep placeholder | wc -l)
+    if [[ $PLACEHOLDER_COUNT -lt 2 ]]; then
+        systemctl enable power-profiles-daemon.service
+    fi
     
     dnf copr enable erikreider/SwayNotificationCenter
     
