@@ -16,10 +16,13 @@ install-gnome-essentials () (
     flatpak-install "$INSTALLABLE_GNOME_FLATPAKS"
     
     systemctl enable gdm
-    # FIXME verify this if statement works without enabling & starting the daemon beforehand
+    
+    systemctl enable power-profiles-daemon.service
+    systemctl start power-profiles-daemon.service
     readonly PLACEHOLDER_COUNT = $(powerprofilesctl list | grep placeholder | wc -l)
-    if [[ $PLACEHOLDER_COUNT -lt 2 ]]; then
-        systemctl enable power-profiles-daemon.service
+    if [[ $PLACEHOLDER_COUNT -gt 1 ]]; then
+        systemctl stop power-profiles-daemon.service
+        systemctl mask power-profiles-daemon.service
     fi
     
     if ask-user "Do you want to install GNOME wallpapers?"; then
@@ -43,10 +46,13 @@ install-cinnamon-essentials () (
     flatpak-install "$INSTALLABLE_CINNAMON_FLATPAKS"
     
     systemctl enable gdm
-    # FIXME verify this if statement works without enabling & starting the daemon beforehand
+    
+    systemctl enable power-profiles-daemon.service
+    systemctl start power-profiles-daemon.service
     readonly PLACEHOLDER_COUNT = $(powerprofilesctl list | grep placeholder | wc -l)
-    if [[ $PLACEHOLDER_COUNT -lt 2 ]]; then
-        systemctl enable power-profiles-daemon.service
+    if [[ $PLACEHOLDER_COUNT -gt 1 ]]; then
+        systemctl stop power-profiles-daemon.service
+        systemctl mask power-profiles-daemon.service
     fi
     
     if ask-user "Do you want to install Cinnamon wallpapers?"; then
@@ -61,10 +67,12 @@ install-hyprland-essentials () (
     # hyprland is wlroots based wayland only compositor, so base-x is not needed (thankfully)
     
     # FIXME enable the service for the current login manager
-    # FIXME verify this if statement works without enabling & starting the daemon beforehand
+    systemctl enable power-profiles-daemon.service
+    systemctl start power-profiles-daemon.service
     readonly PLACEHOLDER_COUNT = $(powerprofilesctl list | grep placeholder | wc -l)
-    if [[ $PLACEHOLDER_COUNT -lt 2 ]]; then
-        systemctl enable power-profiles-daemon.service
+    if [[ $PLACEHOLDER_COUNT -gt 1 ]]; then
+        systemctl stop power-profiles-daemon.service
+        systemctl mask power-profiles-daemon.service
     fi
     
     dnf copr enable erikreider/SwayNotificationCenter
