@@ -16,6 +16,7 @@ install-gnome-essentials () (
     flatpak-install "$INSTALLABLE_GNOME_FLATPAKS"
     
     systemctl enable gdm
+    systemctl enable power-profiles-daemon.service
 
     if ask-user "Do you want to install GNOME wallpapers?"; then
         echo "-------------------INSTALLING----------------" | tr " " "\n"
@@ -38,6 +39,7 @@ install-cinnamon-essentials () (
     flatpak-install "$INSTALLABLE_CINNAMON_FLATPAKS"
     
     systemctl enable gdm
+    systemctl enable power-profiles-daemon.service
     
     if ask-user "Do you want to install Cinnamon wallpapers?"; then
         echo "-------------------INSTALLING----------------" | tr " " "\n"
@@ -49,7 +51,10 @@ install-cinnamon-essentials () (
 install-hyprland-essentials () (
     dnf-install "$INSTALLABLE_ESSENTIAL_DESKTOP_PACKAGES"
     # hyprland is wlroots based wayland only compositor, so base-x is not needed (thankfully)
-
+    
+    # FIXME enable the service for the current login manager
+    systemctl enable power-profiles-daemon.service
+    
     dnf copr enable erikreider/SwayNotificationCenter
     
     dnf-install "$INSTALLABLE_HYPRLAND_ESSENTIAL_PACKAGES" --exclude="wofi kitty"
@@ -118,7 +123,7 @@ optimize-hardware () (
     fi
 
     readonly CHASSIS_TYPE="$(dmidecode --string chassis-type)"
-    if [[ $CHASSIS_TYPE -eq "Desktop" ]]; then
+    if [[ $CHASSIS_TYPE == "Desktop" ]]; then
         # https://forums.developer.nvidia.com/t/no-matching-gpu-found-with-510-47-03/202315/5
         systemctl disable nvidia-powerd.service
     else
@@ -127,7 +132,6 @@ optimize-hardware () (
         echo "-------------------OPTIMIZING BATTERY USAGE----------------"
         echo "Found laptop $CHASSIS_TYPE"
         dnf-install "$INSTALLABLE_PWR_MGMNT"
-        systemctl mask power-profiles-daemon
         powertop --auto-tune
     fi
 
@@ -332,6 +336,7 @@ mesa-dri-drivers \
 mesa-vulkan-drivers \
 plymouth \
 plymouth-system-theme \
+power-profiles-daemon \
 "
 # TODO replace grub2 with systemd-boot when we get rid of all the issues 
 #  regarding proprietary NVIDIA Drivers, and signing them for UEFI
@@ -502,7 +507,6 @@ gnome-session-wayland-session \
 gnome-keyring \
 gnome-keyring-pam \
 gnome-power-manager \
-power-profiles-daemon \
 xdg-desktop-portal-gnome \
 NetworkManager-openvpn-gnome \
 NetworkManager-ssh-gnome \
@@ -754,7 +758,7 @@ echo "Done."
 #######################################################################################################
 
 updatedb 2> /dev/null
-if ! [ $? -eq 0 ]; then
+if [[ ! $? -eq 0 ]]; then
     echo "updatedb errored, retrying with absolute path"
     /usr/sbin/updatedb
 fi
@@ -766,7 +770,7 @@ echo "User fstab mount arguments: rw,user,exec,nosuid,nodev,nofail,auto,x-gvfs-s
 
 #######################################################################################################
 
-if [[ $XDG_CURRENT_DESKTOP -eq "GNOME" ]]; then
+if [[ $XDG_CURRENT_DESKTOP == "GNOME" ]]; then
     echo "--------------------------- GNOME ---------------------------"
     echo "Make sure to get the legacy GTK3 Theme Auto Switcher"
     echo "  https://extensions.gnome.org/extension/4998/legacy-gtk3-theme-scheme-auto-switcher/"
