@@ -43,7 +43,7 @@ update-everything () (
         [[ -n "$(command -v apt)" ]] && sudo apt update -y && sudo apt autoremove -y
         break
     done
-    [[ -n "$(command -v flatpak)" ]] && flatpak update -y
+    [[ -n "$(command -v flatpak)" ]] && (flatpak update -y && flatpak uninstall --unused -y && flatpak repair)
     [[ -n "$(command -v snap)" ]] && snap refresh -y
     return 0
 )
