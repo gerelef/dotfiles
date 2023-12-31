@@ -93,8 +93,8 @@ install-universal-necessities () (
     dnf install -y --best --allowerasing --with-optional @printing
 
     dnf-install "$INSTALLABLE_ESSENTIAL_PACKAGES"
-    dnf-install "$INSTALLABLE_APPLICATION_PACKAGES"
     dnf-install "$INSTALLABLE_PIPEWIRE_PACKAGES"
+    dnf-install "$INSTALLABLE_APPLICATION_PACKAGES"
     flatpak-install "$INSTALLABLE_FLATPAKS"
 
     if [[ "btrfs" == $ROOT_FS || "btrfs" == $REAL_USER_HOME_FS ]]; then
@@ -207,7 +207,7 @@ gpgkey=https://packages.microsoft.com/keys/microsoft.asc
 VSC_END
     ) > /etc/yum.repos.d/vscode.repo
     dnf check-update
-    dnf install code
+    dnf install -y --best --allowerasing code
     
     echo "-------------------INSTALLING JETBRAINS TOOLBOX----------------"
     readonly curlsum=$(curl --proto '=https' --tlsv1.2 -fsSL https://raw.githubusercontent.com/nagygergo/jetbrains-toolbox-install/master/jetbrains-toolbox.sh | sha512sum -)
@@ -309,40 +309,8 @@ create-swapfile () (
 
 configure-gdm-dconf () (
     echo "-------------------CONFIGURING GDM DCONF DB & USER GSETTINGS----------------"
-
-    (cat <<GDM_END
-user-db:user
-system-db:gdm
-file-db:/usr/share/gdm/greeter-dconf-defaults
-GDM_END
-    ) > "/etc/dconf/profile/gdm"
-    
-    (cat <<-GDM_END
-[org/gnome/desktop/interface] 
-clock-format='24h'
-clock-show-date=true
-clock-show-seconds=true
-clock-show-weekday=true
-font-antialiasing='rgba'
-font-hinting='full'
-show-battery-percentage=true
-
-[org/gnome/desktop/peripherals/keyboard] 
-numlock-state=false
-remember-numlock-state=false
-repeat=true
-repeat-interval=25
-
-[org/gnome/desktop/peripherals/mouse]
-double-click=250
-middle-click-emulation=false
-natural-scroll=false
-speed=-0.2
-
-[org/gnome/desktop/peripherals/touchpad]
-disable-while-typing=true
-GDM_END
-    ) > "/etc/dconf/db/gdm.d/01-generic"
+    create-gdm-dconf-profile
+    create-gdm-dconf-db
 
     dconf update
 )
@@ -374,166 +342,6 @@ plymouth \
 plymouth-system-theme \
 power-profiles-daemon \
 power-profiles-daemon-docs \
-"
-# TODO replace grub2 with systemd-boot when we get rid of all the issues 
-#  regarding proprietary NVIDIA Drivers, and signing them for UEFI
-# TODO add systemd-bsod when it becomes available on fedora
-readonly INSTALLABLE_ESSENTIAL_PACKAGES="\
-setroubleshoot \
-setroubleshoot-plugins \
-openvpn \
-openssl \
-bluez \
-bluez-tools \
-blueman \
-python3-cairo \
-"
-
-readonly INSTALLABLE_APPLICATION_PACKAGES="\
-firefox \
-chromium \
-fedora-chromium-config \
-flameshot \
-gimp \
-krita \
-evince \
-libreoffice \
-sqlitebrowser \
-piper \
-pulseeffects \
-"
-
-readonly INSTALLABLE_VIRTUALIZATION_PACKAGES="\
-swtpm \
-swtpm-tools \
-virt-manager \
-libvirt-devel \
-virt-top \
-libguestfs-tools \
-guestfs-tools \
-bridge-utils \
-libvirt \
-virt-install \
-qemu-kvm \
-qemu-audio-pipewire \
-"
-
-readonly INSTALLABLE_PIPEWIRE_PACKAGES="\
-pipewire \
-pipewire-alsa \
-pipewire-codec-aptx \
-pipewire-gstreamer \
-pipewire-libs \
-pipewire-pulseaudio \
-pipewire-utils \
-wireplumber \
-wireplumber-libs \
-"
-
-readonly INSTALLABLE_BTRFS_TOOLS="\
-btrfs-assistant \
-timeshift \
-"
-
-readonly INSTALLABLE_PWR_MGMNT="\
-tlp \
-tlp-rdw \
-powertop \
-"
-
-readonly INSTALLABLE_NVIDIA_DRIVERS="\
-gcc \
-kernel-headers \
-kernel-devel \
-akmod-nvidia \
-xorg-x11-drv-nvidia \
-xorg-x11-drv-nvidia-libs \
-xorg-x11-drv-nvidia-cuda \
-xorg-x11-drv-nvidia-power \
-nvidia-gpu-firmware \
-nvidia-modprobe \
-"
-
-readonly INSTALLABLE_NVIDIA_UTILS="\
-nvidia-settings \
-"
-
-readonly INSTALLABLE_FLATPAKS="\
-com.spotify.Client \
-com.raggesilver.BlackBox \
-com.github.rafostar.Clapper \
-net.cozic.joplin_desktop \
-com.skype.Client \
-us.zoom.Zoom \
-io.gitlab.theevilskeleton.Upscaler \
-com.github.tchx84.Flatseal \
-"
-
-readonly INSTALLABLE_DEV_PKGS="\
-gcc \
-clang \
-vulkan \
-meson \
-curl \
-cmake \
-ninja-build \
-java-latest-openjdk \
-java-latest-openjdk-devel \
-bless \
-tldr \
-"
-
-readonly INSTALLABLE_OBS_STUDIO="\
-obs-studio \
-obs-studio-plugin-vkcapture \
-obs-studio-plugin-vlc-video \
-obs-studio-plugin-webkitgtk \
-obs-studio-plugin-x264 \
-"
-
-readonly INSTALLABLE_EXTRAS="\
-steam \
-gamescope \
-"
-
-readonly INSTALLABLE_EXTRAS_FLATPAK="\
-com.discordapp.Discord \
-com.teamspeak.TeamSpeak \
-"
-
-readonly INSTALLABLE_WINE_GE_CUSTOM_PKGS="\
-wine \
-vulkan \
-winetricks \
-protontricks \
-vulkan-loader \
-vulkan-loader.i686 \
-"
-
-# NOTE: these are global and should be treated as desktop agnostic
-readonly UNINSTALLABLE_BLOAT="\
-rhythmbox \
-totem \
-cheese \
-gnome-tour \
-gnome-weather \
-gnome-system-monitor \
-gnome-remote-desktop \
-gnome-font-viewer \
-gnome-characters \
-gnome-classic-session \
-gnome-initial-setup \
-gnome-terminal \
-gnome-boxes \
-gnome-calculator \
-gnome-calendar \
-gnome-color-manager \
-gnome-contacts \
-gnome-maps \
-gnome-clocks \
-gnome-connections \
-gnome-shell-extension-gamemode \
-gnome-shell-extension-background-logo \
 "
 
 #######################################################################################################
@@ -667,8 +475,169 @@ hyprbars \
 hyprgrass \
 "
 
-
 #######################################################################################################
+
+# TODO replace grub2 with systemd-boot when we get rid of all the issues 
+#  regarding proprietary NVIDIA Drivers, and signing them for UEFI
+# TODO add systemd-bsod when it becomes available on fedora
+readonly INSTALLABLE_ESSENTIAL_PACKAGES="\
+setroubleshoot \
+setroubleshoot-plugins \
+openvpn \
+openssl \
+bluez \
+bluez-tools \
+blueman \
+python3-cairo \
+"
+
+readonly INSTALLABLE_PIPEWIRE_PACKAGES="\
+pipewire \
+pipewire-alsa \
+pipewire-codec-aptx \
+pipewire-gstreamer \
+pipewire-libs \
+pipewire-pulseaudio \
+pipewire-utils \
+wireplumber \
+wireplumber-libs \
+"
+
+readonly INSTALLABLE_APPLICATION_PACKAGES="\
+firefox \
+chromium \
+fedora-chromium-config \
+flameshot \
+gimp \
+krita \
+evince \
+libreoffice \
+sqlitebrowser \
+piper \
+pulseeffects \
+"
+
+readonly INSTALLABLE_FLATPAKS="\
+com.spotify.Client \
+com.raggesilver.BlackBox \
+com.github.rafostar.Clapper \
+net.cozic.joplin_desktop \
+com.skype.Client \
+us.zoom.Zoom \
+io.gitlab.theevilskeleton.Upscaler \
+com.github.tchx84.Flatseal \
+"
+
+readonly INSTALLABLE_BTRFS_TOOLS="\
+btrfs-assistant \
+timeshift \
+"
+
+readonly INSTALLABLE_NVIDIA_DRIVERS="\
+gcc \
+kernel-headers \
+kernel-devel \
+akmod-nvidia \
+xorg-x11-drv-nvidia \
+xorg-x11-drv-nvidia-libs \
+xorg-x11-drv-nvidia-cuda \
+xorg-x11-drv-nvidia-power \
+nvidia-gpu-firmware \
+nvidia-modprobe \
+"
+
+readonly INSTALLABLE_NVIDIA_UTILS="\
+nvidia-settings \
+"
+
+readonly INSTALLABLE_PWR_MGMNT="\
+tlp \
+tlp-rdw \
+powertop \
+"
+
+readonly INSTALLABLE_EXTRAS="\
+steam \
+gamescope \
+"
+
+readonly INSTALLABLE_WINE_GE_CUSTOM_PKGS="\
+wine \
+vulkan \
+winetricks \
+protontricks \
+vulkan-loader \
+vulkan-loader.i686 \
+"
+
+readonly INSTALLABLE_OBS_STUDIO="\
+obs-studio \
+obs-studio-plugin-vkcapture \
+obs-studio-plugin-vlc-video \
+obs-studio-plugin-webkitgtk \
+obs-studio-plugin-x264 \
+"
+
+readonly INSTALLABLE_EXTRAS_FLATPAK="\
+com.discordapp.Discord \
+com.teamspeak.TeamSpeak \
+"
+
+readonly INSTALLABLE_VIRTUALIZATION_PACKAGES="\
+swtpm \
+swtpm-tools \
+virt-manager \
+libvirt-devel \
+virt-top \
+libguestfs-tools \
+guestfs-tools \
+bridge-utils \
+libvirt \
+virt-install \
+qemu-kvm \
+qemu-audio-pipewire \
+"
+
+readonly INSTALLABLE_DEV_PKGS="\
+gcc \
+clang \
+vulkan \
+meson \
+curl \
+cmake \
+ninja-build \
+java-latest-openjdk \
+java-latest-openjdk-devel \
+bless \
+tldr \
+"
+
+# NOTE: these are global and should be treated as desktop agnostic
+readonly UNINSTALLABLE_BLOAT="\
+rhythmbox \
+totem \
+cheese \
+gnome-tour \
+gnome-weather \
+gnome-system-monitor \
+gnome-remote-desktop \
+gnome-font-viewer \
+gnome-characters \
+gnome-classic-session \
+gnome-initial-setup \
+gnome-terminal \
+gnome-boxes \
+gnome-calculator \
+gnome-calendar \
+gnome-color-manager \
+gnome-contacts \
+gnome-maps \
+gnome-clocks \
+gnome-connections \
+gnome-shell-extension-gamemode \
+gnome-shell-extension-background-logo \
+"
+
 # improve dnf performance
 copy-dnf
 
@@ -817,7 +786,7 @@ if [[ $XDG_CURRENT_DESKTOP == "GNOME" ]]; then
     # stop this from updating in the background and eating ram, no reason
     rm /etc/xdg/autostart/org.gnome.Software.desktop
     
-    echo "Configuring all gsettings for user $REAL_USER . . ."
+    echo "Configuring all gsettings for $REAL_USER . . ."
     # user gsettings
     # heredocs
     # https://tldp.org/LDP/abs/html/here-docs.html
