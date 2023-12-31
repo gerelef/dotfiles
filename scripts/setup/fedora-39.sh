@@ -136,7 +136,7 @@ optimize-hardware () (
         dnf-install "$INSTALLABLE_NVIDIA_DRIVERS"
         dnf-install "$INSTALLABLE_NVIDIA_UTILS"
 
-        akmods --force && dracut --force
+        akmods --force && dracut --force --regenerate-all
 
         # check arch wiki, these enable DRM
         grubby --update-kernel=ALL --args="nvidia-drm.modeset=1"
