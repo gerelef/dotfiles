@@ -202,6 +202,16 @@ DNF_EOF
     ) > "/etc/dnf/dnf.conf"
 )
 
+try-enabling-power-profiles-daemon () (
+    systemctl enable power-profiles-daemon.service
+    systemctl start power-profiles-daemon.service
+    readonly PLACEHOLDER_COUNT=$(powerprofilesctl list | grep placeholder | wc -l)
+    if [[ $PLACEHOLDER_COUNT -gt 1 ]]; then
+        systemctl stop power-profiles-daemon.service
+        systemctl mask power-profiles-daemon.service
+    fi
+)
+
 copy-pipewire () (    
     ln -sf "$CONFIG_DIR/pipewire.conf" "$PPW_ROOT/pipewire.conf"
 )

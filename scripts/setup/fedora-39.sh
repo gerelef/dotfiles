@@ -16,14 +16,7 @@ install-gnome-essentials () (
     flatpak-install "$INSTALLABLE_GNOME_FLATPAKS"
     
     systemctl enable gdm
-    
-    systemctl enable power-profiles-daemon.service
-    systemctl start power-profiles-daemon.service
-    readonly PLACEHOLDER_COUNT = $(powerprofilesctl list | grep placeholder | wc -l)
-    if [[ $PLACEHOLDER_COUNT -gt 1 ]]; then
-        systemctl stop power-profiles-daemon.service
-        systemctl mask power-profiles-daemon.service
-    fi
+    try-enabling-power-profiles-daemon
     
     if ask-user "Do you want to install GNOME wallpapers?"; then
         echo "-------------------INSTALLING----------------" | tr " " "\n"
@@ -46,14 +39,7 @@ install-cinnamon-essentials () (
     flatpak-install "$INSTALLABLE_CINNAMON_FLATPAKS"
     
     systemctl enable gdm
-    
-    systemctl enable power-profiles-daemon.service
-    systemctl start power-profiles-daemon.service
-    readonly PLACEHOLDER_COUNT = $(powerprofilesctl list | grep placeholder | wc -l)
-    if [[ $PLACEHOLDER_COUNT -gt 1 ]]; then
-        systemctl stop power-profiles-daemon.service
-        systemctl mask power-profiles-daemon.service
-    fi
+    try-enabling-power-profiles-daemon
     
     if ask-user "Do you want to install Cinnamon wallpapers?"; then
         echo "-------------------INSTALLING----------------" | tr " " "\n"
@@ -67,13 +53,7 @@ install-hyprland-essentials () (
     # hyprland is wlroots based wayland only compositor, so base-x is not needed (thankfully)
     
     # FIXME enable the service for the current login manager
-    systemctl enable power-profiles-daemon.service
-    systemctl start power-profiles-daemon.service
-    readonly PLACEHOLDER_COUNT = $(powerprofilesctl list | grep placeholder | wc -l)
-    if [[ $PLACEHOLDER_COUNT -gt 1 ]]; then
-        systemctl stop power-profiles-daemon.service
-        systemctl mask power-profiles-daemon.service
-    fi
+    try-enabling-power-profiles-daemon
     
     dnf copr enable erikreider/SwayNotificationCenter
     
@@ -315,24 +295,14 @@ configure-gdm-dconf () (
     dconf update
 )
 
-# ref: https://askubuntu.com/a/30157/8698
-if ! [ $(id -u) = 0 ]; then
-    echo "The script needs to be run as root." >&2
-    exit 2
-fi
-
-if ! ping -q -c 1 -W 1 google.com > /dev/null; then
-    echo "Network connection was not detected."
-    echo "This script needs network connectivity to continue."
-    exit 1
-fi
-
 ####################################################################################################### 
 
 # fs thingies
 readonly ROOT_FS=$(stat -f --format=%T /)
 readonly REAL_USER_HOME_FS=$(stat -f --format=%T "$REAL_USER_HOME")
 readonly DISTRIBUTION_NAME="fedora$(rpm -E %fedora)"
+
+#######################################################################################################
 
 readonly INSTALLABLE_ESSENTIAL_DESKTOP_PACKAGES="\
 glx-utils \
@@ -637,6 +607,20 @@ gnome-connections \
 gnome-shell-extension-gamemode \
 gnome-shell-extension-background-logo \
 "
+
+#######################################################################################################
+
+# ref: https://askubuntu.com/a/30157/8698
+if ! [ $(id -u) = 0 ]; then
+    echo "The script needs to be run as root." >&2
+    exit 2
+fi
+
+if ! ping -q -c 1 -W 1 google.com > /dev/null; then
+    echo "Network connection was not detected."
+    echo "This script needs network connectivity to continue."
+    exit 1
+fi
 
 # improve dnf performance
 copy-dnf
