@@ -240,10 +240,56 @@ cap-max-logins-system () (
 )
 
 create-convenience-sudoers () (
-    local fname="/etc/sudoers.d/convenience-defaults"
+    readonly fname="/etc/sudoers.d/convenience-defaults"
     
     echo "Defaults timestamp_timeout=120, pwfeedback" > "$fname"
     chmod 440 "$fname" # 440 is the default rights of /etc/sudoers file, so we're copying the rights just in case (even though visudo -f /etc/sudoers.d/test creates the file with 640)
+)
+
+create-gdm-dconf-profile () (
+    readonly fname="/etc/dconf/profile/gdm"
+
+    (cat <<GDM_END
+user-db:user
+system-db:gdm
+file-db:/usr/share/gdm/greeter-dconf-defaults
+GDM_END
+    ) > "$fname"
+    
+    chmod 644 "$fname"
+)
+
+create-gdm-dconf-db () (
+    readonly fname="/etc/dconf/db/gdm.d/01-generic"
+    
+    (cat <<-GDM_END
+[org/gnome/desktop/interface] 
+clock-format='24h'
+clock-show-date=true
+clock-show-seconds=true
+clock-show-weekday=true
+font-antialiasing='rgba'
+font-hinting='full'
+show-battery-percentage=true
+
+[org/gnome/desktop/peripherals/keyboard] 
+numlock-state=false
+remember-numlock-state=false
+repeat=true
+repeat-interval=25
+
+[org/gnome/desktop/peripherals/mouse]
+double-click=250
+middle-click-emulation=false
+natural-scroll=false
+speed=-0.2
+
+[org/gnome/desktop/peripherals/touchpad]
+disable-while-typing=true
+GDM_END
+    ) > "$fname"
+    
+    chmod 644 "$fname"
 )
 
 create-private-bashrc () (

@@ -134,6 +134,7 @@ optimize-hardware () (
             echo "UEFI not found; please restart & use UEFI..."
         fi
         dnf-install "$INSTALLABLE_NVIDIA_DRIVERS"
+        dnf-install "$INSTALLABLE_NVIDIA_UTILS"
 
         akmods --force && dracut --force
 
@@ -191,8 +192,23 @@ install-dev-tools () (
     dnf install -y --best --allowerasing --with-optional "@C Development Tools and Libraries" 
     dnf install -y --best --allowerasing --with-optional "@Development Tools" 
     dnf-install "$INSTALLABLE_DEV_PKGS"
-    flatpak-install "$INSTALLABLE_IDE_FLATPAKS"
-
+    
+    echo "-------------------INSTALLING VISUAL STUDIO CODE----------------"
+    # instructions taken from here (official site)
+    #  https://code.visualstudio.com/docs/setup/linux#_rhel-fedora-and-centos-based-distributions
+    rpm --import https://packages.microsoft.com/keys/microsoft.asc
+    (cat <<-VSC_END
+[code]
+name=Visual Studio Code
+baseurl=https://packages.microsoft.com/yumrepos/vscode
+enabled=1
+gpgcheck=1
+gpgkey=https://packages.microsoft.com/keys/microsoft.asc
+VSC_END
+    ) > /etc/yum.repos.d/vscode.repo
+    dnf check-update
+    dnf install code
+    
     echo "-------------------INSTALLING JETBRAINS TOOLBOX----------------"
     readonly curlsum=$(curl --proto '=https' --tlsv1.2 -fsSL https://raw.githubusercontent.com/nagygergo/jetbrains-toolbox-install/master/jetbrains-toolbox.sh | sha512sum -)
     readonly validsum="7eb50db1e6255eed35b27c119463513c44aee8e06f3014609a410033f397d2fd81d2605e4e5c243b1087a6c23651f6b549a7c4ee386d50a22cc9eab9e33c612e  -"
@@ -357,6 +373,7 @@ mesa-vulkan-drivers \
 plymouth \
 plymouth-system-theme \
 power-profiles-daemon \
+power-profiles-daemon-docs \
 "
 # TODO replace grub2 with systemd-boot when we get rid of all the issues 
 #  regarding proprietary NVIDIA Drivers, and signing them for UEFI
@@ -433,6 +450,12 @@ xorg-x11-drv-nvidia \
 xorg-x11-drv-nvidia-libs \
 xorg-x11-drv-nvidia-cuda \
 xorg-x11-drv-nvidia-power \
+nvidia-gpu-firmware \
+nvidia-modprobe \
+"
+
+readonly INSTALLABLE_NVIDIA_UTILS="\
+nvidia-settings \
 "
 
 readonly INSTALLABLE_FLATPAKS="\
@@ -458,10 +481,6 @@ java-latest-openjdk \
 java-latest-openjdk-devel \
 bless \
 tldr \
-"
-
-readonly INSTALLABLE_IDE_FLATPAKS="\
-com.visualstudio.code \
 "
 
 readonly INSTALLABLE_OBS_STUDIO="\
