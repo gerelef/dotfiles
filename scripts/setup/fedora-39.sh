@@ -12,7 +12,7 @@ install-gnome-essentials () (
     echo "-------------------INSTALLING GNOME----------------"
     dnf-install "$INSTALLABLE_ESSENTIAL_DESKTOP_PACKAGES"
     # TODO gnome currently supports X11; when xorg is not supported anymore by GNOME, this will need to be removed
-    dnf install -y --best --allowerasing "@base-x"
+    dnf group install -y --best --allowerasing base-x
     
     dnf-install "$INSTALLABLE_GNOME_ESSENTIAL_PACKAGES"
     dnf-install "$INSTALLABLE_GNOME_APPLICATION_PACKAGES"
@@ -37,7 +37,7 @@ install-cinnamon-essentials () (
     echo "-------------------INSTALLING CINNAMON----------------"
     dnf-install "$INSTALLABLE_ESSENTIAL_DESKTOP_PACKAGES"
     # TODO cinnamon is currently X11 only; when xorg is not supported anymore by Cinnamon, this will need to be removed
-    dnf install -y --best --allowerasing "@base-x"
+    dnf group install -y --best --allowerasing base-x
     
     # FIXME for some reason, this installs gnome, check if it is the case
     dnf-install "$INSTALLABLE_CINNAMON_ESSENTIAL_PACKAGES"
@@ -91,10 +91,10 @@ install-universal-necessities () (
     dnf-install "$INSTALLABLE_ESSENTIAL_PACKAGES"
     dnf-install "$INSTALLABLE_PIPEWIRE_PACKAGES"
     
-    dnf install -y --best --allowerasing --with-optional @fonts
-    dnf install -y --best --allowerasing --with-optional @hardware-support
-    dnf install -y --best --allowerasing --with-optional @networkmanager-submodules
-    dnf install -y --best --allowerasing --with-optional @printing
+    dnf group install -y --best --allowerasing --with-optional fonts
+    dnf group install -y --best --allowerasing --with-optional hardware-support
+    dnf group install -y --best --allowerasing --with-optional networkmanager-submodules
+    dnf group install -y --best --allowerasing --with-optional printing
     
     dnf-install "$INSTALLABLE_APPLICATION_PACKAGES"
     flatpak-install "$INSTALLABLE_FLATPAKS"
@@ -185,7 +185,7 @@ install-media-codecs () (
     dnf install -y --best --allowerasing gstreamer1-plugins-{bad-\*,good-\*,base}
     dnf install -y --best --allowerasing lame\* --exclude=lame-devel
     dnf-install "gstreamer1-plugin-openh264" "gstreamer1-libav" "--exclude=gstreamer1-plugins-bad-free-devel" "ffmpeg" "gstreamer-ffmpeg"
-    dnf install -y --best --allowerasing --with-optional @multimedia
+    dnf group install -y --best --allowerasing --with-optional multimedia
 
     dnf-install "ffmpeg" "ffmpeg-libs" "libva" "libva-utils"
     dnf config-manager --set-enabled fedora-cisco-openh264
@@ -207,8 +207,8 @@ install-virtualization-packages () (
 
 install-dev-tools () (
     echo "-------------------INSTALLING DEV TOOLS----------------" | tr " " "\n"
-    dnf install -y --best --allowerasing --with-optional "@C Development Tools and Libraries" 
-    dnf install -y --best --allowerasing --with-optional "@Development Tools" 
+    dnf group install -y --best --allowerasing --with-optional "C Development Tools and Libraries" 
+    dnf group install -y --best --allowerasing --with-optional "Development Tools" 
     dnf-install "$INSTALLABLE_DEV_PKGS"
     
     echo "-------------------INSTALLING VISUAL STUDIO CODE----------------"
