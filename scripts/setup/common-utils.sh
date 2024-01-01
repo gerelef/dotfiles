@@ -154,7 +154,7 @@ change-ownership () (
     [[ -z "$REAL_USER" ]] && return 2
     
     chown "$REAL_USER" "$@"
-    chmod 700 "$@"
+    chmod 740 "$@"
 )
 
 
@@ -163,7 +163,7 @@ change-ownership-recursive () (
     [[ -z "$REAL_USER" ]] && return 2
     
     chown -R "$REAL_USER" "$@"
-    chmod -R 700 "$@"
+    chmod -R 740 "$@"
 )
 
 change-group () (
@@ -331,8 +331,6 @@ copy-ff-rc-files () (
 
         # preference rc
         ln -sf "$RC_MZL_DIR/user.js" "$MZL_PROF_DIR_ABSOLUTE/user.js"
-        change-ownership "$MZL_PROF_DIR_ABSOLUTE/user.js"
-        change-group "$MZL_PROF_DIR_ABSOLUTE/user.js"
     done
 )
 

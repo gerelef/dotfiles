@@ -6,6 +6,7 @@ readonly DIR=$(dirname -- "$BASH_SOURCE")
 source "$DIR/common-utils.sh"
 
 install-gnome-essentials () (
+    echo "-------------------INSTALLING GNOME----------------"
     dnf-install "$INSTALLABLE_ESSENTIAL_DESKTOP_PACKAGES"
     # TODO gnome currently supports X11; when xorg is not supported anymore by GNOME, this will need to be removed
     dnf install -y --best --allowerasing "@base-x"
@@ -15,19 +16,22 @@ install-gnome-essentials () (
     dnf-install "$INSTALLABLE_ADWAITA_PACKAGES" "$INSTALLABLE_GNOME_EXTENSIONS"
     flatpak-install "$INSTALLABLE_GNOME_FLATPAKS"
     
-    systemctl enable gdm
     try-enabling-power-profiles-daemon
     
     if ask-user "Do you want to install GNOME wallpapers?"; then
-        echo "-------------------INSTALLING----------------" | tr " " "\n"
+        echo "-------------------INSTALLING WALLPAPERS----------------"
         dnf install -y --best --allowerasing f*-backgrounds-gnome*
         echo "Done."
     fi
-
+    
+    systemctl enable gdm
     configure-gdm-dconf
+    
+    echo "Done."
 )
 
 install-cinnamon-essentials () (
+    echo "-------------------INSTALLING CINNAMON----------------"
     dnf-install "$INSTALLABLE_ESSENTIAL_DESKTOP_PACKAGES"
     # TODO cinnamon is currently X11 only; when xorg is not supported anymore by Cinnamon, this will need to be removed
     dnf install -y --best --allowerasing "@base-x"
@@ -37,18 +41,23 @@ install-cinnamon-essentials () (
     dnf-install "$INSTALLABLE_CINNAMON_APPLICATION_PACKAGES"
     dnf-install "$INSTALLABLE_CINNAMON_EXTENSIONS"
     flatpak-install "$INSTALLABLE_CINNAMON_FLATPAKS"
-    
-    systemctl enable gdm
+
     try-enabling-power-profiles-daemon
     
     if ask-user "Do you want to install Cinnamon wallpapers?"; then
-        echo "-------------------INSTALLING----------------" | tr " " "\n"
+        echo "-------------------INSTALLING WALLPAPERS----------------"
         dnf install -y --best --allowerasing f*-backgrounds-gnome*
         echo "Done."
     fi
+
+    systemctl enable gdm
+    configure-gdm-dconf
+    
+    echo "Done."
 )
 
 install-hyprland-essentials () (
+    echo "-------------------INSTALLING HYPRLAND----------------"
     dnf-install "$INSTALLABLE_ESSENTIAL_DESKTOP_PACKAGES"
     # hyprland is wlroots based wayland only compositor, so base-x is not needed (thankfully)
     
@@ -63,17 +72,27 @@ install-hyprland-essentials () (
     # flatpak-install "$INSTALLABLE_HYPRLAND_FLATPAKS"
     
     # FIXME add exec-once=nm-applet --indicator & disown
+    echo "Done."
+)
+
+configure-gdm-dconf () (
+    echo "-------------------CONFIGURING GDM DCONF DB & USER GSETTINGS----------------"
+    create-gdm-dconf-profile
+    create-gdm-dconf-db
+
+    dconf update
 )
 
 install-universal-necessities () (
-    echo "-------------------INSTALLING ESSENTIAL PACKAGES----------------" | tr " " "\n"
+    echo "-------------------INSTALLING ESSENTIAL PACKAGES----------------"
+    dnf-install "$INSTALLABLE_ESSENTIAL_PACKAGES"
+    dnf-install "$INSTALLABLE_PIPEWIRE_PACKAGES"
+    
     dnf install -y --best --allowerasing --with-optional @fonts
     dnf install -y --best --allowerasing --with-optional @hardware-support
     dnf install -y --best --allowerasing --with-optional @networkmanager-submodules
     dnf install -y --best --allowerasing --with-optional @printing
-
-    dnf-install "$INSTALLABLE_ESSENTIAL_PACKAGES"
-    dnf-install "$INSTALLABLE_PIPEWIRE_PACKAGES"
+    
     dnf-install "$INSTALLABLE_APPLICATION_PACKAGES"
     flatpak-install "$INSTALLABLE_FLATPAKS"
 
@@ -96,51 +115,63 @@ optimize-hardware () (
         fwupdmgr update -y
     fi
 
-    readonly NVIDIA_GPU=$(lspci | grep -i vga | grep NVIDIA)
-    if [[ -n "$NVIDIA_GPU" && $(lsmod | grep nouveau) ]]; then
-        echo "-------------------INSTALLING NVIDIA DRIVERS----------------"
-        echo "Found $NVIDIA_GPU running with nouveau drivers!"
-        dnf-install "$INSTALLABLE_NVIDIA_DRIVERS"
-        dnf-install "$INSTALLABLE_NVIDIA_UTILS"
-
-        # check arch wiki, these enable DRM
-        grubby --update-kernel=ALL --args="nvidia-drm.modeset=1"
-        grubby --update-kernel=ALL --args="nvidia-drm.fbdev=1"
-        if [[ "$BIOS_MODE" == "UEFI" && $(mokutil --sb-state 2> /dev/null) ]]; then
-            # https://blog.monosoul.dev/2022/05/17/automatically-sign-nvidia-kernel-module-in-fedora-36/
-            # https://github.com/NVIDIA/yum-packaging-precompiled-kmod/blob/main/UEFI.md
-            # the official NVIDIA instructions recommend installing the driver first
-            # Their recommendations talk about kmod, not akmod, but the process should be the same
-            # FIXME needs checking that this actually works.
-            if ask-user 'Do you want to enroll MOK and restart?'; then
-                echo "Signing GPU drivers..."
-                kmodgenca -a
-                mokutil --import /etc/pki/akmods/certs/public_key.der
-                echo "Finished signing GPU drivers. Make sure you enroll MOK when you restart."
-                echo "OK."
-                exit 0
-            fi
-        else
-            echo "UEFI not found; please restart & use UEFI in order to sign drivers..."
-        fi
-        
-        akmods --force && dracut --force --regenerate-all
-    fi
-
     readonly CHASSIS_TYPE="$(dmidecode --string chassis-type)"
     if [[ $CHASSIS_TYPE == "Desktop" ]]; then
-        # https://forums.developer.nvidia.com/t/no-matching-gpu-found-with-510-47-03/202315/5
+        echo "Disabling mobile-gpu specific service (https://forums.developer.nvidia.com/t/no-matching-gpu-found-with-510-47-03/202315/5)"
         systemctl disable nvidia-powerd.service
-    else
-        # s3 sleep
-        grubby --update-kernel=ALL --args="mem_sleep_default=s2idle"
-        echo "-------------------OPTIMIZING BATTERY USAGE----------------"
-        echo "Found laptop $CHASSIS_TYPE"
-        dnf-install "$INSTALLABLE_PWR_MGMNT"
-        powertop --auto-tune
+        return
     fi
+    
+    echo "Done."
+)
+
+optimize-laptop-battery () (
+    # if we're on a desktop, gtfo
+    readonly CHASSIS_TYPE="$(dmidecode --string chassis-type)"
+    [[ $CHASSIS_TYPE == "Desktop" ]] && return
+    
+    echo "-------------------OPTIMIZING LAPTOP BATTERY----------------"
+    # s3 sleep
+    grubby --update-kernel=ALL --args="mem_sleep_default=s2idle"
+    echo "Found laptop $CHASSIS_TYPE"
+    dnf-install "$INSTALLABLE_PWR_MGMNT"
+    powertop --auto-tune
 
     echo "Done."
+)
+
+install-proprietary-nvidia-drivers () (
+    # install nvidia drivers if we have an NVIDIA card and we're running the nouveau drivers...
+    readonly NVIDIA_GPU=$(lspci | grep -i vga | grep NVIDIA)
+    [[ -z "$NVIDIA_GPU" && $(lsmod | grep nouveau) ]] && return
+    
+    echo "-------------------INSTALLING NVIDIA DRIVERS----------------"
+    echo "Found $NVIDIA_GPU running with nouveau drivers!"
+    dnf-install "$INSTALLABLE_NVIDIA_DRIVERS"
+    dnf-install "$INSTALLABLE_NVIDIA_UTILS"
+
+    # check arch wiki, these enable DRM
+    grubby --update-kernel=ALL --args="nvidia-drm.modeset=1"
+    grubby --update-kernel=ALL --args="nvidia-drm.fbdev=1"
+    if [[ "$BIOS_MODE" == "UEFI" && $(mokutil --sb-state 2> /dev/null) ]]; then
+        # https://blog.monosoul.dev/2022/05/17/automatically-sign-nvidia-kernel-module-in-fedora-36/
+        # https://github.com/NVIDIA/yum-packaging-precompiled-kmod/blob/main/UEFI.md
+        # the official NVIDIA instructions recommend installing the driver first
+        # Their recommendations talk about kmod, not akmod, but the process should be the same
+        # FIXME needs checking that this actually works.
+        if ask-user 'Do you want to enroll MOK and restart?'; then
+            echo "Signing GPU drivers..."
+            kmodgenca -a
+            mokutil --import /etc/pki/akmods/certs/public_key.der
+            echo "Finished signing GPU drivers. Make sure you enroll MOK when you restart."
+            echo "OK."
+            exit 0
+        fi
+    else
+        echo "UEFI not found; please restart & use UEFI in order to sign drivers..."
+    fi
+    
+    akmods --force && dracut --force --regenerate-all
 )
 
 install-media-codecs () (
@@ -172,7 +203,7 @@ install-virtualization-packages () (
 )
 
 install-dev-tools () (
-    echo "-------------------INSTALLING----------------" | tr " " "\n"
+    echo "-------------------INSTALLING DEV TOOLS----------------" | tr " " "\n"
     dnf install -y --best --allowerasing --with-optional "@C Development Tools and Libraries" 
     dnf install -y --best --allowerasing --with-optional "@Development Tools" 
     dnf-install "$INSTALLABLE_DEV_PKGS"
@@ -192,7 +223,10 @@ VSC_END
     ) > /etc/yum.repos.d/vscode.repo
     dnf check-update
     dnf install -y --best --allowerasing code
-    
+    echo "Done."
+)
+
+install-jetbrains-toolbox () (
     echo "-------------------INSTALLING JETBRAINS TOOLBOX----------------"
     readonly curlsum=$(curl --proto '=https' --tlsv1.2 -fsSL https://raw.githubusercontent.com/nagygergo/jetbrains-toolbox-install/master/jetbrains-toolbox.sh | sha512sum -)
     readonly validsum="7eb50db1e6255eed35b27c119463513c44aee8e06f3014609a410033f397d2fd81d2605e4e5c243b1087a6c23651f6b549a7c4ee386d50a22cc9eab9e33c612e  -"
@@ -200,10 +234,22 @@ VSC_END
         # we're overriding $HOME for this script since it doesn't know we're running as root
         #  and looks for $HOME, ruining everything in whatever "$HOME/.local/share/JetBrains/Toolbox/bin" and "$HOME/.local/bin" resolve into
         (HOME="$REAL_USER_HOME" && curl --proto '=https' --tlsv1.2 -fsSL https://raw.githubusercontent.com/nagygergo/jetbrains-toolbox-install/master/jetbrains-toolbox.sh | bash)
-    else
-        echo "sha512sum mismatch"
-        exit 2
+        echo "Done."
+        return
     fi
+    
+    echo "There has been a fatal sha512sum mismatch regarding the jetbrains toolbox autoinstall script."
+    echo "This is most likely because the current validsum (see 'grep validsum < ./fedora-39.sh')"
+    echo "being outdated w/ the remote repository. Regardless, installation of toolbox CANNOT continue"
+    echo "for security concerns."
+    echo "Do you want to: "
+    user_choice=$(ask-user-multiple-questions "continue installing everything else (recommended)" "exit")
+    echo "Failure."
+    [[ $user_choice -eq 0 ]] && return
+    [[ $user_choice -eq 1 ]] && exit 2
+    
+    echo "this statement should never execute!"
+    exit 1
     echo "Done."
 )
 
@@ -234,69 +280,85 @@ configure-system-defaults () (
     echo "Done."
 )
 
+create-swapfile () (
+    # if we haven't created /swapfile, go ahead, otherwise get out
+    [[ -n $(cat /etc/fstab | grep "/swapfile swap swap defaults 0 0") ]] && return
+    
+    echo "-------------------CREATING /swapfile----------------"
+    kbs=$(cat /proc/meminfo | grep MemTotal | grep -E -o "[0-9]+")
+    fallocate -l "$kbs"KB /swapfile 
+    chmod 600 /swapfile 
+    chown root /swapfile 
+    mkswap /swapfile 
+    swapon /swapfile
+    echo "/swapfile swap swap defaults 0 0" >> /etc/fstab
+    
+    echo "Done."
+)
+
+modify-grub () (
+    # if we haven't modified GRUB already, go ahead, otherwise get out
+    readonly DEFAULT_GRUB_CFG="/etc/default/grub"
+    [[ -n $(cat $DEFAULT_GRUB_CFG | grep "GRUB_HIDDEN_TIMEOUT") ]] && return 
+    
+    echo "-------------------MODIFYING GRUB----------------"
+    dnf-install "hwinfo"
+    out="$(sed -r 's/GRUB_TERMINAL_OUTPUT=.+/GRUB_TERMINAL_OUTPUT="gfxterm"/' < $DEFAULT_GRUB_CFG)" 
+    echo "$out" | dd of="$DEFAULT_GRUB_CFG"
+    
+    echo 'GRUB_HIDDEN_TIMEOUT=0' >> /etc/default/grub
+    echo 'GRUB_HIDDEN_TIMEOUT_QUIET=true' >> /etc/default/grub
+    echo 'GRUB_GFXPAYLOAD_LINUX=keep' >> /etc/default/grub
+    top_res="$(hwinfo --framebuffer | tail -n 2 | grep -E -o '[0-9]{3,4}x[0-9]{3,4}')"
+    top_dep="$(hwinfo --framebuffer | tail -n 2 | grep Mode | grep -E -o ', [0-9]{2} bits' | grep -E -o '[0-9]{2}')"
+    echo "GRUB_GFXMODE=$top_res x $top_dep" | tr -d ' ' >> /etc/default/grub
+    
+    readonly GRUB_OUT_LOCATION="$(locate grub.cfg | grep /boot | head -n 1)"
+    [[ -n $GRUB_OUT_LOCATION ]] && grub2-mkconfig --output="$GRUB_OUT_LOCATION"
+    
+    echo "Done."
+)
+
 tweak-minor-details () (
     echo "-------------------TWEAKING MINOR DETAILS----------------"
     # https://github.com/tommytran732/Linux-Setup-Scripts/blob/main/Fedora-Workstation-36.sh
-    # Make home directory private
-    change-ownership "$REAL_USER_HOME"
     systemctl enable fstrim.timer
     
     timedatectl set-local-rtc '0' # for fixing dual boot time inconsistencies
     hostnamectl hostname "$DISTRIBUTION_NAME"
     # if the statement below doesnt work, check this out
     #  https://old.reddit.com/r/linuxhardware/comments/ng166t/s3_deep_sleep_not_working/
-    systemctl disable NetworkManager-wait-online.service # stop network manager from waiting until online, improves boot times
-
+    # stop network manager from waiting until online, improves boot times
+    systemctl disable NetworkManager-wait-online.service 
+    # if GNOME, stop Software from autostarting & updating in the background, no reason
+    [[ $XDG_CURRENT_DESKTOP == "GNOME" ]] && rm /etc/xdg/autostart/org.gnome.Software.desktop
+    
     echo "Done."
 )
 
-modify-grub () (
-    # if we haven't modified GRUB already, go ahead...
-    readonly DEFAULT_GRUB_CFG="/etc/default/grub"
-    if [[ -z $(cat $DEFAULT_GRUB_CFG | grep "GRUB_HIDDEN_TIMEOUT") ]]; then
-        echo "-------------------MODIFYING GRUB----------------"
-        
-        dnf-install "hwinfo"
-        out="$(sed -r 's/GRUB_TERMINAL_OUTPUT=.+/GRUB_TERMINAL_OUTPUT="gfxterm"/' < $DEFAULT_GRUB_CFG)" 
-        echo "$out" | dd of="$DEFAULT_GRUB_CFG"
-        
-        echo 'GRUB_HIDDEN_TIMEOUT=0' >> /etc/default/grub
-        echo 'GRUB_HIDDEN_TIMEOUT_QUIET=true' >> /etc/default/grub
-        echo 'GRUB_GFXPAYLOAD_LINUX=keep' >> /etc/default/grub
-        top_res="$(hwinfo --framebuffer | tail -n 2 | grep -E -o '[0-9]{3,4}x[0-9]{3,4}')"
-        top_dep="$(hwinfo --framebuffer | tail -n 2 | grep Mode | grep -E -o ', [0-9]{2} bits' | grep -E -o '[0-9]{2}')"
-        echo "GRUB_GFXMODE=$top_res x $top_dep" | tr -d ' ' >> /etc/default/grub
-        
-        readonly GRUB_OUT_LOCATION="$(locate grub.cfg | grep /boot | head -n 1)"
-        [[ -n $GRUB_OUT_LOCATION ]] && grub2-mkconfig --output="$GRUB_OUT_LOCATION"
-        
-        echo "Done."
-    fi
+configure-ssh-defaults () (
+    # if the directory already exists, abandon
+    [[ -d "$REAL_USER_HOME/.ssh" ]] && return
+    
+    echo "-------------------GENERATING SSH KEY----------------"
+    mkdir -p "$REAL_USER_HOME/.ssh"
+    ssh-keygen -q -t ed25519 -N '' -C "$REAL_USER@$DISTRIBUTION_NAME" -f "$REAL_USER_HOME/.ssh/id_ed25519" -P "" <<< $'\ny' >/dev/null 2>&1
+    cat "$REAL_USER_HOME/.ssh/id_ed25519.pub"
+    echo "Done."
 )
 
-create-swapfile () (
-    # if we haven't created /swapfile, go ahead...
-    if [[ -z $(cat /etc/fstab | grep "/swapfile swap swap defaults 0 0") ]]; then
-        echo "-------------------CREATING /swapfile----------------"
-        
-        kbs=$(cat /proc/meminfo | grep MemTotal | grep -E -o "[0-9]+")
-        fallocate -l "$kbs"KB /swapfile 
-        chmod 600 /swapfile 
-        chown root /swapfile 
-        mkswap /swapfile 
-        swapon /swapfile
-        echo "/swapfile swap swap defaults 0 0" >> /etc/fstab
-        
-        echo "Done."
-    fi
-)
+configure-residual-permissions () (
+    echo "-------------------CHANGING ROOT OWNERSHIP AND GROUPS IN HOME----------------"
+    change-ownership "$REAL_USER_HOME"
 
-configure-gdm-dconf () (
-    echo "-------------------CONFIGURING GDM DCONF DB & USER GSETTINGS----------------"
-    create-gdm-dconf-profile
-    create-gdm-dconf-db
+    # everything in home should be owned by the user and in the user's group
+    # this filter finds which f
+    find "$REAL_USER_HOME" -user root -print0 2> /dev/null | while read -d $'\0' file; do 
+        change-ownership "$file"
+        change-group "$file"
+    done
 
-    dconf update
+    echo "Done."
 )
 
 ####################################################################################################### 
@@ -599,7 +661,6 @@ gnome-font-viewer \
 gnome-characters \
 gnome-classic-session \
 gnome-initial-setup \
-gnome-terminal \
 gnome-boxes \
 gnome-calculator \
 gnome-calendar \
@@ -685,17 +746,16 @@ fi
 dnf-remove "$UNINSTALLABLE_BLOAT"
 
 install-universal-necessities
-optimize-hardware
 install-media-codecs
+optimize-hardware
+optimize-laptop-battery
+install-proprietary-nvidia-drivers
 
 configure-system-defaults
-tweak-minor-details
-modify-grub
 create-swapfile
-
-mkdir -p "$REAL_USER_HOME/.ssh"
-ssh-keygen -q -t ed25519 -N '' -C "$REAL_USER@$DISTRIBUTION_NAME" -f "$REAL_USER_HOME/.ssh/id_ed25519" -P "" <<< $'\ny' >/dev/null 2>&1
-cat "$REAL_USER_HOME/.ssh/id_ed25519.pub"
+modify-grub
+tweak-minor-details
+configure-ssh-defaults 
 
 #######################################################################################################
 
@@ -713,6 +773,7 @@ fi
 
 if ask-user "Are you sure you want to install development tools (IDEs)?"; then
     install-dev-tools
+    install-jetbrains-toolbox
 fi
 
 if ask-user "Are you sure you want to install zeno/scrcpy?"; then
@@ -726,10 +787,8 @@ fi
 if ask-user "Customize firefox? Compatible only with gerelef/dotfiles"; then
     # create default directories that should exist on all my systems
     create-default-locations 
-    
     echo "https://www.suse.com/support/kb/doc/?id=000017060"
     while : ; do
-        change-ownership-recursive "$MZL_ROOT"
         if ask-user "Please run firefox as a user to create its configuration directories; let it load fully, then close it."; then
             copy-ff-rc-files
             echo "Done."
@@ -743,21 +802,12 @@ fi
 if ask-user "Install default config files? Compatible only with gerelef/dotfiles"; then
     # create default directories that should exist on all my systems
     create-default-locations
-    
     install-config-files
 fi
 
 #######################################################################################################
 
-echo "-------------------CHANGING OWNERSHIP AND GROUPS IN HOME----------------"
-
-# everything in home should be owned by the user and in the user's group
-change-ownership-recursive "$REAL_USER_HOME" 2> /dev/null
-change-group-recursive "$REAL_USER_HOME" 2> /dev/null
-
-echo "Done."
-
-#######################################################################################################
+configure-residual-permissions
 
 echo "Make sure to restart your PC after making all the necessary adjustments."
 echo "Remember to add a permanent mount point for internal storage partitions."
@@ -771,12 +821,10 @@ if [[ $XDG_CURRENT_DESKTOP == "GNOME" ]]; then
     echo "Make sure to get the legacy GTK3 Theme Auto Switcher"
     echo "  https://extensions.gnome.org/extension/4998/legacy-gtk3-theme-scheme-auto-switcher/"
     
-    # stop this from updating in the background and eating ram, no reason
-    rm /etc/xdg/autostart/org.gnome.Software.desktop
+    
     
     echo "Configuring all gsettings for $REAL_USER . . ."
-    # user gsettings
-    # heredocs
+    # user gsettings using heredocs
     # https://tldp.org/LDP/abs/html/here-docs.html
     sudo --preserve-env="XDG_RUNTIME_DIR" --preserve-env="XDG_DATA_DIRS" --preserve-env="DBUS_SESSION_BUS_ADDRESS" -u "$REAL_USER" bash <<-GSETTINGS_DELIMITER
 source "$(dirname -- "$BASH_SOURCE")/common-utils.sh"
