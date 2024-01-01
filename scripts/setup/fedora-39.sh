@@ -100,27 +100,31 @@ optimize-hardware () (
     if [[ -n "$NVIDIA_GPU" && $(lsmod | grep nouveau) ]]; then
         echo "-------------------INSTALLING NVIDIA DRIVERS----------------"
         echo "Found $NVIDIA_GPU running with nouveau drivers!"
-        if [[ "$BIOS_MODE" == "UEFI" && $(mokutil --sb-state 2> /dev/null) ]]; then
-            # https://blog.monosoul.dev/2022/05/17/automatically-sign-nvidia-kernel-module-in-fedora-36/
-            if ask-user 'Do you want to enroll MOK and restart?'; then
-                echo "Signing GPU drivers..."
-                kmodgenca -a
-                mokutil --import /etc/pki/akmods/certs/public_key.der
-                echo "Finished signing GPU drivers. Make sure you Enroll MOK when you restart."
-                echo "OK."
-                exit 0
-            fi
-        else
-            echo "UEFI not found; please restart & use UEFI..."
-        fi
         dnf-install "$INSTALLABLE_NVIDIA_DRIVERS"
         dnf-install "$INSTALLABLE_NVIDIA_UTILS"
-
-        akmods --force && dracut --force --regenerate-all
 
         # check arch wiki, these enable DRM
         grubby --update-kernel=ALL --args="nvidia-drm.modeset=1"
         grubby --update-kernel=ALL --args="nvidia-drm.fbdev=1"
+        if [[ "$BIOS_MODE" == "UEFI" && $(mokutil --sb-state 2> /dev/null) ]]; then
+            # https://blog.monosoul.dev/2022/05/17/automatically-sign-nvidia-kernel-module-in-fedora-36/
+            # https://github.com/NVIDIA/yum-packaging-precompiled-kmod/blob/main/UEFI.md
+            # the official NVIDIA instructions recommend installing the driver first
+            # Their recommendations talk about kmod, not akmod, but the process should be the same
+            # FIXME needs checking that this actually works.
+            if ask-user 'Do you want to enroll MOK and restart?'; then
+                echo "Signing GPU drivers..."
+                kmodgenca -a
+                mokutil --import /etc/pki/akmods/certs/public_key.der
+                echo "Finished signing GPU drivers. Make sure you enroll MOK when you restart."
+                echo "OK."
+                exit 0
+            fi
+        else
+            echo "UEFI not found; please restart & use UEFI in order to sign drivers..."
+        fi
+        
+        akmods --force && dracut --force --regenerate-all
     fi
 
     readonly CHASSIS_TYPE="$(dmidecode --string chassis-type)"
@@ -651,6 +655,12 @@ if [[ -z $XDG_CURRENT_DESKTOP ]]; then
     dnf-install plocate git flatpak
     clear
     
+    updatedb 2> /dev/null
+    if [[ ! $? -eq 0 ]]; then
+        echo "updatedb errored, retrying with absolute path"
+        /usr/sbin/updatedb
+    fi
+    
     echo "After installation of a desktop environment finishes, the system will immediately reboot."
     echo "You will need to re-run this script afterwards to complete the setup."
     choice=$(ask-user-multiple-questions "${dei[@]}" )
@@ -748,12 +758,6 @@ change-group-recursive "$REAL_USER_HOME" 2> /dev/null
 echo "Done."
 
 #######################################################################################################
-
-updatedb 2> /dev/null
-if [[ ! $? -eq 0 ]]; then
-    echo "updatedb errored, retrying with absolute path"
-    /usr/sbin/updatedb
-fi
 
 echo "Make sure to restart your PC after making all the necessary adjustments."
 echo "Remember to add a permanent mount point for internal storage partitions."
