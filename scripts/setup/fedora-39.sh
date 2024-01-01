@@ -5,6 +5,9 @@ readonly DIR=$(dirname -- "$BASH_SOURCE")
 [[ -f "$DIR/common-utils.sh" ]] || ( echo "$DIR/common-utils.sh doesn't exist! exiting..." && exit 2 ) 
 source "$DIR/common-utils.sh"
 
+# DEPENDENCIES FOR THE CURRENT SCRIPT 
+dnf-install flatpak plocate 
+
 install-gnome-essentials () (
     echo "-------------------INSTALLING GNOME----------------"
     dnf-install "$INSTALLABLE_ESSENTIAL_DESKTOP_PACKAGES"
@@ -635,6 +638,7 @@ qemu-audio-pipewire \
 "
 
 readonly INSTALLABLE_DEV_PKGS="\
+git \
 gcc \
 clang \
 vulkan \
@@ -713,15 +717,6 @@ exit
 
 # if there's no desktop environment running...
 if [[ -z $XDG_CURRENT_DESKTOP ]]; then
-    dnf-install plocate git flatpak
-    clear
-    
-    updatedb 2> /dev/null
-    if [[ ! $? -eq 0 ]]; then
-        echo "updatedb errored, retrying with absolute path"
-        /usr/sbin/updatedb
-    fi
-    
     echo "After installation of a desktop environment finishes, the system will immediately reboot."
     echo "You will need to re-run this script afterwards to complete the setup."
     choice=$(ask-user-multiple-questions "${dei[@]}" )
@@ -739,6 +734,13 @@ if [[ -z $XDG_CURRENT_DESKTOP || -z $XDG_RUNTIME_DIR || -z $XDG_DATA_DIRS || -z 
     echo "\$XDG_CURRENT_DESKTOP ($XDG_CURRENT_DESKTOP), \$XDG_RUNTIME_DIR ($XDG_RUNTIME_DIR), \$XDG_DATA_DIRS ($XDG_DATA_DIRS), \$DBUS_SESSION_BUS_ADDRESS ($DBUS_SESSION_BUS_ADDRESS)"
     echo "Check the shebang for more information on how to correctly run this script."
     exit 2
+fi
+
+# we need this to be up-to-date for some commands
+updatedb 2> /dev/null
+if [[ ! $? -eq 0 ]]; then
+    echo "updatedb errored, retrying with absolute path"
+    /usr/sbin/updatedb
 fi
 
 #######################################################################################################
