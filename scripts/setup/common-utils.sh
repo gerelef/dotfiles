@@ -123,11 +123,9 @@ dnf-group-update () (
     [[ $# -eq 0 ]] && return 2
     
     echo "-------------------DNF-GROUP-UPDATE----------------"
-    for g in "$@"; do
-        while :; do 
-            dnf group update -y --best --allowerasing $@ && break
-        done 
-    done
+    while :; do 
+        dnf group update -y --best --allowerasing $@ && break
+    done 
     echo "Finished group-updating."
 )
 
