@@ -421,6 +421,7 @@ adwaita-qt6 \
 "
 
 readonly INSTALLABLE_GNOME_FLATPAKS="\
+com.raggesilver.BlackBox \
 org.gtk.Gtk3theme.adw-gtk3 \
 org.gtk.Gtk3theme.adw-gtk3-dark \
 net.nokyan.Resources \
@@ -461,6 +462,7 @@ gnome-disk-utility \
 "
 
 readonly INSTALLABLE_CINNAMON_FLATPAKS="\
+com.raggesilver.BlackBox \
 net.nokyan.Resources \
 "
 
@@ -494,10 +496,11 @@ qt6ct \
 "
 
 readonly INSTALLABLE_HYPRLAND_APPLICATION_PACKAGES="\
+alacritty \
+nautilus \
 rofi-wayland \
 rofi-themes \
 bpytop \
-nautilus \
 qbittorrent \
 "
 
@@ -557,7 +560,6 @@ pulseeffects \
 
 readonly INSTALLABLE_FLATPAKS="\
 com.spotify.Client \
-com.raggesilver.BlackBox \
 com.github.rafostar.Clapper \
 net.cozic.joplin_desktop \
 com.skype.Client \
@@ -658,6 +660,7 @@ totem \
 cheese \
 gnome-tour \
 gnome-weather \
+gnome-terminal \
 gnome-system-monitor \
 gnome-remote-desktop \
 gnome-font-viewer \
