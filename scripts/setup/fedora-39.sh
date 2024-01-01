@@ -423,7 +423,6 @@ adwaita-qt6 \
 readonly INSTALLABLE_GNOME_FLATPAKS="\
 org.gtk.Gtk3theme.adw-gtk3 \
 org.gtk.Gtk3theme.adw-gtk3-dark \
-org.kde.WaylandDecoration.QAdwaitaDecorations \
 net.nokyan.Resources \
 de.haeckerfelix.Fragments \
 org.gnome.Snapshot \
