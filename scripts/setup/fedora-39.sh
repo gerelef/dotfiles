@@ -126,14 +126,15 @@ optimize-hardware () (
 )
 
 optimize-laptop-battery () (
-    # if we're on a desktop, gtfo
+    # if we're on anything but a laptop, gtfo
     readonly CHASSIS_TYPE="$(dmidecode --string chassis-type)"
-    [[ $CHASSIS_TYPE == "Desktop" ]] && return
+    [[ $CHASSIS_TYPE != "Other" ]] && return
+    [[ $CHASSIS_TYPE != "Notebook" && $CHASSIS_TYPE != "Tablet" && $CHASSIS_TYPE != "Convertible" ]] && return
     
     echo "-------------------OPTIMIZING LAPTOP BATTERY----------------"
+    echo "Found laptop $CHASSIS_TYPE"
     # s3 sleep
     grubby --update-kernel=ALL --args="mem_sleep_default=s2idle"
-    echo "Found laptop $CHASSIS_TYPE"
     dnf-install "$INSTALLABLE_PWR_MGMNT"
     powertop --auto-tune
 
