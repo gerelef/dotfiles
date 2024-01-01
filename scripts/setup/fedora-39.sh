@@ -519,6 +519,7 @@ hyprgrass \
 #  regarding proprietary NVIDIA Drivers, and signing them for UEFI
 # TODO add systemd-bsod when it becomes available on fedora
 readonly INSTALLABLE_ESSENTIAL_PACKAGES="\
+udisks2 \
 setroubleshoot \
 setroubleshoot-plugins \
 openvpn \
