@@ -107,14 +107,28 @@ dnf-install () (
     echo "Finished installing."
 )
 
-dnf-groupupdate () (
+dnf-group-install-with-optional () (
     [[ $# -eq 0 ]] && return 2
     
-    echo "-------------------DNF-GROUPUPDATE---------------- $*" | tr " " "\n"
-    while : ; do
-        dnf groupupdate -y --best --allowerasing $@ && break
+    echo "-------------------DNF-GROUP-INSTALL----------------"
+    for g in "$@"; do
+        while :; do 
+            dnf group install -y --best --allowerasing --with-optional "$g" && break
+        done 
     done
     echo "Finished group-installing."
+)
+
+dnf-group-update () (
+    [[ $# -eq 0 ]] && return 2
+    
+    echo "-------------------DNF-GROUP-UPDATE----------------"
+    for g in "$@"; do
+        while :; do 
+            dnf group update -y --best --allowerasing $@ && break
+        done 
+    done
+    echo "Finished group-updating."
 )
 
 dnf-update-refresh () (
@@ -129,7 +143,7 @@ dnf-update-refresh () (
 dnf-remove () (
     [[ $# -eq 0 ]] && return 2
     
-    echo "-------------------DNF-REMOVE---------------- $*" | tr " " "\n"
+    echo "-------------------DNF-REMOVE----------------"
     dnf remove -y --skip-broken $@
     echo "Finished removing."
 )
@@ -138,7 +152,7 @@ flatpak-install () (
     [[ $# -eq 0 ]] && return 2
     [[ -z "$REAL_USER" ]] && return 2
     
-    echo "-------------------FLATPAK-INSTALL-SYSTEM---------------- $*" | tr " " "\n"
+    echo "-------------------FLATPAK-INSTALL-SYSTEM----------------"
     while : ; do
         su - "$REAL_USER" -c "flatpak install --system --noninteractive -y $@" && break
     done

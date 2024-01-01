@@ -91,10 +91,7 @@ install-universal-necessities () (
     dnf-install "$INSTALLABLE_ESSENTIAL_PACKAGES"
     dnf-install "$INSTALLABLE_PIPEWIRE_PACKAGES"
     
-    dnf group install -y --best --allowerasing --with-optional fonts
-    dnf group install -y --best --allowerasing --with-optional hardware-support
-    dnf group install -y --best --allowerasing --with-optional networkmanager-submodules
-    dnf group install -y --best --allowerasing --with-optional printing
+    dnf-group-install-with-optional "fonts" "hardware-support" "networkmanager-submodules" "printing"
     
     dnf-install "$INSTALLABLE_APPLICATION_PACKAGES"
     flatpak-install "$INSTALLABLE_FLATPAKS"
@@ -181,11 +178,11 @@ install-media-codecs () (
     echo "-------------------INSTALLING CODECS / H/W VIDEO ACCELERATION----------------"
 
     # based on https://github.com/devangshekhawat/Fedora-39-Post-Install-Guide
-    dnf-groupupdate 'core' 'multimedia' 'sound-and-video' --setop='install_weak_deps=False' --exclude='PackageKit-gstreamer-plugin' --allowerasing && sync
+    dnf-group-update 'core' 'multimedia' 'sound-and-video' --setop='install_weak_deps=False' --exclude='PackageKit-gstreamer-plugin' --allowerasing && sync
     dnf install -y --best --allowerasing gstreamer1-plugins-{bad-\*,good-\*,base}
     dnf install -y --best --allowerasing lame\* --exclude=lame-devel
     dnf-install "gstreamer1-plugin-openh264" "gstreamer1-libav" "--exclude=gstreamer1-plugins-bad-free-devel" "ffmpeg" "gstreamer-ffmpeg"
-    dnf group install -y --best --allowerasing --with-optional multimedia
+    dnf-group-install-with-optional "multimedia"
 
     dnf-install "ffmpeg" "ffmpeg-libs" "libva" "libva-utils"
     dnf config-manager --set-enabled fedora-cisco-openh264
@@ -207,8 +204,7 @@ install-virtualization-packages () (
 
 install-dev-tools () (
     echo "-------------------INSTALLING DEV TOOLS----------------" | tr " " "\n"
-    dnf group install -y --best --allowerasing --with-optional "C Development Tools and Libraries" 
-    dnf group install -y --best --allowerasing --with-optional "Development Tools" 
+    dnf-group-install-with-optional "C Development Tools and Libraries" "Development Tools"
     dnf-install "$INSTALLABLE_DEV_PKGS"
     
     echo "-------------------INSTALLING VISUAL STUDIO CODE----------------"
