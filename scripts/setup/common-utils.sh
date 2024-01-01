@@ -140,7 +140,7 @@ flatpak-install () (
     
     echo "-------------------FLATPAK-INSTALL-SYSTEM---------------- $*" | tr " " "\n"
     while : ; do
-        su - "$REAL_USER" -c "flatpak install --system -y $@" && break
+        su - "$REAL_USER" -c "flatpak install --system --noninteractive -y $@" && break
     done
     echo "Finished flatpak-installing."
 )
