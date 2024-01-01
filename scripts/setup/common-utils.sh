@@ -147,6 +147,8 @@ flatpak-install () (
 
 hyprpm-install () (
     # FIXME
+    echo "This does nothing currently."
+    exit 1
 )
 
 change-ownership () (
