@@ -190,20 +190,20 @@ install-media-codecs () (
 )
 
 install-gaming-packages () (
-    echo "-------------------INSTALLING----------------" | tr " " "\n"
+    echo "-------------------INSTALLING GAMING PACKAGES----------------"
     dnf-install "$INSTALLABLE_EXTRAS" "$INSTALLABLE_WINE_GE_CUSTOM_PKGS" "$INSTALLABLE_OBS_STUDIO"
     flatpak-install "$INSTALLABLE_EXTRAS_FLATPAK"
     echo "Done."
 )
 
 install-virtualization-packages () (
-    echo "-------------------INSTALLING----------------" | tr " " "\n"
+    echo "-------------------INSTALLING VIRTUALIZATION PACKAGES----------------"
     dnf-install "$INSTALLABLE_VIRTUALIZATION_PACKAGES"
     echo "Done."
 )
 
 install-dev-tools () (
-    echo "-------------------INSTALLING DEV TOOLS----------------" | tr " " "\n"
+    echo "-------------------INSTALLING DEV TOOLS----------------"
     dnf-group-install-with-optional "C Development Tools and Libraries" "Development Tools"
     dnf-install "$INSTALLABLE_DEV_PKGS"
     

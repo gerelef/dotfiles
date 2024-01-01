@@ -100,7 +100,7 @@ add-gsettings-shortcut () (
 dnf-install () (
     [[ $# -eq 0 ]] && return 2
     
-    echo "-------------------DNF-INSTALL---------------- $*" | tr " " "\n"
+    echo "-------------------DNF-INSTALL----------------"
     while : ; do
         dnf install -y --best --allowerasing $@ && break
     done
