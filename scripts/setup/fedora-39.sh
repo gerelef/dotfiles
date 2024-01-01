@@ -692,14 +692,15 @@ fi
 # improve dnf performance
 copy-dnf
 
-# for some reason this repository is added on every new install, i dont' care i have toolbox wtf
-dnf copr remove -y --skip-broken phracek/PyCharm
+# for some reason this repository is added on every new install, it's NOT needed since we use toolbox
+dnf copr remove -y --skip-broken phracek/PyCharm 2> /dev/null
 dnf install -y --best --allowerasing "https://download1.rpmfusion.org/free/fedora/rpmfusion-free-release-$(rpm -E %fedora).noarch.rpm" # free rpmfusion
 dnf install -y --best --allowerasing "https://download1.rpmfusion.org/nonfree/fedora/rpmfusion-nonfree-release-$(rpm -E %fedora).noarch.rpm" # nonfree rpmfusion
 
 # no requirement to add flathub ourselves anymore in f38; it should be enabled by default. however, it may not be, most likely by accident, so this is a failsafe
-flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
-flatpak remote-delete fedora
+flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo 2> /dev/null
+flatpak remote-delete fedora 2> /dev/null
+flatpak remote-delete fedora-testing 2> /dev/null
 
 dnf-update-refresh
 
