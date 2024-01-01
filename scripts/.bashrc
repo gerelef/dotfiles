@@ -28,22 +28,22 @@ export SUDO_PROMPT="$(tput setaf 4)root:$(tput sgr0)"
 
 install-system-pkg () (
     while :; do
-        [[ -n "$(command -v dnf)" ]] && (sudo dnf install -y "$@"; break)
-        [[ -n "$(command -v yum)" ]] && (sudo yum install -y "$@"; break)
-        [[ -n "$(command -v apt)" ]] && (sudo apt install -y "$@"; break)
+        [[ -n "$(command -v dnf)" ]] && sudo dnf install -y "$@" && break
+        [[ -n "$(command -v yum)" ]] && sudo yum install -y "$@" && break
+        [[ -n "$(command -v apt)" ]] && sudo apt install -y "$@" && break
         break
     done
 )
 
 update-everything () (
     while :; do
-        [[ -n "$(command -v dnf)" ]] && sudo dnf upgrade -y --refresh && sudo dnf autoremove -y
+        [[ -n "$(command -v dnf)" ]] && (sudo dnf upgrade -y --refresh && sudo dnf autoremove -y)
         [[ -n "$(command -v pacman)" ]] && sudo pacman -Syu
         [[ -n "$(command -v yum)" ]] && sudo yum update -y
-        [[ -n "$(command -v apt)" ]] && sudo apt update -y && sudo apt autoremove -y
+        [[ -n "$(command -v apt)" ]] && (sudo apt update -y && sudo apt autoremove -y)
         break
     done
-    [[ -n "$(command -v flatpak)" ]] && (flatpak update -y && flatpak uninstall --unused -y && flatpak repair)
+    [[ -n "$(command -v flatpak)" ]] && (flatpak update -y && flatpak uninstall --unused -y && sudo flatpak repair)
     [[ -n "$(command -v snap)" ]] && snap refresh -y
     return 0
 )
