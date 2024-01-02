@@ -41,8 +41,11 @@ install-cinnamon-essentials () (
     
     # FIXME for some reason, this installs gnome, check if it is the case
     dnf-install "$INSTALLABLE_CINNAMON_ESSENTIAL_PACKAGES"
+    sleep 10
     dnf-install "$INSTALLABLE_CINNAMON_APPLICATION_PACKAGES"
+    sleep 10
     dnf-install "$INSTALLABLE_CINNAMON_EXTENSIONS"
+    sleep 10
     flatpak-install "$INSTALLABLE_CINNAMON_FLATPAKS"
 
     try-enabling-power-profiles-daemon
