@@ -758,7 +758,8 @@ fi
 
 if ask-user "Customize firefox? Compatible only with gerelef/dotfiles"; then
     # create default directories that should exist on all my systems
-    create-default-locations 
+    create-default-locations
+    configure-residual-permissions
     echo "https://www.suse.com/support/kb/doc/?id=000017060"
     while : ; do
         if ask-user "Please run firefox as a user to create its configuration directories; let it load fully, then close it."; then
