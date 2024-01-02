@@ -283,14 +283,28 @@ configure-system-defaults () (
 create-swapfile () (
     # if we haven't created /swapfile, go ahead, otherwise get out
     [[ -n $(cat /etc/fstab | grep "/swapfile swap swap defaults 0 0") ]] && return
+    [[ -n $(cat /etc/fstab | grep "/swapfile none swap defaults 0 0") ]] && return
     
     echo "-------------------CREATING /swapfile----------------"
-    kbs=$(cat /proc/meminfo | grep MemTotal | grep -E -o "[0-9]+")
-    fallocate -l "$kbs"KB /swapfile 
+    # btrfs specific no copy-on-write
+    # https://unix.stackexchange.com/questions/599949/swapfile-swapon-invalid-argument
+    if [[ "btrfs" == $ROOT_FS ]]; then
+        truncate -s 0 /swapfile
+        chattr +C /swapfile
+    fi
+    
+    kbs=$(cat /proc/meminfo | grep MemTotal | grep -E -o "[0-9]+") 
+    dd if=/dev/zero of=/swapfile bs=1KB count=$kbs
     chmod 600 /swapfile 
     chown root /swapfile 
-    mkswap /swapfile 
+    mkswap /swapfile
     swapon /swapfile
+    
+    # btrfs specific fstab entry
+    if [[ "btrfs" == $ROOT_FS ]]; then
+        echo "/swapfile none swap defaults 0 0" >> /etc/fstab
+        return
+    fi
     echo "/swapfile swap swap defaults 0 0" >> /etc/fstab
     
     echo "Done."
