@@ -650,8 +650,6 @@ gnome-classic-session \
 gnome-initial-setup \
 gnome-boxes \
 gnome-calculator \
-gnome-calendar \
-gnome-color-manager \
 gnome-contacts \
 gnome-maps \
 gnome-clocks \
