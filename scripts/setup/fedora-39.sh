@@ -142,10 +142,9 @@ optimize-laptop-battery () (
 )
 
 install-proprietary-nvidia-drivers () (
-    # install nvidia drivers if we have an NVIDIA card and we're running the nouveau drivers...
+    # install nvidia drivers if we have an NVIDIA card
     readonly NVIDIA_GPU=$(lspci | grep -i vga | grep NVIDIA)
     [[ -z "$NVIDIA_GPU" ]] && return
-    [[ ! $(lsmod | grep nouveau) ]] && return
     
     echo "-------------------INSTALLING NVIDIA DRIVERS----------------"
     echo "Found $NVIDIA_GPU running with nouveau drivers!"
