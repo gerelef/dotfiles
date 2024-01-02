@@ -893,6 +893,18 @@ gsettings set org.gnome.shell.extensions.forge.keybindings window-swap-up "[]"
 gsettings set org.gnome.shell.extensions.forge.keybindings window-toggle-always-float "[]"
 gsettings set org.gnome.shell.extensions.forge.keybindings window-toggle-float "[]"
 gsettings set org.gnome.shell.extensions.forge.keybindings workspace-active-tile-toggle "[]"
+gsettings set org.gnome.shell.extensions.forge primary-layout-mode 'tiling'
+gsettings set org.gnome.shell.extensions.forge float-always-on-top-enabled true
+gsettings set org.gnome.shell.extensions.forge preview-hint-enabled true
+gsettings set org.gnome.shell.extensions.forge auto-split-enabled true
+gsettings set org.gnome.shell.extensions.forge focus-border-toggle false
+gsettings set org.gnome.shell.extensions.forge split-border-toggle false
+gsettings set org.gnome.shell.extensions.forge stacked-tiling-mode-enabled true
+gsettings set org.gnome.shell.extensions.forge tabbed-tiling-mode-enabled false
+gsettings set org.gnome.shell.extensions.forge tiling-mode-enabled true
+gsettings set org.gnome.shell.extensions.forge window-gap-hidden-on-single true
+gsettings set org.gnome.shell.extensions.forge window-gap-size 1
+gsettings set org.gnome.shell.extensions.forge window-gap-size-increment 1
 flatpak run --branch=stable --arch=x86_64 --command=gsettings net.nokyan.Resources set net.nokyan.Resources apps-show-cpu true
 flatpak run --branch=stable --arch=x86_64 --command=gsettings net.nokyan.Resources set net.nokyan.Resources apps-show-drive-read-speed false
 flatpak run --branch=stable --arch=x86_64 --command=gsettings net.nokyan.Resources set net.nokyan.Resources apps-show-drive-read-total false
