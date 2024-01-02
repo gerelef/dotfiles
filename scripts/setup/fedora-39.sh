@@ -837,8 +837,6 @@ if [[ $XDG_CURRENT_DESKTOP == "GNOME" ]]; then
     echo "Make sure to get the legacy GTK3 Theme Auto Switcher"
     echo "  https://extensions.gnome.org/extension/4998/legacy-gtk3-theme-scheme-auto-switcher/"
     
-    
-    
     echo "Configuring all gsettings for $REAL_USER . . ."
     # user gsettings using heredocs
     # https://tldp.org/LDP/abs/html/here-docs.html
