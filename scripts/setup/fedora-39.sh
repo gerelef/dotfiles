@@ -1168,3 +1168,7 @@ exit
 GSETTINGS_DELIMITER
     echo "Done."
 fi
+
+# write everything to disk to prevent unpredictable behaviour
+#  this might not be needed, but better to be explicit than implicit
+sync
