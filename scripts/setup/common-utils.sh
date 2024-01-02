@@ -33,42 +33,6 @@ readonly WRK_ROOT="$REAL_USER_HOME/work"
 readonly SMR_ROOT="$REAL_USER_HOME/seminar"
 readonly RND_ROOT="$REAL_USER_HOME/random"
 
-# https://stackoverflow.com/questions/2990414/echo-that-outputs-to-stderr
-echo-err () (
-    echo "$@" 1>&2
-)
-
-ask-user () (
-    while : ; do
-        read -p "$* [Y/n]: " -r
-        echo-err ""
-        [[ $REPLY =~ ^[Yy]$ ]] && return 0
-        [[ $REPLY =~ ^[Nn]$ ]] && return 1
-        echo-err "Invalid reply \"$REPLY\", please answer with Y/y for Yes, or N/n for No."
-    done
-)
-
-ask-user-multiple-questions () (
-    # $1 onwards should be the options users have in detail
-    # output is in stdout, so we need to capture that;
-    #  unfortunately, (one of) the only sane way(s) to still output 
-    #  while capturing stdout, is to output to stderr
-    range="[0-$(($#-1))]"
-    while : ; do
-        i=0
-        for option in "$@"; do
-            echo-err "$((i++)). $option" 
-        done
-        read -p "Choice $range: " -r
-        echo-err ""
-        if [[ $REPLY =~ ^[0-9][0-9]*$ && $REPLY -lt $# ]]; then
-            echo "$REPLY"
-            return
-        fi
-        echo-err "Invalid reply > $REPLY, please answer in the range of $range."
-    done
-)
-
 add-gsettings-shortcut () (
     [[ $# -ne 3 ]] && return 2
     # $1 is the name
@@ -348,4 +312,41 @@ copy-ff-rc-files () (
     done
 )
 
+#######################################################################################################
+# HELPERS
 
+# https://stackoverflow.com/questions/2990414/echo-that-outputs-to-stderr
+echo-err () (
+    echo "$@" 1>&2
+)
+
+ask-user () (
+    while : ; do
+        read -p "$* [Y/n]: " -r
+        echo-err ""
+        [[ $REPLY =~ ^[Yy]$ ]] && return 0
+        [[ $REPLY =~ ^[Nn]$ ]] && return 1
+        echo-err "Invalid reply \"$REPLY\", please answer with Y/y for Yes, or N/n for No."
+    done
+)
+
+ask-user-multiple-questions () (
+    # $1 onwards should be the options users have in detail
+    # output is in stdout, so we need to capture that;
+    #  unfortunately, (one of) the only sane way(s) to still output 
+    #  while capturing stdout, is to output to stderr
+    range="[0-$(($#-1))]"
+    while : ; do
+        i=0
+        for option in "$@"; do
+            echo-err "$((i++)). $option" 
+        done
+        read -p "Choice $range: " -r
+        echo-err ""
+        if [[ $REPLY =~ ^[0-9][0-9]*$ && $REPLY -lt $# ]]; then
+            echo "$REPLY"
+            return
+        fi
+        echo-err "Invalid reply > $REPLY, please answer in the range of $range."
+    done
+)
