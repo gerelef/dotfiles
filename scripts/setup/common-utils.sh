@@ -358,6 +358,11 @@ is-gnome-session () (
     return 1
 )
 
+is-xcinnamon-session () (
+    [[ $XDG_CURRENT_DESKTOP == "X-Cinnamon" ]] && return 0
+    return 1
+)
+
 is-btrfs-rootfs () (
     [[ "btrfs" == $ROOT_FS ]] && return 0
     return 1
