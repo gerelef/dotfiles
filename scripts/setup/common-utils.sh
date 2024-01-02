@@ -319,17 +319,17 @@ copy-ff-rc-files () (
 # HELPERS
 
 # https://stackoverflow.com/questions/2990414/echo-that-outputs-to-stderr
-echo-err () (
+echo-stderr () (
     echo "$@" 1>&2
 )
 
 ask-user () (
     while : ; do
         read -p "$* [Y/n]: " -r
-        echo-err ""
+        echo-stderr ""
         [[ $REPLY =~ ^[Yy]$ ]] && return 0
         [[ $REPLY =~ ^[Nn]$ ]] && return 1
-        echo-err "Invalid reply \"$REPLY\", please answer with Y/y for Yes, or N/n for No."
+        echo-stderr "Invalid reply \"$REPLY\", please answer with Y/y for Yes, or N/n for No."
     done
 )
 
@@ -342,15 +342,15 @@ ask-user-multiple-questions () (
     while : ; do
         i=0
         for option in "$@"; do
-            echo-err "$((i++)). $option" 
+            echo-stderr "$((i++)). $option" 
         done
         read -p "Choice $range: " -r
-        echo-err ""
+        echo-stderr ""
         if [[ $REPLY =~ ^[0-9][0-9]*$ && $REPLY -lt $# ]]; then
             echo "$REPLY"
             return
         fi
-        echo-err "Invalid reply > $REPLY, please answer in the range of $range."
+        echo-stderr "Invalid reply > $REPLY, please answer in the range of $range."
     done
 )
 
