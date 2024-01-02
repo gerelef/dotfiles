@@ -69,7 +69,7 @@ configure-gdm-dconf () (
 configure-lightdm-slick-greeter () (
     # theme with slick-greeter, which is the default theming cinnamon applies
     #  https://wiki.archlinux.org/title/LightDM#Greeter
-    
+    readonly LIGHTDM_CONF_FILE="/etc/lightdm/lightdm.conf"
     (cat <<-GREETER_END
 [LightDM]
 
@@ -81,7 +81,9 @@ greeter-session=lightdm-slick-greeter
 [VNCServer]
 
 GREETER_END
-    ) > "/etc/lightdm/lightdm.conf"
+    ) > "$LIGHTDM_CONF_FILE"
+    
+    chmod 444 "$LIGHTDM_CONF_FILE"
 )
 
 install-universal-necessities () (
