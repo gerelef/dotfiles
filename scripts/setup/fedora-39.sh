@@ -678,6 +678,7 @@ dnf-update-refresh
 
 #######################################################################################################
 
+# TODO when Cosmic DE comes out, I definitely want to test it out, perhaps add it here too
 # declare desktop environment installers
 dei=(
 install-gnome-essentials
