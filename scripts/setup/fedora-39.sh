@@ -71,8 +71,15 @@ configure-lightdm-slick-greeter () (
     #  https://wiki.archlinux.org/title/LightDM#Greeter
     
     (cat <<-GREETER_END
+[LightDM]
+
 [Seat:*]
 greeter-session=lightdm-slick-greeter
+
+[XDMCPServer]
+
+[VNCServer]
+
 GREETER_END
     ) > "/etc/lightdm/lightdm.conf"
 )
