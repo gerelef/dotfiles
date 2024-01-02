@@ -53,7 +53,6 @@ install-cinnamon-essentials () (
     fi
     
     systemctl enable lightdm
-    configure-lightdm-slick-greeter
 
     echo "Done."
 )
@@ -64,26 +63,6 @@ configure-gdm-dconf () (
     create-gdm-dconf-db
 
     dconf update
-)
-
-configure-lightdm-slick-greeter () (
-    # theme with slick-greeter, which is the default theming cinnamon applies
-    #  https://wiki.archlinux.org/title/LightDM#Greeter
-    readonly LIGHTDM_CONF_FILE="/etc/lightdm/lightdm.conf"
-    (cat <<-GREETER_END
-[LightDM]
-
-[Seat:*]
-greeter-session=lightdm-slick-greeter
-
-[XDMCPServer]
-
-[VNCServer]
-
-GREETER_END
-    ) > "$LIGHTDM_CONF_FILE"
-    
-    chmod 444 "$LIGHTDM_CONF_FILE"
 )
 
 install-universal-necessities () (
@@ -462,6 +441,7 @@ gnome-shell-extension-caffeine \
 #######################################################################################################
 
 readonly INSTALLABLE_CINNAMON_ESSENTIAL_PACKAGES="\
+lightdm-settings \
 slick-greeter \
 slick-greeter-cinnamon \
 cinnamon \
