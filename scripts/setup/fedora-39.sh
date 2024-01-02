@@ -367,9 +367,8 @@ configure-residual-permissions () (
         change-group "$file"
     done
     
-    # this is REQUIRED for ssh related thingies; key must NOT be readable by anyone else
-    #  but this user
-    chmod -R 700 ~/.ssh/
+    # this is REQUIRED for ssh related thingies; key must NOT be readable by anyone else but this user
+    chmod -R 700 "$REAL_USER_HOME/.ssh/"
     echo "Done."
 )
 
