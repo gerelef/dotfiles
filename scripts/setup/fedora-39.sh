@@ -790,12 +790,12 @@ fi
 if ask-user "Are you sure you want to install development tools (IDEs)?"; then
     install-dev-tools
     install-jetbrains-toolbox
-fi
-
-if ask-user "Are you sure you want to install zeno/scrcpy?"; then
-    echo "Installing zeno/scrcpy ..."
-    dnf copr enable -y zeno/scrcpy
-    dnf-install scrcpy
+    
+    if ask-user "Are you sure you want to install zeno/scrcpy?"; then
+        echo "Installing zeno/scrcpy ..."
+        dnf copr enable -y zeno/scrcpy
+        dnf-install scrcpy
+    fi
 fi
 
 #######################################################################################################
@@ -844,21 +844,17 @@ if [[ $XDG_CURRENT_DESKTOP == "GNOME" ]]; then
     # https://tldp.org/LDP/abs/html/here-docs.html
     sudo --preserve-env="XDG_RUNTIME_DIR" --preserve-env="XDG_DATA_DIRS" --preserve-env="DBUS_SESSION_BUS_ADDRESS" -u "$REAL_USER" bash <<-GSETTINGS_DELIMITER
 source "$(dirname -- "$BASH_SOURCE")/common-utils.sh"
-
 gsettings set org.gnome.desktop.interface cursor-theme 'Adwaita'
 gsettings set org.gnome.desktop.interface icon-theme 'Adwaita'
 gsettings set org.gnome.desktop.interface gtk-theme 'adw-gtk3-dark'
 gsettings set org.gnome.desktop.interface color-scheme 'prefer-dark'
-
 add-gsettings-shortcut "blackbox" "/usr/bin/flatpak run --branch=stable --arch=x86_64 --command=blackbox com.raggesilver.BlackBox" "<Shift><Control>KP_Add"
 add-gsettings-shortcut "resource-monitor" "/usr/bin/flatpak run --branch=stable --arch=x86_64 --command=resources net.nokyan.Resources" "<Shift><Control>Escape"
-
 # reference to fix https://github.com/flameshot-org/flameshot/issues/3326#issuecomment-1838662244
 dbus-send --session --print-reply=literal --dest=org.freedesktop.impl.portal.PermissionStore /org/freedesktop/impl/portal/PermissionStore org.freedesktop.impl.portal.PermissionStore.SetPermission string:'screenshot' boolean:true string:'screenshot' string:'flameshot' array:string:'yes'
 dbus-send --session --print-reply=literal --dest=org.freedesktop.impl.portal.PermissionStore /org/freedesktop/impl/portal/PermissionStore org.freedesktop.impl.portal.PermissionStore.Lookup string:'screenshot' string:'screenshot'
 add-gsettings-shortcut "flameshot" "flameshot gui" "Print"
 flameshot config -m white
-
 gsettings set org.gnome.shell.extensions.forge.keybindings prefs-tiling-toggle ['<Super>y']
 gsettings set org.gnome.shell.extensions.forge.keybindings con-split-horizontal "[]"
 gsettings set org.gnome.shell.extensions.forge.keybindings con-split-layout-toggle "[]"
@@ -900,7 +896,6 @@ gsettings set org.gnome.shell.extensions.forge.keybindings window-swap-up "[]"
 gsettings set org.gnome.shell.extensions.forge.keybindings window-toggle-always-float "[]"
 gsettings set org.gnome.shell.extensions.forge.keybindings window-toggle-float "[]"
 gsettings set org.gnome.shell.extensions.forge.keybindings workspace-active-tile-toggle "[]"
-
 flatpak run --branch=stable --arch=x86_64 --command=gsettings net.nokyan.Resources set net.nokyan.Resources apps-show-cpu true
 flatpak run --branch=stable --arch=x86_64 --command=gsettings net.nokyan.Resources set net.nokyan.Resources apps-show-drive-read-speed false
 flatpak run --branch=stable --arch=x86_64 --command=gsettings net.nokyan.Resources set net.nokyan.Resources apps-show-drive-read-total false
@@ -925,7 +920,6 @@ flatpak run --branch=stable --arch=x86_64 --command=gsettings net.nokyan.Resourc
 flatpak run --branch=stable --arch=x86_64 --command=gsettings net.nokyan.Resources set net.nokyan.Resources show-virtual-network-interfaces false
 flatpak run --branch=stable --arch=x86_64 --command=gsettings net.nokyan.Resources set net.nokyan.Resources sidebar-details true
 flatpak run --branch=stable --arch=x86_64 --command=gsettings net.nokyan.Resources set net.nokyan.Resources temperature-unit 'Celsius'
-
 flatpak run --branch=stable --arch=x86_64 --command=gsettings com.raggesilver.BlackBox set com.raggesilver.BlackBox command-as-login-shell true
 flatpak run --branch=stable --arch=x86_64 --command=gsettings com.raggesilver.BlackBox set com.raggesilver.BlackBox cursor-shape 1
 flatpak run --branch=stable --arch=x86_64 --command=gsettings com.raggesilver.BlackBox set com.raggesilver.BlackBox custom-shell-command ''
