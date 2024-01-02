@@ -42,9 +42,9 @@ add-gsettings-shortcut () (
     # $2 is the command
     # $3 is the bind, in <Modifier>Key format
     
-    custom_keybinds_enum="$(gsettings get org.gnome.settings-daemon.plugins.media-keys custom-keybindings | tr "'" "\"")"
+    custom_keybinds_enum="$(gsettings get org.gnome.settings-daemon.plugins.media-keys custom-keybindings | sed -e "s/@as//" | tr "'" "\"")"
     custom_keybinds_length="$(echo "$custom_keybinds_enum"  | jq ". | length")"
-
+    
     keybind_version="custom$custom_keybinds_length"
     new_keybind_enumerator="/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/$keybind_version/"
     
