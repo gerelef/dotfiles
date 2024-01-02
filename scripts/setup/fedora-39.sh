@@ -358,6 +358,8 @@ configure-ssh-defaults () (
     mkdir -p "$REAL_USER_HOME/.ssh"
     ssh-keygen -q -t ed25519 -N '' -C "$REAL_USER@$DISTRIBUTION_NAME" -f "$REAL_USER_HOME/.ssh/id_ed25519" -P "" <<< $'\ny' >/dev/null 2>&1
     cat "$REAL_USER_HOME/.ssh/id_ed25519.pub"
+    # this is REQUIRED for ssh related thingies; key must NOT be readable by anyone else but this user
+    chmod 700 "$REAL_USER_HOME/.ssh/id_ed25519"
     echo "Done."
 )
 
@@ -372,8 +374,6 @@ configure-residual-permissions () (
         change-group "$file"
     done
     
-    # this is REQUIRED for ssh related thingies; key must NOT be readable by anyone else but this user
-    chmod -R 700 "$REAL_USER_HOME/.ssh/"
     echo "Done."
 )
 
