@@ -96,7 +96,7 @@ install-universal-necessities () (
     dnf-install "$INSTALLABLE_APPLICATION_PACKAGES"
     flatpak-install "$INSTALLABLE_FLATPAKS"
 
-    if [[ "btrfs" == $ROOT_FS || "btrfs" == $REAL_USER_HOME_FS ]]; then
+    if is-btrfs-rootfs || is-btrfs-homefs; then
         echo "Found BTRFS, installing tools..."
         dnf-install "$INSTALLABLE_BTRFS_TOOLS"
     fi
@@ -107,16 +107,14 @@ install-universal-necessities () (
 optimize-hardware () (
     echo "-------------------OPTIMIZING HARDWARE----------------"
     
-    readonly BIOS_MODE=$([ -d /sys/firmware/efi ] && echo UEFI || echo BIOS)
-    if [[ "$BIOS_MODE" == "UEFI" ]]; then
+    if is-uefi; then
         echo "Updating UEFI with fwupdmgr..."
         fwupdmgr refresh --force -y
         fwupdmgr get-updates -y
         fwupdmgr update -y
     fi
-
-    readonly CHASSIS_TYPE="$(dmidecode --string chassis-type)"
-    if [[ $CHASSIS_TYPE == "Desktop" ]]; then
+    
+    if is-desktop-type; then
         echo "Disabling mobile-gpu specific service (https://forums.developer.nvidia.com/t/no-matching-gpu-found-with-510-47-03/202315/5)"
         systemctl disable nvidia-powerd.service
         return
@@ -126,13 +124,11 @@ optimize-hardware () (
 )
 
 optimize-laptop-battery () (
-    # if we're on anything but a laptop, gtfo
-    readonly CHASSIS_TYPE="$(dmidecode --string chassis-type)"
-    [[ $CHASSIS_TYPE != "Other" ]] && return
-    [[ $CHASSIS_TYPE != "Notebook" && $CHASSIS_TYPE != "Tablet" && $CHASSIS_TYPE != "Convertible" ]] && return
+    # if we're on anything but a mobile device, gtfo
+    ! is-mobile-type && return 0
     
     echo "-------------------OPTIMIZING LAPTOP BATTERY----------------"
-    echo "Found laptop $CHASSIS_TYPE"
+    echo "Found mobile device type"
     # s3 sleep
     grubby --update-kernel=ALL --args="mem_sleep_default=s2idle"
     dnf-install "$INSTALLABLE_PWR_MGMNT"
@@ -154,7 +150,7 @@ install-proprietary-nvidia-drivers () (
     # check arch wiki, these enable DRM
     grubby --update-kernel=ALL --args="nvidia-drm.modeset=1"
     grubby --update-kernel=ALL --args="nvidia-drm.fbdev=1"
-    if [[ "$BIOS_MODE" == "UEFI" && $(mokutil --sb-state 2> /dev/null) ]]; then
+    if is-uefi && [[ $(mokutil --sb-state 2> /dev/null) ]]; then
         # https://blog.monosoul.dev/2022/05/17/automatically-sign-nvidia-kernel-module-in-fedora-36/
         # https://github.com/NVIDIA/yum-packaging-precompiled-kmod/blob/main/UEFI.md
         # the official NVIDIA instructions recommend installing the driver first
@@ -250,7 +246,6 @@ install-jetbrains-toolbox () (
     
     echo "this statement should never execute!"
     exit 1
-    echo "Done."
 )
 
 install-config-files () (
@@ -288,7 +283,7 @@ create-swapfile () (
     echo "-------------------CREATING /swapfile----------------"
     # btrfs specific no copy-on-write
     # https://unix.stackexchange.com/questions/599949/swapfile-swapon-invalid-argument
-    if [[ "btrfs" == $ROOT_FS ]]; then
+    if is-btrfs-rootfs; then
         truncate -s 0 /swapfile
         chattr +C /swapfile
     fi
@@ -301,7 +296,7 @@ create-swapfile () (
     swapon /swapfile
     
     # btrfs specific fstab entry
-    if [[ "btrfs" == $ROOT_FS ]]; then
+    if is-btrfs-rootfs; then
         echo "/swapfile none swap defaults 0 0" >> /etc/fstab
         return
     fi
@@ -345,7 +340,7 @@ tweak-minor-details () (
     # stop network manager from waiting until online, improves boot times
     systemctl disable NetworkManager-wait-online.service 
     # if GNOME, stop Software from autostarting & updating in the background, no reason
-    [[ $XDG_CURRENT_DESKTOP == "GNOME" ]] && rm /etc/xdg/autostart/org.gnome.Software.desktop 2> /dev/null
+    is-gnome-session && rm /etc/xdg/autostart/org.gnome.Software.desktop 2> /dev/null
     
     echo "Done."
 )
@@ -380,9 +375,6 @@ configure-residual-permissions () (
 
 ####################################################################################################### 
 
-# fs thingies
-readonly ROOT_FS=$(stat -f --format=%T /)
-readonly REAL_USER_HOME_FS=$(stat -f --format=%T "$REAL_USER_HOME")
 readonly DISTRIBUTION_NAME="fedora$(rpm -E %fedora)"
 
 #######################################################################################################
@@ -699,7 +691,7 @@ gnome-shell-extension-background-logo \
 #######################################################################################################
 
 # ref: https://askubuntu.com/a/30157/8698
-if ! [ $(id -u) = 0 ]; then
+if ! is-root; then
     echo "The script needs to be run as root." >&2
     exit 2
 fi
@@ -838,7 +830,7 @@ echo "User fstab mount arguments: rw,user,exec,nosuid,nodev,nofail,auto,x-gvfs-s
 
 #######################################################################################################
 
-if [[ $XDG_CURRENT_DESKTOP == "GNOME" ]]; then
+if is-gnome-session; then
     echo "--------------------------- GNOME ---------------------------"
     echo "Make sure to get the legacy GTK3 Theme Auto Switcher"
     echo "  https://extensions.gnome.org/extension/4998/legacy-gtk3-theme-scheme-auto-switcher/"
