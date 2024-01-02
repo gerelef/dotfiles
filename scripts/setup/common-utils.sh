@@ -18,6 +18,9 @@ readonly REAL_USER_UID=$(id -u ${REAL_USER})
 # https://unix.stackexchange.com/questions/247576/how-to-get-home-given-user
 readonly REAL_USER_HOME=$(eval echo "~$REAL_USER")
 readonly REAL_USER_DBUS_ADDRESS="unix:path=/run/user/${REAL_USER_UID}/bus"
+# fs thingies
+readonly ROOT_FS=$(stat -f --format=%T /)
+readonly REAL_USER_HOME_FS=$(stat -f --format=%T "$REAL_USER_HOME")
 # dotfiles directories
 # https://stackoverflow.com/questions/59895/how-do-i-get-the-directory-where-a-bash-script-is-located-from-within-the-script
 readonly SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
@@ -349,4 +352,40 @@ ask-user-multiple-questions () (
         fi
         echo-err "Invalid reply > $REPLY, please answer in the range of $range."
     done
+)
+
+is-root () (
+     [[ $(id -u) = 0 ]] && return 0
+     return 1
+)
+
+is-gnome-session () (
+    [[ $XDG_CURRENT_DESKTOP == "GNOME" ]] && return 0
+    return 1
+)
+
+is-btrfs-rootfs () (
+    [[ "btrfs" == $ROOT_FS ]] && return 0
+    return 1
+)
+
+is-btrfs-homefs () (
+    [[ "btrfs" == $REAL_USER_HOME_FS ]] && return 0
+    return 1
+)
+
+is-uefi () (
+    [[ "$([ -d /sys/firmware/efi ] && echo UEFI || echo BIOS)" == "UEFI" ]] && return 0
+    return 1
+)
+
+is-desktop-type () (
+    [[ "$(dmidecode --string chassis-type)" == "Desktop" ]] && return 0
+    return 1
+)
+
+is-mobile-type () (
+    readonly CHASSIS_TYPE="$(dmidecode --string chassis-type)"
+    [[ $CHASSIS_TYPE == "Notebook" || $CHASSIS_TYPE == "Tablet" || $CHASSIS_TYPE == "Convertible" ]] && return 0
+    return 1
 )
