@@ -52,10 +52,9 @@ install-cinnamon-essentials () (
         echo "Done."
     fi
     
-    # FIXME theme with slick-greeter, which is the default theming cinnamon applies
-    #  https://wiki.archlinux.org/title/LightDM#Greeter
     systemctl enable lightdm
-    
+    configure-lightdm-slick-greeter
+
     echo "Done."
 )
 
@@ -65,6 +64,17 @@ configure-gdm-dconf () (
     create-gdm-dconf-db
 
     dconf update
+)
+
+configure-lightdm-slick-greeter () (
+    # theme with slick-greeter, which is the default theming cinnamon applies
+    #  https://wiki.archlinux.org/title/LightDM#Greeter
+    
+    (cat <<-GREETER_END
+[Seat:*]
+greeter-session=lightdm-slick-greeter
+GREETER_END
+    ) > "/etc/lightdm/lightdm.conf"
 )
 
 install-universal-necessities () (
@@ -467,7 +477,8 @@ NetworkManager-wwan \
 
 readonly INSTALLABLE_CINNAMON_APPLICATION_PACKAGES="\
 eom \
-nautilus \
+nemo \
+alacritty \
 qbittorrent \
 cinnamon-calendar-server \
 cinnamon-control-center-filesystem \
@@ -475,7 +486,6 @@ gnome-disk-utility \
 "
 
 readonly INSTALLABLE_CINNAMON_FLATPAKS="\
-com.raggesilver.BlackBox \
 net.nokyan.Resources \
 "
 
