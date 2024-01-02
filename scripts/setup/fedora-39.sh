@@ -845,13 +845,13 @@ if is-gnome-session; then
     # https://tldp.org/LDP/abs/html/here-docs.html
     sudo --preserve-env="XDG_RUNTIME_DIR" --preserve-env="XDG_DATA_DIRS" --preserve-env="DBUS_SESSION_BUS_ADDRESS" -u "$REAL_USER" bash <<-GSETTINGS_DELIMITER
 source "$(dirname -- "$BASH_SOURCE")/common-utils.sh"
+add-gsettings-shortcut "blackbox" "/usr/bin/flatpak run --branch=stable --arch=x86_64 --command=blackbox com.raggesilver.BlackBox" "<Shift><Control>KP_Add"
+add-gsettings-shortcut "resource-monitor" "/usr/bin/flatpak run --branch=stable --arch=x86_64 --command=resources net.nokyan.Resources" "<Shift><Control>Escape"
+add-gsettings-shortcut "flameshot" "flameshot gui" "Print"
 gsettings set org.gnome.desktop.interface cursor-theme 'Adwaita'
 gsettings set org.gnome.desktop.interface icon-theme 'Adwaita'
 gsettings set org.gnome.desktop.interface gtk-theme 'adw-gtk3-dark'
 gsettings set org.gnome.desktop.interface color-scheme 'prefer-dark'
-add-gsettings-shortcut "blackbox" "/usr/bin/flatpak run --branch=stable --arch=x86_64 --command=blackbox com.raggesilver.BlackBox" "<Shift><Control>KP_Add"
-add-gsettings-shortcut "resource-monitor" "/usr/bin/flatpak run --branch=stable --arch=x86_64 --command=resources net.nokyan.Resources" "<Shift><Control>Escape"
-add-gsettings-shortcut "flameshot" "flameshot gui" "Print"
 gsettings set org.gnome.shell.extensions.forge.keybindings prefs-tiling-toggle "['<Super>y']"
 gsettings set org.gnome.shell.extensions.forge.keybindings con-split-horizontal "[]"
 gsettings set org.gnome.shell.extensions.forge.keybindings con-split-layout-toggle "[]"
