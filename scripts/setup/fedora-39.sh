@@ -519,7 +519,7 @@ qbittorrent \
 # readonly INSTALLABLE_HYPRLAND_FLATPAKS="\
 # "
 
-# FIXME add confirm hyprpm works, and implement hyprpm-install 
+# FIXME confirm hyprpm works, and implement hyprpm-install 
 #  https://wiki.hyprland.org/Plugins/Using-Plugins/
 readonly INSTALLABLE_HYPRLAND_EXTENSIONS="\
 csgo-vulkan-fix \
@@ -529,8 +529,11 @@ hyprgrass \
 
 #######################################################################################################
 
-# TODO replace grub2 with systemd-boot when we get rid of all the issues 
+# replace grub2 with systemd-boot when we get rid of all the issues
 #  regarding proprietary NVIDIA Drivers, and signing them for UEFI
+#  apparently, this is the way going forward with unified kernel image
+#  https://fedoraproject.org/wiki/Changes/Unified_Kernel_Support_Phase_2
+#  so we eon't replace it manually, it'll be replaced be Red Hat themselves
 # TODO add systemd-bsod when it becomes available on fedora
 readonly INSTALLABLE_ESSENTIAL_PACKAGES="\
 setroubleshoot \
