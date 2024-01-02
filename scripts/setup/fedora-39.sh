@@ -11,7 +11,7 @@ dnf-install flatpak plocate pciutils udisks2
 install-gnome-essentials () (
     echo "-------------------INSTALLING GNOME----------------"
     dnf-install "$INSTALLABLE_ESSENTIAL_DESKTOP_PACKAGES"
-    # TODO gnome currently supports X11; when xorg is not supported anymore by GNOME, this will need to be removed
+    # gnome currently supports X11; when xorg is dropped by GNOME, this will need to be removed
     dnf group install -y --best --allowerasing base-x
     
     dnf-install "$INSTALLABLE_GNOME_ESSENTIAL_PACKAGES"
@@ -36,16 +36,12 @@ install-gnome-essentials () (
 install-cinnamon-essentials () (
     echo "-------------------INSTALLING CINNAMON----------------"
     dnf-install "$INSTALLABLE_ESSENTIAL_DESKTOP_PACKAGES"
-    # TODO cinnamon is currently X11 only; when xorg is not supported anymore by Cinnamon, this will need to be removed
+    # cinnamon is currently X11 only; when xorg is dropped by Cinnamon, this will need to be removed
     dnf group install -y --best --allowerasing base-x
     
-    # FIXME for some reason, this installs gnome, check if it is the case
     dnf-install "$INSTALLABLE_CINNAMON_ESSENTIAL_PACKAGES"
-    sleep 10
     dnf-install "$INSTALLABLE_CINNAMON_APPLICATION_PACKAGES"
-    sleep 10
     dnf-install "$INSTALLABLE_CINNAMON_EXTENSIONS"
-    sleep 10
     flatpak-install "$INSTALLABLE_CINNAMON_FLATPAKS"
 
     try-enabling-power-profiles-daemon
@@ -55,29 +51,11 @@ install-cinnamon-essentials () (
         dnf install -y --best --allowerasing f*-backgrounds-gnome*
         echo "Done."
     fi
-
-    systemctl enable gdm
-    configure-gdm-dconf
     
-    echo "Done."
-)
-
-install-hyprland-essentials () (
-    echo "-------------------INSTALLING HYPRLAND----------------"
-    dnf-install "$INSTALLABLE_ESSENTIAL_DESKTOP_PACKAGES"
-    # hyprland is wlroots based wayland only compositor, so base-x is not needed (thankfully)
+    # FIXME theme with slick-greeter, which is the default theming cinnamon applies
+    #  https://wiki.archlinux.org/title/LightDM#Greeter
+    systemctl enable lightdm
     
-    # FIXME enable the service for the current login manager
-    try-enabling-power-profiles-daemon
-    
-    dnf copr enable erikreider/SwayNotificationCenter
-    
-    dnf-install "$INSTALLABLE_HYPRLAND_ESSENTIAL_PACKAGES" --exclude="wofi kitty"
-    dnf-install "$INSTALLABLE_HYPRLAND_APPLICATION_PACKAGES"
-    # FIXME dnf-install "$INSTALLABLE_HYPRLAND_EXTENSIONS"
-    # flatpak-install "$INSTALLABLE_HYPRLAND_FLATPAKS"
-    
-    # FIXME add exec-once=nm-applet --indicator & disown
     echo "Done."
 )
 
@@ -408,8 +386,19 @@ gnome-keyring \
 gnome-keyring-pam \
 gnome-power-manager \
 xdg-desktop-portal-gnome \
-NetworkManager-openvpn-gnome \
 NetworkManager-ssh-gnome \
+NetworkManager-adsl \
+NetworkManager-bluetooth \
+NetworkManager-iodine-gnome \
+NetworkManager-l2tp-gnome \
+NetworkManager-libreswan-gnome \
+NetworkManager-openconnect-gnome \
+NetworkManager-openvpn-gnome \
+NetworkManager-ppp \
+NetworkManager-pptp-gnome \
+NetworkManager-vpnc-gnome \
+NetworkManager-wifi \
+NetworkManager-wwan \
 gnome-bluetooth \
 gnome-bluetooth-libs \
 gnome-settings-daemon \
@@ -454,16 +443,30 @@ gnome-shell-extension-caffeine \
 #######################################################################################################
 
 readonly INSTALLABLE_CINNAMON_ESSENTIAL_PACKAGES="\
-gdm \
+slick-greeter \
+slick-greeter-cinnamon \
 cinnamon \
 cinnamon-desktop \
 cinnamon-screensaver \
 cinnamon-session \
 cinnamon-settings-daemon \
 cinnamon-control-center \
+NetworkManager-adsl \
+NetworkManager-bluetooth \
+NetworkManager-iodine-gnome \
+NetworkManager-l2tp-gnome \
+NetworkManager-libreswan-gnome \
+NetworkManager-openconnect-gnome \
+NetworkManager-openvpn-gnome \
+NetworkManager-ppp \
+NetworkManager-pptp-gnome \
+NetworkManager-vpnc-gnome \
+NetworkManager-wifi \
+NetworkManager-wwan \
 "
 
 readonly INSTALLABLE_CINNAMON_APPLICATION_PACKAGES="\
+eom \
 nautilus \
 qbittorrent \
 cinnamon-calendar-server \
@@ -479,51 +482,6 @@ net.nokyan.Resources \
 readonly INSTALLABLE_CINNAMON_EXTENSIONS="\
 f$(rpm -E %fedora)-backgrounds-gnome \
 f$(rpm -E %fedora)-backgrounds-extras-gnome \
-schroedinger-cat-backgrounds-extras-gnome \
-schroedinger-cat-backgrounds-gnome \
-"
-
-#######################################################################################################
-
-# FIXME add copying hyprland config to ~/.config/...
-# FIXME add sddm and swaylock
-# FIXME add systemd autostart https://old.reddit.com/r/hyprland/comments/127m3ef/starting_hyprland_directy_from_systemd_a_guide_to/
-# FIXME add autostart for anything applicable under here 
-readonly INSTALLABLE_HYPRLAND_ESSENTIAL_PACKAGES="\
-hyprland \
-xdg-desktop-portal-hyprland \
-xdg-desktop-portal-gtk \
-polkit-kde \
-SwayNotificationCenter \
-cliphist \
-wl-clip-persist \
-swaylock \
-greetd \
-gtkgreet \
-waybar \
-swaybg \
-qt6ct \
-"
-
-readonly INSTALLABLE_HYPRLAND_APPLICATION_PACKAGES="\
-alacritty \
-nautilus \
-rofi-wayland \
-rofi-themes \
-bpytop \
-qbittorrent \
-"
-
-# activate in the appropriate setup function as well!
-# readonly INSTALLABLE_HYPRLAND_FLATPAKS="\
-# "
-
-# FIXME confirm hyprpm works, and implement hyprpm-install 
-#  https://wiki.hyprland.org/Plugins/Using-Plugins/
-readonly INSTALLABLE_HYPRLAND_EXTENSIONS="\
-csgo-vulkan-fix \
-hyprbars \
-hyprgrass \
 "
 
 #######################################################################################################
@@ -668,6 +626,7 @@ tldr \
 
 # NOTE: these are global and should be treated as desktop agnostic
 readonly UNINSTALLABLE_BLOAT="\
+nemo \
 rhythmbox \
 totem \
 cheese \
@@ -727,7 +686,6 @@ dnf-update-refresh
 dei=(
 install-gnome-essentials
 install-cinnamon-essentials
-install-hyprland-essentials
 exit
 )
 

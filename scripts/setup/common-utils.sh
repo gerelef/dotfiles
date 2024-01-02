@@ -124,12 +124,6 @@ flatpak-install () (
     echo "Finished flatpak-installing."
 )
 
-hyprpm-install () (
-    # FIXME
-    echo "This does nothing currently."
-    exit 1
-)
-
 change-ownership () (
     [[ $# -eq 0 ]] && return 2
     [[ -z "$REAL_USER" ]] && return 2
