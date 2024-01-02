@@ -6,7 +6,7 @@ readonly DIR=$(dirname -- "$BASH_SOURCE")
 source "$DIR/common-utils.sh"
 
 # DEPENDENCIES FOR THE CURRENT SCRIPT 
-dnf-install flatpak plocate 
+dnf-install flatpak plocate pciutils udisks2
 
 install-gnome-essentials () (
     echo "-------------------INSTALLING GNOME----------------"
@@ -519,8 +519,6 @@ hyprgrass \
 #  regarding proprietary NVIDIA Drivers, and signing them for UEFI
 # TODO add systemd-bsod when it becomes available on fedora
 readonly INSTALLABLE_ESSENTIAL_PACKAGES="\
-pciutils \
-udisks2 \
 setroubleshoot \
 setroubleshoot-plugins \
 openvpn \
