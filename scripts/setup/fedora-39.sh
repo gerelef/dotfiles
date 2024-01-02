@@ -345,7 +345,7 @@ tweak-minor-details () (
     # stop network manager from waiting until online, improves boot times
     systemctl disable NetworkManager-wait-online.service 
     # if GNOME, stop Software from autostarting & updating in the background, no reason
-    [[ $XDG_CURRENT_DESKTOP == "GNOME" ]] && rm /etc/xdg/autostart/org.gnome.Software.desktop
+    [[ $XDG_CURRENT_DESKTOP == "GNOME" ]] && rm /etc/xdg/autostart/org.gnome.Software.desktop 2> /dev/null
     
     echo "Done."
 )
