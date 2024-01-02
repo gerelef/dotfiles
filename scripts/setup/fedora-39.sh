@@ -636,7 +636,6 @@ tldr \
 
 # NOTE: these are global and should be treated as desktop agnostic
 readonly UNINSTALLABLE_BLOAT="\
-nemo \
 rhythmbox \
 totem \
 cheese \
