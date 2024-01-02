@@ -327,7 +327,7 @@ ask-user () (
     done
 )
 
-ask-user-multiple-questions () (
+ask-user-multiple-choice () (
     # $1 onwards should be the options users have in detail
     # output is in stdout, so we need to capture that;
     #  unfortunately, (one of) the only sane way(s) to still output 
@@ -347,6 +347,8 @@ ask-user-multiple-questions () (
         echo-stderr "Invalid reply > $REPLY, please answer in the range of $range."
     done
 )
+
+# FIXME implement ask-user-multiple-answer for picking multiple answers
 
 is-root () (
      [[ $(id -u) = 0 ]] && return 0

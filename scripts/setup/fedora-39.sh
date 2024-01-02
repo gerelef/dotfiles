@@ -690,7 +690,7 @@ exit
 if [[ -z $XDG_CURRENT_DESKTOP ]]; then
     echo "After installation of a desktop environment finishes, the system will immediately reboot."
     echo "You will need to re-run this script afterwards to complete the setup."
-    choice=$(ask-user-multiple-questions "${dei[@]}" )
+    choice=$(ask-user-multiple-choice "${dei[@]}" )
     # run installer ...
     ${dei[$choice]}
     
