@@ -371,7 +371,10 @@ configure-residual-permissions () (
         change-ownership "$file"
         change-group "$file"
     done
-
+    
+    # this is REQUIRED for ssh related thingies; key must NOT be readable by anyone else
+    #  but this user
+    chmod -R 700 ~/.ssh/
     echo "Done."
 )
 
