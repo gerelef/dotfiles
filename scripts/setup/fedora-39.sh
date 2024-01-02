@@ -359,6 +359,7 @@ configure-ssh-defaults () (
     ssh-keygen -q -t ed25519 -N '' -C "$REAL_USER@$DISTRIBUTION_NAME" -f "$REAL_USER_HOME/.ssh/id_ed25519" -P "" <<< $'\ny' >/dev/null 2>&1
     cat "$REAL_USER_HOME/.ssh/id_ed25519.pub"
     # this is REQUIRED for ssh related thingies; key must NOT be readable by anyone else but this user
+    chown "$REAL_USER" "$REAL_USER_HOME/.ssh/id_ed25519"
     chmod 700 "$REAL_USER_HOME/.ssh/id_ed25519"
     echo "Done."
 )
