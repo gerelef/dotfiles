@@ -36,11 +36,13 @@ install-system-pkg () (
 )
 
 update-everything () (
+    # the reason this for loop exists is to act as a "block", so we can break control flow
+    #  when we're done updating platform packages (since there will be only 1 package manager per sys)
     while :; do
-        [[ -n "$(command -v dnf)" ]] && (sudo dnf upgrade -y --refresh && sudo dnf autoremove -y)
-        [[ -n "$(command -v pacman)" ]] && sudo pacman -Syu
-        [[ -n "$(command -v yum)" ]] && sudo yum update -y
-        [[ -n "$(command -v apt)" ]] && (sudo apt update -y && sudo apt autoremove -y)
+        [[ -n "$(command -v dnf)" ]] && (sudo dnf upgrade -y --refresh && sudo dnf autoremove -y) && break
+        [[ -n "$(command -v pacman)" ]] && sudo pacman -Syu && break
+        [[ -n "$(command -v yum)" ]] && sudo yum update -y && break
+        [[ -n "$(command -v apt)" ]] && (sudo apt update -y && sudo apt autoremove -y) && break
         break
     done
     [[ -n "$(command -v flatpak)" ]] && (flatpak update -y && flatpak uninstall --unused -y && sudo flatpak repair)
