@@ -436,6 +436,7 @@ gnome-shell-extension-places-menu \
 gnome-shell-extension-forge \
 gnome-shell-extension-dash-to-panel \
 gnome-shell-extension-caffeine \
+gnome-shell-extension-appindicator \
 "
 
 #######################################################################################################
