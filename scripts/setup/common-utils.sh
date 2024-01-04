@@ -1,3 +1,10 @@
+# check if this file is being executed directly & if it is, die
+if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then
+    echo "common-utils is NOT supposed to be executed directly!"
+    echo "To use, please source it from another script!"
+    exit 2
+fi
+
 if [[ -n "$__UTILS_LOADED" ]]; then
     return 0
 fi
@@ -310,6 +317,47 @@ copy-ff-rc-files () (
 )
 
 #######################################################################################################
+# NVIDIA DRIVER SPECIFIC FUNCTIONS
+
+# USEFUL COMMAND: dnf whatprovides COMMAND
+#  e.g. dnf whatprovides nvidia-smi
+
+# TODO match-model-to-akmod
+# this is the exhaustive list for each legacy driver & their support
+# https://www.nvidia.com/en-us/drivers/unix/legacy-gpu/
+# it's wise to declare this huge list at the end of this file, since this is meant to be sourced
+# rather than executed directly
+#  nvidia-settings
+#  akmod-nvidia
+#  xorg-x11-drv-nvidia
+#  xorg-x11-drv-nvidia-cuda
+#  xorg-x11-drv-nvidia-cuda-libs
+#  xorg-x11-drv-nvidia-libs
+#
+#  nvidia-settings-470xx
+#  akmod-nvidia-470xx
+#  xorg-x11-drv-nvidia-470xx
+#  xorg-x11-drv-nvidia-470xx-cuda
+#  xorg-x11-drv-nvidia-470xx-cuda-libs
+#  xorg-x11-drv-nvidia-470xx-libs
+#
+#  nvidia-settings-390xx
+#  akmod-nvidia-390xx
+#  xorg-x11-drv-nvidia-390xx
+#  xorg-x11-drv-nvidia-390xx-cuda
+#  xorg-x11-drv-nvidia-390xx-cuda-libs
+#  xorg-x11-drv-nvidia-390xx-libs
+#
+#  akmod-nvidia-340xx
+#  xorg-x11-drv-nvidia-340xx
+#  xorg-x11-drv-nvidia-340xx-cuda
+#  xorg-x11-drv-nvidia-340xx-libs
+
+# TODO get-gpu-model -> should support anything "mainstream" that the above akmods support 
+
+# TODO is-nvidia-gpu
+
+#######################################################################################################
 # HELPERS
 
 # https://stackoverflow.com/questions/2990414/echo-that-outputs-to-stderr
@@ -347,8 +395,6 @@ ask-user-multiple-choice () (
         echo-stderr "Invalid reply > $REPLY, please answer in the range of $range."
     done
 )
-
-# FIXME implement ask-user-multiple-answer for picking multiple answers
 
 is-root () (
      [[ $(id -u) = 0 ]] && return 0
