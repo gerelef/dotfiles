@@ -729,7 +729,15 @@ configure-system-defaults
 create-swapfile
 modify-grub
 tweak-minor-details
-configure-ssh-defaults 
+configure-ssh-defaults
+
+# TODO add optional /home partitions here, make sure we check if (and any) other partition is mounted as user (permanently)
+#  - make sure if it's mounted as user
+#  - make sure if any partition is mounted as user
+# TODO add optional external partitions or hard drives the user might want to (permanently) mount 
+#  - make sure we check if it's already mounted
+#  - make sure we check if it's encrypted, and if it is, do not add it for security reasons, I don't want to take the blame
+#     for a blunder
 
 #######################################################################################################
 
