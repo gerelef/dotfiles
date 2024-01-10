@@ -590,7 +590,7 @@ obs-studio-plugin-x264 \
 "
 
 readonly INSTALLABLE_EXTRAS_FLATPAK="\
-com.discordapp.Discord \
+dev.vencord.Vesktop \
 com.teamspeak.TeamSpeak \
 "
 
