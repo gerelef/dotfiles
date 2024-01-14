@@ -366,35 +366,35 @@ copy-ff-rc-files () (
 echo-important () (
     tput setaf 3 # yellow
     tput bold
-    echo "[IMPORTANT] $@"
+    echo "[IMPORTANT] [$(date +"%H:%M:%S")] $@"
     tput sgr0
 )
 
 echo-success () (
     tput setaf 2 # green 
     tput bold
-    echo "[SUCCESS] $@"
+    echo "[SUCCESS] [$(date +"%H:%M:%S")] $@"
     tput sgr0
 )
 
 echo-status () (
     # echo for status updates
     tput setaf 4 # blue
-    echo "[STATUS] $@"
+    echo "[STATUS] [$(date +"%H:%M:%S")] $@"
     tput sgr0
 )
 
 echo-unexpected () (
     tput setaf 1
     tput bold
-    echo "[UNEXPECTED] $@"
+    echo "[UNEXPECTED] [$(date +"%H:%M:%S")] $@"
     tput sgr0
 )
 
 echo-debug () (
     [[ -z "${DEBUG_SETUP_ON}" ]] && return
     tput setaf 5
-    echo "[DEBUG] $@"
+    echo "[DEBUG] [$(date +"%H:%M:%S")] $@"
     tput sgr0
 )
 
