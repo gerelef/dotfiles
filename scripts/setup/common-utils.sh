@@ -379,13 +379,13 @@ echo-success () (
 
 echo-status () (
     # echo for status updates
-    tput setaf 4 # blue
+    tput setaf 6 # cyan
     echo "[STATUS] [$(date +"%H:%M:%S")] $@"
     tput sgr0
 )
 
 echo-unexpected () (
-    tput setaf 1
+    tput setaf 1 # red
     tput bold
     echo "[UNEXPECTED] [$(date +"%H:%M:%S")] $@"
     tput sgr0
