@@ -11,8 +11,9 @@ dnf-install flatpak plocate pciutils udisks2
 install-gnome-essentials () (
     echo-status "-------------------INSTALLING GNOME----------------"
     dnf-install "$INSTALLABLE_ESSENTIAL_DESKTOP_PACKAGES"
+    dnf-install "f$(rpm -E %fedora)-backgrounds-gnome"
     # gnome currently supports X11; when xorg is dropped by GNOME, this will need to be removed
-    dnf group install -y --best --allowerasing base-x
+    dnf-group-install base-x
     
     dnf-install "$INSTALLABLE_GNOME_ESSENTIAL_PACKAGES"
     dnf-install "$INSTALLABLE_GNOME_APPLICATION_PACKAGES"
@@ -20,12 +21,6 @@ install-gnome-essentials () (
     flatpak-install "$INSTALLABLE_GNOME_FLATPAKS"
     
     try-enabling-power-profiles-daemon
-    
-    if ask-user "Do you want to install GNOME wallpapers?"; then
-        echo-status "-------------------INSTALLING WALLPAPERS----------------"
-        dnf install -y --best --allowerasing f*-backgrounds-gnome*
-        echo-success "Done."
-    fi
     
     systemctl enable gdm
     configure-gdm-dconf
@@ -36,8 +31,9 @@ install-gnome-essentials () (
 install-cinnamon-essentials () (
     echo-status "-------------------INSTALLING CINNAMON----------------"
     dnf-install "$INSTALLABLE_ESSENTIAL_DESKTOP_PACKAGES"
+    dnf-install "f$(rpm -E %fedora)-backgrounds-gnome"
     # cinnamon is currently X11 only; when xorg is dropped by Cinnamon, this will need to be removed
-    dnf group install -y --best --allowerasing base-x
+    dnf-group-install base-x
     
     dnf-install "$INSTALLABLE_CINNAMON_ESSENTIAL_PACKAGES"
     dnf-install "$INSTALLABLE_CINNAMON_APPLICATION_PACKAGES"
@@ -45,12 +41,6 @@ install-cinnamon-essentials () (
     flatpak-install "$INSTALLABLE_CINNAMON_FLATPAKS"
 
     try-enabling-power-profiles-daemon
-    
-    if ask-user "Do you want to install Cinnamon wallpapers?"; then
-        echo-status "-------------------INSTALLING WALLPAPERS----------------"
-        dnf install -y --best --allowerasing f*-backgrounds-gnome*
-        echo-success "Done."
-    fi
     
     systemctl enable lightdm
 
@@ -204,7 +194,7 @@ gpgkey=https://packages.microsoft.com/keys/microsoft.asc
 VSC_END
     ) > /etc/yum.repos.d/vscode.repo
     dnf check-update
-    dnf install -y --best --allowerasing code
+    dnf-install code
     echo-success "Done."
 )
 
@@ -668,8 +658,8 @@ copy-dnf
 
 # for some reason this repository is added on every new install, it's NOT needed since we use toolbox
 dnf copr remove -y --skip-broken phracek/PyCharm 2> /dev/null
-dnf install -y --best --allowerasing "https://download1.rpmfusion.org/free/fedora/rpmfusion-free-release-$(rpm -E %fedora).noarch.rpm" # free rpmfusion
-dnf install -y --best --allowerasing "https://download1.rpmfusion.org/nonfree/fedora/rpmfusion-nonfree-release-$(rpm -E %fedora).noarch.rpm" # nonfree rpmfusion
+dnf-install "https://download1.rpmfusion.org/free/fedora/rpmfusion-free-release-$(rpm -E %fedora).noarch.rpm" # free rpmfusion
+dnf-install "https://download1.rpmfusion.org/nonfree/fedora/rpmfusion-nonfree-release-$(rpm -E %fedora).noarch.rpm" # nonfree rpmfusion
 
 # no requirement to add flathub ourselves anymore in f38; it should be enabled by default. however, it may not be, most likely by accident, so this is a failsafe
 flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo 2> /dev/null

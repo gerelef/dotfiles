@@ -84,10 +84,20 @@ dnf-install () (
     echo-success "Finished installing."
 )
 
+dnf-group-install () (
+    echo-status "-------------------DNF-GROUP-INSTALL----------------"
+    for g in "$@"; do
+        while :; do 
+            dnf group install -y --best --allowerasing "$g" && break
+        done 
+    done
+    echo-success "Finished group-installing."
+)
+
 dnf-group-install-with-optional () (
     [[ $# -eq 0 ]] && return 2
     
-    echo-status "-------------------DNF-GROUP-INSTALL----------------"
+    echo-status "-------------------DNF-GROUP-INSTALL-WITH-OPTIONAL----------------"
     for g in "$@"; do
         while :; do 
             dnf group install -y --best --allowerasing --with-optional "$g" && break
