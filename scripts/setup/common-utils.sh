@@ -1,7 +1,10 @@
 # check if this file is being executed directly & if it is, die
 if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then
+    tput setaf 1
+    tput bold
     echo "common-utils is NOT supposed to be executed directly!"
     echo "To use, please source it from another script!"
+    tput sgr0
     exit 2
 fi
 
@@ -74,61 +77,61 @@ add-gsettings-shortcut () (
 dnf-install () (
     [[ $# -eq 0 ]] && return 2
     
-    echo "-------------------DNF-INSTALL----------------"
+    echo-status "-------------------DNF-INSTALL----------------"
     while : ; do
         dnf install -y --best --allowerasing $@ && break
     done
-    echo "Finished installing."
+    echo-success "Finished installing."
 )
 
 dnf-group-install-with-optional () (
     [[ $# -eq 0 ]] && return 2
     
-    echo "-------------------DNF-GROUP-INSTALL----------------"
+    echo-status "-------------------DNF-GROUP-INSTALL----------------"
     for g in "$@"; do
         while :; do 
             dnf group install -y --best --allowerasing --with-optional "$g" && break
         done 
     done
-    echo "Finished group-installing."
+    echo-success "Finished group-installing."
 )
 
 dnf-group-update () (
     [[ $# -eq 0 ]] && return 2
     
-    echo "-------------------DNF-GROUP-UPDATE----------------"
+    echo-status "-------------------DNF-GROUP-UPDATE----------------"
     while :; do 
         dnf group update -y --best --allowerasing $@ && break
     done 
-    echo "Finished group-updating."
+    echo-success "Finished group-updating."
 )
 
 dnf-update-refresh () (
-    echo "-------------------DNF-UPDATE----------------"
+    echo-status "-------------------DNF-UPDATE----------------"
     while : ; do
         dnf update -y 
         dnf upgrade -y --refresh && break
     done
-    echo "Finished updating."
+    echo-success "Finished updating."
 )
 
 dnf-remove () (
     [[ $# -eq 0 ]] && return 2
     
-    echo "-------------------DNF-REMOVE----------------"
+    echo-status "-------------------DNF-REMOVE----------------"
     dnf remove -y --skip-broken $@
-    echo "Finished removing."
+    echo-success "Finished removing."
 )
 
 flatpak-install () (
     [[ $# -eq 0 ]] && return 2
     [[ -z "$REAL_USER" ]] && return 2
     
-    echo "-------------------FLATPAK-INSTALL-SYSTEM----------------"
+    echo-status "-------------------FLATPAK-INSTALL-SYSTEM----------------"
     while : ; do
         su - "$REAL_USER" -c "flatpak install --system --noninteractive -y $@" && break
     done
-    echo "Finished flatpak-installing."
+    echo-success "Finished flatpak-installing."
 )
 
 change-ownership () (
@@ -360,18 +363,55 @@ copy-ff-rc-files () (
 #######################################################################################################
 # HELPERS
 
+echo-important () (
+    tput setaf 3 # yellow
+    tput bold
+    echo "[IMPORTANT] $@"
+    tput sgr0
+)
+
+echo-success () (
+    tput setaf 2 # green 
+    tput bold
+    echo "[SUCCESS] $@"
+    tput sgr0
+)
+
+echo-status () (
+    # echo for status updates
+    tput setaf 4 # blue
+    echo "[STATUS] $@"
+    tput sgr0
+)
+
+echo-unexpected () (
+    tput setaf 1
+    tput bold
+    echo "[UNEXPECTED] $@"
+    tput sgr0
+)
+
+echo-debug () (
+    [[ -z "${DEBUG_SETUP_ON}" ]] && return
+    tput setaf 5
+    echo "[DEBUG] $@"
+    tput sgr0
+)
+
+# do NOT use this for anything else other than echoing from a call whose stdout is meant to be caught!
+# use echo-debug for debug information, and echo-important and friends for everything else 
 # https://stackoverflow.com/questions/2990414/echo-that-outputs-to-stderr
-echo-stderr () (
+_echo-stderr () (
     echo "$@" 1>&2
 )
 
 ask-user () (
     while : ; do
         read -p "$* [Y/n]: " -r
-        echo-stderr ""
+        _echo-stderr ""
         [[ $REPLY =~ ^[Yy]$ ]] && return 0
         [[ $REPLY =~ ^[Nn]$ ]] && return 1
-        echo-stderr "Invalid reply \"$REPLY\", please answer with Y/y for Yes, or N/n for No."
+        _echo-stderr "Invalid reply \"$REPLY\", please answer with Y/y for Yes, or N/n for No."
     done
 )
 
@@ -384,15 +424,15 @@ ask-user-multiple-choice () (
     while : ; do
         i=0
         for option in "$@"; do
-            echo-stderr "$((i++)). $option" 
+            _echo-stderr "$((i++)). $option" 
         done
         read -p "Choice $range: " -r
-        echo-stderr ""
+        _echo-stderr ""
         if [[ $REPLY =~ ^[0-9][0-9]*$ && $REPLY -lt $# ]]; then
             echo "$REPLY"
             return
         fi
-        echo-stderr "Invalid reply > $REPLY, please answer in the range of $range."
+        _echo-stderr "Invalid reply > $REPLY, please answer in the range of $range."
     done
 )
 

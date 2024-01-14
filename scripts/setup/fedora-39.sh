@@ -9,7 +9,7 @@ source "$DIR/common-utils.sh"
 dnf-install flatpak plocate pciutils udisks2
 
 install-gnome-essentials () (
-    echo "-------------------INSTALLING GNOME----------------"
+    echo-status "-------------------INSTALLING GNOME----------------"
     dnf-install "$INSTALLABLE_ESSENTIAL_DESKTOP_PACKAGES"
     # gnome currently supports X11; when xorg is dropped by GNOME, this will need to be removed
     dnf group install -y --best --allowerasing base-x
@@ -22,19 +22,19 @@ install-gnome-essentials () (
     try-enabling-power-profiles-daemon
     
     if ask-user "Do you want to install GNOME wallpapers?"; then
-        echo "-------------------INSTALLING WALLPAPERS----------------"
+        echo-status "-------------------INSTALLING WALLPAPERS----------------"
         dnf install -y --best --allowerasing f*-backgrounds-gnome*
-        echo "Done."
+        echo-success "Done."
     fi
     
     systemctl enable gdm
     configure-gdm-dconf
     
-    echo "Done."
+    echo-success "Done."
 )
 
 install-cinnamon-essentials () (
-    echo "-------------------INSTALLING CINNAMON----------------"
+    echo-status "-------------------INSTALLING CINNAMON----------------"
     dnf-install "$INSTALLABLE_ESSENTIAL_DESKTOP_PACKAGES"
     # cinnamon is currently X11 only; when xorg is dropped by Cinnamon, this will need to be removed
     dnf group install -y --best --allowerasing base-x
@@ -47,18 +47,18 @@ install-cinnamon-essentials () (
     try-enabling-power-profiles-daemon
     
     if ask-user "Do you want to install Cinnamon wallpapers?"; then
-        echo "-------------------INSTALLING WALLPAPERS----------------"
+        echo-status "-------------------INSTALLING WALLPAPERS----------------"
         dnf install -y --best --allowerasing f*-backgrounds-gnome*
-        echo "Done."
+        echo-success "Done."
     fi
     
     systemctl enable lightdm
 
-    echo "Done."
+    echo-success "Done."
 )
 
 configure-gdm-dconf () (
-    echo "-------------------CONFIGURING GDM DCONF DB & USER GSETTINGS----------------"
+    echo-status "-------------------CONFIGURING GDM DCONF DB & USER GSETTINGS----------------"
     create-gdm-dconf-profile
     create-gdm-dconf-db
 
@@ -66,7 +66,7 @@ configure-gdm-dconf () (
 )
 
 install-universal-necessities () (
-    echo "-------------------INSTALLING ESSENTIAL PACKAGES----------------"
+    echo-status "-------------------INSTALLING ESSENTIAL PACKAGES----------------"
     dnf-install "$INSTALLABLE_ESSENTIAL_PACKAGES"
     dnf-install "$INSTALLABLE_PIPEWIRE_PACKAGES"
     
@@ -76,7 +76,7 @@ install-universal-necessities () (
     flatpak-install "$INSTALLABLE_FLATPAKS"
 
     if is-btrfs-rootfs || is-btrfs-homefs; then
-        echo "Found BTRFS, installing tools..."
+        echo-status "Found BTRFS, installing tools..."
         dnf-install "$INSTALLABLE_BTRFS_TOOLS"
     fi
     
@@ -85,40 +85,40 @@ install-universal-necessities () (
     dbus-send --session --print-reply=literal --dest=org.freedesktop.impl.portal.PermissionStore /org/freedesktop/impl/portal/PermissionStore org.freedesktop.impl.portal.PermissionStore.Lookup string:'screenshot' string:'screenshot'
     flameshot config -m white
     
-    echo "Done."
+    echo-success "Done."
 )
 
 optimize-hardware () (
-    echo "-------------------OPTIMIZING HARDWARE----------------"
+    echo-status "-------------------OPTIMIZING HARDWARE----------------"
     
     if is-uefi; then
-        echo "Updating UEFI with fwupdmgr..."
+        echo-status "Updating UEFI with fwupdmgr..."
         fwupdmgr refresh --force -y
         fwupdmgr get-updates -y
         fwupdmgr update -y
     fi
     
     if is-desktop-type; then
-        echo "Disabling mobile-gpu specific service (https://forums.developer.nvidia.com/t/no-matching-gpu-found-with-510-47-03/202315/5)"
+        echo-status "Disabling mobile-gpu specific service (https://forums.developer.nvidia.com/t/no-matching-gpu-found-with-510-47-03/202315/5)"
         systemctl disable nvidia-powerd.service
         return
     fi
     
-    echo "Done."
+    echo-success "Done."
 )
 
 optimize-laptop-battery () (
     # if we're on anything but a mobile device, gtfo
     ! is-mobile-type && return 0
     
-    echo "-------------------OPTIMIZING LAPTOP BATTERY----------------"
-    echo "Found mobile device type"
+    echo-status "-------------------OPTIMIZING LAPTOP BATTERY----------------"
+    echo-status "Found mobile device type"
     # s3 sleep
     grubby --update-kernel=ALL --args="mem_sleep_default=s2idle"
     dnf-install "$INSTALLABLE_PWR_MGMNT"
     powertop --auto-tune
 
-    echo "Done."
+    echo-success "Done."
 )
 
 install-proprietary-nvidia-drivers () (
@@ -126,8 +126,8 @@ install-proprietary-nvidia-drivers () (
     readonly NVIDIA_GPU=$(lspci | grep -i vga | grep NVIDIA)
     [[ -z "$NVIDIA_GPU" ]] && return
     
-    echo "-------------------INSTALLING NVIDIA DRIVERS----------------"
-    echo "Found $NVIDIA_GPU running with nouveau drivers!"
+    echo-status "-------------------INSTALLING NVIDIA DRIVERS----------------"
+    echo-status "Found $NVIDIA_GPU running with nouveau drivers!"
     dnf-install "$INSTALLABLE_NVIDIA_DRIVERS"
     dnf-install "$INSTALLABLE_NVIDIA_UTILS"
 
@@ -140,23 +140,25 @@ install-proprietary-nvidia-drivers () (
         # the official NVIDIA instructions recommend installing the driver first
         # Their recommendations talk about kmod, not akmod, but the process should be the same
         # FIXME needs checking that this actually works.
-        if ask-user 'Do you want to enroll MOK and restart?'; then
-            echo "Signing GPU drivers..."
+        if ask-user 'Do you want to enroll MOK and restart afterwards?'; then
+            echo-important "Make sure you enroll MOK when you restart."
+            
+            echo-status "Signing GPU drivers..."
             kmodgenca -a
             mokutil --import /etc/pki/akmods/certs/public_key.der
-            echo "Finished signing GPU drivers. Make sure you enroll MOK when you restart."
-            echo "OK."
-            exit 0
+            
+            echo-important "Finished signing GPU drivers."
+            systemctl reboot
         fi
     else
-        echo "UEFI not found; please restart & use UEFI in order to sign drivers..."
+        echo-unexpected "UEFI not found; please restart & use UEFI in order to sign drivers..."
     fi
     
     akmods --force && dracut --force --regenerate-all
 )
 
 install-media-codecs () (
-    echo "-------------------INSTALLING CODECS / H/W VIDEO ACCELERATION----------------"
+    echo-status "-------------------INSTALLING CODECS / H/W VIDEO ACCELERATION----------------"
 
     # based on https://github.com/devangshekhawat/Fedora-39-Post-Install-Guide
     dnf-group-update 'core' 'multimedia' 'sound-and-video' --setop='install_weak_deps=False' --exclude='PackageKit-gstreamer-plugin' --allowerasing && sync
@@ -171,24 +173,24 @@ install-media-codecs () (
 )
 
 install-gaming-packages () (
-    echo "-------------------INSTALLING GAMING PACKAGES----------------"
+    echo-status "-------------------INSTALLING GAMING PACKAGES----------------"
     dnf-install "$INSTALLABLE_EXTRAS" "$INSTALLABLE_WINE_GE_CUSTOM_PKGS" "$INSTALLABLE_OBS_STUDIO"
     flatpak-install "$INSTALLABLE_EXTRAS_FLATPAK"
-    echo "Done."
+    echo-success "Done."
 )
 
 install-virtualization-packages () (
-    echo "-------------------INSTALLING VIRTUALIZATION PACKAGES----------------"
+    echo-status "-------------------INSTALLING VIRTUALIZATION PACKAGES----------------"
     dnf-install "$INSTALLABLE_VIRTUALIZATION_PACKAGES"
-    echo "Done."
+    echo-success "Done."
 )
 
 install-dev-tools () (
-    echo "-------------------INSTALLING DEV TOOLS----------------"
+    echo-status "-------------------INSTALLING DEV TOOLS----------------"
     dnf-group-install-with-optional "C Development Tools and Libraries" "Development Tools"
     dnf-install "$INSTALLABLE_DEV_PKGS"
     
-    echo "-------------------INSTALLING VISUAL STUDIO CODE----------------"
+    echo-status "-------------------INSTALLING VISUAL STUDIO CODE----------------"
     # instructions taken from here (official site)
     #  https://code.visualstudio.com/docs/setup/linux#_rhel-fedora-and-centos-based-distributions
     rpm --import https://packages.microsoft.com/keys/microsoft.asc
@@ -203,60 +205,59 @@ VSC_END
     ) > /etc/yum.repos.d/vscode.repo
     dnf check-update
     dnf install -y --best --allowerasing code
-    echo "Done."
+    echo-success "Done."
 )
 
 install-jetbrains-toolbox () (
-    echo "-------------------INSTALLING JETBRAINS TOOLBOX----------------"
+    echo-status "-------------------INSTALLING JETBRAINS TOOLBOX----------------"
     readonly curlsum=$(curl --proto '=https' --tlsv1.2 -fsSL https://raw.githubusercontent.com/nagygergo/jetbrains-toolbox-install/master/jetbrains-toolbox.sh | sha512sum -)
     readonly validsum="7eb50db1e6255eed35b27c119463513c44aee8e06f3014609a410033f397d2fd81d2605e4e5c243b1087a6c23651f6b549a7c4ee386d50a22cc9eab9e33c612e  -"
     if [[ "$validsum" == "$curlsum" ]]; then
         # we're overriding $HOME for this script since it doesn't know we're running as root
         #  and looks for $HOME, ruining everything in whatever "$HOME/.local/share/JetBrains/Toolbox/bin" and "$HOME/.local/bin" resolve into
         (HOME="$REAL_USER_HOME" && curl --proto '=https' --tlsv1.2 -fsSL https://raw.githubusercontent.com/nagygergo/jetbrains-toolbox-install/master/jetbrains-toolbox.sh | bash)
-        echo "Done."
+        echo-success "Done."
         return
     fi
-    
-    echo "There has been a fatal sha512sum mismatch regarding the jetbrains toolbox autoinstall script."
-    echo "This is most likely because the current validsum (see 'grep validsum < ./fedora-39.sh')"
-    echo "being outdated w/ the remote repository. Regardless, installation of toolbox CANNOT continue"
-    echo "for security concerns."
-    echo "Do you want to: "
+    echo-unexpected "Failure."
+    echo-unexpected "There has been a fatal sha512sum mismatch regarding the jetbrains toolbox autoinstall script."
+    echo-unexpected "This is most likely because the current validsum (see 'grep validsum < ./fedora-39.sh')"
+    echo-unexpected "being outdated w/ the remote repository. Regardless, installation of toolbox CANNOT continue"
+    echo-unexpected "for security concerns."
+    echo-unexpected "Do you want to: "
     user_choice=$(ask-user-multiple-questions "continue installing everything else (recommended)" "exit")
-    echo "Failure."
     [[ $user_choice -eq 0 ]] && return
     [[ $user_choice -eq 1 ]] && exit 2
     
-    echo "this statement should never execute!"
+    echo-unexpected "This statement should never execute!"
     exit 1
 )
 
 install-config-files () (
-    echo "-------------------INSTALLING RC FILES----------------"
+    echo-status "-------------------INSTALLING RC FILES----------------"
 
     copy-pipewire
     create-private-bashrc
     create-private-gitconfig
     copy-rc-files
 
-    echo "Done."
+    echo-success "Done."
 )
 
 configure-system-defaults () (
-    echo "-------------------SETTING UP SYSTEM DEFAULTS----------------"
+    echo-status "-------------------SETTING UP SYSTEM DEFAULTS----------------"
     lower-swappiness
-    echo "Lowered swappiness."
+    echo-success "Lowered swappiness."
     raise-user-watches
-    echo "Raised user watches."
+    echo-success "Raised user watches."
     cap-nproc-count
-    echo "Capped maximum number of processes."
+    echo-success "Capped maximum number of processes."
     cap-max-logins-system
-    echo "Capped max system logins."
+    echo-success "Capped max system logins."
     create-convenience-sudoers
-    echo "Created sudoers.d convenience defaults."
+    echo-success "Created sudoers.d convenience defaults."
 
-    echo "Done."
+    echo-success "Done."
 )
 
 create-swapfile () (
@@ -264,7 +265,7 @@ create-swapfile () (
     [[ -n $(cat /etc/fstab | grep "/swapfile swap swap defaults 0 0") ]] && return
     [[ -n $(cat /etc/fstab | grep "/swapfile none swap defaults 0 0") ]] && return
     
-    echo "-------------------CREATING /swapfile----------------"
+    echo-status "-------------------CREATING /swapfile----------------"
     # btrfs specific no copy-on-write
     # https://unix.stackexchange.com/questions/599949/swapfile-swapon-invalid-argument
     if is-btrfs-rootfs; then
@@ -286,7 +287,7 @@ create-swapfile () (
     fi
     echo "/swapfile swap swap defaults 0 0" >> /etc/fstab
     
-    echo "Done."
+    echo-success "Done."
 )
 
 modify-grub () (
@@ -294,7 +295,7 @@ modify-grub () (
     readonly DEFAULT_GRUB_CFG="/etc/default/grub"
     [[ -n $(cat $DEFAULT_GRUB_CFG | grep "GRUB_HIDDEN_TIMEOUT") ]] && return 
     
-    echo "-------------------MODIFYING GRUB----------------"
+    echo-status "-------------------MODIFYING GRUB----------------"
     dnf-install "hwinfo"
     out="$(sed -r 's/GRUB_TERMINAL_OUTPUT=.+/GRUB_TERMINAL_OUTPUT="gfxterm"/' < $DEFAULT_GRUB_CFG)" 
     echo "$out" | dd of="$DEFAULT_GRUB_CFG"
@@ -309,11 +310,11 @@ modify-grub () (
     readonly GRUB_OUT_LOCATION="$(locate grub.cfg | grep /boot | head -n 1)"
     [[ -n $GRUB_OUT_LOCATION ]] && grub2-mkconfig --output="$GRUB_OUT_LOCATION"
     
-    echo "Done."
+    echo-success "Done."
 )
 
 tweak-minor-details () (
-    echo "-------------------TWEAKING MINOR DETAILS----------------"
+    echo-status "-------------------TWEAKING MINOR DETAILS----------------"
     # https://github.com/tommytran732/Linux-Setup-Scripts/blob/main/Fedora-Workstation-36.sh
     systemctl enable fstrim.timer
     
@@ -326,25 +327,25 @@ tweak-minor-details () (
     # if GNOME, stop Software from autostarting & updating in the background, no reason
     is-gnome-session && rm /etc/xdg/autostart/org.gnome.Software.desktop 2> /dev/null
     
-    echo "Done."
+    echo-success "Done."
 )
 
 configure-ssh-defaults () (
     # if the directory already exists, abandon
     [[ -d "$REAL_USER_HOME/.ssh" ]] && return
     
-    echo "-------------------GENERATING SSH KEY----------------"
+    echo-status "-------------------GENERATING SSH KEY----------------"
     mkdir -p "$REAL_USER_HOME/.ssh"
     ssh-keygen -q -t ed25519 -N '' -C "$REAL_USER@$DISTRIBUTION_NAME" -f "$REAL_USER_HOME/.ssh/id_ed25519" -P "" <<< $'\ny' >/dev/null 2>&1
     cat "$REAL_USER_HOME/.ssh/id_ed25519.pub"
     # this is REQUIRED for ssh related thingies; key must NOT be readable by anyone else but this user
     chown "$REAL_USER" "$REAL_USER_HOME/.ssh/id_ed25519"
     chmod 700 "$REAL_USER_HOME/.ssh/id_ed25519"
-    echo "Done."
+    echo-success "Done."
 )
 
 configure-residual-permissions () (
-    echo "-------------------CHANGING ROOT OWNERSHIP AND GROUPS IN HOME----------------"
+    echo-status "-------------------CHANGING ROOT OWNERSHIP AND GROUPS IN HOME----------------"
     change-ownership "$REAL_USER_HOME"
 
     # everything in home should be owned by the user and in the user's group
@@ -354,7 +355,7 @@ configure-residual-permissions () (
         change-group "$file"
     done
     
-    echo "Done."
+    echo-success "Done."
 )
 
 ####################################################################################################### 
@@ -652,13 +653,13 @@ gnome-shell-extension-background-logo \
 
 # ref: https://askubuntu.com/a/30157/8698
 if ! is-root; then
-    echo "The script needs to be run as root." >&2
+    echo-unexpected "The script needs to be run as root." >&2
     exit 2
 fi
 
 if ! ping -q -c 1 -W 1 google.com > /dev/null; then
-    echo "Network connection was not detected."
-    echo "This script needs network connectivity to continue."
+    echo-unexpected "Network connection was not detected."
+    echo-unexpected "This script needs network connectivity to continue."
     exit 1
 fi
 
@@ -689,29 +690,29 @@ exit
 
 # if there's no desktop environment running...
 if [[ -z $XDG_CURRENT_DESKTOP ]]; then
-    echo "After installation of a desktop environment finishes, the system will immediately reboot."
-    echo "You will need to re-run this script afterwards to complete the setup."
+    echo-important "After installation of a desktop environment finishes, the system will immediately reboot."
+    echo-important "You will need to re-run this script afterwards to complete the setup."
     choice=$(ask-user-multiple-choice "${dei[@]}" )
     # run installer ...
     ${dei[$choice]}
     
-    echo "Making sure we're booting into a DE next time we boot..."
+    echo-important "Making sure we're booting into a DE next time we boot..."
     systemctl set-default graphical.target
     
     systemctl reboot
 fi
 
 if [[ -z $XDG_CURRENT_DESKTOP || -z $XDG_RUNTIME_DIR || -z $XDG_DATA_DIRS || -z $DBUS_SESSION_BUS_ADDRESS ]]; then
-    echo "The following environment variables must be set for this script to work:"
-    echo "\$XDG_CURRENT_DESKTOP ($XDG_CURRENT_DESKTOP), \$XDG_RUNTIME_DIR ($XDG_RUNTIME_DIR), \$XDG_DATA_DIRS ($XDG_DATA_DIRS), \$DBUS_SESSION_BUS_ADDRESS ($DBUS_SESSION_BUS_ADDRESS)"
-    echo "Check the shebang for more information on how to correctly run this script."
+    echo-unexpected "The following environment variables must be set for this script to work:"
+    echo-unexpected "\$XDG_CURRENT_DESKTOP ($XDG_CURRENT_DESKTOP), \$XDG_RUNTIME_DIR ($XDG_RUNTIME_DIR), \$XDG_DATA_DIRS ($XDG_DATA_DIRS), \$DBUS_SESSION_BUS_ADDRESS ($DBUS_SESSION_BUS_ADDRESS)"
+    echo-unexpected "Check the shebang for more information on how to correctly run this script."
     exit 2
 fi
 
 # we need this to be up-to-date for some commands
 updatedb 2> /dev/null
 if [[ ! $? -eq 0 ]]; then
-    echo "updatedb errored, retrying with absolute path"
+    echo-unexpected "updatedb errored, retrying with absolute path"
     /usr/sbin/updatedb
 fi
 
@@ -758,7 +759,7 @@ if ask-user "Are you sure you want to install development tools (IDEs)?"; then
     install-jetbrains-toolbox
     
     if ask-user "Are you sure you want to install zeno/scrcpy?"; then
-        echo "Installing zeno/scrcpy ..."
+        echo-status "Installing zeno/scrcpy ..."
         dnf copr enable -y zeno/scrcpy
         dnf-install scrcpy
     fi
@@ -769,12 +770,13 @@ fi
 if ask-user "Customize firefox? Compatible only with gerelef/dotfiles"; then
     # create default directories that should exist on all my systems
     create-default-locations
+    # this needs to be called here otherwise firefox won't be able to start w/ the default profile, as it won't have the required permissions
     configure-residual-permissions
-    echo "https://www.suse.com/support/kb/doc/?id=000017060"
+    #"https://www.suse.com/support/kb/doc/?id=000017060"
     while : ; do
         if ask-user "Please run firefox as a user to create its configuration directories; let it load fully, then close it."; then
             copy-ff-rc-files
-            echo "Done."
+            echo-success "Done."
             break
         fi
     done
@@ -792,19 +794,21 @@ fi
 
 configure-residual-permissions
 
-echo "Make sure to restart your PC after making all the necessary adjustments."
-echo "Remember to add a permanent mount point for internal storage partitions."
-echo "--------------------------- FSTAB ---------------------------"
-echo "User fstab mount arguments: rw,user,exec,nosuid,nodev,nofail,auto,x-gvfs-show"
+echo-important "Make sure to restart your PC after making all the necessary adjustments."
+echo-important "Remember to add a permanent mount point for internal storage partitions."
+echo-important "--------------------------- FSTAB ---------------------------"
+echo-important "User fstab mount arguments: rw,user,exec,nosuid,nodev,nofail,auto,x-gvfs-show"
+
+echo-success "Done."
 
 #######################################################################################################
 
 if is-gnome-session; then
-    echo "--------------------------- GNOME ---------------------------"
-    echo "Make sure to get the legacy GTK3 Theme Auto Switcher"
-    echo "  https://extensions.gnome.org/extension/4998/legacy-gtk3-theme-scheme-auto-switcher/"
+    echo-important "Personalizing GNOME session..."
+    echo-important "Make sure to get the legacy GTK3 Theme Auto Switcher"
+    echo-important "https://extensions.gnome.org/extension/4998/legacy-gtk3-theme-scheme-auto-switcher/"
     
-    echo "Configuring all gsettings for $REAL_USER . . ."
+    echo-status "Configuring all gsettings for $REAL_USER . . ."
     # user gsettings using heredocs
     # https://tldp.org/LDP/abs/html/here-docs.html
     sudo --preserve-env="XDG_RUNTIME_DIR" --preserve-env="XDG_DATA_DIRS" --preserve-env="DBUS_SESSION_BUS_ADDRESS" -u "$REAL_USER" bash <<-GSETTINGS_DELIMITER
@@ -1143,7 +1147,7 @@ gsettings set org.gnome.settings-daemon.plugins.color night-light-schedule-from 
 gsettings set org.gnome.settings-daemon.plugins.color night-light-schedule-to 6.0
 exit
 GSETTINGS_DELIMITER
-    echo "Done."
+    echo-success "Done."
 fi
 
 # write everything to disk to prevent unpredictable behaviour
