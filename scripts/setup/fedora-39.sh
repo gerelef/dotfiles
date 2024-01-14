@@ -467,6 +467,7 @@ readonly INSTALLABLE_CINNAMON_APPLICATION_PACKAGES="\
 eom \
 nemo \
 alacritty \
+gnome-text-editor \
 qbittorrent \
 cinnamon-calendar-server \
 cinnamon-control-center-filesystem \
