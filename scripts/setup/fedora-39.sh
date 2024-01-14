@@ -168,6 +168,9 @@ install-gaming-packages () (
 install-virtualization-packages () (
     echo-status "-------------------INSTALLING VIRTUALIZATION PACKAGES----------------"
     dnf-install "$INSTALLABLE_VIRTUALIZATION_PACKAGES"
+    if is-virtual-machine; then
+        dnf-install "virtualbox-guest-additions"
+    fi
     echo-success "Done."
 )
 

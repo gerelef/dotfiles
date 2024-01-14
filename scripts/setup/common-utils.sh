@@ -486,3 +486,8 @@ is-mobile-type () (
     [[ $CHASSIS_TYPE == "Notebook" || $CHASSIS_TYPE == "Tablet" || $CHASSIS_TYPE == "Convertible" ]] && return 0
     return 1
 )
+
+is-virtual-machine () (
+    [[ $(systemd-detect-virt) != "none" ]] && return 0
+    return 1
+)
