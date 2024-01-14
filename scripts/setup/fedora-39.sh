@@ -525,7 +525,6 @@ com.spotify.Client \
 com.github.rafostar.Clapper \
 net.cozic.joplin_desktop \
 com.skype.Client \
-us.zoom.Zoom \
 io.gitlab.theevilskeleton.Upscaler \
 com.github.tchx84.Flatseal \
 "
