@@ -69,10 +69,6 @@ install-universal-necessities () (
         echo-status "Found BTRFS, installing tools..."
         dnf-install "$INSTALLABLE_BTRFS_TOOLS"
     fi
-    
-    # reference to fix https://github.com/flameshot-org/flameshot/issues/3326#issuecomment-1838662244
-    dbus-send --bus="$DBUS_SESSION_BUS_ADDRESS" --print-reply=literal --dest=org.freedesktop.impl.portal.PermissionStore /org/freedesktop/impl/portal/PermissionStore org.freedesktop.impl.portal.PermissionStore.SetPermission string:'screenshot' boolean:true string:'screenshot' string:'flameshot' array:string:'yes'
-    dbus-send --bus="$DBUS_SESSION_BUS_ADDRESS" --print-reply=literal --dest=org.freedesktop.impl.portal.PermissionStore /org/freedesktop/impl/portal/PermissionStore org.freedesktop.impl.portal.PermissionStore.Lookup string:'screenshot' string:'screenshot'
     flameshot config -m white
     
     echo-success "Done."
@@ -801,6 +797,9 @@ if is-gnome-session; then
     # https://tldp.org/LDP/abs/html/here-docs.html
     sudo --preserve-env="XDG_RUNTIME_DIR" --preserve-env="XDG_DATA_DIRS" --preserve-env="DBUS_SESSION_BUS_ADDRESS" -u "$REAL_USER" bash <<-GSETTINGS_DELIMITER
 source "$(dirname -- "$BASH_SOURCE")/common-utils.sh"
+# reference to fix https://github.com/flameshot-org/flameshot/issues/3326#issuecomment-183866224
+dbus-send --bus="$DBUS_SESSION_BUS_ADDRESS" --print-reply=literal --dest=org.freedesktop.impl.portal.PermissionStore /org/freedesktop/impl/portal/PermissionStore org.freedesktop.impl.portal.PermissionStore.SetPermission string:'screenshot' boolean:true string:'screenshot' string:'flameshot' array:string:'yes'
+dbus-send --bus="$DBUS_SESSION_BUS_ADDRESS" --print-reply=literal --dest=org.freedesktop.impl.portal.PermissionStore /org/freedesktop/impl/portal/PermissionStore org.freedesktop.impl.portal.PermissionStore.Lookup string:'screenshot' string:'screenshot'
 gsettings set org.gnome.shell enabled-extensions "['places-menu@gnome-shell-extensions.gcampax.github.com', 'appindicatorsupport@rgcjonas.gmail.com', 'dash-to-panel@jderose9.github.com', 'forge@jmmaranan.com', 'caffeine@patapon.info']"
 gsettings set org.gnome.settings-daemon.plugins.media-keys custom-keybindings '[]'
 add-gsettings-shortcut "blackbox" "/usr/bin/flatpak run --branch=stable --arch=x86_64 --command=blackbox com.raggesilver.BlackBox" "<Shift><Control>KP_Add"
