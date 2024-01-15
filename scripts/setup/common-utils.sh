@@ -430,7 +430,9 @@ ask-user-multiple-choice () (
     # output is in stdout, so we need to capture that;
     #  unfortunately, (one of) the only sane way(s) to still output 
     #  while capturing stdout, is to output to stderr
-    range="[0-$(($#-1))]"
+    readonly args=($@)
+    readonly range="[0-$(($#-1))]"
+    
     while : ; do
         i=0
         for option in "$@"; do
@@ -439,6 +441,8 @@ ask-user-multiple-choice () (
         read -p "Choice $range: " -r
         _echo-stderr ""
         if [[ $REPLY =~ ^[0-9][0-9]*$ && $REPLY -lt $# ]]; then
+            if ! ask-user "Are you sure you want to pick \"${args[$REPLY]}\"?"; then continue; fi
+            
             echo "$REPLY"
             return
         fi
