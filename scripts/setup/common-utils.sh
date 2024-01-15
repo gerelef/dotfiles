@@ -265,8 +265,6 @@ GDM_END
 )
 
 create-gdm-dconf-db () (
-    readonly fname="/etc/dconf/db/gdm.d/01-generic"
-    
     (cat <<-GDM_END
 [org/gnome/desktop/interface] 
 clock-format='24h'
@@ -276,25 +274,36 @@ clock-show-weekday=true
 font-antialiasing='rgba'
 font-hinting='full'
 show-battery-percentage=true
-
+GDM_END
+    ) > "/etc/dconf/db/gdm.d/01-interface"
+    chmod 644 "/etc/dconf/db/gdm.d/01-interface"
+    
+    (cat <<-GDM_END
 [org/gnome/desktop/peripherals/keyboard] 
 numlock-state=false
 remember-numlock-state=false
 repeat=true
 repeat-interval=25
-
+GDM_END
+    ) > "/etc/dconf/db/gdm.d/02-keyboard"
+    chmod 644 "/etc/dconf/db/gdm.d/02-keyboard"
+    
+    (cat <<-GDM_END
 [org/gnome/desktop/peripherals/mouse]
 double-click=250
 middle-click-emulation=false
 natural-scroll=false
 speed=-0.2
+GDM_END
+    ) > "/etc/dconf/db/gdm.d/03-mouse"
+    chmod 644 "/etc/dconf/db/gdm.d/03-mouse"
 
+    (cat <<-GDM_END
 [org/gnome/desktop/peripherals/touchpad]
 disable-while-typing=true
 GDM_END
-    ) > "$fname"
-    
-    chmod 644 "$fname"
+    ) > "/etc/dconf/db/gdm.d/04-touchpad"
+    chmod 644 "/etc/dconf/db/gdm.d/04-touchpad"
 )
 
 create-private-bashrc () (
