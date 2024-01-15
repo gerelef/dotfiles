@@ -53,6 +53,7 @@ configure-gdm-dconf () (
     create-gdm-dconf-db
 
     dconf update
+    echo-debug "Updated dconf db."
 )
 
 install-universal-necessities () (
@@ -78,6 +79,7 @@ GDM_END
     ) > "/usr/local/bin/flameshot-gui-workaround"
     chmod a+x "/usr/local/bin/flameshot-gui-workaround"
     flameshot config -m white
+    echo-debug "Configured flameshot."
     
     echo-success "Done."
 )
@@ -124,10 +126,11 @@ install-proprietary-nvidia-drivers () (
     echo-status "Found $NVIDIA_GPU running with nouveau drivers!"
     dnf-install "$INSTALLABLE_NVIDIA_DRIVERS"
     dnf-install "$INSTALLABLE_NVIDIA_UTILS"
-
+    
     # check arch wiki, these enable DRM
     grubby --update-kernel=ALL --args="nvidia-drm.modeset=1"
     grubby --update-kernel=ALL --args="nvidia-drm.fbdev=1"
+    echo-debug "Added modeset & fbdev."
     if is-uefi && [[ $(mokutil --sb-state 2> /dev/null) ]]; then
         # https://blog.monosoul.dev/2022/05/17/automatically-sign-nvidia-kernel-module-in-fedora-36/
         # https://github.com/NVIDIA/yum-packaging-precompiled-kmod/blob/main/UEFI.md
@@ -148,7 +151,9 @@ install-proprietary-nvidia-drivers () (
         echo-unexpected "UEFI not found; please restart & use UEFI in order to sign drivers..."
     fi
     
+    echo-debug "Regenerating akmod build..."
     akmods --force && dracut --force --regenerate-all
+    echo-debug "Regenerated akmod build."
 )
 
 install-media-codecs () (
@@ -314,13 +319,16 @@ tweak-minor-details () (
     echo-status "-------------------TWEAKING MINOR DETAILS----------------"
     # https://github.com/tommytran732/Linux-Setup-Scripts/blob/main/Fedora-Workstation-36.sh
     systemctl enable fstrim.timer
-    
+    echo-debug "Enabled fs trim timer."
     timedatectl set-local-rtc '0' # for fixing dual boot time inconsistencies
+    echo-debug "Set local rtc to 0."
     hostnamectl hostname "$DISTRIBUTION_NAME"
+    echo-debug "Updated hostname."
     # if the statement below doesnt work, check this out
     #  https://old.reddit.com/r/linuxhardware/comments/ng166t/s3_deep_sleep_not_working/
     # stop network manager from waiting until online, improves boot times
-    systemctl disable NetworkManager-wait-online.service 
+    systemctl disable NetworkManager-wait-online.service
+    echo-debug "Disabled NetworkManager-wait-online.service"
     # if GNOME, stop Software from autostarting & updating in the background, no reason
     is-gnome-session && rm /etc/xdg/autostart/org.gnome.Software.desktop 2> /dev/null
     

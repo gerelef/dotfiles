@@ -262,6 +262,8 @@ GDM_END
     ) > "$fname"
     
     chmod 644 "$fname"
+    
+    echo-debug "Created GDM DCONF PROFILE $fname"
 )
 
 create-gdm-dconf-db () (
@@ -277,6 +279,7 @@ show-battery-percentage=true
 GDM_END
     ) > "/etc/dconf/db/gdm.d/01-interface"
     chmod 644 "/etc/dconf/db/gdm.d/01-interface"
+    echo-debug "Created /etc/dconf/db/gdm.d/01-interface"
     
     (cat <<-GDM_END
 [org/gnome/desktop/peripherals/keyboard] 
@@ -287,6 +290,7 @@ repeat-interval=25
 GDM_END
     ) > "/etc/dconf/db/gdm.d/02-keyboard"
     chmod 644 "/etc/dconf/db/gdm.d/02-keyboard"
+    echo-debug "Created /etc/dconf/db/gdm.d/02-keyboard"
     
     (cat <<-GDM_END
 [org/gnome/desktop/peripherals/mouse]
@@ -297,13 +301,15 @@ speed=-0.2
 GDM_END
     ) > "/etc/dconf/db/gdm.d/03-mouse"
     chmod 644 "/etc/dconf/db/gdm.d/03-mouse"
-
+    echo-debug "Created /etc/dconf/db/gdm.d/03-mouse"
+    
     (cat <<-GDM_END
 [org/gnome/desktop/peripherals/touchpad]
 disable-while-typing=true
 GDM_END
     ) > "/etc/dconf/db/gdm.d/04-touchpad"
     chmod 644 "/etc/dconf/db/gdm.d/04-touchpad"
+    echo-debug "Created /etc/dconf/db/gdm.d/04-touchpad"
 )
 
 create-private-bashrc () (
@@ -422,47 +428,56 @@ ask-user-multiple-choice () (
 )
 
 is-root () (
-     [[ $(id -u) = 0 ]] && return 0
-     return 1
+    echo-debug "is-root $(id -u) (0 is root)"
+    [[ $(id -u) = 0 ]] && return 0
+    return 1
 )
 
 is-gnome-session () (
+    echo-debug "is-gnome-session $XDG_CURRENT_DESKTOP"
     [[ $XDG_CURRENT_DESKTOP == "GNOME" ]] && return 0
     return 1
 )
 
 is-xcinnamon-session () (
+    echo-debug "is-xcinnamon-session $XDG_CURRENT_DESKTOP"
     [[ $XDG_CURRENT_DESKTOP == "X-Cinnamon" ]] && return 0
     return 1
 )
 
 is-btrfs-rootfs () (
+    echo-debug "is-btrfs-homefs $ROOT_FS"
     [[ "btrfs" == $ROOT_FS ]] && return 0
     return 1
 )
 
 is-btrfs-homefs () (
+    echo-debug "is-btrfs-homefs $REAL_USER_HOME_FS"
     [[ "btrfs" == $REAL_USER_HOME_FS ]] && return 0
     return 1
 )
 
 is-uefi () (
+    echo-debug "is-uefi $([ -d /sys/firmware/efi ] && echo UEFI || echo BIOS)"
     [[ "$([ -d /sys/firmware/efi ] && echo UEFI || echo BIOS)" == "UEFI" ]] && return 0
     return 1
 )
 
 is-desktop-type () (
+    echo-debug "is-desktop-type $(dmidecode --string chassis-type)"
     [[ "$(dmidecode --string chassis-type)" == "Desktop" ]] && return 0
     return 1
 )
 
 is-mobile-type () (
+    echo-debug "is-mobile-type $(dmidecode --string chassis-type)"
     readonly CHASSIS_TYPE="$(dmidecode --string chassis-type)"
     [[ $CHASSIS_TYPE == "Notebook" || $CHASSIS_TYPE == "Tablet" || $CHASSIS_TYPE == "Convertible" ]] && return 0
     return 1
 )
 
 is-virtual-machine () (
+    echo-debug "is-virtual-machine $(systemd-detect-virt)"
     [[ $(systemd-detect-virt) != "none" ]] && return 0
     return 1
 )
