@@ -329,46 +329,8 @@ copy-ff-rc-files () (
     done
 )
 
-#######################################################################################################
-# NVIDIA DRIVER SPECIFIC FUNCTIONS
-
 # USEFUL COMMAND: dnf whatprovides COMMAND
 #  e.g. dnf whatprovides nvidia-smi
-
-# TODO match-model-to-akmod
-# this is the exhaustive list for each legacy driver & their support
-# https://www.nvidia.com/en-us/drivers/unix/legacy-gpu/
-# it's wise to declare this huge list at the end of this file, since this is meant to be sourced
-# rather than executed directly
-#  nvidia-settings
-#  akmod-nvidia
-#  xorg-x11-drv-nvidia
-#  xorg-x11-drv-nvidia-cuda
-#  xorg-x11-drv-nvidia-cuda-libs
-#  xorg-x11-drv-nvidia-libs
-#
-#  nvidia-settings-470xx
-#  akmod-nvidia-470xx
-#  xorg-x11-drv-nvidia-470xx
-#  xorg-x11-drv-nvidia-470xx-cuda
-#  xorg-x11-drv-nvidia-470xx-cuda-libs
-#  xorg-x11-drv-nvidia-470xx-libs
-#
-#  nvidia-settings-390xx
-#  akmod-nvidia-390xx
-#  xorg-x11-drv-nvidia-390xx
-#  xorg-x11-drv-nvidia-390xx-cuda
-#  xorg-x11-drv-nvidia-390xx-cuda-libs
-#  xorg-x11-drv-nvidia-390xx-libs
-#
-#  akmod-nvidia-340xx
-#  xorg-x11-drv-nvidia-340xx
-#  xorg-x11-drv-nvidia-340xx-cuda
-#  xorg-x11-drv-nvidia-340xx-libs
-
-# TODO get-gpu-model -> should support anything "mainstream" that the above akmods support 
-
-# TODO is-nvidia-gpu
 
 #######################################################################################################
 # HELPERS
@@ -495,3 +457,5 @@ is-virtual-machine () (
     [[ $(systemd-detect-virt) != "none" ]] && return 0
     return 1
 )
+
+# TODO is-nvidia-gpu

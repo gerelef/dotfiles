@@ -676,7 +676,7 @@ dnf-update-refresh
 
 #######################################################################################################
 
-# TODO when Cosmic DE comes out, I definitely want to test it out, perhaps add it here too
+# TODO when Cosmic DE comes out, I want to test it out, add it here
 # declare desktop environment installers
 dei=(
 install-gnome-essentials
@@ -727,13 +727,6 @@ create-swapfile
 modify-grub
 tweak-minor-details
 configure-ssh-defaults
-
-# TODO add optional /home partitions here, make sure we check if (and any) other partition is mounted as user (permanently)
-#  - make sure if it's mounted as user
-#  - make sure if any partition is mounted as user
-# TODO add optional external partitions or hard drives the user might want to (permanently) mount
-# get all not mounted + non-luks encrypted partitions
-#  blkid -o list | grep --invert-match "crypto_" | grep -i "(not mounted)" | awk '{ print $NF }'
 
 #######################################################################################################
 
@@ -791,8 +784,20 @@ configure-residual-permissions
 
 echo-important "Make sure to restart your PC after making all the necessary adjustments."
 echo-important "Remember to add a permanent mount point for internal storage partitions."
-echo-important "--------------------------- FSTAB ---------------------------"
-echo-important "User fstab mount arguments: rw,user,exec,nosuid,nodev,nofail,auto,x-gvfs-show"
+echo-important "--------------------------- POSSIBLE FSTAB PARTITIONS ---------------------------"
+mapfile -t parts < <(blkid -o list | grep --invert-match "crypto_" | grep -i "not mounted" | awk '{ print $1 }')
+for part in "${parts[@]}"; do
+    part_name=$(echo $part | tr '/' ' ' | awk '{ print $NF }')
+    # 512 size blocks, divided by 2, divided by 1024*1024
+    part_size=$(( $(cat /sys/class/block/$part_name/size)/2097152 ))
+    
+    echo-important "Found PARTITION $part with SIZE $part_size GB"
+    echo-important "FOR REGULAR PARTITIONS add $part to fstab as: "
+    echo-important "$part /MOUNTPOINT auto rw,user,exec,nosuid,nodev,nofail,auto,x-gvfs-show,x-gvfs-name=YOUR_NAME_HERE 0 0"
+    echo-important "FOR HOME PARTITIONS add $part to fstab as:"
+    echo-important "$part /home/USERNAME auto rw,user,exec,nosuid,nodev,nofail,auto,x-gvfs-show,x-gvfs-name=USERNAME 0 2"
+    echo-important "---------------------------"
+done
 
 echo-success "Done."
 
