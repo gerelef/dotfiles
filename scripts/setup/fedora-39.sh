@@ -799,13 +799,17 @@ for part in "${parts[@]}"; do
     part_name=$(echo $part | tr '/' ' ' | awk '{ print $NF }')
     # 512 size blocks, divided by 2, divided by 1024*1024
     part_size=$(( $(cat /sys/class/block/$part_name/size)/2097152 ))
+    # if it's a really small partition, it's probably something like a uefi/bootmenu partition, skip it
+    [[ $part_size -lt 2 ]] && continue
     
     echo-important "Found PARTITION $part with SIZE $part_size GB"
     echo-important "Mount with mount --mkdir $part /MY/MOUNTPOINT"
     echo-important "FOR REGULAR PARTITIONS add $part to fstab as: "
     echo-important "$part /MOUNTPOINT auto rw,user,exec,nosuid,nodev,nofail,auto,x-gvfs-show,x-gvfs-name=YOUR_NAME_HERE 0 0"
     echo-important "FOR HOME PARTITIONS add $part to fstab as:"
-    echo-important "$part /home/USERNAME auto rw,user,exec,nosuid,nodev,nofail,auto,x-gvfs-show,x-gvfs-name=USERNAME 0 2"
+    echo-important "$part /home/USERNAME auto defaults 0 2"
+    echo-important "Then run:"
+    echo-important "mount -a && useradd --home /home/USERNAME USERNAME && chown -R USERNAME:USERNAME /home/USERNAME"
     echo-important "---------------------------"
 done
 
