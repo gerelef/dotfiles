@@ -482,4 +482,12 @@ is-virtual-machine () (
     return 1
 )
 
-# TODO is-nvidia-gpu
+is-nvidia-gpu () (
+    (lspci | grep -i vga | grep NVIDIA) && return 0
+    return 1
+)
+
+get-nvidia-gpu-model () (
+    readonly mdl="$(lspci | grep -i vga | grep NVIDIA | grep -E --only-matching "(\[.+\])" | tr -d '[]')"
+    echo "$mdl"
+)
