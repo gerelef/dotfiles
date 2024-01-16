@@ -801,6 +801,7 @@ for part in "${parts[@]}"; do
     part_size=$(( $(cat /sys/class/block/$part_name/size)/2097152 ))
     
     echo-important "Found PARTITION $part with SIZE $part_size GB"
+    echo-important "Mount with mount --mkdir $part /MY/MOUNTPOINT"
     echo-important "FOR REGULAR PARTITIONS add $part to fstab as: "
     echo-important "$part /MOUNTPOINT auto rw,user,exec,nosuid,nodev,nofail,auto,x-gvfs-show,x-gvfs-name=YOUR_NAME_HERE 0 0"
     echo-important "FOR HOME PARTITIONS add $part to fstab as:"
