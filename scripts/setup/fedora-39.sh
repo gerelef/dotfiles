@@ -809,7 +809,7 @@ for part in "${parts[@]}"; do
     echo-important "FOR HOME PARTITIONS add $part to fstab as:"
     echo-important "$part /home/USERNAME auto defaults 0 2"
     echo-important "Then run:"
-    echo-important "mount -a && useradd --home /home/USERNAME USERNAME && chown -R USERNAME:USERNAME /home/USERNAME"
+    echo-important "sudo mount -a && sudo useradd --home /home/USERNAME USERNAME && sudo chown -R USERNAME:USERNAME /home/USERNAME"
     echo-important "---------------------------"
 done
 
