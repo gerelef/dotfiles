@@ -16,6 +16,7 @@
     ck = checkout
     br = branch
     df = "!git --no-pager diff"
+    list-changed = "!git diff-tree --no-commit-id --name-status -r"
     alias = "!git config -l | grep alias | cut -c 7-"
     acp = "!acp () { [[ $# -gt 0 ]] && git add . && git commit -m "\"$@\"" && git push; }; acp"
 [includeIf "hasconfig:remote.*.url:git@github.com*/**"]
