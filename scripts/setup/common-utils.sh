@@ -354,8 +354,9 @@ echo-important () (
     tput setaf 3 # yellow
     tput bold
     echo "[IMPORTANT] [$(date +"%H:%M:%S")] $@"
-    echo "[IMPORTANT] [$(date +"%H:%M:%S")] $@" | systemd-cat --identifier="setup.sh" --priority="notice"
     tput sgr0
+    
+    echo "[IMPORTANT] $@" | systemd-cat --identifier="setup.sh" --priority="notice"
 )
 
 echo-success () (
@@ -363,6 +364,8 @@ echo-success () (
     tput bold
     echo "[SUCCESS] [$(date +"%H:%M:%S")] $@"
     tput sgr0
+    
+    echo "[SUCCESS] $@" | systemd-cat --identifier="setup.sh" --priority="notice"
 )
 
 echo-status () (
@@ -370,6 +373,8 @@ echo-status () (
     tput setaf 6 # cyan
     echo "[STATUS] [$(date +"%H:%M:%S")] $@"
     tput sgr0
+    
+    echo "[STATUS] $@" | systemd-cat --identifier="setup.sh" --priority="notice"
 )
 
 echo-unexpected () (
@@ -377,6 +382,8 @@ echo-unexpected () (
     tput bold
     echo "[UNEXPECTED] [$(date +"%H:%M:%S")] $@"
     tput sgr0
+    
+    echo "[UNEXPECTED] $@" | systemd-cat --identifier="setup.sh" --priority="err"
 )
 
 echo-debug () (
@@ -384,6 +391,8 @@ echo-debug () (
     tput setaf 5
     echo "[DEBUG] [$(date +"%H:%M:%S")] $@"
     tput sgr0
+    
+    echo "[DEBUG] $@" | systemd-cat --identifier="setup.sh" --priority="notice" 
 )
 
 # do NOT use this for anything else other than echoing from a call whose stdout is meant to be caught!
