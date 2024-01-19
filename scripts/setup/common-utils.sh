@@ -354,6 +354,7 @@ echo-important () (
     tput setaf 3 # yellow
     tput bold
     echo "[IMPORTANT] [$(date +"%H:%M:%S")] $@"
+    echo "[IMPORTANT] [$(date +"%H:%M:%S")] $@" | systemd-cat --identifier="setup.sh" --priority="notice"
     tput sgr0
 )
 
