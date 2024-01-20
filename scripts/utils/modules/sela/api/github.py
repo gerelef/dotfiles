@@ -7,9 +7,9 @@ from modules.sela.definitions import URL
 from modules.sela.status import Rate, HTTPStatus
 from modules.sela.exceptions import ConnectionThrottled
 
-RATE_LIMIT_LIMIT_KEY = "x-ratelimit-limit"
-RATE_LIMIT_REMAINING_KEY = "x-ratelimit-remaining"
-RATE_LIMIT_RESET_KEY = "x-ratelimit-reset"
+RATE_LIMIT_LIMIT_KEY = "X-RateLimit-Limit"
+RATE_LIMIT_REMAINING_KEY = "X-RateLimit-Remaining"
+RATE_LIMIT_RESET_KEY = "X-RateLimit-Reset"
 GITHUB_API_VERSION_KEY = "X-GitHub-Api-Version"
 AUTHORIZATION_KEY = "Authorization"
 
@@ -22,7 +22,7 @@ def get_request(url: URL, auth_token=None, *args, **kwargs) -> tuple[HTTPStatus,
         import requests
     except NameError:
         print(
-            "Couldn't find requests library! Is it installed in the current environment?",
+            "FATAL! Couldn't find requests library! Is it installed in the current environment?",
             file=sys.stderr
         )
         exit(1)
@@ -41,13 +41,13 @@ def get_request(url: URL, auth_token=None, *args, **kwargs) -> tuple[HTTPStatus,
     )
 
     rate = GitHubRate(
-        total_limit=int(response.headers[RATE_LIMIT_LIMIT_KEY]),
-        remaining_limit=int(response.headers[RATE_LIMIT_REMAINING_KEY]),
-        limit_reset=int(response.headers[RATE_LIMIT_RESET_KEY])
+        total_limit=int(response.headers[RATE_LIMIT_LIMIT_KEY]) if RATE_LIMIT_LIMIT_KEY in response.headers else None,
+        remaining_limit=int(response.headers[RATE_LIMIT_REMAINING_KEY]) if RATE_LIMIT_REMAINING_KEY in response.headers else None,
+        limit_reset=int(response.headers[RATE_LIMIT_RESET_KEY]) if RATE_LIMIT_RESET_KEY in response.headers else None
     )
 
     status = HTTPStatus(response.status_code, rate=rate)
-    if not status.is_successful() and (status.code == 403 or status.code == 429) and rate.rate_limit_remaining == 0:
+    if not status.is_successful() and (status.code == 403 or status.code == 429) and rate.is_throttled():
         raise ConnectionThrottled(status)
 
     return status, response
