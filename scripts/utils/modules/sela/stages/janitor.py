@@ -10,6 +10,9 @@ class Janitor(ABC):
 
     @abstractmethod
     def cleanup(self, files: list[Filename]) -> None:
+        """
+        :param files: List of files to clean up, which may or may not exist.
+        """
         raise NotImplementedError
 
 

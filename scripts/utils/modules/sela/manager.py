@@ -1,18 +1,19 @@
-import enum
-import os
-import tempfile
-import types
-from abc import ABC, abstractmethod
-from typing import Callable, Self
+from abc import ABC
+from typing import Self
 
 from modules.sela import exceptions
-from modules.sela.definitions import Filename, URL
-from modules.sela.status import HTTPStatus
+from modules.sela.definitions import URL
 from modules.sela.exceptions import UnsuccessfulRequest
 from modules.sela.factories.abstract import ProviderFactory
-from modules.sela.factories.github import GitHubProviderFactory
 from modules.sela.helpers import auto_str
-from modules.sela.releases.abstract import Release
+from modules.sela.providers.abstract import Provider
+from modules.sela.stages.asset_discriminator import AssetDiscriminator, AllInclusiveAssetDiscriminator
+from modules.sela.stages.auditor import Auditor, NullAuditor
+from modules.sela.stages.downloader import Downloader, DefaultDownloader
+from modules.sela.stages.installer import Installer
+from modules.sela.stages.janitor import Janitor, SloppyJanitor
+from modules.sela.stages.logger import Logger
+from modules.sela.stages.release_discriminator import ReleaseDiscriminator, FirstReleaseDiscriminator
 
 
 @auto_str
@@ -27,44 +28,26 @@ class Manager(ABC):
     some documentation is incomplete, or an implementation is not obvious at all, open an issue, so we can talk about
     it.
     """
-    # If you're going to be overriding methods using any of the functions below, this will be an important need
-    # An alternative would be to use them directly inside the method bodies, or to use the purpose-specific
-    #  Manager.bind(manager, manager.foo, do_the_thing) static method.
-    # https://stackoverflow.com/questions/23082509/how-is-the-self-argument-magically-passed-to-instance-methods
-    # https://stackoverflow.com/questions/1015307/how-to-bind-an-unbound-method-without-calling-it
-    LOG_NOTHING: Callable[[object, str], None] = lambda _, s: None
-    VERIFY_NOTHING: Callable[[object, list[Filename]], bool] = lambda _, f: True
-    FILTER_FIRST: Callable[[object, Release], bool] = lambda _, r: True
-    DO_NOTHING: Callable[[object, list[Filename]], bool] = lambda _, f: None
 
-    factory_cls: type[ProviderFactory] = GitHubProviderFactory
-
-    class Level(enum.IntEnum):
-        """
-        Log level errors. To be used in the logging function implementation.
-        Logs flagged with PROGRESS_BAR should probably be written to stdout (or stderr) directly, with sys.stdout.write.
-        """
-        ERROR = 32
-        WARNING = 16
-        DEBUG = 8
-        INFO = 4
-        PROGRESS_BAR = 2
-        PROGRESS = 1
-
-    def __init__(self, repository: URL, download_dir: Filename = tempfile.gettempdir()):
+    # noinspection PyTypeChecker
+    def __init__(self, repository: URL):
         """
         :param repository: direct URL to the repository to make requests
-        :param download_dir: temporary download directory path
         :raises FileNotFoundError: raised if download_dir doesn't exist, or not enough permissions to execute os.stat(d)
         """
         self.repository = repository
-        self.provider = Manager.factory_cls(repository).create()
 
-        self.download_dir = download_dir
-        if not os.path.exists(self.download_dir):
-            raise FileNotFoundError(
-                f"Couldn't find, or not enough permissions to use os.stat(), on {self.download_dir}"
-            )
+        self.pfactory_cls: type[ProviderFactory] = ProviderFactory
+        self.released: ReleaseDiscriminator = None
+        self.assetd: AssetDiscriminator = None
+        self.downloader: Downloader = None
+        self.auditor: Auditor = None
+        self.installer: Installer = None
+        self.janitor: Janitor = None
+
+        # cached
+        self.pfactory: ProviderFactory = None
+        self.__provider = None
 
     def run(self) -> None:
         """
@@ -77,131 +60,90 @@ class Manager(ABC):
         :raises requests.Timeout:
         :raises requests.TooManyRedirects:
         """
-        files: list[Filename] = []
-        self.log(Manager.Level.PROGRESS, "Starting preprocessing...")
+        downloaded = []
         try:
-            status, r = self.provider.get_release(self.filter)
+            status, r = self.provider.get_release(self.released.discriminate)
             if not status.is_successful():
                 raise UnsuccessfulRequest("Couldn't get release from remote!", status)
 
-            downloadables = self.get_assets(r)
+            downloadables = self.assetd.discriminate(r)
             if not downloadables:
                 raise exceptions.NoAssetsFound("No assets found, or matched! Is everything OK?")
 
-            self.log(Manager.Level.PROGRESS, "Starting downloads...")
-            for fn, url in downloadables.items():
-                files.append(fn)
-                self.log(Manager.Level.PROGRESS, f"Downloading {fn}")
-                status = self.download(os.path.join(self.download_dir, fn), url)
-                if not status.is_successful():
-                    raise UnsuccessfulRequest(f"Couldn't download asset at url {url}", status)
-
-            self.log(Manager.Level.PROGRESS, "Verifying...")
-            if not self.verify(files):
-                raise exceptions.FileVerificationFailed("Couldn't verify files!")
-
-            self.log(Manager.Level.PROGRESS, "Installing...")
-            self.install(files)
+            downloaded = self.downloader.download(downloadables)
+            self.auditor.verify(downloaded)
+            self.installer.install(downloaded)
         finally:
-            self.cleanup(files)
+            self.janitor.cleanup(downloaded)
 
-    @abstractmethod
-    def filter(self, release: Release) -> bool:
+    def submit_factory(self, factory_cls: type[ProviderFactory]):
         """
-        Check if this is the release we want to download.
-        Note: if you just need the latest available release, override with FILTER_FIRST (or just call it here)!
-        Remember to bind the function to your instance with types.MethodType(FILTER_FIRST, instance) or Manager.bind
-        :param release:
-        :returns bool: True if attributes match what we want to download, false otherwise.
+        Submits the factory class.
         """
-        raise NotImplementedError
+        self.pfactory_cls = factory_cls
+        self.pfactory = None
 
-    @abstractmethod
-    def get_assets(self, r: Release) -> dict[Filename, URL]:
+    def submit_release_discriminator(self, rd: ReleaseDiscriminator):
         """
-        Get the assets that we'll download from a specific Release.
-        :returns dict[Filename, URL]: a dict where filenames match the URL we'll download from
+        Submits the release discriminator.
         """
-        raise NotImplementedError
+        self.released = rd
 
-    def download(self, filename: Filename, url: URL) -> HTTPStatus:
+    def submit_asset_discriminator(self, ad: AssetDiscriminator):
         """
-        Downloads a specific file from the url, stored in directory + filename.
-        Finishes early upon HTTPStatus error.
-        :param filename: absolute path to the filename we're going to write
-        :param url: url to download from
-        :return: last HTTPStatus received by self.provider.download
-        :raises requests.ConnectionError:
-        :raises requests.Timeout:
-        :raises requests.TooManyRedirects:
+        Submits the asset discriminator.
         """
-        kilobytes_denominator = 1_000_000
-        with open(filename, "wb") as out:
-            for status, bread, btotal, data in self.provider.download(url):
-                if not status.is_successful():
-                    return status
+        self.assetd = ad
 
-                self.log(
-                    Manager.Level.PROGRESS_BAR,
-                    f"\r{round(bread / kilobytes_denominator)}"
-                    f"/{round(btotal / kilobytes_denominator)} MB "
-                    f"| {round((bread / btotal) * 100, 1)}% | {filename}"
-                )
+    def submit_downloader(self, downloader: Downloader):
+        """
+        Submits the downloader.
+        """
+        self.downloader = downloader
 
-                out.write(data)
-            self.log(Manager.Level.PROGRESS_BAR, f"\n")
-            return status
+    def submit_auditor(self, auditor: Auditor):
+        """
+        Submits the auditor.
+        """
+        self.auditor = auditor
 
-    @abstractmethod
-    def verify(self, files: list[Filename]) -> bool:
-        #
+    def submit_installer(self, installer: Installer):
         """
-        Verify that files match their checksum.
-        Note: if this is not needed, override with Manager.VERIFY_NOTHING (or just call it here)!
-        Remember to bind the function to your instance with types.MethodType(VERIFY_NOTHING, instance) or Manager.bind
-        :param files:
-        :returns bool: True if everything's verified, false otherwise.
+        Submits the installer.
         """
-        raise NotImplementedError
+        self.installer = installer
 
-    @abstractmethod
-    def install(self, downloaded_files: list[Filename]):
+    def submit_janitor(self, janitor: Janitor):
         """
-        Install the release to the system.
-        Note: if this is not needed, override with Manager.DO_NOTHING (or just call it here)!
-        Remember to bind the function to your instance with types.MethodType(DO_NOTHING, instance) or Manager.bind
-        :param downloaded_files: downloaded files to install
+        Submits the janitor.
         """
-        raise NotImplementedError
+        self.janitor = janitor
 
-    @abstractmethod
-    def cleanup(self, files: list[Filename]):
-        """
-        Cleanup files.
-        Note: if this is not needed, override with Manager.DO_NOTHING (or just call it here)!
-        Remember to bind the function to your instance with types.MethodType(DO_NOTHING, instance) or Manager.bind
-        :param files: downloaded files; interact with os.path.join(self.download_dir, filename)
-        Note: it's not guaranteed the files exist!
-        """
-        raise NotImplementedError
+    @property
+    def provider(self) -> Provider:
+        if not self.pfactory_cls:
+            raise RuntimeError("provider factory class is undefined?!")
 
-    @abstractmethod
-    def log(self, level: Level, msg: str):
-        """
-        Log internal messages. Provide concrete implementation to redirect to whatever sink is appropriate.
-        Note: if this is not needed, override with Manager.LOG_NOTHING (or just call it here)!
-        Remember to bind the function to your instance with types.MethodType(LOG_NOTHING, instance) or Manager.bind
-        :param level: Log level
-        :param msg: string to log
-        """
-        raise NotImplementedError
+        if not self.pfactory:
+            self.__provider = self.pfactory_cls(self.repository).create()
 
-    # unfortunately, there is no BoundMethod type in python yet, womp womp
+        return self.__provider
+
     @classmethod
-    def bind(cls, manager: Self, method: types.MethodType, fn: Callable[[Self, ...], ...]):
+    def get_default_manager(cls, repository: URL) -> Self:
         """
-        Binds a Callable to a Manager instance, overriding the original method.
-        Equivalent to writing manager.foo = types.MethodType(foo, manager)
-        Note that the linter might show the type is wrong if you pass the bound method -- the linter's wrong.
+        Creates a manager instance with all the defaults.
+        Default director which are submitted (in order):
+
+        You may override specific steps with .submit_stage(director).
         """
-        setattr(manager, method.__name__, types.MethodType(fn, manager))
+        logger = Logger()
+
+        manager = Manager(repository)
+        manager.submit_release_discriminator(FirstReleaseDiscriminator())
+        manager.submit_asset_discriminator(AllInclusiveAssetDiscriminator())
+        manager.submit_downloader(DefaultDownloader(logger, manager.provider))
+        manager.submit_auditor(NullAuditor())
+        manager.submit_janitor(SloppyJanitor())
+
+        return manager

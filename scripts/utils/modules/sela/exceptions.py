@@ -13,15 +13,19 @@ class ConnectionThrottled(Exception):
     pass
 
 
-class FileVerificationFailed(Exception):
-    pass
-
-
 class NoReleaseFound(Exception):
     pass
 
 
 class NoAssetsFound(Exception):
+    pass
+
+
+class FileVerificationFailed(Exception):
+    pass
+
+
+class InstallationFailed(Exception):
     pass
 
 

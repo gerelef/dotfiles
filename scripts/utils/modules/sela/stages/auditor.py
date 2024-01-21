@@ -8,7 +8,10 @@ class Auditor(ABC):
     """
 
     @abstractmethod
-    def verify(self, files: list[Filename]) -> bool:
+    def verify(self, files: list[Filename]) -> None:
+        """
+        :raises FileVerificationFailed: if the verification fails, raise this exception
+        """
         # no repository supports checksums
         raise NotImplementedError
 
@@ -17,5 +20,5 @@ class NullAuditor(Auditor):
     """
     Default class that will, by default, skip any possible checksum inspection.
     """
-    def verify(self, files: list[Filename]) -> bool:
-        return True
+    def verify(self, files: list[Filename]) -> None:
+        pass  # do nothing
