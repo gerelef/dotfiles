@@ -1,5 +1,5 @@
 from abc import ABC
-from typing import Self
+from typing import Self, final
 
 from modules.sela import exceptions
 from modules.sela.definitions import URL
@@ -17,6 +17,7 @@ from modules.sela.stages.release_discriminator import ReleaseDiscriminator, Firs
 
 
 @auto_str
+@final
 class Manager(ABC):
     """
     The main Manager class. This class serves as the entry point to the framework; just extend and implement the
