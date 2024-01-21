@@ -144,40 +144,22 @@ flatpak-install () (
     echo-success "Finished flatpak-installing."
 )
 
-change-ownership () (
-    [[ $# -eq 0 ]] && return 2
-    [[ -z "$REAL_USER" ]] && return 2
+configure-residual-permissions () (
+    echo-status "-------------------CHANGING ROOT OWNERSHIP AND GROUPS IN HOME----------------"
+    chown "$REAL_USER" "$REAL_USER_HOME"
+    chgrp "$REAL_USER" "$REAL_USER_HOME"
     
-    chown "$REAL_USER" "$@"
-    chmod 740 "$@"
+    # everything in home should be owned by the user and in the user's group
+    # this filter finds which f
+    find "$REAL_USER_HOME" -user root -print0 2> /dev/null | while read -d $'\0' file; do 
+        chown "$REAL_USER" "$file"
+        chgrp "$REAL_USER" "$file"
+    done
+    
+    echo-success "Done."
 )
 
-
-change-ownership-recursive () (
-    [[ $# -eq 0 ]] && return 2
-    [[ -z "$REAL_USER" ]] && return 2
-    
-    chown -R "$REAL_USER" "$@"
-    chmod -R 740 "$@"
-)
-
-change-group () (
-    [[ $# -eq 0 ]] && return 2
-    [[ -z "$REAL_USER" ]] && return 2
-    
-    chgrp "$REAL_USER" "$@"
-)
-
-change-group-recursive () (
-    [[ $# -eq 0 ]] && return 2
-    [[ -z "$REAL_USER" ]] && return 2
-    
-    chgrp -R "$REAL_USER" "$@"
-)
-
-create-default-locations () (
-    # there should be a matching change-ownership-recursive after everything's done later
-    #  since everything here will be owned by "root" 
+create-default-locations () ( 
     mkdir -p "$PPW_ROOT" "$MZL_ROOT" "$BIN_ROOT" "$WRK_ROOT" "$SMR_ROOT" "$RND_ROOT"
 )
 

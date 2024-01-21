@@ -350,20 +350,6 @@ configure-ssh-defaults () (
     echo-success "Done."
 )
 
-configure-residual-permissions () (
-    echo-status "-------------------CHANGING ROOT OWNERSHIP AND GROUPS IN HOME----------------"
-    change-ownership "$REAL_USER_HOME"
-
-    # everything in home should be owned by the user and in the user's group
-    # this filter finds which f
-    find "$REAL_USER_HOME" -user root -print0 2> /dev/null | while read -d $'\0' file; do 
-        change-ownership "$file"
-        change-group "$file"
-    done
-    
-    echo-success "Done."
-)
-
 ####################################################################################################### 
 
 readonly DISTRIBUTION_NAME="fedora$(rpm -E %fedora)"
