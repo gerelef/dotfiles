@@ -151,7 +151,9 @@ configure-residual-permissions () (
     
     # everything in home should be owned by the user and in the user's group
     # this filter finds which f
-    find "$REAL_USER_HOME" -user root -print0 2> /dev/null | while read -d $'\0' file; do 
+    find "$REAL_USER_HOME" -user root -print0 2> /dev/null | while read -d $'\0' file; do
+        echo-debug "chown chgrp $file"
+        
         chown "$REAL_USER" "$file"
         chgrp "$REAL_USER" "$file"
     done
