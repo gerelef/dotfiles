@@ -12,7 +12,7 @@ from modules.sela.stages.auditor import Auditor, NullAuditor
 from modules.sela.stages.downloader import Downloader, DefaultDownloader
 from modules.sela.stages.installer import Installer
 from modules.sela.stages.janitor import Janitor, SloppyJanitor
-from modules.sela.stages.logger import Logger
+from modules.sela.stages.logger import Logger, StandardLogger
 from modules.sela.stages.release_discriminator import ReleaseDiscriminator, FirstReleaseDiscriminator
 
 
@@ -20,14 +20,14 @@ from modules.sela.stages.release_discriminator import ReleaseDiscriminator, Firs
 @final
 class Manager(ABC):
     """
-    The main Manager class. This class serves as the entry point to the framework; just extend and implement the
-    abstract methods. After extending, instantiate and call .run(). There are a few functions that should help with
-    very common functionality; see the detailed docstrings in each abstract method to guide your way. Most of the
-    process is automated & encapsulated to prevent accidental tampering, however you can easily extend this with very
-    custom functionality, starting with a custom ProviderFactory instance. The internals should be well documented,
-    and pretty simple to understand; I'll try my best to write complete documentation any time I get. If you think
-    some documentation is incomplete, or an implementation is not obvious at all, open an issue, so we can talk about
-    it.
+    The main Manager class. This class serves as the sole entry point to the framework. In order to use,
+    instantiate with the appropriate stage directors and call .run(). There is a default implementation for every step,
+    providing a very barebones experience, however it'll most likely not fit your own specific needs.
+    Most of theprocess is automated & encapsulated to prevent accidental tampering, however you can easily extend
+    this with very custom functionality, starting with a custom ProviderFactory instance.
+    The internals should be well documented, and pretty simple to understand; I'll try my best to write complete
+    documentation any time I get. If you think some documentation is incomplete, or an implementation is not clear-cut,
+    open an issue, so we can talk about it.
     """
 
     # noinspection PyTypeChecker
@@ -52,6 +52,7 @@ class Manager(ABC):
 
     def run(self) -> None:
         """
+        Runs the submitted stages.
         :raises UnsuccessfulRequest: raised when a critical request errored
         :raises exceptions.NoReleaseFound: raised when no release matched
         :raises exceptions.NoAssetsFound: raised when no assets are available/returned
@@ -77,46 +78,46 @@ class Manager(ABC):
         finally:
             self.janitor.cleanup(downloaded)
 
-    def submit_factory(self, factory_cls: type[ProviderFactory]):
+    def submit_factory(self, pfactory_cls: type[ProviderFactory]):
         """
-        Submits the factory class.
+        Submits the provider factory class, responsible for creating the appropriate provider.
         """
-        self.pfactory_cls = factory_cls
+        self.pfactory_cls = pfactory_cls
         self.pfactory = None
 
     def submit_release_discriminator(self, rd: ReleaseDiscriminator):
         """
-        Submits the release discriminator.
+        Submits the release discriminator, responsible for picking a valid release.
         """
         self.released = rd
 
     def submit_asset_discriminator(self, ad: AssetDiscriminator):
         """
-        Submits the asset discriminator.
+        Submits the asset discriminator, responsible for picking the valid assets from a release.
         """
         self.assetd = ad
 
     def submit_downloader(self, downloader: Downloader):
         """
-        Submits the downloader.
+        Submits the downloader, responsible for downloading said release.
         """
         self.downloader = downloader
 
     def submit_auditor(self, auditor: Auditor):
         """
-        Submits the auditor.
+        Submits the auditor, responsible for auditing the files' integrity.
         """
         self.auditor = auditor
 
     def submit_installer(self, installer: Installer):
         """
-        Submits the installer.
+        Submits the installer, responsible for installing the files.
         """
         self.installer = installer
 
     def submit_janitor(self, janitor: Janitor):
         """
-        Submits the janitor.
+        Submits the janitor, responsible for clean up, post-install, or if a fatal occurs.
         """
         self.janitor = janitor
 
@@ -131,14 +132,21 @@ class Manager(ABC):
         return self.__provider
 
     @classmethod
-    def get_default_manager(cls, repository: URL) -> Self:
+    def get_default_manager(cls, repository: URL, logger: Logger = None) -> Self:
         """
         Creates a manager instance with all the defaults.
         Default director which are submitted (in order):
-
+            StandardLogger
+            ProviderFactory (internally)
+            FirstReleaseDiscriminator
+            AllInclusiveAssetDiscriminator
+            DefaultDownloader
+            NullAuditor
+            SloppyJanitor
         You may override specific steps with .submit_stage(director).
         """
-        logger = Logger()
+        if logger is None:
+            logger = StandardLogger()
 
         manager = Manager(repository)
         manager.submit_release_discriminator(FirstReleaseDiscriminator())
