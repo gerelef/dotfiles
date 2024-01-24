@@ -257,8 +257,8 @@ zsh () (
 # important note: the statement pythonX.x -m venv \"\$venv_dir\" won't work with 2.7 or lower,
 #  for that, we need the virtualenv module
 prepare-pip () (
-    local vpip_fname="/tmp/vpip-temp-$(date +%s%N).sh"
-    local venv_dir="$HOME/.vpip"
+    readonly vpip_fname="/tmp/vpip-temp-$(date +%s%N).sh"
+    readonly venv_dir="$HOME/.vpip"
     local python_versions=()
     
     # get all the appropriate versions from the filesystem 
@@ -270,9 +270,9 @@ prepare-pip () (
     # create mock functions
     for python_version in $python_versions; do 
         # sanitize the filename and keep only the numbers at the end
-        local python_version_number="$(echo $python_version | tr -d -c 0-9.)"
+        python_version_number="$(echo $python_version | tr -d -c 0-9.)"
 
-        local virtual_group_subshell="vpip$python_version_number () {
+        virtual_group_subshell="vpip$python_version_number () {
             [[ \"\$EUID\" -eq 0 ]] && echo \"Do NOT run as root.\" && return 2; 
             [[ ! -d \"$venv_dir\" ]] && mkdir -p \"$venv_dir\" # create root dir if doesn't exist
             local venv_dir=\"$venv_dir/dvpip$python_version_number\"
