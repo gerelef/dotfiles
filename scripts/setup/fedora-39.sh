@@ -861,7 +861,7 @@ gsettings set org.gnome.shell.extensions.forge.keybindings window-swap-left "[]"
 gsettings set org.gnome.shell.extensions.forge.keybindings window-swap-right "[]"
 gsettings set org.gnome.shell.extensions.forge.keybindings window-swap-up "[]"
 gsettings set org.gnome.shell.extensions.forge.keybindings window-toggle-always-float "[]"
-gsettings set org.gnome.shell.extensions.forge.keybindings window-toggle-float "[]"
+gsettings set org.gnome.shell.extensions.forge.keybindings window-toggle-float "['<Super>c']"
 gsettings set org.gnome.shell.extensions.forge.keybindings workspace-active-tile-toggle "[]"
 gsettings set org.gnome.shell.extensions.forge primary-layout-mode 'tiling'
 gsettings set org.gnome.shell.extensions.forge float-always-on-top-enabled true
@@ -1010,9 +1010,9 @@ gsettings set org.gtk.gtk4.Settings.FileChooser sort-directories-first true
 gsettings set org.gtk.gtk4.Settings.FileChooser type-format 'category'
 gsettings set org.gtk.gtk4.Settings.FileChooser view-type 'list'
 gsettings set org.gtk.gtk4.Settings.FileChooser sort-directories-first true
-gsettings set org.gnome.settings-daemon.plugins.media-keys volume-down "['<Super>1']"
-gsettings set org.gnome.settings-daemon.plugins.media-keys volume-up "['<Super>2']"
-gsettings set org.gnome.settings-daemon.plugins.media-keys mic-mute "['<Super>3']"
+gsettings set org.gnome.settings-daemon.plugins.media-keys volume-down "[]"
+gsettings set org.gnome.settings-daemon.plugins.media-keys volume-up "[]"
+gsettings set org.gnome.settings-daemon.plugins.media-keys mic-mute "[]"
 gsettings set org.gnome.shell.keybindings screenshot "[]"
 gsettings set org.gnome.shell.keybindings screenshot-window "[]"
 gsettings set org.gnome.shell.keybindings show-screenshot-ui "[]"
