@@ -860,8 +860,8 @@ gsettings set org.gnome.shell.extensions.forge.keybindings window-swap-last-acti
 gsettings set org.gnome.shell.extensions.forge.keybindings window-swap-left "[]"
 gsettings set org.gnome.shell.extensions.forge.keybindings window-swap-right "[]"
 gsettings set org.gnome.shell.extensions.forge.keybindings window-swap-up "[]"
-gsettings set org.gnome.shell.extensions.forge.keybindings window-toggle-always-float "[]"
-gsettings set org.gnome.shell.extensions.forge.keybindings window-toggle-float "['<Super>c']"
+gsettings set org.gnome.shell.extensions.forge.keybindings window-toggle-always-float "['<Super>c']"
+gsettings set org.gnome.shell.extensions.forge.keybindings window-toggle-float "[]"
 gsettings set org.gnome.shell.extensions.forge.keybindings workspace-active-tile-toggle "[]"
 gsettings set org.gnome.shell.extensions.forge primary-layout-mode 'tiling'
 gsettings set org.gnome.shell.extensions.forge float-always-on-top-enabled true
