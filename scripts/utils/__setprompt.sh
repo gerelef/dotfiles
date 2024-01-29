@@ -51,12 +51,12 @@ og-prompt () {
     
     PS1+="\[${_FLBLUE}\]\t\[${_NOCOLOUR}\]" # Time
     PS1+=" \[${_FYELLOW}\]\w\[${_NOCOLOUR}\]" # working directory
-    PS1+="\[${_FORANGE}\]$(_git-branch 2> /dev/null) \[${_NOCOLOUR}\]" # active branch
-    PS1+="\[$_FBROWN\]$(_git-status 2> /dev/null) \[${_NOCOLOUR}\]" # staging status
+    PS1+="\[${_FORANGE}\]$(_git-branch 2> /dev/null)\[${_NOCOLOUR}\] " # active branch
+    PS1+="\[$_FBROWN\]$(_git-status 2> /dev/null)\[${_NOCOLOUR}\] " # staging status
     PS1+="\n"
     
     VENV_STATUS="${VIRTUAL_ENV:-N/A}"
-    [[ "$VENV_STATUS" != "N/A" ]] && PS1+="\[${_FLMAGENTA}\]>>> \[${_NOCOLOUR}\]"
+    [[ "$VENV_STATUS" != "N/A" ]] && PS1+="\[${_FLMAGENTA}\]>>>\[${_NOCOLOUR}\] "
     [[ "$VENV_STATUS" == "N/A" ]] && PS1+="\[${_FGREEN}\]\$\[${_NOCOLOUR}\] "
     
     # PS2 is used to continue a command using the \ character
@@ -71,7 +71,7 @@ og-prompt () {
 
 mini-prompt () {
     local LAST_COMMAND=$? # Must come first!
-    PROMPT_DIRTRIM=2    
+    PROMPT_DIRTRIM=1
     
     PS1=""    
     # Show error exit code if there is one
@@ -83,9 +83,14 @@ mini-prompt () {
     
     PS1+=" \[${_FYELLOW}\]\w\[${_NOCOLOUR}\] " # working directory
     
+    [[ -n "$(_git-status 2> /dev/null)" ]] && PS1+="\[$_FBROWN\](changes)\[${_NOCOLOUR}\] "
+    
     VENV_STATUS="${VIRTUAL_ENV:-N/A}"
-    [[ "$VENV_STATUS" != "N/A" ]] && PS1+="\[${_FLMAGENTA}\]>>> \[${_NOCOLOUR}\]"
-    [[ "$VENV_STATUS" == "N/A" ]] && PS1+="\[${_FGREEN}\]\$\[${_NOCOLOUR}\] "
+    if [[ "$VENV_STATUS" != "N/A" ]]; then local PCOLOUR="$_FLMAGENTA"; local PHINT=">>>"; fi
+    if [[ "$VENV_STATUS" == "N/A" ]]; then local PCOLOUR="$_FGREEN"; local PHINT="\$"; fi
+    [[ -n "$(_git-branch 2> /dev/null)" ]] && PCOLOUR="$_FORANGE"
+    
+    PS1+="\[${PCOLOUR}\]$PHINT\[${_NOCOLOUR}\] "
     
     # PS2 is used to continue a command using the \ character
     PS2="\[${_FPGREEN}\]>\[${_NOCOLOUR}\] "
