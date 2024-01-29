@@ -315,7 +315,7 @@ require-pip
 # BASH OPTIONS
 
 require-bashrc
-PROMPT_COMMAND='__setprompt; history -a'
+PROMPT_COMMAND='mini-prompt; history -a'
 
 shopt -s autocd
 shopt -s cdspell
