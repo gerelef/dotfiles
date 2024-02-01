@@ -8,9 +8,7 @@
     dl = "!git ll -1"
     find = "!git ls-files | grep -i"
     st = status -sb
-    stv = "!git status -v | less -R"
-    stvp = "!git status -v | grep -i ^+ | less -R"
-    stvm = "!git status -v | grep -i ^- | less -R"
+    stv = "!unbuffer git status -v | less -R"
     cl = clone
     cm = commit -m
     ck = checkout
@@ -25,5 +23,17 @@
     path = .gitconfig-gitlab
 [includeIf "hasconfig:remote.*.url:git@ssh.gitlab.gnome.org*/**"]
     path = .gitconfig-gnome
+# the following section is ripped straight from git-delta
 [color]
 	ui = auto
+[core]
+    pager = delta
+[interactive]
+    diffFilter = delta --color-only
+[delta]
+    navigate = true    # use n and N to move between diff sections
+    light = false      # set to true if you're in a terminal w/ a light background color (e.g. the default macOS terminal)
+[merge]
+    conflictstyle = diff3
+[diff]
+    colorMoved = default
