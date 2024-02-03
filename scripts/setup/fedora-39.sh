@@ -583,7 +583,6 @@ obs-studio-plugin-x264 \
 
 readonly INSTALLABLE_EXTRAS_FLATPAK="\
 com.discordapp.Discord \
-com.teamspeak.TeamSpeak \
 "
 
 readonly INSTALLABLE_VIRTUALIZATION_PACKAGES="\
