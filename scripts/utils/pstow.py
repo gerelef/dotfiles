@@ -7,9 +7,11 @@ import readline
 import getpass
 import math
 import os
+import shutil
 from argparse import ArgumentParser
 from copy import copy
 from glob import iglob
+from itertools import zip_longest
 from pathlib import PosixPath
 from typing import Iterable, final, Self, Optional, Callable, Iterator
 
@@ -59,14 +61,28 @@ class Tree:
         """
         return not self == other
 
-    def __contains__(self, item: Self | PosixPath):
+    def __contains__(self, other: Self | PosixPath) -> bool:
+        """
+        Non-recursive check if we contain an element.
+        @param other:
+        @return:
+        """
+        if other is None:
+            return False
         self_parts, self_parts_len = PosixPathUtils.get_fs_parts_len(self.absolute)
-        if isinstance(item, Tree):
-            other_parts, other_parts_len = PosixPathUtils.get_fs_parts_len(item.absolute)
+        if isinstance(other, Tree):
+            other_parts, other_parts_len = PosixPathUtils.get_fs_parts_len(other.absolute)
         else:
-            other_parts, other_parts_len = PosixPathUtils.get_fs_parts_len(item.absolute())
+            other_parts, other_parts_len = PosixPathUtils.get_fs_parts_len(other.absolute())
 
-        # regular zip, not in reverse, since the other_parts might be in a subdirectory,
+        # if the other parts are less than ours, meaning
+        #  my/path/1
+        #  my/path
+        # it means that my/path is definitely not contained within our tree
+        if other_parts_len < self_parts_len:
+            return False
+
+        # zip_longest, not in reverse, since the other_parts might be in a subdirectory,
         #  we just want to check if the tld equivalent is us
         for spc, opc in zip(self_parts, other_parts):
             if spc != opc:
@@ -83,7 +99,7 @@ class Tree:
             f"{" " * len(self.absolute.parts)}\033[96m\033[1m├>{repr(self)}\033[0m"
         ]
         for content in self.contents:
-            out.append(f"{" " * len(self.absolute.parts)}\033[96m│ \033[93m> {str(content.absolute())}\033[0m")
+            out.append(f"{" " * len(self.absolute.parts)}\033[96m├\033[93m─> {str(content.absolute())}\033[0m")
         for branch in self.branches:
             out.append(str(branch))
         return "\n".join(out)
@@ -176,8 +192,7 @@ class Tree:
             raise RuntimeError(f"Expected PosixPath, got {type(element)}")
 
         contents = self.contents
-        removable_contents: Iterable[PosixPath] = filter(lambda pp: PosixPathUtils.posixpath_equals(element, pp),
-                                                         contents)
+        removable_contents: Iterable[PosixPath] = filter(lambda pp: PosixPathUtils.posixpath_equals(element, pp), contents)
         for rcont in removable_contents:
             # edge case for stowignore files:
             if rcont.name == Tree.STOWIGNORE_FN:
@@ -317,17 +332,56 @@ class Tree:
         return
 
     @classmethod
-    def move(cls, tree: Self, destination: PosixPath, fn: Callable[[PosixPath], bool]) -> None:
+    def rsymlink(cls, tree: Self, destination: PosixPath, fn: Callable[[PosixPath], bool], make_parents=True) -> None:
         """
-        Move a tree to destination.
+        Recursively symlink a tree to destination.
         Inclusive, meaning the top-level directory name of Tree will be considered the same as destination,
-        e.g., it will not make a new folder of the same name.
-        @param tree: Tree & contents we'll be moving.
+        e.g., it will not make a new folder of the same name for the tld. However, it'll create a 1:1 copy
+        for subtrees.
+        If the directory doesn't exist, it'll be created.
+        @param tree: Tree, whose contents we'll be moving.
         @param destination: Top-level directory we'll be copying everything to.
         @param fn: Business rule the destination PosixPath will have to fulfill.
         Should return true for items we *want* to create.
+        Argument is the destination PosixPath.
+        @param make_parents: equivalent --make-parents in mkdir -p
         """
-        raise NotImplementedError  # TODO
+        if not destination.exists(follow_symlinks=False) and not make_parents:
+            raise PathError(f"Expected valid target, but got {destination}, which doesn't exist?!")
+        if destination.exists(follow_symlinks=False) and not destination.is_dir():
+            raise PathError(f"Expected valid target, but got {destination}, which isn't a directory?!")
+
+        if not destination.exists(follow_symlinks=False) and make_parents:
+            print(f"\033[96mCreating destination which doesn't exist {destination}\033[0m")
+            shutil.copytree(
+                src=tree.absolute,
+                dst=destination.absolute(),
+                symlinks=False,
+                ignore=lambda src, names: ['.'] + [name for name in names if os.path.isfile(os.path.join(src, name))],
+                dirs_exist_ok=False
+            )
+
+        content: PosixPath
+        for content in tree.contents:
+            destination_content = PosixPath(destination / content.name)
+            if not fn(destination_content):
+                print(f"\033[91mSkipping {destination_content} due to policy\033[0m")
+                continue
+            print(f"Symlinking src {content} to {destination_content}")
+            os.symlink(
+                src=content.absolute(),
+                dst=destination_content.absolute(),
+                target_is_directory=False
+            )
+
+        branch: Tree
+        for branch in tree.branches:
+            destination_dir = PosixPath(destination / branch.name)
+            branch.rsymlink(
+                tree=branch,
+                destination=destination_dir,
+                fn=fn
+            )
 
 
 @final
@@ -351,7 +405,9 @@ class PosixPathUtils:
             return False
 
         # reverse components, since the tail is the one most likely to be different
-        for el1_components, el2_components in zip(el1.parts[::-1], el2.parts[::-1]):
+        # zip_longest is used since if, for any reason, the path is not the same, on any level,
+        # they're not equal
+        for el1_components, el2_components in zip_longest(el1.parts[::-1], el2.parts[::-1]):
             if el1_components != el2_components:
                 return False
 
@@ -430,9 +486,9 @@ class Stower:
         # the reason we're doing the explicitly excluded items first, is simple
         #  the fact is that explicitly --exclude item(s) will most likely be less than the ones in .stowignore
         #  so, we're probably saving time since we don't have to trim .stowignored files that do not apply
-        for content in filter(lambda sk: sk.is_file(), self.skippables):
+        for content in filter(lambda sk: sk.is_file() and sk in self.src_tree, self.skippables):
             self.src_tree.rtrim_file(content)
-        for branch in filter(lambda sk: sk.is_dir(), self.skippables):
+        for branch in filter(lambda sk: sk.is_dir() and sk in self.src_tree, self.skippables):
             self.src_tree.rtrim_branch(Tree(branch))
         # third step: trim the tree from top to bottom, for every .stowignore we find, we will apply
         #  the .stowignore rules only to the same-level trees and/or files, hence, provably and efficiently
@@ -449,7 +505,7 @@ class Stower:
                 lambda br, _: br.absolute.owner() != euidn
             )
 
-        # fifth step: move the populated tree
+        # fifth step: symlink the populated tree
         print("The following action is not reversible.")
         print(f"Linking the following tree to destination {self.dest} . . .")
         print(self.src_tree)
@@ -457,23 +513,24 @@ class Stower:
         if not approved:
             print("Aborting.")
 
-        # Someone would say this is an ugly implementation due to the many lambda functions.
+        # Someone could say this is an ugly implementation due to the many lambda functions.
         # However, I'd say it's a pretty cool implementation,
         # since all of these rules are explicit business rules,
         # and could be substituted for whatever in the future
         if approved:
-            print("Linking!")
-            # no overwriting existing links rule
+            print("Linking...")
+            # overwrite nothing that already exists rule
             exists_rule = lambda dpp: not dpp.exists(follow_symlinks=False)
             if self.force:
-                exists_rule = lambda dpp: True
-            # no overwriting other people's links rule
-            others_rule = lambda dpp: dpp.owner() == euidn
+                # overwrite only symlinks rule
+                exists_rule = lambda dpp: dpp.is_symlink() if dpp.exists(follow_symlinks=False) else True
+            # overwite only our own links rule
+            #  .exists() is here for sanity reasons, because it's not a given that
+            #  the file does actually exist, and due to lazy eval, this will work even if it isn't there
+            others_rule = lambda dpp: dpp.owner() == euidn if dpp.exists(follow_symlinks=False) else True
             if self.overwrite_others:
                 others_rule = lambda dpp: True
-            # no overwriting files, only symlinks rule
-            symlinks_rule = lambda dpp: dpp.is_symlink()
-            # no overwriting original tree rule
+            # overwrite if not in the original tree rule
             #  here, we're comparing the absolute posixpath of the original tree,
             #  with the target (destination) posixpath
             #  if they're the same, we do NOT want to overwrite the tree
@@ -485,12 +542,11 @@ class Stower:
             #  gets stowed to destination /.../dotfiles/.
             #  the inner dotfiles/dotfiles symlink to dotfiles/.
             #  would overwrite the original tree, resulting in a catastrophic failure where everything is borked.
-            Tree.move(
+            Tree.rsymlink(
                 self.src_tree,
                 self.dest,
                 fn=lambda dpp: exists_rule(dpp) and
                                others_rule(dpp) and
-                               symlinks_rule(dpp) and
                                keep_original_rule(dpp)
             )
 
@@ -574,7 +630,9 @@ if __name__ == "__main__":
             overwrite_others=oo,
             make_parents=mp,
         ).stow()
-    except FileNotFoundError as e:
-        print(f"Couldn't find file!\n{e}")
-    except PathError as e:
-        print(f"Invalid operation PathError!\n{e}")
+    finally:
+        pass
+    # except FileNotFoundError as e:
+    #     print(f"Couldn't find file!\n{e}")
+    # except PathError as e:
+    #     print(f"Invalid operation PathError!\n{e}")
