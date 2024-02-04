@@ -57,7 +57,7 @@ require-bashrc-packages () (
     echo -e "Installing essential .bashrc packages: $_FGREEN"
     echo -n "$REQUIRE_DEPENDENCIES" | tr " " "\n"
     echo -ne "$_NOCOLOUR"
-    
+
     install-system-pkg $REQUIRE_DEPENDENCIES && touch $HAS_RUN_FILE && clear
 )
 
@@ -71,8 +71,8 @@ require-bashrc () {
     local _UTILITY_YTDL="$DOTFILES_DIR/scripts/utils/ytdl.sh"
     local _UTILITY_MATH="$DOTFILES_DIR/scripts/utils/math.sh"
     local _UTILITY_PROMPT="$DOTFILES_DIR/scripts/utils/__setprompt.sh"
-    
-    [[ -f "$_GLOBAL_BASHRC" ]] && source "$_GLOBAL_BASHRC" 
+
+    [[ -f "$_GLOBAL_BASHRC" ]] && source "$_GLOBAL_BASHRC"
     [[ -f "$_PRIVATE_BASHRC" ]] && source "$_PRIVATE_BASHRC"
 
     # SOFT DEPENDENCIES
@@ -84,7 +84,7 @@ require-bashrc () {
 
     # HARD DEPENDENCIES
     [[ -f "$_UTILITY_PROMPT" ]] && source "$_UTILITY_PROMPT"
-    
+
     # PACKAGE DEPENDENCIES
     require-bashrc-packages || return 1
 }
@@ -227,22 +227,22 @@ require-fsh-packages () (
 
 fsh () (
     require-fsh-packages
-    
+
     /usr/bin/env fish
 )
 
 require-zsh-packages () (
     [[ -f $HAS_RUN_ZSH_FILE ]] && return 0
-    
+
     echo -ne "$_FYELLOW"
     echo -e "Installing zsh $_NOCOLOUR"
-    
+
     install-system-pkg zsh && touch $HAS_RUN_ZSH_FILE && clear
 )
 
 zsh () (
-    require-zsh-packages 
-    
+    require-zsh-packages
+
     /usr/bin/env zsh
 )
 
@@ -265,15 +265,15 @@ prepare-pip () (
     readonly vpip_fname="/tmp/vpip-temp-$(date +%s%N).sh"
     readonly venv_dir="$HOME/.vpip"
     local python_versions=()
-    
-    # get all the appropriate versions from the filesystem 
+
+    # get all the appropriate versions from the filesystem
     # https://stackoverflow.com/a/57485303
     for pv in "$(ls -1 /usr/bin/python* | grep '.*[0-9]\.\([0-9]\+\)\?$' | sort --version-sort)"; do
         python_versions+=("$pv")
     done
-    
+
     # create mock functions
-    for python_version in $python_versions; do 
+    for python_version in $python_versions; do
         # sanitize the filename and keep only the numbers at the end
         python_version_number="$(echo $python_version | tr -d -c 0-9.)"
 
@@ -295,14 +295,14 @@ prepare-pip () (
                     $python_version -m venv \"\$venv_dir\" # for python >= 3
                 fi
             fi
-            
+
             bash --init-file <(echo \"source \\\"$HOME/.bashrc\\\"; source \$venv_dir/bin/activate\")
         }"
-        
+
         # append to the file
         echo "$virtual_group_subshell" >> $vpip_fname
     done
-    
+
     echo $vpip_fname
 )
 
