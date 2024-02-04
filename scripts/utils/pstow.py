@@ -367,7 +367,14 @@ class Tree:
             if not fn(destination_content):
                 print(f"\033[91mSkipping {destination_content} due to policy\033[0m")
                 continue
+
             print(f"Symlinking src {content} to {destination_content}")
+            if destination_content.exists(follow_symlinks=False):
+                if destination_content.is_symlink():
+                    os.unlink(destination_content.absolute())
+                else:
+                    os.remove(destination_content.absolute())
+
             os.symlink(
                 src=content.absolute(),
                 dst=destination_content.absolute(),
