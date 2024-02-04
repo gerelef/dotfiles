@@ -31,20 +31,6 @@ readonly REAL_USER_DBUS_ADDRESS="unix:path=/run/user/${REAL_USER_UID}/bus"
 # fs thingies
 readonly ROOT_FS=$(stat -f --format=%T /)
 readonly REAL_USER_HOME_FS=$(stat -f --format=%T "$REAL_USER_HOME")
-# dotfiles directories
-# https://stackoverflow.com/questions/59895/how-do-i-get-the-directory-where-a-bash-script-is-located-from-within-the-script
-readonly SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
-readonly RC_DIR=$(realpath -s "$SCRIPT_DIR/..")
-readonly CONFIG_DIR=$(realpath -s "$SCRIPT_DIR/../../.config")
-readonly RC_MZL_DIR="$CONFIG_DIR/mozilla"
-
-# home directories to create
-readonly PPW_ROOT="$REAL_USER_HOME/.config/pipewire/"
-readonly MZL_ROOT="$REAL_USER_HOME/.mozilla/firefox"
-readonly BIN_ROOT="$REAL_USER_HOME/bin"
-readonly WRK_ROOT="$REAL_USER_HOME/work"
-readonly SMR_ROOT="$REAL_USER_HOME/seminar"
-readonly RND_ROOT="$REAL_USER_HOME/random"
 
 add-gsettings-shortcut () (
     [[ $# -ne 3 ]] && return 2
@@ -161,10 +147,6 @@ configure-residual-permissions () (
     echo-success "Done."
 )
 
-create-default-locations () ( 
-    mkdir -p "$PPW_ROOT" "$MZL_ROOT" "$BIN_ROOT" "$WRK_ROOT" "$SMR_ROOT" "$RND_ROOT"
-)
-
 copy-dnf () (
     (cat <<-DNF_EOF 
 [main]
@@ -189,10 +171,6 @@ try-enabling-power-profiles-daemon () (
         systemctl stop power-profiles-daemon.service
         systemctl mask power-profiles-daemon.service
     fi
-)
-
-copy-pipewire () (    
-    ln -sf "$CONFIG_DIR/pipewire.conf" "$PPW_ROOT/pipewire.conf"
 )
 
 # man 5 sysctl.d
@@ -294,38 +272,6 @@ GDM_END
     ) > "/etc/dconf/db/gdm.d/04-touchpad"
     chmod 644 "/etc/dconf/db/gdm.d/04-touchpad"
     echo-debug "Created /etc/dconf/db/gdm.d/04-touchpad"
-)
-
-create-private-bashrc () (
-    touch "$REAL_USER_HOME/.bashrc-private"
-)
-
-create-private-gitconfig () (
-    touch "$REAL_USER_HOME/.gitconfig-github"
-    touch "$REAL_USER_HOME/.gitconfig-gitlab"
-    touch "$REAL_USER_HOME/.gitconfig-gnome"
-)
-
-copy-rc-files () (
-    ln -sf "$RC_DIR/.bashrc" "$REAL_USER_HOME/.bashrc"
-    ln -sf "$RC_DIR/.nanorc" "$REAL_USER_HOME/.nanorc"
-    ln -sf "$CONFIG_DIR/.gitconfig" "$REAL_USER_HOME/.gitconfig"
-)
-
-copy-ff-rc-files () (
-    #https://askubuntu.com/questions/239543/get-the-default-firefox-profile-directory-from-bash
-    if [[ $(grep '\[Profile[^0]\]' "$MZL_ROOT/profiles.ini") ]]; then
-        readonly PROFPATH=$(grep -E '^\[Profile|^Path|^Default' "$MZL_ROOT/profiles.ini" | grep '^Path' | cut -c6- | tr " " "\n")
-    else
-        readonly PROFPATH=$(grep 'Path=' "$MZL_ROOT/profiles.ini" | sed 's/^Path=//')
-    fi
-
-    for MZL_PROF_DIR in $PROFPATH; do
-        MZL_PROF_DIR_ABSOLUTE="$MZL_ROOT/$MZL_PROF_DIR"
-
-        # preference rc
-        ln -sf "$RC_MZL_DIR/user.js" "$MZL_PROF_DIR_ABSOLUTE/user.js"
-    done
 )
 
 # USEFUL COMMAND: dnf whatprovides COMMAND

@@ -236,17 +236,6 @@ install-jetbrains-toolbox () (
     exit 1
 )
 
-install-config-files () (
-    echo-status "-------------------INSTALLING RC FILES----------------"
-
-    copy-pipewire
-    create-private-bashrc
-    create-private-gitconfig
-    copy-rc-files
-
-    echo-success "Done."
-)
-
 configure-system-defaults () (
     echo-status "-------------------SETTING UP SYSTEM DEFAULTS----------------"
     lower-swappiness
@@ -749,30 +738,8 @@ fi
 
 #######################################################################################################
 
-if ask-user "Customize firefox? Compatible only with gerelef/dotfiles"; then
-    # create default directories that should exist on all my systems
-    create-default-locations
-    # this needs to be called here otherwise firefox won't be able to start w/ the default profile, as it won't have the required permissions
-    configure-residual-permissions
-    #"https://www.suse.com/support/kb/doc/?id=000017060"
-    while : ; do
-        if ask-user "Please run firefox as a user to create its configuration directories; let it load fully, then close it."; then
-            copy-ff-rc-files
-            echo-success "Done."
-            break
-        fi
-    done
-fi
-
-#######################################################################################################
-
-if ask-user "Install default config files? Compatible only with gerelef/dotfiles"; then
-    # create default directories that should exist on all my systems
-    create-default-locations
-    install-config-files
-fi
-
-#######################################################################################################
+echo-status "Soft linking $REAL_USER_HOME/dotfiles/.bashrc to $REAL_USER_HOME"
+ln -sf "$REAL_USER_HOME/dotfiles/.bashrc" "$REAL_USER_HOME/.bashrc"
 
 configure-residual-permissions
 
