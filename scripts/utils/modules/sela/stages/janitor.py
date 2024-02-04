@@ -1,6 +1,5 @@
 from abc import ABC, abstractmethod
-
-from modules.sela.definitions import Filename
+from pathlib import Path
 
 
 class Janitor(ABC):
@@ -9,7 +8,7 @@ class Janitor(ABC):
     """
 
     @abstractmethod
-    def cleanup(self, files: list[Filename]) -> None:
+    def cleanup(self, files: list[Path]) -> None:
         """
         :param files: List of files to clean up, which may or may not exist.
         """
@@ -20,5 +19,5 @@ class SloppyJanitor(Janitor):
     """
     Default class that will, by default, clean up nothing (hence the name).
     """
-    def cleanup(self, files: list[Filename]) -> None:
+    def cleanup(self, files: list[Path]) -> None:
         return

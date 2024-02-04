@@ -2,9 +2,8 @@
 # https://stackoverflow.com/questions/32910096/is-there-a-way-to-auto-generate-a-str-implementation-in-python
 import os
 import subprocess
+from pathlib import Path
 from typing import Sequence
-
-from modules.sela.definitions import Filename
 
 
 def auto_str(cls):
@@ -69,7 +68,7 @@ def auto_hash(cls):
     return cls
 
 
-def run_subprocess(commands: Sequence[str] | str, cwd: Filename = "~") -> tuple[bool, str, str]:
+def run_subprocess(commands: Sequence[str] | str, cwd: Path = "~") -> tuple[bool, str, str]:
     """
     :param cwd: current working directory
     :param commands: commands to run in subshell, sequence of or singular string(s)

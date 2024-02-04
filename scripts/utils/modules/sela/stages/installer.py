@@ -1,8 +1,8 @@
 import os
 import shutil
 from abc import ABC, abstractmethod
+from pathlib import Path
 
-from modules.sela.definitions import Filename
 from modules.sela.stages.logger import Logger
 
 
@@ -12,7 +12,7 @@ class Installer(ABC):
     """
 
     @abstractmethod
-    def install(self, files: list[Filename]) -> None:
+    def install(self, files: list[Path]) -> None:
         """
         This operation may have side effects; installation might require creating auxiliary files.
         :param files: Files to install. This list will be appropriately appended for auxiliary files.
@@ -25,12 +25,12 @@ class CopyInstaller(Installer):
     """
     Default class that will, by default, copy the src list of files, to dest.
     """
-    def __init__(self, logger: Logger, dest: Filename):
+    def __init__(self, logger: Logger, dest: Path):
         self.logger = logger
         self.dest = dest
 
-    def install(self, src: list[Filename]) -> None:
-        self.logger.log_progress("Installing ")
+    def install(self, src: list[Path]) -> None:
+        self.logger.log_progress("Installing...")
         if not os.path.exists(self.dest):
             os.makedirs(self.dest)
 

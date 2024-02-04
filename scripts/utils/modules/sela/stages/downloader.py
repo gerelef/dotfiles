@@ -1,7 +1,7 @@
 import os
 import tempfile
 from abc import ABC, abstractmethod
-from typing import Iterator, Callable
+from pathlib import Path
 
 from modules.sela.definitions import Filename, URL
 from modules.sela.exceptions import UnsuccessfulRequest
@@ -16,7 +16,7 @@ class Downloader(ABC):
     """
 
     @abstractmethod
-    def download(self, downloadables: dict[Filename, URL]) -> list[Filename]:
+    def download(self, downloadables: dict[Filename, URL]) -> list[Path]:
         raise NotImplementedError
 
 
@@ -31,16 +31,16 @@ class DefaultDownloader(Downloader):
     def __init__(self,
                  logger: Logger,
                  provider: Provider,
-                 download_dir: Filename = tempfile.gettempdir()):
+                 download_dir: Path = Path(tempfile.gettempdir())):
         self.logger = logger
         self.provider = provider
         self.download_dir = download_dir
 
-    def download(self, downloadables: dict[Filename, URL]) -> list[Filename]:
+    def download(self, downloadables: dict[Filename, URL]) -> list[Path]:
         files = []
         self.logger.log_progress("Starting downloads...")
         for fn, url in downloadables.items():
-            fn_abs = os.path.join(self.download_dir, fn)
+            fn_abs = Path(os.path.join(self.download_dir, fn))
             files.append(fn_abs)
 
             self.logger.log_progress(f"Downloading {fn}")

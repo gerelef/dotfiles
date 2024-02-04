@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from modules.sela.definitions import Filename
+from pathlib import Path
 
 
 class Auditor(ABC):
@@ -8,7 +8,7 @@ class Auditor(ABC):
     """
 
     @abstractmethod
-    def verify(self, files: list[Filename]) -> None:
+    def verify(self, files: list[Path]) -> None:
         """
         :raises FileVerificationFailed: if the verification fails, raise this exception
         """
@@ -20,5 +20,5 @@ class NullAuditor(Auditor):
     """
     Default class that will, by default, skip any possible checksum inspection.
     """
-    def verify(self, files: list[Filename]) -> None:
+    def verify(self, files: list[Path]) -> None:
         pass  # do nothing

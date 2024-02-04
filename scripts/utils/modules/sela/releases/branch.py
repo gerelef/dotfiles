@@ -1,6 +1,7 @@
+from pathlib import Path
 from typing import Optional, final
 
-from modules.sela.definitions import Filename, URL
+from modules.sela.definitions import URL
 from modules.sela.helpers import auto_str
 from modules.sela.releases.abstract import Release
 
@@ -32,7 +33,7 @@ class Branch(Release):
         self.__src = src
 
     @property
-    def assets(self) -> Optional[dict[Filename, URL]]:
+    def assets(self) -> Optional[dict[Path, URL]]:
         return None
 
     @property
