@@ -638,9 +638,7 @@ if __name__ == "__main__":
             overwrite_others=oo,
             make_parents=mp,
         ).stow()
-    finally:
-        pass
-    # except FileNotFoundError as e:
-    #     print(f"Couldn't find file!\n{e}")
-    # except PathError as e:
-    #     print(f"Invalid operation PathError!\n{e}")
+    except FileNotFoundError as e:
+        print(f"Couldn't find file!\n{e}")
+    except PathError as e:
+        print(f"Invalid operation PathError!\n{e}")
