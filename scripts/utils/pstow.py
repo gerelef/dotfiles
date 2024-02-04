@@ -545,9 +545,10 @@ class Stower:
             Tree.rsymlink(
                 self.src_tree,
                 self.dest,
+                make_parents=self.make_parents,
                 fn=lambda dpp: exists_rule(dpp) and
                                others_rule(dpp) and
-                               keep_original_rule(dpp)
+                               keep_original_rule(dpp),
             )
 
 
@@ -584,6 +585,7 @@ def get_arparser() -> ArgumentParser:
     ap.add_argument(
         "--overwrite-others", "-o",
         required=False,
+        type=bool,
         action="store_true",
         default=False,
         help="Ovewrite links/files owned by other users than the current one."
@@ -601,11 +603,12 @@ def get_arparser() -> ArgumentParser:
              "Symlinks are not supported as exclusion criteria."
     )
     ap.add_argument(
-        "--make-parents", "-p",
+        "--no-parents", "-p",
         required=False,
+        type=bool,
         action="store_true",
         default=False,
-        help="Make parent directories as we traverse the tree in destination, if they do not exist."
+        help="Don't make parent directories as we traverse the tree in destination, even if they do not exist."
     )
 
     return ap
@@ -621,7 +624,7 @@ if __name__ == "__main__":
         ]
         force = args.force
         oo = args.overwrite_others
-        mp = args.make_parents
+        mp = not args.no_parents
 
         Stower(
             src, dest,
