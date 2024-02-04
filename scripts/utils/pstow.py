@@ -585,7 +585,6 @@ def get_arparser() -> ArgumentParser:
     ap.add_argument(
         "--overwrite-others", "-o",
         required=False,
-        type=bool,
         action="store_true",
         default=False,
         help="Ovewrite links/files owned by other users than the current one."
@@ -605,7 +604,6 @@ def get_arparser() -> ArgumentParser:
     ap.add_argument(
         "--no-parents", "-p",
         required=False,
-        type=bool,
         action="store_true",
         default=False,
         help="Don't make parent directories as we traverse the tree in destination, even if they do not exist."
