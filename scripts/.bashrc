@@ -169,6 +169,10 @@ update-compat-layers () (
     return 1
 )
 
+pstow () (
+    "$DOTFILES_DIR/scripts/utils/pstow.py" "$@"
+)
+
 #############################################################
 # WRAPPERS TO BUILTINS OR PATH EXECUTABLES
 
