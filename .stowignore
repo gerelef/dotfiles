@@ -1,0 +1,7 @@
+README.*
+.stowignore
+.has-run*
+.git*
+scripts/
+.manpages/
+games/

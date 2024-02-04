@@ -1,0 +1,5 @@
+.stowignore
+README.*
+userChrome*
+sidebery*
+ublock*
