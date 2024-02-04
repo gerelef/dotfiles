@@ -1,4 +1,9 @@
 #!/usr/bin/env -S python3.12 -S -OO
+# From the documentation:
+# >"If the readline module was loaded,
+#  then input() will use it to provide elaborate line editing and history features."
+# noinspection PyUnresolvedReferences
+import readline
 import getpass
 import math
 import os
@@ -6,7 +11,7 @@ from argparse import ArgumentParser
 from copy import copy
 from glob import iglob
 from pathlib import PosixPath
-from typing import Iterable, final, Self, Optional, Callable, Iterator, Any
+from typing import Iterable, final, Self, Optional, Callable, Iterator
 
 
 class PathError(RuntimeError):
@@ -54,11 +59,34 @@ class Tree:
         """
         return not self == other
 
+    def __contains__(self, item: Self | PosixPath):
+        self_parts, self_parts_len = PosixPathUtils.get_fs_parts_len(self.absolute)
+        if isinstance(item, Tree):
+            other_parts, other_parts_len = PosixPathUtils.get_fs_parts_len(item.absolute)
+        else:
+            other_parts, other_parts_len = PosixPathUtils.get_fs_parts_len(item.absolute())
+
+        # regular zip, not in reverse, since the other_parts might be in a subdirectory,
+        #  we just want to check if the tld equivalent is us
+        for spc, opc in zip(self_parts, other_parts):
+            if spc != opc:
+                return False
+
+        return True
+
     def __repr__(self) -> str:
         return str(self.absolute)
 
     def __str__(self) -> str:
-        raise NotImplementedError  # TODO print pretty tree!
+        # we're doing bfs essentially here, which makes sense in terms of output if you think about it
+        out: list[str] = [
+            f"{" " * len(self.absolute.parts)}\033[96m\033[1m├>{repr(self)}\033[0m"
+        ]
+        for content in self.contents:
+            out.append(f"{" " * len(self.absolute.parts)}\033[96m│ \033[93m> {str(content.absolute())}\033[0m")
+        for branch in self.branches:
+            out.append(str(branch))
+        return "\n".join(out)
 
     @property
     def stowignore(self) -> Optional[PosixPath]:
@@ -212,13 +240,9 @@ class Tree:
         if self.stowignore:
             for ignorable in self.resolve(self.absolute, self.stowignore):
                 if isinstance(ignorable, Tree):
-                    # TODO add in --verbose mode
-                    #  print(f".stowignore trimming {repr(ignorable)}")
                     self.rtrim_branch(ignorable, depth=depth)
                     continue
 
-                # TODO add in --verbose mode
-                #  print(f".stowignore trimming {ignorable}")
                 self.rtrim_file(ignorable, depth=depth)
 
         subtree: Tree
@@ -327,8 +351,8 @@ class PosixPathUtils:
             return False
 
         # reverse components, since the tail is the one most likely to be different
-        for file_component, dir_component in zip(el1.parts[::-1], el2.parts[::-1]):
-            if file_component != dir_component:
+        for el1_components, el2_components in zip(el1.parts[::-1], el2.parts[::-1]):
+            if el1_components != el2_components:
                 return False
 
         return True
@@ -336,7 +360,7 @@ class PosixPathUtils:
     @staticmethod
     def get_fs_parts_len(thing: Tree | PosixPath) -> tuple[tuple[str, ...], int]:
         """
-        @return: return the true path towards a thing, removing filenames, and counting true structure
+        @return: return the true path towards a thing, removing filenames, and counting fs structure
         """
         if isinstance(thing, PosixPath):
             parts = thing.absolute().parts if thing.is_dir() else thing.absolute().parts[:-1]
@@ -375,8 +399,16 @@ class Stower:
         @return:
         """
         while True:
-            reply = input("Are you sure you want to continue [Y/n]?").lower()
-            if reply != "y" or reply != "n":
+            try:
+                reply = input("Are you sure you want to continue [Y/n]? ").lower()
+            except KeyboardInterrupt:
+                return False
+            except EOFError:
+                # this catch doesn't work through the IDE, but in regular runs it works
+                #  leave it as-is
+                return False
+
+            if reply != "y" and reply != "n":
                 print(f"Invalid reply {reply}, please answer with Y/y for Yes, or N/n for no.")
                 continue
             return reply == "y"
@@ -420,7 +452,7 @@ class Stower:
         # fifth step: move the populated tree
         print("The following action is not reversible.")
         print(f"Linking the following tree to destination {self.dest} . . .")
-        # print(self.src_tree)  # FIXME implement!
+        print(self.src_tree)
         approved = self._prompt()
         if not approved:
             print("Aborting.")
@@ -445,23 +477,22 @@ class Stower:
             #  here, we're comparing the absolute posixpath of the original tree,
             #  with the target (destination) posixpath
             #  if they're the same, we do NOT want to overwrite the tree
-            keep_original_rule = lambda dpp: not PosixPathUtils.posixpath_equals(self.src_tree.absolute, dpp)
+            keep_original_rule = lambda dpp: dpp not in self.src_tree
+            # If we'd overwrite the src tree by copying a specific link to dest, abort due to fatal conflict.
+            #  For example, consider the following src structure:
+            #  dotfiles
+            #    > dotfiles
+            #  gets stowed to destination /.../dotfiles/.
+            #  the inner dotfiles/dotfiles symlink to dotfiles/.
+            #  would overwrite the original tree, resulting in a catastrophic failure where everything is borked.
             Tree.move(
                 self.src_tree,
                 self.dest,
                 fn=lambda dpp: exists_rule(dpp) and
-                others_rule(dpp) and
-                symlinks_rule(dpp) and
-                keep_original_rule(dpp)
+                               others_rule(dpp) and
+                               symlinks_rule(dpp) and
+                               keep_original_rule(dpp)
             )
-
-        # TODO: if we would overwrite the source by copying a specific link to dest,
-        #  abort due to fatal conflict. For example, following src dotfiles structure:
-        #  dotfiles
-        #    > dotfiles
-        #  gets stowed to destination /.../dotfiles/..
-        #  the inner dotfiles/dotfiles symlink to dotfiles/.. would overwrite the original,
-        #   resulting in a catastrophic failure where everything is borked.
 
 
 def get_arparser() -> ArgumentParser:
