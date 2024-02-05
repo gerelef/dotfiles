@@ -28,12 +28,11 @@ class PathError(RuntimeError):
 @final
 class Tree:
     REAL_USER_HOME = f"{str(PosixPath().home())}"
-    STOWIGNORE_FN = ".stowconfig"
 
     def __init__(self, tld: PosixPath):
         self.__tld: PosixPath = tld.absolute()
         self.__tree: list[Self | PosixPath] = []
-        self.__stowignore: Optional[PosixPath] = None
+        self.__stowignore: Optional[Stowconfig] = None
 
     def __eq__(self, other: Self) -> bool:
         """
@@ -101,6 +100,7 @@ class Tree:
             if ps.startswith(Tree.REAL_USER_HOME):
                 return ps.replace(Tree.REAL_USER_HOME, "~", 1)
             return ps
+
         out: list[str] = [f"{" " * len(self.absolute.parts)}\033[96m\033[1m─> {shorten_home(self)}\033[0m"]
         for content in self.contents:
             out.append(f"{" " * len(self.absolute.parts)}\033[96m\033[93m──> {shorten_home(content)}\033[0m")
@@ -109,16 +109,15 @@ class Tree:
         return "\n".join(out)
 
     @property
-    def stowignore(self) -> Optional[PosixPath]:
+    def stowignore(self):
         return self.__stowignore
 
     @property
     def absolute(self) -> PosixPath:
         """
-        @return: Shallow copy of top-level directory, a PosixPath.
+        @return: Top-level directory, a PosixPath.
         """
-        # try to not leak obj reference
-        return copy(self.__tld)
+        return self.__tld
 
     @property
     def name(self) -> str:
@@ -160,8 +159,8 @@ class Tree:
         current_path, directory_names, file_names = next(os.walk(self.absolute, followlinks=False))
         for fn in file_names:
             pp = PosixPath(os.path.join(current_path, fn))
-            if fn == Tree.STOWIGNORE_FN:
-                self.__stowignore = pp
+            if fn == Stowconfig.STOWIGNORE_FN:
+                self.__stowignore = Stowconfig(pp)
 
             self.tree = pp
 
@@ -196,10 +195,11 @@ class Tree:
             raise RuntimeError(f"Expected PosixPath, got {type(element)}")
 
         contents = self.contents
-        removable_contents: Iterable[PosixPath] = filter(lambda pp: PosixPathUtils.posixpath_equals(element, pp), contents)
+        removable_contents: Iterable[PosixPath] = filter(lambda pp: PosixPathUtils.posixpath_equals(element, pp),
+                                                         contents)
         for rcont in removable_contents:
             # edge case for stowignore files:
-            if rcont.name == Tree.STOWIGNORE_FN:
+            if rcont.name == Stowconfig.STOWIGNORE_FN:
                 self.__stowignore = None
 
             self.tree.remove(rcont)
@@ -292,7 +292,7 @@ class Tree:
         if depth < 0:
             return self
         if self.stowignore:
-            for ignorable in self.resolve(self.absolute, self.stowignore):
+            for ignorable in self.stowignore.parse():
                 if isinstance(ignorable, Tree):
                     self.rtrim_branch(ignorable, depth=depth)
                     continue
@@ -305,35 +305,7 @@ class Tree:
 
         return self
 
-    @classmethod
-    def resolve(cls, tld: PosixPath, stowignore: PosixPath) -> Iterable[Self | PosixPath]:
-        """
-        Resolve the structure of a .stowignore.
-        @param tld: Top-level directory PosixPath
-        @param stowignore: PosixPath pointing to a .stowignore.
-        """
-
-        # noinspection PyShadowingNames
-        def handle_ignore_line(tld: PosixPath, sti_line: str) -> Iterator[str]:
-            # the fact that we're forced to use os.path.join, and not PosixPath(tld / p)
-            #  is evil, and speaks to the fact that the development of these two modules (iglob & Path)
-            #  was completely disjointed
-            return iglob(os.path.join(tld / sti_line), recursive=True, include_hidden=True)
-
-        with open(stowignore, "r", encoding="UTF-8") as sti:
-            for line in sti:
-                trimmed_line = line.strip()
-                for p in handle_ignore_line(tld, trimmed_line):
-                    pp = PosixPath(p)
-                    # return tree if it's a dir
-                    if pp.is_dir():
-                        yield Tree(pp)
-                        continue
-                    # return a posixpath for regular files
-                    yield pp
-
-        return
-
+    # noinspection PyShadowingNames
     @classmethod
     def rsymlink(cls, tree: Self, destination: PosixPath, fn: Callable[[PosixPath], bool], make_parents=True) -> None:
         """
@@ -392,6 +364,44 @@ class Tree:
                 destination=destination_dir,
                 fn=fn
             )
+
+
+class Stowconfig:
+    STOWIGNORE_FN = ".stowconfig"
+
+    def __init__(self, fstowignore: PosixPath):
+        """
+        @param fstowignore: stowignore PosixPath
+        """
+        self.fstowignore = fstowignore
+        self.parent = fstowignore.parent
+
+    def _handle_ignore_line(self, stowignore_line: str) -> Iterator[str]:
+        # the fact that we're forced to use os.path.join, and not PosixPath(tld / p)
+        #  is evil, and speaks to the fact that the development of these two modules (iglob & Path)
+        #  was completely disjointed
+        return iglob(os.path.join(self.parent / stowignore_line), recursive=True, include_hidden=True)
+
+    def _handle_redirect_lines(self, source: PosixPath, target: PosixPath):
+        raise NotImplementedError
+
+    def parse(self) -> Iterable[Tree | PosixPath]:
+        """
+        Resolve the structure of a STOWIGNORE_FN.
+        """
+        # noinspection PyShadowingNames
+        with open(self.fstowignore, "r", encoding="UTF-8") as sti:
+            for line in sti:
+                trimmed_line = line.strip()
+                for p in self._handle_ignore_line(trimmed_line):
+                    pp = PosixPath(p)
+                    # return tree if it's a dir
+                    if pp.is_dir():
+                        yield Tree(pp)
+                        continue
+                    # return a posixpath for regular files
+                    yield pp
+        return
 
 
 @final
