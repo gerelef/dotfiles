@@ -192,7 +192,8 @@ class Tree:
             raise RuntimeError(f"Expected PosixPath, got {type(element)}")
 
         contents = self.contents
-        removable_contents: Iterable[PosixPath] = filter(lambda pp: PosixPathUtils.posixpath_equals(element, pp), contents)
+        removable_contents: Iterable[PosixPath] = filter(lambda pp: PosixPathUtils.posixpath_equals(element, pp),
+                                                         contents)
         for rcont in removable_contents:
             # edge case for stowignore files:
             if rcont.name == Tree.STOWIGNORE_FN:
@@ -476,7 +477,7 @@ class Stower:
                 continue
             return reply == "y"
 
-    def stow(self):
+    def stow(self, readonly: bool = False):
         """
         @raise PathError: if src and dest are the same
         """
@@ -516,7 +517,7 @@ class Stower:
         print("The following action is not reversible.")
         print(f"Linking the following tree to destination {self.dest} . . .")
         print(self.src_tree)
-        approved = self._prompt()
+        approved = self._prompt() if not readonly else False
         if not approved:
             print("Aborting.")
 
@@ -615,6 +616,10 @@ def get_arparser() -> ArgumentParser:
         default=False,
         help="Don't make parent directories as we traverse the tree in destination, even if they do not exist."
     )
+    ap.add_subparsers(dest="command", required=False).add_parser(
+        "status",
+        help="Echo the current status of the stow src."
+    )
 
     return ap
 
@@ -637,7 +642,7 @@ if __name__ == "__main__":
             force=force,
             overwrite_others=oo,
             make_parents=mp,
-        ).stow()
+        ).stow(readonly=args.command == "status")
     except FileNotFoundError as e:
         print(f"Couldn't find file!\n{e}")
     except PathError as e:
