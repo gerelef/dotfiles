@@ -1,0 +1,9 @@
+README.*
+.stowconfig
+.has-run*
+.git*
+scripts/
+.manpages/
+games/
+.config/mozilla/
+.config/gnome-extensions

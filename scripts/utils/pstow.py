@@ -27,7 +27,8 @@ class PathError(RuntimeError):
 # Recursive-trim functions do not affect the filesystem, they just remove them from the tree.
 @final
 class Tree:
-    STOWIGNORE_FN = ".stowignore"
+    REAL_USER_HOME = f"{str(PosixPath().home())}"
+    STOWIGNORE_FN = ".stowconfig"
 
     def __init__(self, tld: PosixPath):
         self.__tld: PosixPath = tld.absolute()
@@ -95,11 +96,14 @@ class Tree:
 
     def __str__(self) -> str:
         # we're doing bfs essentially here, which makes sense in terms of output if you think about it
-        out: list[str] = [
-            f"{" " * len(self.absolute.parts)}\033[96m\033[1m├>{repr(self)}\033[0m"
-        ]
+        def shorten_home(p: Tree | PosixPath) -> str:
+            ps = p.name if isinstance(p, PosixPath) else repr(p)
+            if ps.startswith(Tree.REAL_USER_HOME):
+                return ps.replace(Tree.REAL_USER_HOME, "~", 1)
+            return ps
+        out: list[str] = [f"{" " * len(self.absolute.parts)}\033[96m\033[1m─> {shorten_home(self)}\033[0m"]
         for content in self.contents:
-            out.append(f"{" " * len(self.absolute.parts)}\033[96m├\033[93m─> {str(content.absolute())}\033[0m")
+            out.append(f"{" " * len(self.absolute.parts)}\033[96m\033[93m──> {shorten_home(content)}\033[0m")
         for branch in self.branches:
             out.append(str(branch))
         return "\n".join(out)
@@ -192,8 +196,7 @@ class Tree:
             raise RuntimeError(f"Expected PosixPath, got {type(element)}")
 
         contents = self.contents
-        removable_contents: Iterable[PosixPath] = filter(lambda pp: PosixPathUtils.posixpath_equals(element, pp),
-                                                         contents)
+        removable_contents: Iterable[PosixPath] = filter(lambda pp: PosixPathUtils.posixpath_equals(element, pp), contents)
         for rcont in removable_contents:
             # edge case for stowignore files:
             if rcont.name == Tree.STOWIGNORE_FN:
@@ -238,32 +241,8 @@ class Tree:
         if subtrees:
             return self
 
-        for branch in branches:
+        for branch in self.branches:
             branch.rtrim_branch(removable_branch, depth=depth - 1)
-
-        return self
-
-    def rtrim_ignored(self, depth: int = math.inf) -> Self:
-        """
-        Recursively trim all the branches & elements,
-        from the existing .stowignore files, in each tld (top-level directory).
-        @param depth: Determines the maximum allowed depth to search.
-        The default value is infinite.
-        """
-        if depth < 0:
-            return self
-
-        if self.stowignore:
-            for ignorable in self.resolve(self.absolute, self.stowignore):
-                if isinstance(ignorable, Tree):
-                    self.rtrim_branch(ignorable, depth=depth)
-                    continue
-
-                self.rtrim_file(ignorable, depth=depth)
-
-        subtree: Tree
-        for subtree in self.branches:
-            subtree.rtrim_ignored(depth=depth - 1)
 
         return self
 
@@ -303,6 +282,29 @@ class Tree:
             branch.rtrim_branch_rule(fn, depth=depth - 1)
         return self
 
+    def rtrim_ignored(self, depth: int = math.inf) -> Self:
+        """
+        Recursively trim all the branches & elements,
+        from the existing .stowignore files, in each tld (top-level directory).
+        @param depth: Determines the maximum allowed depth to search.
+        The default value is infinite.
+        """
+        if depth < 0:
+            return self
+        if self.stowignore:
+            for ignorable in self.resolve(self.absolute, self.stowignore):
+                if isinstance(ignorable, Tree):
+                    self.rtrim_branch(ignorable, depth=depth)
+                    continue
+
+                self.rtrim_file(ignorable, depth=depth)
+
+        subtree: Tree
+        for subtree in self.branches:
+            subtree.rtrim_ignored(depth=depth - 1)
+
+        return self
+
     @classmethod
     def resolve(cls, tld: PosixPath, stowignore: PosixPath) -> Iterable[Self | PosixPath]:
         """
@@ -316,7 +318,7 @@ class Tree:
             # the fact that we're forced to use os.path.join, and not PosixPath(tld / p)
             #  is evil, and speaks to the fact that the development of these two modules (iglob & Path)
             #  was completely disjointed
-            return iglob(os.path.join(tld / sti_line), include_hidden=True)
+            return iglob(os.path.join(tld / sti_line), recursive=True, include_hidden=True)
 
         with open(stowignore, "r", encoding="UTF-8") as sti:
             for line in sti:
@@ -567,7 +569,8 @@ def get_arparser() -> ArgumentParser:
     ap.add_argument(
         "--source", "-s",
         type=str,
-        required=True,
+        required=False,
+        default=os.getcwd(),
         help="Source directory links will be copied from."
     )
     ap.add_argument(
