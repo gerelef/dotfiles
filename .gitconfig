@@ -8,7 +8,7 @@
     dl = "!git ll -1"
     find = "!git ls-files | grep -i"
     st = status -sb
-    stv = "!unbuffer git status -v | less -R"
+    stv = "!git diff --staged"
     cl = clone
     cm = commit -m
     ck = checkout

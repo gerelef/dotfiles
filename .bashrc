@@ -4,8 +4,8 @@
 #   https://github.com/anordal/shellharden/blob/master/how_to_do_things_safely_in_bash.md
 #   https://tldp.org/HOWTO/Man-Page/q2.html
 
-# git-delta and unbuffer are required for the current .gitconfig
-REQUIRE_DEPENDENCIES+="bat lsd git-delta unbuffer"
+# git-delta are required for the current .gitconfig
+REQUIRE_DEPENDENCIES+="bat lsd git-delta"
 
 #############################################################
 
