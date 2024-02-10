@@ -452,7 +452,7 @@ class Stowconfig:
                     case Stowconfig.COPY_SECTION_HEADER:
                         strategy = self._handle_copy_line
                         continue  # eat line because it's a header
-                    
+
                 for result in strategy(trimmed_line):
                     yield result
         return
