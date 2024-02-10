@@ -9,6 +9,7 @@ import math
 import os
 import shutil
 import logging
+import sys
 from argparse import ArgumentParser
 from glob import iglob
 from itertools import zip_longest
@@ -57,6 +58,14 @@ class Tree:
         self.__tld: PosixPath = tld.absolute()
         self.__tree: list[Self | PosixPath] = []
         self.__stowignore: Optional[Stowconfig] = None
+
+    def __len__(self) -> int:
+        length = len(self.tree)
+
+        for branch in self.branches:
+            length += len(branch)
+
+        return length
 
     def __eq__(self, other: Self) -> bool:
         """
@@ -278,6 +287,7 @@ class Tree:
         """
         Apply business rule to contents.
         @param fn: Business function that determines whether the element will be removed or not, with depth provided.
+        Should return True for elements we want to remove, False for branches we do not.
         @param depth: Determines the maximum allowed depth to search.
         The default value is infinite.
         """
@@ -296,6 +306,7 @@ class Tree:
         """
         Apply business rule to branches.
         @param fn: Business function determines whether the element will be removed or not, with depth provided.
+        Should return True for elements we want to remove, False for branches we do not.
         @param depth: Determines the maximum allowed depth to search.
         The default value is infinite.
         """
@@ -531,7 +542,9 @@ class Stower:
         logger.info("The following action is not reversible.")
         while True:
             try:
-                reply = input(f"Do you want to link the tree to destination {self.dest}/... [Y/n]? ").lower()
+                reply = input(
+                    f"Do you want to link the tree to destination \x1b[31;1m{self.dest}/...\x1b[0m [Y/n]? "
+                ).lower()
             except KeyboardInterrupt:
                 return False
             except EOFError:
@@ -557,6 +570,9 @@ class Stower:
 
         # first step: create the tree of the entire src folder
         self.src_tree.traverse()
+        # early exit for empty trees
+        if not len(self.src_tree):
+            logger.warning(f"Source tree is empty?")
         # second step: apply preliminary business rule to the tree:
         #  trim explicitly excluded items
         # the reason we're doing the explicitly excluded items first, is simple
@@ -580,6 +596,12 @@ class Stower:
             self.src_tree.rtrim_branch_rule(
                 lambda br, _: br.absolute.owner() != euidn
             )
+
+        # fourth step: apply preliminary business rule to the tree:
+        #  trim empty branches to avoid creation of directories whose contents are ignored entirely
+        self.src_tree.rtrim_branch_rule(
+            lambda br, _: len(br) == 0
+        )
 
         # fifth step: symlink the populated tree
         logger.info(f"{self.src_tree.repr()}")
@@ -640,7 +662,7 @@ def get_arparser() -> ArgumentParser:
     ap.add_argument(
         "--target", "-t",
         type=str,
-        required=True,
+        required=False,
         help="Destination/target directory links will be soft-linked to."
     )
     ap.add_argument(
@@ -710,6 +732,12 @@ if __name__ == "__main__":
     logger = get_logger()
     args = get_arparser().parse_args()
     try:
+        is_dry = args.command == "status"
+        if not is_dry and not args.target:
+            logger.error("--target must be set for non-dry runs.")
+            sys.exit(2)
+        if is_dry and not args.target:
+            args.target = "/"
         src = PosixPathUtils.convert_path_str_to_posixpath(args.source, strict=not args.loose)
         dest = PosixPathUtils.convert_path_str_to_posixpath(args.target, strict=not args.loose)
         excluded = [
