@@ -502,9 +502,10 @@ class Stower:
         Prompt the user for an input, [Y/n].
         @return:
         """
+        logger.info("The following action is not reversible.")
         while True:
             try:
-                reply = input("Are you sure you want to continue [Y/n]? ").lower()
+                reply = input(f"Do you want to link the tree to destination {self.dest}/... [Y/n]? ").lower()
             except KeyboardInterrupt:
                 return False
             except EOFError:
@@ -554,8 +555,6 @@ class Stower:
             )
 
         # fifth step: symlink the populated tree
-        logger.info("The following action is not reversible.")
-        logger.info(f"Linking the following tree to destination {self.dest} . . .")
         logger.info(f"{self.src_tree.repr()}")
         approved = self._prompt() if not readonly else False
         if not approved:
