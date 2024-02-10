@@ -193,7 +193,12 @@ class Tree:
         """
         # the reason for this ugliness, is that os.walk is recursive by nature,
         #  and we do not want to recurse by os.walk, but rather by child.traverse() method
-        current_path, directory_names, file_names = next(os.walk(self.absolute, followlinks=False))
+        try:
+            current_path, directory_names, file_names = next(os.walk(self.absolute, followlinks=False))
+        except StopIteration:
+            # stop iteration is called by os.walk when, on an edge case, pstow is called on ~
+            return self
+
         for fn in file_names:
             pp = PosixPath(os.path.join(current_path, fn))
             if fn == Stowconfig.STOWIGNORE_FN:
@@ -729,6 +734,9 @@ def get_logger() -> logging.Logger:
 
 
 if __name__ == "__main__":
+    # set for reaaaaally deep trees
+    sys.setrecursionlimit(10_000_000)
+
     logger = get_logger()
     args = get_arparser().parse_args()
     try:
