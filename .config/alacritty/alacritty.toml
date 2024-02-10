@@ -1,3 +1,5 @@
+live_config_reload = true
+
 [colors.bright]
 black = "0x4c4c4c"
 blue = "0xb3deef"
@@ -34,7 +36,7 @@ shape = "Beam"
 render_timer = false
 
 [font]
-size = 10
+size = 12
 
 [font.bold]
 family = "mono"
@@ -72,6 +74,7 @@ history = 100000
 
 [window]
 dynamic_padding = false
+opacity = 0.8
 
 [window.padding]
 x = 0
