@@ -8,6 +8,7 @@ import getpass
 import math
 import os
 import shutil
+import logging
 from argparse import ArgumentParser
 from glob import iglob
 from itertools import zip_longest
@@ -17,6 +18,30 @@ from typing import Iterable, final, Self, Optional, Callable, Iterator
 
 class PathError(RuntimeError):
     pass
+
+
+# class & logger setup ripped straight out of here
+# https://stackoverflow.com/a/56944256
+class CustomFormatter(logging.Formatter):
+    grey = "\x1b[38;20m"
+    yellow = "\x1b[33;20m"
+    red = "\x1b[31;20m"
+    bold_red = "\x1b[31;1m"
+    reset = "\x1b[0m"
+    format = "%(levelname)s: %(message)s"
+
+    FORMATS = {
+        logging.INFO: "%(message)s " + reset,  # use this for user-facing output
+        logging.DEBUG: reset + format + reset,
+        logging.WARNING: yellow + format + reset,
+        logging.ERROR: red + format + reset,
+        logging.CRITICAL: bold_red + format + reset
+    }
+
+    def format(self, record):
+        log_fmt = self.FORMATS.get(record.levelno)
+        formatter = logging.Formatter(log_fmt)
+        return formatter.format(record)
 
 
 # AUTHOR'S NOTE:
@@ -92,20 +117,24 @@ class Tree:
     def __repr__(self) -> str:
         return str(self.absolute)
 
-    def __str__(self) -> str:
-        # we're doing bfs essentially here, which makes sense in terms of output if you think about it
+    def repr(self, indentation: int = 0):
+        """
+        @param indentation: indentation level.
+        @return: Tree representation of the current tree.
+        """
+
         def shorten_home(p: Tree | PosixPath) -> str:
             ps = p.name if isinstance(p, PosixPath) else repr(p)
             if ps.startswith(Tree.REAL_USER_HOME):
                 return ps.replace(Tree.REAL_USER_HOME, "~", 1)
             return ps
 
-        out: list[str] = [f"{" " * len(self.absolute.parts)}\033[96m\033[1m─> {shorten_home(self)}\033[0m"]
+        out: list[str] = [f"\033[96m{"─" * indentation}─> \033[1m{shorten_home(self)}\033[0m"]
         for content in self.contents:
-            out.append(f"{" " * len(self.absolute.parts)}\033[96m\033[93m──> {shorten_home(content)}\033[0m")
+            out.append(f"\033[96m\033[93m{"─" * (indentation + 4)}──> \033[3m{shorten_home(content)}\033[0m")
         for branch in self.branches:
-            out.append(str(branch))
-        return "\n".join(out)
+            out.append(branch.repr(indentation=indentation + 4))
+        return "\n\033[96m\033[0m".join(out)
 
     @property
     def stowignore(self):
@@ -326,7 +355,7 @@ class Tree:
             raise PathError(f"Expected valid target, but got {destination}, which isn't a directory?!")
 
         if not destination.exists(follow_symlinks=False) and make_parents:
-            print(f"\033[96mCreating destination which doesn't exist {destination}\033[0m")
+            logger.info(f"\033[96mCreating destination which doesn't exist {destination}\033[0m")
             shutil.copytree(
                 src=tree.absolute,
                 dst=destination.absolute(),
@@ -339,10 +368,10 @@ class Tree:
         for content in tree.contents:
             destination_content = PosixPath(destination / content.name)
             if not fn(destination_content):
-                print(f"\033[91mSkipping {destination_content} due to policy\033[0m")
+                logger.info(f"\033[91mSkipping {destination_content} due to policy\033[0m")
                 continue
 
-            print(f"Symlinking src {content} to {destination_content}")
+            logger.info(f"Symlinking src {content} to {destination_content}")
             if destination_content.exists(follow_symlinks=False):
                 if destination_content.is_symlink():
                     os.unlink(destination_content.absolute())
@@ -484,7 +513,7 @@ class Stower:
                 return False
 
             if reply != "y" and reply != "n":
-                print(f"Invalid reply {reply}, please answer with Y/y for Yes, or N/n for no.")
+                logger.info(f"Invalid reply {reply}, please answer with Y/y for Yes, or N/n for no.")
                 continue
             return reply == "y"
 
@@ -525,19 +554,19 @@ class Stower:
             )
 
         # fifth step: symlink the populated tree
-        print("The following action is not reversible.")
-        print(f"Linking the following tree to destination {self.dest} . . .")
-        print(self.src_tree)
+        logger.info("The following action is not reversible.")
+        logger.info(f"Linking the following tree to destination {self.dest} . . .")
+        logger.info(f"{self.src_tree.repr()}")
         approved = self._prompt() if not readonly else False
         if not approved:
-            print("Aborting.")
+            logger.warning("Aborting.")
 
         # Someone could say this is an ugly implementation due to the many lambda functions.
         # However, I'd say it's a pretty cool implementation,
         # since all of these rules are explicit business rules,
         # and could be substituted for whatever in the future
         if approved:
-            print("Linking...")
+            logger.info("Linking...")
             # overwrite nothing that already exists rule
             exists_rule = lambda dpp: not dpp.exists(follow_symlinks=False)
             if self.force:
@@ -636,7 +665,23 @@ def get_arparser() -> ArgumentParser:
     return ap
 
 
+def get_logger() -> logging.Logger:
+    # create logger
+    # noinspection PyShadowingNames
+    logger = logging.getLogger()
+    logger.setLevel(logging.DEBUG)
+
+    # create console handler with a higher log level
+    ch = logging.StreamHandler()
+    ch.setLevel(logging.DEBUG)
+    ch.setFormatter(CustomFormatter())
+
+    logger.addHandler(ch)
+    return logger
+
+
 if __name__ == "__main__":
+    logger = get_logger()
     args = get_arparser().parse_args()
     try:
         src = PosixPathUtils.convert_path_str_to_posixpath(args.source, strict=not args.loose)
@@ -656,6 +701,6 @@ if __name__ == "__main__":
             make_parents=mp,
         ).stow(readonly=args.command == "status")
     except FileNotFoundError as e:
-        print(f"Couldn't find file!\n{e}")
+        logger.error(f"Couldn't find file!\n{e}")
     except PathError as e:
-        print(f"Invalid operation PathError!\n{e}")
+        logger.error(f"Invalid operation PathError!\n{e}")
