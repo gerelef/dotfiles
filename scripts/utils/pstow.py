@@ -396,6 +396,9 @@ class Tree:
 
 class Stowconfig:
     STOWIGNORE_FN = ".stowconfig"
+    IGNORE_SECTION_HEADER = "[ignore]"
+    REDIRECT_SECTION_HEADER = "[redirect]"
+    COPY_SECTION_HEADER = "[copy]"
 
     def __init__(self, fstowignore: PosixPath):
         """
@@ -404,31 +407,54 @@ class Stowconfig:
         self.fstowignore = fstowignore
         self.parent = fstowignore.parent
 
-    def _handle_ignore_line(self, stowignore_line: str) -> Iterator[str]:
+    def _handle_ignore_line(self, stowignore_line: str) -> Iterator[Tree | PosixPath]:
         # the fact that we're forced to use os.path.join, and not PosixPath(tld / p)
         #  is evil, and speaks to the fact that the development of these two modules (iglob & Path)
         #  was completely disjointed
-        return iglob(os.path.join(self.parent / stowignore_line), recursive=True, include_hidden=True)
+        for p in iglob(os.path.join(self.parent / stowignore_line), recursive=True, include_hidden=True):
+            pp = PosixPath(p)
+            # return tree if it's a dir
+            if pp.is_dir():
+                yield Tree(pp)
+                continue
+            # return a posixpath for regular files
+            yield pp
+        return
 
-    def _handle_redirect_lines(self, source: PosixPath, target: PosixPath):
+    def _handle_redirect_line(self, redirect_line: str) -> Iterator[Tree | PosixPath]:
         raise NotImplementedError
+
+    def _handle_copy_line(self, redirect_line: str) -> Iterator[Tree | PosixPath]:
+        raise NotImplementedError
+
+    def _is_comment(self, line: str) -> bool:
+        return line.startswith("//")
 
     def parse(self) -> Iterable[Tree | PosixPath]:
         """
         Resolve the structure of a STOWIGNORE_FN.
         """
+        strategy: Callable[[str], Iterator[Tree | PosixPath]] = self._handle_ignore_line
         # noinspection PyShadowingNames
         with open(self.fstowignore, "r", encoding="UTF-8") as sti:
             for line in sti:
                 trimmed_line = line.strip()
-                for p in self._handle_ignore_line(trimmed_line):
-                    pp = PosixPath(p)
-                    # return tree if it's a dir
-                    if pp.is_dir():
-                        yield Tree(pp)
-                        continue
-                    # return a posixpath for regular files
-                    yield pp
+                # skip empty lines, and comments (which are line separated)
+                if not trimmed_line or self._is_comment(trimmed_line):
+                    continue
+                match trimmed_line:
+                    case Stowconfig.IGNORE_SECTION_HEADER:
+                        strategy = self._handle_ignore_line
+                        continue  # eat line because it's a header
+                    case Stowconfig.REDIRECT_SECTION_HEADER:
+                        strategy = self._handle_redirect_line
+                        continue  # eat line because it's a header
+                    case Stowconfig.COPY_SECTION_HEADER:
+                        strategy = self._handle_copy_line
+                        continue  # eat line because it's a header
+                    
+                for result in strategy(trimmed_line):
+                    yield result
         return
 
 
@@ -518,8 +544,9 @@ class Stower:
                 continue
             return reply == "y"
 
-    def stow(self, readonly: bool = False):
+    def stow(self, dry_run: bool = False):
         """
+        @param dry_run: True stow will actually affect the filesystem, False if it'll simply output what it'd do instead
         @raise PathError: if src and dest are the same
         """
         if PosixPathUtils.posixpath_equals(self.src, self.dest):
@@ -556,7 +583,7 @@ class Stower:
 
         # fifth step: symlink the populated tree
         logger.info(f"{self.src_tree.repr()}")
-        approved = self._prompt() if not readonly else False
+        approved = self._prompt() if not dry_run else False
         if not approved:
             logger.warning("Aborting.")
 
@@ -698,7 +725,7 @@ if __name__ == "__main__":
             force=force,
             overwrite_others=oo,
             make_parents=mp,
-        ).stow(readonly=args.command == "status")
+        ).stow(dry_run=args.command == "status")
     except FileNotFoundError as e:
         logger.error(f"Couldn't find file!\n{e}")
     except PathError as e:
