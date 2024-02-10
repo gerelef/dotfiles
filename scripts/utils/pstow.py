@@ -131,7 +131,7 @@ class Tree:
 
         out: list[str] = [f"\033[96m{"─" * indentation}─> \033[1m{shorten_home(self)}\033[0m"]
         for content in self.contents:
-            out.append(f"\033[96m\033[93m{"─" * (indentation + 4)}──> \033[3m{shorten_home(content)}\033[0m")
+            out.append(f"\033[96m\033[93m{"─" * (indentation + 4)}─> \033[3m{shorten_home(content)}\033[0m")
         for branch in self.branches:
             out.append(branch.repr(indentation=indentation + 4))
         return "\n\033[96m\033[0m".join(out)
