@@ -9,7 +9,6 @@ import math
 import os
 import shutil
 from argparse import ArgumentParser
-from copy import copy
 from glob import iglob
 from itertools import zip_longest
 from pathlib import PosixPath
@@ -318,7 +317,7 @@ class Tree:
         @param destination: Top-level directory we'll be copying everything to.
         @param fn: Business rule the destination PosixPath will have to fulfill.
         Should return true for items we *want* to create.
-        Argument is the destination PosixPath.
+        Sole argument is the destination (target) PosixPath.
         @param make_parents: equivalent --make-parents in mkdir -p
         """
         if not destination.exists(follow_symlinks=False) and not make_parents:
@@ -584,10 +583,10 @@ def get_arparser() -> ArgumentParser:
         help="Source directory links will be copied from."
     )
     ap.add_argument(
-        "--destination", "-d",
+        "--target", "-t",
         type=str,
         required=True,
-        help="Destination directory links will be configured to."
+        help="Destination/target directory links will be soft-linked to."
     )
     ap.add_argument(
         "--loose", "-l",
@@ -641,7 +640,7 @@ if __name__ == "__main__":
     args = get_arparser().parse_args()
     try:
         src = PosixPathUtils.convert_path_str_to_posixpath(args.source, strict=not args.loose)
-        dest = PosixPathUtils.convert_path_str_to_posixpath(args.destination, strict=not args.loose)
+        dest = PosixPathUtils.convert_path_str_to_posixpath(args.target, strict=not args.loose)
         excluded = [
             PosixPathUtils.convert_path_str_to_posixpath(str_path, strict=not args.loose) for str_path in args.exclude
         ]
