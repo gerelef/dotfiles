@@ -41,24 +41,24 @@ og-prompt () {
 
     PROMPT_DIRTRIM=2
     PS1=""
-    
+
     # Show error exit code if there is one
     if [[ $LAST_COMMAND != 0 ]]; then
         PS1+="\[${_FRED}\]Exit Code \[${_FLRED}\]${LAST_COMMAND}\[${_NOCOLOUR}\] \[${_FRED}\]"
         PS1+=$(_get-err $LAST_COMMAND)
         PS1+="\[${_NOCOLOUR}\]\n"
     fi
-    
+
     PS1+="\[${_FLBLUE}\]\t\[${_NOCOLOUR}\]" # Time
     PS1+=" \[${_FYELLOW}\]\w\[${_NOCOLOUR}\]" # working directory
     PS1+="\[${_FORANGE}\]$(_git-branch 2> /dev/null)\[${_NOCOLOUR}\] " # active branch
     PS1+="\[$_FBROWN\]$(_git-status 2> /dev/null)\[${_NOCOLOUR}\] " # staging status
     PS1+="\n"
-    
+
     VENV_STATUS="${VIRTUAL_ENV:-N/A}"
     [[ "$VENV_STATUS" != "N/A" ]] && PS1+="\[${_FLMAGENTA}\]>>>\[${_NOCOLOUR}\] "
     [[ "$VENV_STATUS" == "N/A" ]] && PS1+="\[${_FGREEN}\]\$\[${_NOCOLOUR}\] "
-    
+
     # PS2 is used to continue a command using the \ character
     PS2="\[${_FPGREEN}\]>\[${_NOCOLOUR}\] "
 
@@ -72,32 +72,23 @@ og-prompt () {
 mini-prompt () {
     local LAST_COMMAND=$? # Must come first!
     PROMPT_DIRTRIM=1
-    
-    PS1=""    
-    # Show error exit code if there is one
-    if [[ $LAST_COMMAND != 0 ]]; then
-        PS1+="\[${_FRED}\]Exit Code \[${_FLRED}\]${LAST_COMMAND}\[${_NOCOLOUR}\] \[${_FRED}\]"
-        PS1+=$(_get-err $LAST_COMMAND)
-        PS1+="\[${_NOCOLOUR}\]\n"
-    fi
-    
-    PS1+=" \[${_FYELLOW}\]\w\[${_NOCOLOUR}\] " # working directory
-    
-    [[ -n "$(_git-status 2> /dev/null)" ]] && PS1+="\[$_FBROWN\](changes)\[${_NOCOLOUR}\] "
-    
+
     VENV_STATUS="${VIRTUAL_ENV:-N/A}"
     if [[ "$VENV_STATUS" != "N/A" ]]; then local PCOLOUR="$_FLMAGENTA"; local PHINT=">>>"; fi
     if [[ "$VENV_STATUS" == "N/A" ]]; then local PCOLOUR="$_FGREEN"; local PHINT="\$"; fi
     [[ -n "$(_git-branch 2> /dev/null)" ]] && PCOLOUR="$_FORANGE"
-    
+
+    PS1=" \[${_FYELLOW}\]\w\[${_NOCOLOUR}\] " # working directory
+    [[ -n "$(_git-status 2> /dev/null)" ]] && PS1+="\[$_FBROWN\](changes)\[${_NOCOLOUR}\] "
+
+    # Show error exit code if there is one
+    [[ $LAST_COMMAND != 0 ]] && PS1+="\[${_FRED}\]($LAST_COMMAND)\[${_NOCOLOUR}\] "
+
     PS1+="\[${PCOLOUR}\]$PHINT\[${_NOCOLOUR}\] "
-    
     # PS2 is used to continue a command using the \ character
     PS2="\[${_FPGREEN}\]>\[${_NOCOLOUR}\] "
-
     # PS3 is used to enter a number choice in a script
     PS3='Please enter a number from above list: '
-
     # PS4 is used for tracing a script in debug mode
     PS4="\[${_FLRED}\]+\[${_NOCOLOUR}\] "
 }
