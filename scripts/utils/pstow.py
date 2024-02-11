@@ -416,7 +416,8 @@ class Stowconfig:
     REDIRECT_SECTION_HEADER = "[redirect]"
     COPY_SECTION_HEADER = "[copy]"
 
-    REDIRECT_SECTION_SPLITERATOR = " ::: "
+    COMMENT_PREFIX = "//"
+    REDIRECT_SECTION_SPLITERATOR = ":::"
 
     def __init__(self, fstowignore: PosixPath):
         """
@@ -428,7 +429,8 @@ class Stowconfig:
     def _parse_entry(self, entry: str) -> PosixPath | Tree:
         # TODO
         #  1. handle double quotes
-        #  2. handle double quote escaping
+        #  2. handle escaping of escaping
+        #  3. handle double quote escaping
         pp = PosixPath(entry)
         # return tree if it's a dir
         if pp.is_dir():
@@ -438,8 +440,11 @@ class Stowconfig:
 
     def _parse_redirect_entry(self, entry: str) -> tuple[PosixPath | Tree, PosixPath | Tree]:
         # TODO
-        #  1. split on spliterator, see Stowconfig.REDIRECT_SECTION_SPLITERATOR
-        #  2. send both entries to _parse_entry
+        #  0. handle escaping of escaping
+        #  1. handle escaping of spliterator, it could be weird/path/to/\:::/file
+        #  2. split on spliterator, see Stowconfig.REDIRECT_SECTION_SPLITERATOR
+        #  3. send both entries to _parse_entry
+
         raise NotImplementedError
 
     def _handle_ignore_line(self, stowignore_line: str) -> Iterator[Tree | PosixPath]:
@@ -458,7 +463,7 @@ class Stowconfig:
         raise NotImplementedError
 
     def _is_comment(self, line: str) -> bool:
-        return line.startswith("//")
+        return line.startswith(Stowconfig.COMMENT_PREFIX)
 
     def parse(self) -> Iterable[Tree | PosixPath]:
         """
