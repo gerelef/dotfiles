@@ -416,6 +416,8 @@ class Stowconfig:
     REDIRECT_SECTION_HEADER = "[redirect]"
     COPY_SECTION_HEADER = "[copy]"
 
+    REDIRECT_SECTION_SPLITERATOR = " ::: "
+
     def __init__(self, fstowignore: PosixPath):
         """
         @param fstowignore: stowignore PosixPath
@@ -423,21 +425,33 @@ class Stowconfig:
         self.fstowignore = fstowignore
         self.parent = fstowignore.parent
 
+    def _parse_entry(self, entry: str) -> PosixPath | Tree:
+        # TODO
+        #  1. handle double quotes
+        #  2. handle double quote escaping
+        pp = PosixPath(entry)
+        # return tree if it's a dir
+        if pp.is_dir():
+            return Tree(pp)
+        # return a posixpath for regular files
+        return pp
+
+    def _parse_redirect_entry(self, entry: str) -> tuple[PosixPath | Tree, PosixPath | Tree]:
+        # TODO
+        #  1. split on spliterator, see Stowconfig.REDIRECT_SECTION_SPLITERATOR
+        #  2. send both entries to _parse_entry
+        raise NotImplementedError
+
     def _handle_ignore_line(self, stowignore_line: str) -> Iterator[Tree | PosixPath]:
         # the fact that we're forced to use os.path.join, and not PosixPath(tld / p)
         #  is evil, and speaks to the fact that the development of these two modules (iglob & Path)
         #  was completely disjointed
         for p in iglob(os.path.join(self.parent / stowignore_line), recursive=True, include_hidden=True):
-            pp = PosixPath(p)
-            # return tree if it's a dir
-            if pp.is_dir():
-                yield Tree(pp)
-                continue
-            # return a posixpath for regular files
-            yield pp
+            yield self._parse_entry(p)
         return
 
     def _handle_redirect_line(self, redirect_line: str) -> Iterator[Tree | PosixPath]:
+        # use _parse_redirect_entry
         raise NotImplementedError
 
     def _handle_copy_line(self, redirect_line: str) -> Iterator[Tree | PosixPath]:
