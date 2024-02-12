@@ -126,7 +126,7 @@ class Tree:
     def __repr__(self) -> str:
         return str(self.absolute)
 
-    def repr(self, indentation: int = 0):
+    def repr(self, indentation: int = 0) -> str:
         """
         @param indentation: indentation level.
         @return: Tree representation of the current tree.
@@ -235,6 +235,9 @@ class Tree:
             raise RuntimeError(f"Expected PosixPath, got None?!")
         if not isinstance(element, PosixPath):
             raise RuntimeError(f"Expected PosixPath, got {type(element)}")
+        # early exit if we do not contain the element
+        if element not in self:
+            return self
 
         contents = self.contents
         removable_contents: Iterable[PosixPath] = filter(lambda pp: PosixPathUtils.posixpath_equals(element, pp),
@@ -273,6 +276,9 @@ class Tree:
             raise RuntimeError(f"Expected Tree, got {type(removable_branch)}")
         if removable_branch == self:
             raise RuntimeError(f"Expected other, got self?!")
+        # early exit if we do not contain the element
+        if removable_branch not in self:
+            return self
 
         branches = self.branches
         subtrees = list(filter(lambda el: el == removable_branch, branches))
@@ -290,7 +296,7 @@ class Tree:
 
     def rtrim_content_rule(self, fn: Callable[[PosixPath, int], bool], depth: int = math.inf) -> Self:
         """
-        Apply business rule to contents.
+        Recursively apply business rule to all contents.
         @param fn: Business function that determines whether the element will be removed or not, with depth provided.
         Should return True for elements we want to remove, False for branches we do not.
         @param depth: Determines the maximum allowed depth to search.
