@@ -190,9 +190,24 @@ install-virtualization-packages () (
 
 install-dev-tools () (
     echo-status "-------------------INSTALLING DEV TOOLS----------------"
+    
     dnf-group-install-with-optional "C Development Tools and Libraries" "Development Tools"
     dnf-install "$INSTALLABLE_DEV_PKGS"
+
+    echo-success "Done."
+)
+
+install-sublime-text-editor () (
+    echo-status "-------------------INSTALLING VISUAL STUDIO CODE----------------"
     
+    rpm -v --import https://download.sublimetext.com/sublimehq-rpm-pub.gpg
+    dnf config-manager --add-repo https://download.sublimetext.com/rpm/stable/x86_64/sublime-text.repo
+    dnf-install sublime-text
+
+    echo-success "Done."
+)
+
+install-visual-studio-code () (
     echo-status "-------------------INSTALLING VISUAL STUDIO CODE----------------"
     # instructions taken from here (official site)
     #  https://code.visualstudio.com/docs/setup/linux#_rhel-fedora-and-centos-based-distributions
@@ -208,6 +223,7 @@ VSC_END
     ) > /etc/yum.repos.d/vscode.repo
     dnf check-update
     dnf-install code
+
     echo-success "Done."
 )
 
@@ -728,6 +744,15 @@ fi
 if ask-user "Are you sure you want to install development tools (IDEs)?"; then
     install-dev-tools
     install-jetbrains-toolbox
+
+    if ask-user "Do you want to install Visual Studio Code?"; then
+        install-visual-studio-code
+    fi
+    
+    if ask-user "Do you want to install Sublime Text Editor?"; then
+        install-sublime-text-editor
+        dnf-remove "gnome-text-editor"
+    fi
     
     if ask-user "Are you sure you want to install zeno/scrcpy?"; then
         echo-status "Installing zeno/scrcpy ..."
