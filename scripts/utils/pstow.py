@@ -131,6 +131,9 @@ class Tree:
         @param indentation: indentation level.
         @return: Tree representation of the current tree.
         """
+        def indent(indentation: int):
+            tail_length = max((indentation - 1), 0)
+            return f"{"─" * tail_length}{">" if tail_length else ""}"
 
         def shorten_home(p: Tree | PosixPath) -> str:
             ps = p.name if isinstance(p, PosixPath) else repr(p)
@@ -138,9 +141,9 @@ class Tree:
                 return ps.replace(Tree.REAL_USER_HOME, "~", 1)
             return ps
 
-        out: list[str] = [f"\033[96m{"─" * indentation}─> \033[1m{shorten_home(self)}\033[0m"]
+        out: list[str] = [f"\033[96m{indent(indentation)} \033[1m{shorten_home(self)}\033[0m"]
         for content in self.contents:
-            out.append(f"\033[96m\033[93m{"─" * (indentation + 4)}─> \033[3m{shorten_home(content)}\033[0m")
+            out.append(f"\033[96m\033[93m{indent(indentation + 4)} \033[3m{shorten_home(content)}\033[0m")
         for branch in self.branches:
             out.append(branch.repr(indentation=indentation + 4))
         return "\n\033[96m\033[0m".join(out)
