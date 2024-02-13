@@ -2,7 +2,12 @@
 	"bootstrapped": true,
 	"installed_packages":
 	[
+		"A File Icon",
+		"HexViewer",
+		"Hungry Backspace",
+		"OpenUri",
 		"Package Control",
+		"WordingStatus",
 	],
 	"in_process_packages":
 	[

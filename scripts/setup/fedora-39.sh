@@ -616,7 +616,6 @@ cmake \
 ninja-build \
 java-latest-openjdk \
 java-latest-openjdk-devel \
-bless \
 tldr \
 "
 
