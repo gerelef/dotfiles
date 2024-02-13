@@ -859,8 +859,8 @@ gsettings set org.gnome.shell.extensions.forge preview-hint-enabled true
 gsettings set org.gnome.shell.extensions.forge auto-split-enabled true
 gsettings set org.gnome.shell.extensions.forge focus-border-toggle false
 gsettings set org.gnome.shell.extensions.forge split-border-toggle false
-gsettings set org.gnome.shell.extensions.forge stacked-tiling-mode-enabled true
-gsettings set org.gnome.shell.extensions.forge tabbed-tiling-mode-enabled false
+gsettings set org.gnome.shell.extensions.forge stacked-tiling-mode-enabled false
+gsettings set org.gnome.shell.extensions.forge tabbed-tiling-mode-enabled true
 gsettings set org.gnome.shell.extensions.forge tiling-mode-enabled true
 gsettings set org.gnome.shell.extensions.forge window-gap-hidden-on-single true
 gsettings set org.gnome.shell.extensions.forge window-gap-size 1
