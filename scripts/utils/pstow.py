@@ -428,25 +428,23 @@ class ConfigurablePosixPath(PosixPath):
         super().__init__(*args)
         self.__copy = copy
         self.__redirect = redirect
+        self.__tree = None
 
     def is_symlinkable(self) -> bool:
         return not self.is_copiable() and not self.is_redirectable() and self.is_file()
 
     def is_copiable(self) -> bool:
-        return self.is_file() and self.__copy
+        return self.__copy and self.is_file()
 
     def is_redirectable(self) -> bool:
-        return bool(self.redirect) and self.is_file()
-
-    def is_tree(self) -> bool:
-        return self.is_dir()
+        return bool(self.__redirect) and self.is_file()
 
     @property
-    def redirect(self) -> PosixPath | Self:
+    def redirect(self) -> Iterator[PosixPath | Self]:
         """
-        @return: Globable target to redirect to (1:N).
+        @return: Targets to redirect src to (1:N).
         """
-        return self.__redirect
+        raise NotImplementedError
 
 
 class Stowconfig:
