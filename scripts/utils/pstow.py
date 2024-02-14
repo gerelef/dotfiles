@@ -385,6 +385,7 @@ class Tree:
                 src=tree.absolute,
                 dst=destination.absolute(),
                 symlinks=False,
+                # ignore everything contained in the directory (i.e. do not copy contents)
                 ignore=lambda src, names: ['.'] + [name for name in names if os.path.isfile(os.path.join(src, name))],
                 dirs_exist_ok=False
             )
