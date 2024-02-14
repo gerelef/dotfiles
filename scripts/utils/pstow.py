@@ -497,6 +497,7 @@ class Stowconfig:
     def _handle_redirect_line(self, entry: str) -> Iterator[Tree | ConfigurablePosixPath] | None:
         fm = Stowconfig.REDIRECT_LINE_REGEX.fullmatch(entry)
         if fm:
+            logger.warning(f"Skipping invalid redirect entry\n{entry}")
             return None
         tail = fm.group(Stowconfig.REDIRECT_LINE_REGEX_SOURCE_GROUP)
         target = PosixPath(self.parent / fm.group(Stowconfig.REDIRECT_LINE_REGEX_TARGET_GROUP))
