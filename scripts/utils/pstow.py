@@ -517,6 +517,7 @@ class Stowconfig:
                 trimmed_line = line.strip()
                 # skip empty lines, and comments (which are line separated)
                 if not trimmed_line or self._is_comment(trimmed_line):
+                    logger.debug(f"Skipping empty or comment line {trimmed_line}")
                     continue
                 match trimmed_line:
                     case Stowconfig.IGNORE_SECTION_HEADER:
