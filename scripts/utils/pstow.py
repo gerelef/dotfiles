@@ -2,14 +2,16 @@
 # From the documentation:
 # >"If the readline module was loaded,
 #  then input() will use it to provide elaborate line editing and history features."
-# noinspection PyUnresolvedReferences
-import readline
 import getpass
+import logging
 import math
 import os
+import re
+# noinspection PyUnresolvedReferences
+import readline
 import shutil
-import logging
 import sys
+from _typeshed import StrPath
 from argparse import ArgumentParser
 from glob import iglob
 from itertools import zip_longest
@@ -131,6 +133,7 @@ class Tree:
         @param indentation: indentation level.
         @return: Tree representation of the current tree.
         """
+
         def indent(indentation: int):
             tail_length = max((indentation - 1), 0)
             return f"{"─" * tail_length}{">" if tail_length else ""}"
@@ -420,6 +423,32 @@ class Tree:
             )
 
 
+class ConfigurablePosixPath(PosixPath):
+    def __init__(self, *args: StrPath, copy: bool = False, redirect: PosixPath | Self = None):
+        super().__init__(*args)
+        self.__copy = copy
+        self.__redirect = redirect
+
+    def is_symlinkable(self) -> bool:
+        return not self.is_copiable() and not self.is_redirectable() and self.is_file()
+
+    def is_copiable(self) -> bool:
+        return self.is_file() and self.__copy
+
+    def is_redirectable(self) -> bool:
+        return bool(self.redirect) and self.is_file()
+
+    def is_tree(self) -> bool:
+        return self.is_dir()
+
+    @property
+    def redirect(self) -> PosixPath | Self:
+        """
+        @return: Globable target to redirect to (1:N).
+        """
+        return self.__redirect
+
+
 class Stowconfig:
     STOWIGNORE_FN = ".stowconfig"
     IGNORE_SECTION_HEADER = "[ignore]"
@@ -427,7 +456,10 @@ class Stowconfig:
     COPY_SECTION_HEADER = "[copy]"
 
     COMMENT_PREFIX = "//"
-    REDIRECT_SECTION_SPLITERATOR = ":::"
+
+    REDIRECT_LINE_REGEX = re.compile(r"(\".+\")\s+({:::})\s+(\".+\")")
+    REDIRECT_LINE_REGEX_SOURCE_GROUP = 1
+    REDIRECT_LINE_REGEX_TARGET_GROUP = 3
 
     def __init__(self, fstowignore: PosixPath):
         """
@@ -436,50 +468,48 @@ class Stowconfig:
         self.fstowignore = fstowignore
         self.parent = fstowignore.parent
 
-    def _parse_entry(self, entry: str) -> PosixPath | Tree:
-        # TODO
-        #  1. handle double quotes
-        #  2. handle escaping of escaping
-        #  3. handle double quote escaping
-        pp = PosixPath(entry)
+    def _parse_entry(self, entry: str, copy=False, redirect: PosixPath = None) -> ConfigurablePosixPath | Tree:
+        pp = ConfigurablePosixPath(entry, copy=copy, redirect=redirect)
         # return tree if it's a dir
         if pp.is_dir():
             return Tree(pp)
         # return a posixpath for regular files
         return pp
 
-    def _parse_redirect_entry(self, entry: str) -> tuple[PosixPath | Tree, PosixPath | Tree]:
-        # TODO
-        #  0. handle escaping of escaping
-        #  1. handle escaping of spliterator, it could be weird/path/to/\:::/file
-        #  2. split on spliterator, see Stowconfig.REDIRECT_SECTION_SPLITERATOR
-        #  3. send both entries to _parse_entry
-
-        raise NotImplementedError
-
-    def _handle_ignore_line(self, stowignore_line: str) -> Iterator[Tree | PosixPath]:
+    def _parse_glob_line(self,
+                         tail: str,
+                         redirect: PosixPath = None,
+                         recursive: bool = True,
+                         copy: bool = False) -> Iterator[ConfigurablePosixPath | Tree]:
         # the fact that we're forced to use os.path.join, and not PosixPath(tld / p)
         #  is evil, and speaks to the fact that the development of these two modules (iglob & Path)
         #  was completely disjointed
-        for p in iglob(os.path.join(self.parent / stowignore_line), recursive=True, include_hidden=True):
-            yield self._parse_entry(p)
+        for p in iglob(os.path.join(self.parent / tail), recursive=recursive, include_hidden=True):
+            yield self._parse_entry(p, copy=copy, redirect=redirect)
         return
 
-    def _handle_redirect_line(self, redirect_line: str) -> Iterator[Tree | PosixPath]:
-        # use _parse_redirect_entry
-        raise NotImplementedError
+    def _handle_ignore_line(self, tail: str) -> Iterator[ConfigurablePosixPath | Tree]:
+        return self._parse_glob_line(tail)
 
-    def _handle_copy_line(self, redirect_line: str) -> Iterator[Tree | PosixPath]:
-        raise NotImplementedError
+    def _handle_copy_line(self, tail: str) -> Iterator[Tree | ConfigurablePosixPath]:
+        return self._parse_glob_line(tail, copy=True)
+
+    def _handle_redirect_line(self, entry: str) -> Iterator[Tree | ConfigurablePosixPath] | None:
+        fm = Stowconfig.REDIRECT_LINE_REGEX.fullmatch(entry)
+        if fm:
+            return None
+        tail = fm.group(Stowconfig.REDIRECT_LINE_REGEX_SOURCE_GROUP)
+        target = PosixPath(self.parent / fm.group(Stowconfig.REDIRECT_LINE_REGEX_TARGET_GROUP))
+        return self._parse_glob_line(tail, redirect=target)
 
     def _is_comment(self, line: str) -> bool:
         return line.startswith(Stowconfig.COMMENT_PREFIX)
 
-    def parse(self) -> Iterable[Tree | PosixPath]:
+    def parse(self) -> Iterable[Tree | ConfigurablePosixPath]:
         """
         Resolve the structure of a STOWIGNORE_FN.
         """
-        strategy: Callable[[str], Iterator[Tree | PosixPath]] = self._handle_ignore_line
+        strategy: Callable[[str], Iterator[Tree | ConfigurablePosixPath]] = self._handle_ignore_line
         # noinspection PyShadowingNames
         with open(self.fstowignore, "r", encoding="UTF-8") as sti:
             for line in sti:
