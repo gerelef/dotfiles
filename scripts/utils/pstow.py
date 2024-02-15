@@ -11,7 +11,6 @@ import re
 import readline
 import shutil
 import sys
-from _typeshed import StrPath
 from argparse import ArgumentParser
 from glob import iglob
 from itertools import zip_longest
@@ -401,15 +400,10 @@ class Tree:
                 continue
 
             logger.info(f"Symlinking src {content} to {destination_content}")
-            if destination_content.exists(follow_symlinks=False):
-                if destination_content.is_symlink():
-                    os.unlink(destination_content.absolute())
-                else:
-                    os.remove(destination_content.absolute())
 
-            os.symlink(
-                src=content.absolute(),
-                dst=destination_content.absolute(),
+            destination_content.unlink(missing_ok=True)
+            destination_content.symlink_to(
+                target=content.absolute(),
                 target_is_directory=False
             )
 
@@ -423,37 +417,13 @@ class Tree:
             )
 
 
-class ConfigurablePosixPath(PosixPath):
-    def __init__(self, *args: StrPath, copy: bool = False, redirect: PosixPath | Self = None):
-        super().__init__(*args)
-        self.__copy = copy
-        self.__redirect = redirect
-        self.__tree = None
-
-    def is_symlinkable(self) -> bool:
-        return not self.is_copiable() and not self.is_redirectable() and self.is_file()
-
-    def is_copiable(self) -> bool:
-        return self.__copy and self.is_file()
-
-    def is_redirectable(self) -> bool:
-        return bool(self.__redirect) and self.is_file()
-
-    @property
-    def redirect(self) -> Iterator[PosixPath | Self]:
-        """
-        @return: Targets to redirect src to (1:N).
-        """
-        raise NotImplementedError
-
-
 class Stowconfig:
     STOWIGNORE_FN = ".stowconfig"
-    IGNORE_SECTION_HEADER = "[ignore]"
-    REDIRECT_SECTION_HEADER = "[redirect]"
-    COPY_SECTION_HEADER = "[copy]"
+    IGNORE_SECTION_HEADER_TOK = "[ignore]"
+    REDIRECT_SECTION_HEADER_TOK = "[redirect]"
+    HARDLINK_SECTION_HEADER_TOK = "[hardlink]"
 
-    COMMENT_PREFIX = "//"
+    COMMENT_PREFIX_TOK = "//"
 
     REDIRECT_LINE_REGEX = re.compile(r"(\".+\")\s+({:::})\s+(\".+\")")
     REDIRECT_LINE_REGEX_SOURCE_GROUP = 1
@@ -466,49 +436,48 @@ class Stowconfig:
         self.fstowignore = fstowignore
         self.parent = fstowignore.parent
 
-    def _parse_entry(self, entry: str, copy=False, redirect: PosixPath = None) -> ConfigurablePosixPath | Tree:
-        pp = ConfigurablePosixPath(entry, copy=copy, redirect=redirect)
+    def _parse_entry(self, entry: str) -> PosixPath | Tree:
+        pp = PosixPath(entry)
         # return tree if it's a dir
         if pp.is_dir():
             return Tree(pp)
         # return a posixpath for regular files
         return pp
 
-    def _parse_glob_line(self,
-                         tail: str,
-                         redirect: PosixPath = None,
-                         recursive: bool = True,
-                         copy: bool = False) -> Iterator[ConfigurablePosixPath | Tree]:
+    def _parse_glob_line(self, tail: str) -> Iterator[PosixPath | Tree]:
         # the fact that we're forced to use os.path.join, and not PosixPath(tld / p)
         #  is evil, and speaks to the fact that the development of these two modules (iglob & Path)
         #  was completely disjointed
-        for p in iglob(os.path.join(self.parent / tail), recursive=recursive, include_hidden=True):
-            yield self._parse_entry(p, copy=copy, redirect=redirect)
+        for p in iglob(os.path.join(self.parent / tail)):
+            yield self._parse_entry(p)
         return
 
-    def _handle_ignore_line(self, tail: str) -> Iterator[ConfigurablePosixPath | Tree]:
-        return self._parse_glob_line(tail)
+    def _handle_ignore_line(self, entry: str) -> Iterator[PosixPath | Tree]:
+        return self._parse_glob_line(entry)
 
-    def _handle_copy_line(self, tail: str) -> Iterator[Tree | ConfigurablePosixPath]:
-        return self._parse_glob_line(tail, copy=True)
+    def _handle_hardlink_line(self, entry: str) -> Iterator[Tree | PosixPath]:
+        return self._parse_glob_line(entry)
 
-    def _handle_redirect_line(self, entry: str) -> Iterator[Tree | ConfigurablePosixPath] | None:
+    def _handle_redirect_line(self, entry: str) -> Iterator[Tree | PosixPath] | None:
         fm = Stowconfig.REDIRECT_LINE_REGEX.fullmatch(entry)
         if fm:
             logger.warning(f"Skipping invalid redirect entry\n{entry}")
             return None
-        tail = fm.group(Stowconfig.REDIRECT_LINE_REGEX_SOURCE_GROUP)
-        target = PosixPath(self.parent / fm.group(Stowconfig.REDIRECT_LINE_REGEX_TARGET_GROUP))
-        return self._parse_glob_line(tail, redirect=target)
+        # both are globbable: a group of elements can be matched to a group of targets (N:M relationship)
+        source_tail = self._parse_glob_line(fm.group(Stowconfig.REDIRECT_LINE_REGEX_SOURCE_GROUP))
+        # TODO
+        #  this needs to be globbed for the TARGET when symlinking, not the current parent as they should be different
+        # target_tail = self._parse_glob_line(fm.group(Stowconfig.REDIRECT_LINE_REGEX_TARGET_GROUP))
+        raise NotImplementedError
 
     def _is_comment(self, line: str) -> bool:
-        return line.startswith(Stowconfig.COMMENT_PREFIX)
+        return line.startswith(Stowconfig.COMMENT_PREFIX_TOK)
 
-    def parse(self) -> Iterable[Tree | ConfigurablePosixPath]:
+    def parse(self) -> Iterable[Tree | PosixPath]:
         """
         Resolve the structure of a STOWIGNORE_FN.
         """
-        strategy: Callable[[str], Iterator[Tree | ConfigurablePosixPath]] = self._handle_ignore_line
+        strategy: Callable[[str], Iterator[Tree | PosixPath]] = self._handle_ignore_line
         # noinspection PyShadowingNames
         with open(self.fstowignore, "r", encoding="UTF-8") as sti:
             for line in sti:
@@ -518,14 +487,14 @@ class Stowconfig:
                     logger.debug(f"Skipping empty or comment line {trimmed_line}")
                     continue
                 match trimmed_line:
-                    case Stowconfig.IGNORE_SECTION_HEADER:
+                    case Stowconfig.IGNORE_SECTION_HEADER_TOK:
                         strategy = self._handle_ignore_line
                         continue  # eat line because it's a header
-                    case Stowconfig.REDIRECT_SECTION_HEADER:
+                    case Stowconfig.REDIRECT_SECTION_HEADER_TOK:
                         strategy = self._handle_redirect_line
                         continue  # eat line because it's a header
-                    case Stowconfig.COPY_SECTION_HEADER:
-                        strategy = self._handle_copy_line
+                    case Stowconfig.HARDLINK_SECTION_HEADER_TOK:
+                        strategy = self._handle_hardlink_line
                         continue  # eat line because it's a header
 
                 for result in strategy(trimmed_line):
