@@ -2,11 +2,13 @@ README.*
 .stowconfig
 .has-run*
 .git*
-scripts/
 .manpages/
 games/
+scripts/utils/
+scripts/setup/
 .config/mozilla/
 .config/gnome-extensions
 
 [redirect]
+
 ".config/Templates/*" ::: "./Templates/*"
