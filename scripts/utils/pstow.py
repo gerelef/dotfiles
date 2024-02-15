@@ -425,7 +425,7 @@ class Stowconfig:
 
     COMMENT_PREFIX_TOK = "//"
 
-    REDIRECT_LINE_REGEX = re.compile(r"(\".+\")\s+({:::})\s+(\".+\")")
+    REDIRECT_LINE_REGEX = re.compile(r"\"(.+)\"\s+(:::)\s+\"(.+)\"")
     REDIRECT_LINE_REGEX_SOURCE_GROUP = 1
     REDIRECT_LINE_REGEX_TARGET_GROUP = 3
 
