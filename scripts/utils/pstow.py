@@ -56,7 +56,7 @@ class Tree:
     REAL_USER_HOME = f"{str(PosixPath().home())}"
 
     def __init__(self, tld: PosixPath):
-        self.__tld: PosixPath = tld.absolute()
+        self.__tld: PosixPath = tld.resolve()
         self.__tree: list[Self | PosixPath] = []
         self.__stowignore: Optional[Stowconfig] = None
 
@@ -107,7 +107,7 @@ class Tree:
         if isinstance(other, Tree):
             other_parts, other_parts_len = PosixPathUtils.get_fs_parts_len(other.absolute)
         else:
-            other_parts, other_parts_len = PosixPathUtils.get_fs_parts_len(other.absolute())
+            other_parts, other_parts_len = PosixPathUtils.get_fs_parts_len(other.resolve())
 
         # if the other parts are less than ours, meaning
         #  my/path/1
@@ -347,7 +347,7 @@ class Tree:
         if depth < 0:
             return self
         if self.stowignore:
-            for ignorable in self.stowignore.parse():
+            for ignorable in self.stowignore.ignorables:
                 if isinstance(ignorable, Tree):
                     self.rtrim_branch(ignorable, depth=depth)
                     continue
@@ -385,7 +385,7 @@ class Tree:
             logger.info(f"\033[96mCreating destination which doesn't exist {destination}\033[0m")
             shutil.copytree(
                 src=tree.absolute,
-                dst=destination.absolute(),
+                dst=destination.resolve(),
                 symlinks=False,
                 # ignore everything contained in the directory (i.e. do not copy contents)
                 ignore=lambda src, names: ['.'] + [name for name in names if os.path.isfile(os.path.join(src, name))],
@@ -403,7 +403,7 @@ class Tree:
 
             destination_content.unlink(missing_ok=True)
             destination_content.symlink_to(
-                target=content.absolute(),
+                target=content.resolve(),
                 target_is_directory=False
             )
 
@@ -436,8 +436,17 @@ class Stowconfig:
         self.fstowignore = fstowignore
         self.parent = fstowignore.parent
 
+        # noinspection PyTypeChecker
+        self.__ignorables: list[PosixPath] = []
+        # noinspection PyTypeChecker
+        self.__hardlinkables: list[PosixPath] = []
+        # noinspection PyTypeChecker
+        self.__redirectables: dict[PosixPath, os.PathLike] = {}
+
+        self.__cached = False
+
     def _parse_entry(self, entry: str) -> PosixPath | Tree:
-        pp = PosixPath(entry)
+        pp = PosixPath(entry).resolve()
         # return tree if it's a dir
         if pp.is_dir():
             return Tree(pp)
@@ -448,36 +457,35 @@ class Stowconfig:
         # the fact that we're forced to use os.path.join, and not PosixPath(tld / p)
         #  is evil, and speaks to the fact that the development of these two modules (iglob & Path)
         #  was completely disjointed
-        for p in iglob(os.path.join(self.parent / tail)):
+        for p in iglob(os.path.join(self.parent / tail), recursive=True):
             yield self._parse_entry(p)
         return
 
-    def _handle_ignore_line(self, entry: str) -> Iterator[PosixPath | Tree]:
-        return self._parse_glob_line(entry)
+    def _handle_ignore_line(self, entry: str) -> None:
+        self.__ignorables.extend(self._parse_glob_line(entry))
 
-    def _handle_hardlink_line(self, entry: str) -> Iterator[Tree | PosixPath]:
-        return self._parse_glob_line(entry)
+    def _handle_hardlink_line(self, entry: str) -> None:
+        self.__hardlinkables.extend(self._parse_glob_line(entry))
 
-    def _handle_redirect_line(self, entry: str) -> Iterator[Tree | PosixPath] | None:
+    def _handle_redirect_line(self, entry: str) -> None:
         fm = Stowconfig.REDIRECT_LINE_REGEX.fullmatch(entry)
-        if fm:
+        if not fm:
             logger.warning(f"Skipping invalid redirect entry\n{entry}")
             return None
         # both are globbable: a group of elements can be matched to a group of targets (N:M relationship)
-        source_tail = self._parse_glob_line(fm.group(Stowconfig.REDIRECT_LINE_REGEX_SOURCE_GROUP))
-        # TODO
-        #  this needs to be globbed for the TARGET when symlinking, not the current parent as they should be different
-        # target_tail = self._parse_glob_line(fm.group(Stowconfig.REDIRECT_LINE_REGEX_TARGET_GROUP))
+        # fm.group(Stowconfig.REDIRECT_LINE_REGEX_SOURCE_GROUP)
+        # fm.group(Stowconfig.REDIRECT_LINE_REGEX_TARGET_GROUP)
         raise NotImplementedError
 
     def _is_comment(self, line: str) -> bool:
         return line.startswith(Stowconfig.COMMENT_PREFIX_TOK)
 
-    def parse(self) -> Iterable[Tree | PosixPath]:
+    def _parse(self) -> None:
         """
-        Resolve the structure of a STOWIGNORE_FN.
+        Resolve the structure of a STOWIGNORE_FN & cache results.
         """
-        strategy: Callable[[str], Iterator[Tree | PosixPath]] = self._handle_ignore_line
+        self.__cached = True
+        strategy: Callable[[str], None] = self._handle_ignore_line
         # noinspection PyShadowingNames
         with open(self.fstowignore, "r", encoding="UTF-8") as sti:
             for line in sti:
@@ -497,19 +505,31 @@ class Stowconfig:
                         strategy = self._handle_hardlink_line
                         continue  # eat line because it's a header
 
-                for result in strategy(trimmed_line):
-                    yield result
-        return
+                strategy(trimmed_line)
+
+    @property
+    def ignorables(self) -> Iterable[PosixPath]:
+        if not self.__cached:
+            self._parse()
+        return self.__ignorables
+
+    @property
+    def hardlinkables(self) -> Iterable[PosixPath]:
+        if not self.__cached:
+            self._parse()
+        return self.__hardlinkables
+
+    @property
+    def redirectables(self) -> dict[PosixPath, os.PathLike]:
+        if not self.__cached:
+            self._parse()
+        return self.__redirectables
 
 
 @final
 class PosixPathUtils:
     def __init__(self):
         raise RuntimeError("Cannot instantiate static class!")
-
-    @staticmethod
-    def convert_path_str_to_posixpath(p: str, strict=True) -> PosixPath:
-        return PosixPath(os.path.expandvars(os.path.expanduser(p))).resolve(strict=strict)
 
     @staticmethod
     def posixpath_equals(el1: PosixPath, el2: PosixPath) -> bool:
@@ -537,7 +557,7 @@ class PosixPathUtils:
         @return: return the true path towards a thing, removing filenames, and counting fs structure
         """
         if isinstance(thing, PosixPath):
-            parts = thing.absolute().parts if thing.is_dir() else thing.absolute().parts[:-1]
+            parts = thing.resolve().parts if thing.is_dir() else thing.resolve().parts[:-1]
             return parts, len(parts)
 
         # "thing" is a tree here by necessity due to prior explicit check
@@ -774,10 +794,10 @@ if __name__ == "__main__":
             sys.exit(2)
         if is_dry and not args.target:
             args.target = "/"
-        src = PosixPathUtils.convert_path_str_to_posixpath(args.source, strict=not args.loose)
-        dest = PosixPathUtils.convert_path_str_to_posixpath(args.target, strict=not args.loose)
+        src = PosixPath(args.source).resolve(strict=not args.loose)
+        dest = PosixPath(args.target).resolve(strict=not args.loose)
         excluded = [
-            PosixPathUtils.convert_path_str_to_posixpath(str_path, strict=not args.loose) for str_path in args.exclude
+            PosixPath(str_path).resolve(strict=not args.loose) for str_path in args.exclude
         ]
         force = args.force
         oo = args.overwrite_others
