@@ -7,3 +7,6 @@ scripts/
 games/
 .config/mozilla/
 .config/gnome-extensions
+
+[redirect]
+".config/Templates/*" ::: "./Templates/*"
