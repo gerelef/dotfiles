@@ -20,8 +20,8 @@
     { "keys": ["ctrl+f"], "command": "show_panel", "args": {"panel": "find", "reverse": false} },
     { "keys": ["ctrl+shift+f"], "command": "show_panel", "args": {"panel": "find_in_files"} },
     // overlays
-    { "keys": ["shift", "shift"], "command": "show_overlay", "args": {"overlay": "command_palette"} },
-    { "keys": ["ctrl", "ctrl"], "command": "open_terminal_project_folder" },
+    { "keys": ["shift", "shift"], "command": "show_overlay", "args": {"overlay": "goto", "show_files": true} },
+    { "keys": ["ctrl", "ctrl"], "command": "show_overlay", "args": {"overlay": "command_palette"} },
 
     // visuals
     { "keys": ["f11"], "command": "toggle_full_screen" },
