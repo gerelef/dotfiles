@@ -7,6 +7,9 @@
     { "keys": ["ctrl+a"], "command": "select_all" },
     { "keys": ["ctrl+d"], "command": "duplicate_line" },
     { "keys": ["ctrl+backspace"], "command": "delete_word", "args": { "forward": false } },
+    // multiple cursors (up & down)
+    { "keys": ["ctrl+alt+shift+up"], "command": "select_lines", "args": {"forward": false} },
+    { "keys": ["ctrl+alt+shift+down"], "command": "select_lines", "args": {"forward": true} },
 
     // sublime actions
     { "keys": ["f1"], "command": "toggle_side_bar" },

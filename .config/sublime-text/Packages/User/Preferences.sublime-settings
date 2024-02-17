@@ -7,6 +7,7 @@
 		"Vintage",
 	],
 	"index_files": true,
+	"open_files_in_new_window": false,
 	"goto_anything_exclude_gitignore": true,
 	"fade_fold_buttons": false,
 	"rulers": [[80, "dotted", 2]],
