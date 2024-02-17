@@ -5,9 +5,11 @@
 		"A File Icon",
 		"HexViewer",
 		"Hungry Backspace",
+		"LSP",
+		"LSP-bash",
+		"LSP-pyright",
 		"OpenUri",
 		"Package Control",
-		"Sass",
 	],
 	"in_process_packages":
 	[
