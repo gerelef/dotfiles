@@ -198,7 +198,7 @@ install-dev-tools () (
 )
 
 install-sublime-text-editor () (
-    echo-status "-------------------INSTALLING VISUAL STUDIO CODE----------------"
+    echo-status "-------------------INSTALLING SUBLIME TEXT----------------"
     
     rpm -v --import https://download.sublimetext.com/sublimehq-rpm-pub.gpg
     dnf config-manager --add-repo https://download.sublimetext.com/rpm/stable/x86_64/sublime-text.repo
@@ -746,11 +746,12 @@ if ask-user "Are you sure you want to install development tools (IDEs)?"; then
 
     if ask-user "Do you want to install Visual Studio Code?"; then
         install-visual-studio-code
+        dnf-remove "gnome-text-editor" "gedit"
     fi
     
     if ask-user "Do you want to install Sublime Text Editor?"; then
         install-sublime-text-editor
-        dnf-remove "gnome-text-editor"
+        dnf-remove "gnome-text-editor" "gedit"
     fi
     
     if ask-user "Are you sure you want to install zeno/scrcpy?"; then
