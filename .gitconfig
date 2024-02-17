@@ -1,22 +1,10 @@
 [alias]
-    ls = log --pretty=format:"%C(yellow)%h%Cred%d\\ %Creset%s%Cblue\\ [%cn]" --decorate
-    ll = log --pretty=format:"%C(yellow)%h%Cred%d\\ %Creset%s%Cblue\\ [%cn]" --decorate --numstat
-    lnc = log --pretty=format:"%h\\ %s\\ [%cn]"
-    lds = log --pretty=format:"%C(yellow)%h\\ %ad%Cred%d\\ %Creset%s%Cblue\\ [%cn]" --decorate --date=short
-    ld = log --pretty=format:"%C(yellow)%h\\ %ad%Cred%d\\ %Creset%s%Cblue\\ [%cn]" --decorate --date=relative
-    le = log --oneline --decorate
-    dl = "!git ll -1"
+    ls = log --pretty=format:"%C(yellow)%h\\ %ad%Cred%d\\ %Creset%s%Cblue\\ [%cn]" --decorate --date=short
     find = "!git ls-files | grep -i"
     st = status -sb
     stv = "!git diff --staged"
-    cl = clone
-    cm = commit -m
-    ck = checkout
-    br = branch
-    df = "!git --no-pager diff"
     list-changed = "!git diff-tree --no-commit-id --name-status -r"
     alias = "!git config -l | grep alias | cut -c 7-"
-    acp = "!acp () { [[ $# -gt 0 ]] && git add . && git commit -m "\"$@\"" && git push; }; acp"
     gone = "!gone() { git fetch --all --prune; git branch -vv | awk '/: gone]/{print $1}' | xargs git branch -D; }; gone"
 [includeIf "hasconfig:remote.*.url:git@github.com*/**"]
     path = .gitconfig-github
