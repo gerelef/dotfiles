@@ -17,6 +17,7 @@
     list-changed = "!git diff-tree --no-commit-id --name-status -r"
     alias = "!git config -l | grep alias | cut -c 7-"
     acp = "!acp () { [[ $# -gt 0 ]] && git add . && git commit -m "\"$@\"" && git push; }; acp"
+    gone = "!gone() { git fetch --all --prune; git branch -vv | awk '/: gone]/{print $1}' | xargs git branch -D; }; gone"
 [includeIf "hasconfig:remote.*.url:git@github.com*/**"]
     path = .gitconfig-github
 [includeIf "hasconfig:remote.*.url:git@gitlab.com*/**"]
