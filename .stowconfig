@@ -1,21 +1,26 @@
 // Ignore section, header is implied since it's the first thing in the .stowconfig
-README.*
-.stowconfig
-.has-run*
 .git*
+.has-run*
+README.*
 .manpages/
-games/
+// ignore these since they're loaded dynamically anyways
 scripts/utils/
 scripts/setup/
-.config/mozilla/
-.config/gnome-extensions
+// these are not true config files, they must be imported manually
+.config/gnome-extensions/
+// ignore submodule
+games/
+
+.stowconfig
 
 [redirect]
 // redirect to home
-".config/Templates/*" ::: "./Templates/"
+"scripts/.bashrc" ::: ".bashrc"
+"scripts/.nanorc" ::: ".nanorc"
+".config/Templates/*" ::: "Templates/"
 // create subdirectories on the fly for sublime, don't nest unecessarily
-".config/sublime-text/*" ::: "./.config/sublime-text/Packages/User/"
+".config/sublime-text/*" ::: ".config/sublime-text/Packages/User/"
 // find already created profile subdirectories on the fly, we can't nest anyways here
-".config/mozilla/*" ::: "./.mozilla/firefox/*.default-release/"
+".config/mozilla/*" ::: ".mozilla/firefox/*.default-release/"
 
 // no hardlink section here!
