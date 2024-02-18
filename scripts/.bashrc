@@ -23,7 +23,6 @@ export DOTNET_CLI_TELEMETRY_OPTOUT=1
 export HISTFILESIZE=100000
 export HISTSIZE=10000
 export HISTCONTROL=erasedups:ignoredups:ignorespace
-export SUDO_PROMPT="$(tput setaf 4)# pw:$(tput sgr0)"
 #############################################################
 # package management
 
@@ -160,16 +159,17 @@ complete -F _restart-network-manager_completions restart-network-manager
 # PYTHON SCRIPTS
 
 update-ff-theme () (
-    # curl -fsSL https:// | bash -s -- "~/dotfiles/.config/mozilla/userChrome.css" "$@"
+    # curl -fsSL https:// | bash -s -- - "~/dotfiles/.config/mozilla/userChrome.css" "$@"
     return 1
 )
 
 update-compat-layers () (
-    # curl -fsSL https:// | bash -s -- "$@"
+    # curl -fsSL https:// | bash -s -- - "$@"
     return 1
 )
 
 pstow () (
+    # curl --tlsv1.2 -fsSL https://my/url.py | python -- -
     "$DOTFILES_DIR/scripts/utils/pstow.py" "$@"
 )
 
