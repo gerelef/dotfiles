@@ -1,3 +1,4 @@
+// Ignore section, header is implied since it's the first thing in the .stowconfig
 README.*
 .stowconfig
 .has-run*
@@ -10,5 +11,11 @@ scripts/setup/
 .config/gnome-extensions
 
 [redirect]
+// redirect to home
+".config/Templates/*" ::: "./Templates/"
+// create subdirectories on the fly for sublime, don't nest unecessarily
+".config/sublime-text/*" ::: "./.config/sublime-text/Packages/User/"
+// find already created profile subdirectories on the fly, we can't nest anyways here
+".config/mozilla/*" ::: "./.mozilla/firefox/*.default-release/"
 
-".config/Templates/*" ::: "./Templates/*"
+// no hardlink section here!
