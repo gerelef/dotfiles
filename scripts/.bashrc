@@ -1,3 +1,6 @@
+# exit for non-interactive shells
+[[ -z "$PS1" ]] && return
+
 # AUTHOR NOTE:
 #  Treat these tutorials like you would PEP8. Read in detail.
 #   https://github.com/bahamas10/bash-style-guide#bashisms
