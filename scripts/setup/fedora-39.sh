@@ -497,9 +497,6 @@ setroubleshoot \
 setroubleshoot-plugins \
 openvpn \
 openssl \
-bluez \
-bluez-tools \
-blueman \
 python3-cairo \
 "
 
