@@ -233,7 +233,7 @@ install-jetbrains-toolbox () (
     #  https://github.com/nagygergo/jetbrains-toolbox-install
     echo-status "-------------------INSTALLING JETBRAINS TOOLBOX----------------"
     dnf-install "fuse" "libXtst" "libXrender" "glx-utils" "libfontconfig" "gtk3" "tar"
-    
+
     readonly curlsum=$(curl --proto '=https' --tlsv1.2 -fsSL https://raw.githubusercontent.com/nagygergo/jetbrains-toolbox-install/master/jetbrains-toolbox.sh | sha512sum -)
     readonly validsum="7eb50db1e6255eed35b27c119463513c44aee8e06f3014609a410033f397d2fd81d2605e4e5c243b1087a6c23651f6b549a7c4ee386d50a22cc9eab9e33c612e  -"
     if [[ "$validsum" == "$curlsum" ]]; then
@@ -719,16 +719,14 @@ echo-important "You will be asked a series of questions ahead of time, so you ca
 echo-important "Note that NVIDIA drivers require manual confirmation for MOK enrollment, and this cannot be automated"
 echo-important " due to it's intrusive nature."
 
-ask-user 'Are you sure you want to install virtualization packages?' && INSTALL_VIRTUALIZATION="yes"
-ask-user 'Are you sure you want to install gaming packages?' && INSTALL_GAMING="yes"
+ask-user 'Do you want to install virtualization packages?' && INSTALL_VIRTUALIZATION="yes"
+ask-user 'Do you want to install gaming packages?' && INSTALL_GAMING="yes"
 
-if ask-user 'Are you sure you want to install development tools (IDEs)?'; then
-    INSTALL_JETBRAINS="yes"
-
-    ask-user 'Do you want to install Visual Studio Code?' && INSTALL_VSC="yes"
-    ask-user 'Do you want to install Sublime Text Editor?' && INSTALL_SUBLIME="yes"
-    ask-user 'Are you sure you want to install zeno/scrcpy?' && INSTALL_SCRCPY="yes"
-fi
+ask-user 'Do you want to install development tools?' && INSTALL_DEV_TOOLS="yes"
+ask-user 'Do you want to install JetBrains Toolbox?' && INSTALL_JETBRAINS="yes"
+ask-user 'Do you want to install Visual Studio Code?' && INSTALL_VSC="yes"
+ask-user 'Do you want to install Sublime Text Editor?' && INSTALL_SUBLIME="yes"
+ask-user 'Do you want to install zeno/scrcpy?' && INSTALL_SCRCPY="yes"
 
 #######################################################################################################
 
@@ -751,7 +749,7 @@ configure-ssh-defaults
 
 [[ -n "$INSTALL_VIRTUALIZATION" ]] && install-virtualization-packages
 [[ -n "$INSTALL_GAMING" ]] && install-gaming-packages
-[[ -n "$INSTALL_JETBRAINS" ]] && install-dev-tools
+[[ -n "$INSTALL_DEV_TOOLS" ]] && install-dev-tools
 [[ -n "$INSTALL_JETBRAINS" ]] && install-jetbrains-toolbox
 [[ -n "$INSTALL_VSC" ]] && install-visual-studio-code
 [[ -n "$INSTALL_SUBLIME" ]] && install-sublime-text-editor
