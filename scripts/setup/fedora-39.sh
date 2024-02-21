@@ -764,9 +764,6 @@ fi
 
 #######################################################################################################
 
-echo-status "Soft linking $REAL_USER_HOME/dotfiles/.bashrc to $REAL_USER_HOME"
-ln -sf "$REAL_USER_HOME/dotfiles/.bashrc" "$REAL_USER_HOME/.bashrc"
-
 configure-residual-permissions
 
 echo-important "Make sure to restart your PC after making all the necessary adjustments."
