@@ -61,7 +61,7 @@ install-universal-necessities () (
     dnf-install "$INSTALLABLE_ESSENTIAL_PACKAGES"
     dnf-install "$INSTALLABLE_PIPEWIRE_PACKAGES"
     
-    dnf-group-install-with-optional "fonts" "hardware-support" "networkmanager-submodules" "printing"
+    dnf-group-install-with-optional "hardware-support" "networkmanager-submodules" "printing"
     
     dnf-install "$INSTALLABLE_APPLICATION_PACKAGES"
     flatpak-install "$INSTALLABLE_FLATPAKS"
