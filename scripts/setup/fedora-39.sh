@@ -185,6 +185,7 @@ install-virtualization-packages () (
     if is-virtual-machine; then
         dnf-install "virtualbox-guest-additions"
     fi
+    usermod -a -G libvirt $REAL_USER
     echo-success "Done."
 )
 
