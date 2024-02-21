@@ -712,6 +712,24 @@ if [[ ! $? -eq 0 ]]; then
 fi
 
 #######################################################################################################
+# user options here, ask most of the stuff ahead of time.
+
+echo-important "You will be asked a series of questions ahead of time, so you can go semi-AFK while installing."
+echo-important "Note that NVIDIA drivers require manual confirmation for MOK enrollment, and this cannot be automated"
+echo-important " due to it's intrusive nature."
+
+[[ $(ask-user 'Are you sure you want to install virtualization packages?') ]] && INSTALL_VIRTUALIZATION="yes"
+[[ $(ask-user 'Are you sure you want to install gaming packages?') ]] && INSTALL_GAMING="yes"
+
+if ask-user "Are you sure you want to install development tools (IDEs)?"; then
+    INSTALL_JETBRAINS="yes"
+
+    [[ $(ask-user "Do you want to install Visual Studio Code?") ]] && INSTALL_VSC="yes"
+    [[ $(ask-user "Do you want to install Sublime Text Editor?") ]] && INSTALL_SUBLIME="yes"
+    [[ $(ask-user "Are you sure you want to install zeno/scrcpy?") ]] && INSTALL_SCRCPY="yes"
+fi
+
+#######################################################################################################
 
 dnf-remove "$UNINSTALLABLE_BLOAT"
 
@@ -729,37 +747,19 @@ configure-ssh-defaults
 
 #######################################################################################################
 
-if ask-user 'Are you sure you want to install virtualization packages?'; then
-    install-virtualization-packages
-fi
+[[ -n "$INSTALL_VIRTUALIZATION" ]] && install-virtualization-packages
+[[ -n "$INSTALL_GAMING" ]] && install-gaming-packages
+[[ -n "$INSTALL_JETBRAINS" ]] && install-dev-tools
+[[ -n "$INSTALL_JETBRAINS" ]] && install-jetbrains-toolbox
+[[ -n "$INSTALL_VSC" ]] && install-visual-studio-code
+[[ -n "$INSTALL_SUBLIME" ]] && install-sublime-text-editor
+[[ -n "$INSTALL_VSC" ]] && dnf-remove "gnome-text-editor" "gedit"
+[[ -n "$INSTALL_SUBLIME" ]] && dnf-remove "gnome-text-editor" "gedit"
 
-#######################################################################################################
-
-if ask-user 'Are you sure you want to install gaming packages?'; then
-    install-gaming-packages
-fi
-
-#######################################################################################################
-
-if ask-user "Are you sure you want to install development tools (IDEs)?"; then
-    install-dev-tools
-    install-jetbrains-toolbox
-
-    if ask-user "Do you want to install Visual Studio Code?"; then
-        install-visual-studio-code
-        dnf-remove "gnome-text-editor" "gedit"
-    fi
-    
-    if ask-user "Do you want to install Sublime Text Editor?"; then
-        install-sublime-text-editor
-        dnf-remove "gnome-text-editor" "gedit"
-    fi
-    
-    if ask-user "Are you sure you want to install zeno/scrcpy?"; then
-        echo-status "Installing zeno/scrcpy ..."
-        dnf copr enable -y zeno/scrcpy
-        dnf-install scrcpy
-    fi
+if [[ -n "$INSTALL_SCRCPY" ]]; then
+    echo-status "Installing zeno/scrcpy ..."
+    dnf copr enable -y zeno/scrcpy
+    dnf-install scrcpy
 fi
 
 #######################################################################################################
