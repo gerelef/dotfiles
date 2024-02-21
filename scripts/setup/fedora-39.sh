@@ -718,15 +718,15 @@ echo-important "You will be asked a series of questions ahead of time, so you ca
 echo-important "Note that NVIDIA drivers require manual confirmation for MOK enrollment, and this cannot be automated"
 echo-important " due to it's intrusive nature."
 
-[[ $(ask-user 'Are you sure you want to install virtualization packages?') ]] && INSTALL_VIRTUALIZATION="yes"
-[[ $(ask-user 'Are you sure you want to install gaming packages?') ]] && INSTALL_GAMING="yes"
+ask-user 'Are you sure you want to install virtualization packages?' && INSTALL_VIRTUALIZATION="yes"
+ask-user 'Are you sure you want to install gaming packages?' && INSTALL_GAMING="yes"
 
-if ask-user "Are you sure you want to install development tools (IDEs)?"; then
+if ask-user 'Are you sure you want to install development tools (IDEs)?'; then
     INSTALL_JETBRAINS="yes"
 
-    [[ $(ask-user "Do you want to install Visual Studio Code?") ]] && INSTALL_VSC="yes"
-    [[ $(ask-user "Do you want to install Sublime Text Editor?") ]] && INSTALL_SUBLIME="yes"
-    [[ $(ask-user "Are you sure you want to install zeno/scrcpy?") ]] && INSTALL_SCRCPY="yes"
+    ask-user 'Do you want to install Visual Studio Code?' && INSTALL_VSC="yes"
+    ask-user 'Do you want to install Sublime Text Editor?' && INSTALL_SUBLIME="yes"
+    ask-user 'Are you sure you want to install zeno/scrcpy?' && INSTALL_SCRCPY="yes"
 fi
 
 #######################################################################################################
@@ -746,6 +746,7 @@ tweak-minor-details
 configure-ssh-defaults
 
 #######################################################################################################
+# user-submitted opts
 
 [[ -n "$INSTALL_VIRTUALIZATION" ]] && install-virtualization-packages
 [[ -n "$INSTALL_GAMING" ]] && install-gaming-packages
