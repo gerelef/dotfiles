@@ -81,6 +81,16 @@ GDM_END
     flameshot config -m white
     echo-debug "Configured flameshot."
     
+    (cat <<GR_END
+#!/bin/sh
+set -e
+exec grub2-mkconfig -o /boot/grub2/grub.cfg "$@"
+GR_END
+    ) > "/usr/sbin/update-grub"
+    chown root:root "/usr/sbin/update-grub"
+    chmod 755 "/usr/sbin/update-grub"
+    echo-debug "Configured update-grub."
+
     echo-success "Done."
 )
 

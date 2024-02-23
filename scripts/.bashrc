@@ -45,11 +45,14 @@ update-everything () (
         [[ -n "$(command -v dnf)" ]] && (sudo dnf upgrade -y --refresh && sudo dnf autoremove -y) && break
         [[ -n "$(command -v pacman)" ]] && sudo pacman -Syu && break
         [[ -n "$(command -v yum)" ]] && sudo yum update -y && break
-        [[ -n "$(command -v apt)" ]] && (sudo apt update -y && sudo apt autoremove -y) && break
+        [[ -n "$(command -v apt)" ]] && (sudo apt update -y && sudo apt upgrade -y && sudo apt autoremove -y) && break
         break
     done
     [[ -n "$(command -v flatpak)" ]] && (flatpak update -y && flatpak uninstall --unused -y && sudo flatpak repair)
     [[ -n "$(command -v snap)" ]] && snap refresh -y
+
+    [[ -n "$(command -v updatedb)" ]] && sudo updatedb
+    [[ -n "$(command -v update-grub)" ]] && sudo update-grub
     return 0
 )
 
@@ -370,6 +373,5 @@ alias palindrome="rev"
 
 alias grep="\grep -i"
 alias rm="rm -v"
-alias ccat="bat --theme Dracula"
 alias gedit="gnome-text-editor" # gedit replacement of choice
 alias fuck='sudo $(history -p \!\!)'
