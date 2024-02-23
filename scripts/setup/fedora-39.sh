@@ -330,6 +330,8 @@ modify-grub () (
     top_dep="$(hwinfo --framebuffer | tail -n 2 | grep Mode | grep -E -o ', [0-9]{2} bits' | grep -E -o '[0-9]{2}')"
     echo "GRUB_GFXMODE=$top_res x $top_dep" | tr -d ' ' >> /etc/default/grub
     
+    echo "GRUB_DISABLE_OS_PROBER=false" >> /etc/default/grub
+
     readonly GRUB_OUT_LOCATION="$(locate grub.cfg | grep /boot | head -n 1)"
     [[ -n $GRUB_OUT_LOCATION ]] && grub2-mkconfig --output="$GRUB_OUT_LOCATION"
     
@@ -778,8 +780,9 @@ configure-residual-permissions
 
 echo-important "Make sure to restart your PC after making all the necessary adjustments."
 echo-important "Remember to add a permanent mount point for internal storage partitions."
-echo-important "--------------------------- POSSIBLE FSTAB PARTITIONS ---------------------------"
+
 mapfile -t parts < <(blkid -o list | grep --invert-match "crypto_" | grep -i "not mounted" | awk '{ print $1 }')
+[[ -n "$parts" ]] && echo-important "--------------------------- POSSIBLE FSTAB PARTITIONS ---------------------------"
 for part in "${parts[@]}"; do
     part_name=$(echo $part | tr '/' ' ' | awk '{ print $NF }')
     # 512 size blocks, divided by 2, divided by 1024*1024
@@ -788,9 +791,10 @@ for part in "${parts[@]}"; do
     [[ $part_size -lt 2 ]] && continue
     
     echo-important "Found PARTITION $part with SIZE $part_size GB"
-    echo-important "Mount with mount --mkdir $part /MY/MOUNTPOINT"
+    echo-important "Mount with mount --mkdir $part $REAL_USER_HOME/MOUNTPOINT"
     echo-important "FOR REGULAR PARTITIONS add $part to fstab as: "
-    echo-important "$part /MOUNTPOINT auto rw,user,exec,nosuid,nodev,nofail,auto,x-gvfs-show,x-gvfs-name=YOUR_NAME_HERE 0 0"
+    echo-important "$part $REAL_USER_HOME/MOUNTPOINT auto rw,user,exec,nosuid,nodev,nofail,auto,x-gvfs-show,x-gvfs-name=YOUR_NAME_HERE 0 0"
+    echo-important "--------"
     echo-important "FOR HOME PARTITIONS add $part to fstab as:"
     echo-important "$part /home/USERNAME auto defaults 0 2"
     echo-important "Then run:"
