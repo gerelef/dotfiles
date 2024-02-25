@@ -6,6 +6,7 @@ from modules.sela import exceptions
 from modules.sela.definitions import URL
 from modules.sela.exceptions import UnsuccessfulRequest
 from modules.sela.factories.abstract import ProviderFactory
+from modules.sela.factories.github import GitHubProviderFactory
 from modules.sela.helpers import auto_str
 from modules.sela.providers.abstract import Provider
 from modules.sela.stages.asset_discriminator import AssetDiscriminator, AllInclusiveAssetDiscriminator
@@ -39,7 +40,7 @@ class Manager(ABC):
         """
         self.repository = repository
 
-        self.pfactory_cls: type[ProviderFactory] = ProviderFactory
+        self.pfactory_cls: type[ProviderFactory] = GitHubProviderFactory
         self.released: ReleaseDiscriminator = None
         self.assetd: AssetDiscriminator = None
         self.downloader: Downloader = None

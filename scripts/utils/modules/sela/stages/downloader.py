@@ -42,7 +42,7 @@ class DefaultDownloader(Downloader):
         files: list[Path] = []
         self.logger.progress("Starting downloads...")
         for fn, url in downloadables.items():
-            fn_abs = Path(self.download_dir / fn)
+            fn_abs = Path(os.path.join(self.download_dir, fn))
             files.append(fn_abs)
 
             self.logger.progress(f"Downloading {fn}")
