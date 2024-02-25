@@ -339,14 +339,58 @@ DOWNLOAD_DIR: str = "/tmp/"
 
 
 def setup_argument_options(args: argparse.Namespace) -> Manager:
+    def target() -> tuple[str, AssetDiscriminator, Installer]:
+        # these three have no defaults and need to be set accordingly from required flags
+        # noinspection PyTypeChecker
+        remote: str = None
+        # noinspection PyTypeChecker
+        adiscriminator: AssetDiscriminator = None
+        # noinspection PyTypeChecker
+        installer: Installer = None
+        if args.gnome:
+            remote = GNOME_THEME_GITHUB_RELEASES_URL
+            adiscriminator = SourceAssetDiscriminator()
+            installer = GnomeInstaller(install_dirs, resource_file)
+        if args.blur:
+            remote = BLUR_THEME_GITHUB_RELEASES_URL
+            adiscriminator = KeywordAssetDiscriminator("zip", "userChrome")
+            installer = BlurInstaller(install_dirs, resource_file)
+        if args.mono:
+            remote = MONO_THEME_GITHUB_RELEASES_URL
+            adiscriminator = KeywordAssetDiscriminator("zip", "userChrome")
+            installer = MonoInstaller(install_dirs, resource_file)
+        if args.gx:
+            remote = GX_THEME_GITHUB_RELEASES_URL
+            adiscriminator = KeywordAssetDiscriminator("zip", "userChrome")
+            installer = GXInstaller(install_dirs, resource_file)
+        if args.esr_lepton_photon:
+            remote = UI_FIX_THEME_GITHUB_RELEASES_URL
+            adiscriminator = KeywordAssetDiscriminator("esr-lepton-photon")
+            installer = UIFixInstaller(install_dirs, resource_file)
+        if args.esr_lepton_proton:
+            remote = UI_FIX_THEME_GITHUB_RELEASES_URL
+            adiscriminator = KeywordAssetDiscriminator("esr-lepton-proton")
+            installer = UIFixInstaller(install_dirs, resource_file)
+        if args.esr_lepton:
+            remote = UI_FIX_THEME_GITHUB_RELEASES_URL
+            adiscriminator = KeywordAssetDiscriminator("esr-lepton.zip")
+            installer = UIFixInstaller(install_dirs, resource_file)
+        if args.lepton_proton:
+            remote = UI_FIX_THEME_GITHUB_RELEASES_URL
+            adiscriminator = KeywordAssetDiscriminator("lepton-proton.zip")
+            installer = UIFixInstaller(install_dirs, resource_file)
+        if args.uwp:
+            raise NotImplementedError
+        if args.cascade:
+            raise NotImplementedError
+        if not remote or not installer or not adiscriminator:
+            print("Couldn't find valid remote! Check your flags.", file=sys.stderr)
+            exit(2)
+        return remote, adiscriminator, installer
+
     rdiscriminator: ReleaseDiscriminator = FirstReleaseDiscriminator()
     auditor: Auditor = NullAuditor()
     janitor: Janitor = PunctualJanitor()
-    # these two have no defaults and need to be set accordingly from required flags
-    # noinspection PyTypeChecker
-    adiscriminator: AssetDiscriminator = None
-    # noinspection PyTypeChecker
-    installer: Installer = None
 
     install_dirs = DEFAULT_INSTALL_DIRECTORIES
     if args.destination:
@@ -359,49 +403,10 @@ def setup_argument_options(args: argparse.Namespace) -> Manager:
     resource_file = None
     if args.resource:
         resource_file = args.resource
-    remote = None
-    if args.gnome:
-        remote = GNOME_THEME_GITHUB_RELEASES_URL
-        adiscriminator = SourceAssetDiscriminator()
-        installer = GnomeInstaller(install_dirs, resource_file)
-    if args.blur:
-        remote = BLUR_THEME_GITHUB_RELEASES_URL
-        adiscriminator = KeywordAssetDiscriminator("zip", "userChrome")
-        installer = BlurInstaller(install_dirs, resource_file)
-    if args.mono:
-        remote = MONO_THEME_GITHUB_RELEASES_URL
-        adiscriminator = KeywordAssetDiscriminator("zip", "userChrome")
-        installer = MonoInstaller(install_dirs, resource_file)
-    if args.gx:
-        remote = GX_THEME_GITHUB_RELEASES_URL
-        adiscriminator = KeywordAssetDiscriminator("zip", "userChrome")
-        installer = GXInstaller(install_dirs, resource_file)
-    if args.esr_lepton_photon:
-        remote = UI_FIX_THEME_GITHUB_RELEASES_URL
-        adiscriminator = KeywordAssetDiscriminator("esr-lepton-photon")
-        installer = UIFixInstaller(install_dirs, resource_file)
-    if args.esr_lepton_proton:
-        remote = UI_FIX_THEME_GITHUB_RELEASES_URL
-        adiscriminator = KeywordAssetDiscriminator("esr-lepton-proton")
-        installer = UIFixInstaller(install_dirs, resource_file)
-    if args.esr_lepton:
-        remote = UI_FIX_THEME_GITHUB_RELEASES_URL
-        adiscriminator = KeywordAssetDiscriminator("esr-lepton.zip")
-        installer = UIFixInstaller(install_dirs, resource_file)
-    if args.lepton_proton:
-        remote = UI_FIX_THEME_GITHUB_RELEASES_URL
-        adiscriminator = KeywordAssetDiscriminator("lepton-proton.zip")
-        installer = UIFixInstaller(install_dirs, resource_file)
-    if args.uwp:
-        raise NotImplementedError
-    if args.cascade:
-        raise NotImplementedError
     if args.keep:
         janitor: Janitor = SloppyJanitor()
-    if not remote or not installer or not adiscriminator:
-        print("Couldn't find valid remote! Check your flags.", file=sys.stderr)
-        exit(2)
 
+    remote, adiscriminator, installer = target()
     manager = Manager(remote)
     manager.submit_release_discriminator(rdiscriminator)
     manager.submit_asset_discriminator(adiscriminator)
