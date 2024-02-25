@@ -165,8 +165,8 @@ complete -F _restart-network-manager_completions restart-network-manager
 # PYTHON SCRIPTS
 
 update-ff-theme () (
-    # curl -fsSL https:// | bash -s -- - "~/dotfiles/.config/mozilla/userChrome.css" "$@"
-    return 1
+    # for future reference: curl -fsSL https:// | bash -s -- - "~/dotfiles/.config/mozilla/userChrome.css" "$@"
+    $DOTFILES_DIR/scripts/utils/update-ff-theme.py --resource ~/dotfiles/.config/mozilla/userChrome.css "$@"
 )
 
 update-compat-layers () (
