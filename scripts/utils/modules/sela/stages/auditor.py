@@ -1,5 +1,6 @@
 from abc import ABC, abstractmethod
 from pathlib import Path
+from typing import override
 
 
 class Auditor(ABC):
@@ -20,5 +21,6 @@ class NullAuditor(Auditor):
     """
     Default class that will, by default, skip any possible checksum inspection.
     """
+    @override
     def verify(self, files: list[Path]) -> None:
         pass  # do nothing

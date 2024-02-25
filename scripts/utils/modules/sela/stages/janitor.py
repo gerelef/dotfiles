@@ -1,5 +1,6 @@
 from abc import ABC, abstractmethod
 from pathlib import Path
+from typing import override
 
 
 class Janitor(ABC):
@@ -19,5 +20,19 @@ class SloppyJanitor(Janitor):
     """
     Default class that will, by default, clean up nothing (hence the name).
     """
+
+    @override
     def cleanup(self, files: list[Path]) -> None:
         return
+
+
+class PunctualJanitor(Janitor):
+    """
+    Default class that will, by default, clean up everything.
+    """
+
+    @override
+    def cleanup(self, files: list[Path]) -> None:
+        for p in files:
+            if p.exists():
+                p.unlink(missing_ok=True)

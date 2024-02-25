@@ -1,4 +1,5 @@
 from abc import ABC
+from pathlib import Path
 from typing import Self, final
 
 from modules.sela import exceptions
@@ -62,7 +63,7 @@ class Manager(ABC):
         :raises requests.Timeout:
         :raises requests.TooManyRedirects:
         """
-        downloaded = []
+        downloaded: list[Path] = []
         try:
             status, r = self.provider.get_release(self.released.discriminate)
             if not status.is_successful():

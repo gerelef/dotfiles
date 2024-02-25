@@ -1,5 +1,6 @@
 import sys
 from abc import ABC, abstractmethod
+from typing import override
 
 
 class Logger(ABC):
@@ -9,27 +10,27 @@ class Logger(ABC):
     """
 
     @abstractmethod
-    def log_progress_bar(self, msg: str):
+    def progress_bar(self, msg: str):
         raise NotImplementedError
 
     @abstractmethod
-    def log_progress(self, msg: str):
+    def progress(self, msg: str):
         raise NotImplementedError
 
     @abstractmethod
-    def log_info(self, msg: str):
+    def info(self, msg: str):
         raise NotImplementedError
 
     @abstractmethod
-    def log_debug(self, msg: str):
+    def debug(self, msg: str):
         raise NotImplementedError
 
     @abstractmethod
-    def log_warning(self, msg: str):
+    def warning(self, msg: str):
         raise NotImplementedError
 
     @abstractmethod
-    def log_err(self, msg: str):
+    def err(self, msg: str):
         raise NotImplementedError
 
 
@@ -37,20 +38,26 @@ class StandardLogger(Logger):
     """
     Default class that will, by default, output logs to stdout/stderr.
     """
-    def log_progress_bar(self, msg: str):
+    @override
+    def progress_bar(self, msg: str):
         sys.stdout.write(msg)
 
-    def log_progress(self, msg: str):
+    @override
+    def progress(self, msg: str):
         print(msg)
 
-    def log_info(self, msg: str):
+    @override
+    def info(self, msg: str):
         print(msg)
 
-    def log_debug(self, msg: str):
+    @override
+    def debug(self, msg: str):
         print(msg, file=sys.stderr)
 
-    def log_warning(self, msg: str):
+    @override
+    def warning(self, msg: str):
         print(msg, file=sys.stderr)
 
-    def log_err(self, msg: str):
+    @override
+    def err(self, msg: str):
         print(msg, file=sys.stderr)

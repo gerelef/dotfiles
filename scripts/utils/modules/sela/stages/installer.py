@@ -2,6 +2,7 @@ import os
 import shutil
 from abc import ABC, abstractmethod
 from pathlib import Path
+from typing import override
 
 from modules.sela.stages.logger import Logger
 
@@ -29,8 +30,9 @@ class CopyInstaller(Installer):
         self.logger = logger
         self.dest = dest
 
+    @override
     def install(self, src: list[Path]) -> None:
-        self.logger.log_progress("Installing...")
+        self.logger.progress("Installing...")
         if not os.path.exists(self.dest):
             os.makedirs(self.dest)
 
