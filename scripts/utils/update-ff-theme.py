@@ -1,19 +1,31 @@
 #!/usr/bin/env python3
+import argparse
 import os
+# noinspection PyUnresolvedReferences
+import readline
 import shutil
 import sys
-from functools import partial
 from pathlib import Path
-from typing import Any, Iterable, Optional
+from typing import Optional, override
+from zipfile import ZipFile
 
 from modules.builder import ArgumentParserBuilder
 from modules.sela import exceptions
 from modules.sela.definitions import Filename, URL
-from modules.sela.helpers import run_subprocess, euid_is_root
+from modules.sela.helpers import euid_is_root
 from modules.sela.manager import Manager
 from modules.sela.releases.abstract import Release
 from modules.sela.stages.asset_discriminator import AssetDiscriminator
+from modules.sela.stages.auditor import Auditor, NullAuditor
+from modules.sela.stages.downloader import DefaultDownloader
 from modules.sela.stages.installer import Installer
+from modules.sela.stages.janitor import Janitor, SloppyJanitor, PunctualJanitor
+from modules.sela.stages.logger import StandardLogger
+from modules.sela.stages.release_discriminator import ReleaseDiscriminator, FirstReleaseDiscriminator, \
+    SimpleMatchDiscriminator
+
+# global logger
+logger = StandardLogger()
 
 
 # @final
@@ -38,36 +50,16 @@ from modules.sela.stages.installer import Installer
 #             version_matches = self.version in lower_tag_name
 #
 #         return version_matches
-#
-#     @override
-#     def log(self, level: Manager.Level, msg: str):
-#         # print debug info into stderr
-#         if level.value >= level.INFO:
-#             print(msg, file=sys.stderr)
-#             return
-#
-#         if level == level.PROGRESS_BAR:
-#             sys.stdout.write(msg)
-#             return
-#
-#         print(msg)
 
-def join_files(appender: Filename, appendee: Filename):
-    with open(appender, "r") as resource_file:
-        with open(appendee, "a+") as main:
-            main.write(resource_file.read())
-
-
-def unzip(zipfile: Filename, destination):
-    # unzip path/to/archive1.zip path/to/archive2.zip ... -d path/to/output
-    command = ["unzip", "-o", os.path.abspath(os.path.expanduser(zipfile)), "-d", f"{destination}"]
-    status, _, _ = run_subprocess(command)
-    if not status:
-        raise RuntimeError(f"{' '.join(command)} errored! !")
+def join_txt_contents(appender: Filename, appendee: Filename):
+    with open(appender, "r") as source:
+        with open(appendee, "a+") as target:
+            target.write(source.read())
 
 
 # for blur, mono, gx
 class ZipUserChromeAssetDiscriminator(AssetDiscriminator):
+    @override
     def discriminate(self, release: Release) -> dict[Filename, URL]:
         td = {}
         for fn, url in release.assets.items():
@@ -77,9 +69,10 @@ class ZipUserChromeAssetDiscriminator(AssetDiscriminator):
 
 
 class KeywordAssetDiscriminator(AssetDiscriminator):
-    def __init__(self, kws: Iterable[str]):
+    def __init__(self, *kws: str):
         self.keywords = kws
 
+    @override
     def discriminate(self, release: Release) -> dict[Filename, URL]:
         td = {}
         for fn, url in release.assets.items():
@@ -91,6 +84,7 @@ class KeywordAssetDiscriminator(AssetDiscriminator):
 
 # for gnome theme
 class SourceAssetDiscriminator(AssetDiscriminator):
+    @override
     def discriminate(self, release: Release) -> Optional[dict[Filename, URL]]:
         for url in release.src:
             if "zipball" in url:
@@ -99,132 +93,147 @@ class SourceAssetDiscriminator(AssetDiscriminator):
 
 
 class GnomeInstaller(Installer):
-    def __init__(self, logger, install_dirs, resource_file):
-        self.logger = logger
+    def __init__(self, install_dirs, resource_file):
         self.install_dirs = install_dirs
         self.resource_file = resource_file
 
+    @override
     def install(self, files: list[Path]) -> None:
         zipfile = files[0]
         for destination in self.install_dirs:
-            if not os.path.exists(destination):
-                os.makedirs(destination)
+            chrome_dir = os.path.join(destination, "chrome")
+            if not os.path.exists(chrome_dir):
+                os.makedirs(chrome_dir)
 
-            unzip(zipfile, self.download_dir)
-            extracted_src = [d for d in os.listdir(self.download_dir) if "rafaelmardojai-firefox-gnome-theme" in d][0]
+            download_dir = zipfile.parent
+            with ZipFile(zipfile) as fzip:
+                fzip.extractall(path=download_dir)
+            extracted_src = [d for d in os.listdir(download_dir) if "rafaelmardojai-firefox-gnome-theme" in d][0]
 
-            src_contents = os.path.join(self.download_dir, extracted_src)
-            shutil.copytree(src_contents, destination, dirs_exist_ok=True)
+            src_contents = os.path.join(download_dir, extracted_src)
+            shutil.copytree(src_contents, chrome_dir, dirs_exist_ok=True)
 
             if self.resource_file:
                 source_userchrome = os.path.abspath(os.path.expanduser(self.resource_file))
-                destination_userchrome = os.path.join(destination, "userChrome.css")
-                self.logger.progress(f"Joined {source_userchrome} to {destination_userchrome}")
-                join_files(source_userchrome, destination_userchrome)
+                destination_userchrome = os.path.join(chrome_dir, "userChrome.css")
+                logger.progress(f"Joined {source_userchrome} to {destination_userchrome}")
+                join_txt_contents(source_userchrome, destination_userchrome)
 
 
 class BlurInstaller(Installer):
-    def __init__(self, logger, install_dirs, resource_file):
-        self.logger = logger
+    def __init__(self, install_dirs, resource_file):
         self.install_dirs = install_dirs
         self.resource_file = resource_file
 
+    @override
     def install(self, files: list[Path]) -> None:
         zipfile = [fn for fn in files if ".zip" in fn][0]
         for destination in self.install_dirs:
-            if not os.path.exists(destination):
-                os.makedirs(destination)
+            chrome_dir = os.path.join(destination, "chrome")
+            if not os.path.exists(chrome_dir):
+                os.makedirs(chrome_dir)
 
-            unzip(zipfile, destination)
+            with ZipFile(zipfile) as fzip:
+                fzip.extractall(path=chrome_dir)
             if self.resource_file:
                 source_userchrome = os.path.abspath(os.path.expanduser(self.resource_file))
-                destination_userchrome = os.path.join(destination, "userChrome.css")
-                self.logger.progress(f"Joined {source_userchrome} to {destination_userchrome}")
-                join_files(source_userchrome, destination_userchrome)
+                destination_userchrome = os.path.join(chrome_dir, "userChrome.css")
+                logger.progress(f"Joined {source_userchrome} to {destination_userchrome}")
+                join_txt_contents(source_userchrome, destination_userchrome)
 
 
 class MonoInstaller(Installer):
-    def __init__(self, logger, install_dirs, resource_file):
-        self.logger = logger
+    def __init__(self, install_dirs, resource_file):
         self.install_dirs = install_dirs
         self.resource_file = resource_file
 
+    @override
     def install(self, files: list[Path]) -> None:
         zipfile = files[0]
         for destination in self.install_dirs:
-            if not os.path.exists(destination):
-                os.makedirs(destination)
+            chrome_dir = os.path.join(destination, "chrome")
+            if not os.path.exists(chrome_dir):
+                os.makedirs(chrome_dir)
 
-            unzip(zipfile, destination)
+            with ZipFile(zipfile) as fzip:
+                fzip.extractall(path=chrome_dir)
             if self.resource_file:
                 source_userchrome = os.path.abspath(os.path.expanduser(self.resource_file))
-                destination_userchrome = os.path.join(destination, "userChrome.css")
-                self.logger.progress(f"Joined {source_userchrome} to {destination_userchrome}")
-                join_files(source_userchrome, destination_userchrome)
+                destination_userchrome = os.path.join(chrome_dir, "userChrome.css")
+                logger.progress(f"Joined {source_userchrome} to {destination_userchrome}")
+                join_txt_contents(source_userchrome, destination_userchrome)
 
 
 class GXInstaller(Installer):
-    def __init__(self, logger, install_dirs, resource_file):
-        self.logger = logger
+    def __init__(self, install_dirs, resource_file):
         self.install_dirs = install_dirs
         self.resource_file = resource_file
 
+    @override
     def install(self, files: list[Path]) -> None:
         zipfile = files[0]
         for destination in self.install_dirs:
-            if not os.path.exists(destination):
-                os.makedirs(destination)
+            chrome_dir = os.path.join(destination, "chrome")
+            if not os.path.exists(chrome_dir):
+                os.makedirs(chrome_dir)
 
-            unzipped_realpath = os.path.join(self.download_dir, "firefox-gx-out")
-            unzip(zipfile, unzipped_realpath)
+            download_dir = zipfile.parent
+            unzipped_realpath = os.path.join(download_dir, "firefox-gx-out")
+            with ZipFile(zipfile) as fzip:
+                fzip.extractall(path=unzipped_realpath)
 
             src_contents = os.path.join(unzipped_realpath, os.listdir(unzipped_realpath)[0], "chrome")
-            shutil.copytree(src_contents, destination, dirs_exist_ok=True)
+            shutil.copytree(src_contents, chrome_dir, dirs_exist_ok=True)
 
             if self.resource_file:
                 source_userchrome = os.path.abspath(os.path.expanduser(self.resource_file))
-                destination_userchrome = os.path.join(destination, "userChrome.css")
-                self.logger.progress(f"Joined {source_userchrome} to {destination_userchrome}")
-                join_files(source_userchrome, destination_userchrome)
+                destination_userchrome = os.path.join(chrome_dir, "userChrome.css")
+                logger.progress(f"Joined {source_userchrome} to {destination_userchrome}")
+                join_txt_contents(source_userchrome, destination_userchrome)
 
-            print(f"This specific theme might require a custom `user.js` in "
-                  f"{os.path.abspath(os.path.join(destination, ".."))}, make sure you install it manually!")
+            print(f"This specific theme might require a custom `user.js` in {destination}, "
+                  f"make sure you install it manually!")
 
 
 class UIFixInstaller(Installer):
-    def __init__(self, logger, install_dirs, resource_file):
-        self.logger = logger
+    def __init__(self, install_dirs, resource_file):
         self.install_dirs = install_dirs
         self.resource_file = resource_file
 
+    @override
     def install(self, files: list[Path]) -> None:
         zipfile = files[0]
         for destination in self.install_dirs:
-            if not os.path.exists(destination):
-                os.makedirs(destination)
+            chrome_dir = os.path.join(destination, "chrome")
+            if not os.path.exists(chrome_dir):
+                os.makedirs(chrome_dir)
 
-            unzipped_realpath = os.path.join(self.download_dir, "ui-fix-out")
-            unzip(zipfile, unzipped_realpath)
+            download_dir = zipfile.parent
+            unzipped_realpath = os.path.join(download_dir, "ui-fix-out")
+            with ZipFile(zipfile) as fzip:
+                fzip.extractall(path=unzipped_realpath)
 
             src_contents = os.path.join(unzipped_realpath, "chrome")
-            shutil.copytree(src_contents, destination, dirs_exist_ok=True)
+            shutil.copytree(src_contents, chrome_dir, dirs_exist_ok=True)
 
             if self.resource_file:
                 source_userchrome = os.path.abspath(os.path.expanduser(self.resource_file))
-                destination_userchrome = os.path.join(destination, "userChrome.css")
-                self.logger.progress(f"Joined {source_userchrome} to {destination_userchrome}")
-                join_files(source_userchrome, destination_userchrome)
+                destination_userchrome = os.path.join(chrome_dir, "userChrome.css")
+                logger.progress(f"Joined {source_userchrome} to {destination_userchrome}")
+                join_txt_contents(source_userchrome, destination_userchrome)
 
-            print(f"This specific theme might require a custom `user.js` in "
-                  f"{os.path.abspath(os.path.join(destination, ".."))}, make sure you install it manually!")
+            print(f"This specific theme might require a custom `user.js` in {destination}, "
+                  f"make sure you install it manually!")
 
 
 class UWPInstaller(Installer):
+    @override
     def install(self, files: list[Path]) -> None:
         raise NotImplementedError
 
 
 class CascadeInstaller(Installer):
+    @override
     def install(self, files: list[Path]) -> None:
         raise NotImplementedError
 
@@ -333,8 +342,6 @@ def get_install_dirs() -> list[str]:
         print(f"Couldn't find \"{profile_path}\" ! Is firefox installed, or launched at least once?")
         exit(1)
 
-    # FIXME this used to return the chrom folder directly, fix the butterfly effect
-    # return profile directories
     return [os.path.join(profile_path, d) for d in os.listdir(profile_path) if extension in d]
 
 
@@ -349,117 +356,81 @@ DEFAULT_INSTALL_DIRECTORIES: list[str] = get_install_dirs()
 DOWNLOAD_DIR: str = "/tmp/"
 
 
-def setup_argument_options(args: dict[str, Any]) -> Manager:
-    remote = None
-    temp_dir = DOWNLOAD_DIR
-    version = None
+def setup_argument_options(args: argparse.Namespace) -> Manager:
+    rdiscriminator: ReleaseDiscriminator = FirstReleaseDiscriminator()
+    auditor: Auditor = NullAuditor()
+    janitor: Janitor = PunctualJanitor()
+    # these two have no defaults and need to be set accordingly from required flags
+    # noinspection PyTypeChecker
+    adiscriminator: AssetDiscriminator = None
+    # noinspection PyTypeChecker
+    installer: Installer = None
+
     install_dirs = DEFAULT_INSTALL_DIRECTORIES
+    if args.destination:
+        install_dirs = args.destination
+    temp_dir = DOWNLOAD_DIR
+    if args.temporary:
+        temp_dir = os.path.abspath(os.path.expanduser(args.temporary))
+    if args.version:
+        rdiscriminator = SimpleMatchDiscriminator(args.version)
     resource_file = None
-    # pick the first version by default
-    install_method = None
-    get_assets_method = None
-    filter_method = ThemeManager.FILTER_FIRST
-    verification_method = ThemeManager.VERIFY_NOTHING
-    cleanup_method = ThemeManager.cleanup
-
-    for arg in args:
-        match arg:
-            case "resource":
-                if args[arg]:
-                    resource_file = os.path.abspath(os.path.expanduser(args[arg]))
-            case "gnome":
-                if args[arg]:
-                    remote = GNOME_THEME_GITHUB_RELEASES_URL
-                    get_assets_method = get_source_assets
-                    install_method = install_gnome
-            case "blur":
-                if args[arg]:
-                    remote = BLUR_THEME_GITHUB_RELEASES_URL
-                    get_assets_method = get_regular_assets
-                    install_method = install_blur
-            case "mono":
-                if args[arg]:
-                    remote = MONO_THEME_GITHUB_RELEASES_URL
-                    get_assets_method = get_regular_assets
-                    install_method = install_mono
-            case "gx":
-                if args[arg]:
-                    remote = GX_THEME_GITHUB_RELEASES_URL
-                    get_assets_method = get_regular_assets
-                    install_method = install_gx
-            # there's alot of duplication here: there must be a smarter way to solve this...!
-            case "esr_lepton_photon":
-                if args[arg]:
-                    remote = UI_FIX_THEME_GITHUB_RELEASES_URL
-                    get_assets_method = partial(get_keyword_uwp_assets, keyword="esr-lepton-photon")
-                    install_method = install_ui_fix
-            case "esr_lepton_proton":
-                if args[arg]:
-                    remote = UI_FIX_THEME_GITHUB_RELEASES_URL
-                    get_assets_method = partial(get_keyword_uwp_assets, keyword="esr-lepton-proton")
-                    install_method = install_ui_fix
-            case "esr_lepton":
-                if args[arg]:
-                    remote = UI_FIX_THEME_GITHUB_RELEASES_URL
-                    get_assets_method = partial(get_keyword_uwp_assets, keyword="esr-lepton.zip")
-                    install_method = install_ui_fix
-            case "lepton_photon":
-                if args[arg]:
-                    remote = UI_FIX_THEME_GITHUB_RELEASES_URL
-                    get_assets_method = partial(get_keyword_uwp_assets, keyword="lepton-photon.zip")
-                    install_method = install_ui_fix
-            case "lepton_proton":
-                if args[arg]:
-                    remote = UI_FIX_THEME_GITHUB_RELEASES_URL
-                    get_assets_method = partial(get_keyword_uwp_assets, keyword="lepton-proton.zip")
-                    install_method = install_ui_fix
-            case "lepton":
-                if args[arg]:
-                    remote = UI_FIX_THEME_GITHUB_RELEASES_URL
-                    get_assets_method = partial(get_keyword_uwp_assets, keyword="lepton.zip")
-                    install_method = install_ui_fix
-            case "uwp":
-                if args[arg]:
-                    raise NotImplementedError
-            case "cascade":
-                if args[arg]:
-                    raise NotImplementedError
-                    # remote = GX_THEME_GITHUB_RELEASES_URL
-                    # get_assets_method = get_regular_assets
-                    # install_method = install_gx
-            case "destination":
-                if args[arg]:
-                    install_dirs = [args[arg]]
-            case "temporary":
-                if args[arg]:
-                    temp_dir = os.path.abspath(os.path.expanduser(args[arg]))
-            case "keep":
-                if args[arg]:
-                    cleanup_method = ThemeManager.DO_NOTHING
-            case "version":
-                if args[arg]:
-                    filter_method = ThemeManager.filter
-                    version = args[arg]
-            case _:
-                raise RuntimeError(f"Unknown argument {arg}")
-
-    manager = ThemeManager(
-        repository=remote,
-        temp_dir=temp_dir,
-        install_dirs=install_dirs,
-        version=version,
-        resource_file=resource_file,
-    )
-    # noinspection PyTypeChecker
-    Manager.bind(manager, manager.filter, filter_method)
-    # noinspection PyTypeChecker
-    Manager.bind(manager, manager.get_assets, get_assets_method)
-    # noinspection PyTypeChecker
-    Manager.bind(manager, manager.verify, verification_method)
-    # noinspection PyTypeChecker
-    Manager.bind(manager, manager.install, install_method)
-    # noinspection PyTypeChecker
-    Manager.bind(manager, manager.cleanup, cleanup_method)
+    if args.resource:
+        resource_file = args.resource
+    remote = None
+    if args.gnome:
+        remote = GNOME_THEME_GITHUB_RELEASES_URL
+        adiscriminator = SourceAssetDiscriminator()
+        installer = GnomeInstaller(install_dirs, resource_file)
+    if args.blur:
+        remote = BLUR_THEME_GITHUB_RELEASES_URL
+        adiscriminator = KeywordAssetDiscriminator("zip", "userChrome")
+        installer = BlurInstaller(install_dirs, resource_file)
+    if args.mono:
+        remote = MONO_THEME_GITHUB_RELEASES_URL
+        adiscriminator = KeywordAssetDiscriminator("zip", "userChrome")
+        installer = MonoInstaller(install_dirs, resource_file)
+    if args.gx:
+        remote = GX_THEME_GITHUB_RELEASES_URL
+        adiscriminator = KeywordAssetDiscriminator("zip", "userChrome")
+        installer = GXInstaller(install_dirs, resource_file)
+    if args.esr_lepton_photon:
+        remote = UI_FIX_THEME_GITHUB_RELEASES_URL
+        adiscriminator = KeywordAssetDiscriminator("esr-lepton-photon")
+        installer = UIFixInstaller(install_dirs, resource_file)
+    if args.esr_lepton_proton:
+        remote = UI_FIX_THEME_GITHUB_RELEASES_URL
+        adiscriminator = KeywordAssetDiscriminator("esr-lepton-proton")
+        installer = UIFixInstaller(install_dirs, resource_file)
+    if args.esr_lepton:
+        remote = UI_FIX_THEME_GITHUB_RELEASES_URL
+        adiscriminator = KeywordAssetDiscriminator("esr-lepton.zip")
+        installer = UIFixInstaller(install_dirs, resource_file)
+    if args.lepton_photon:
+        remote = UI_FIX_THEME_GITHUB_RELEASES_URL
+        adiscriminator = KeywordAssetDiscriminator("lepton-photon.zip")
+        installer = UIFixInstaller(install_dirs, resource_file)
+    if args.lepton_proton:
+        remote = UI_FIX_THEME_GITHUB_RELEASES_URL
+        adiscriminator = KeywordAssetDiscriminator("lepton-proton.zip")
+        installer = UIFixInstaller(install_dirs, resource_file)
+    if args.lepton:
+        remote = UI_FIX_THEME_GITHUB_RELEASES_URL
+        adiscriminator = KeywordAssetDiscriminator("lepton.zip")
+        installer = UIFixInstaller(install_dirs, resource_file)
+    if args.uwp:
+        raise NotImplementedError
+    if args.cascade:
+        raise NotImplementedError
+    if args.keep:
+        janitor: Janitor = SloppyJanitor()
+    manager = Manager(remote)
+    manager.submit_release_discriminator(rdiscriminator)
+    manager.submit_asset_discriminator(adiscriminator)
+    manager.submit_downloader(DefaultDownloader(logger, manager.provider, temp_dir))
+    manager.submit_auditor(auditor)
+    manager.submit_installer(installer)
+    manager.submit_janitor(janitor)
     return manager
 
 
@@ -469,7 +440,7 @@ if __name__ == "__main__":
         exit(2)
 
     parser = create_argparser()
-    theme_manager = setup_argument_options(vars(parser.parse_args()))
+    theme_manager = setup_argument_options(parser.parse_args())
 
     print("""
 \033[5m
@@ -486,7 +457,6 @@ if __name__ == "__main__":
                                                           |___/
 \033[0m
     """)
-
     try:
         theme_manager.run()
     except KeyboardInterrupt:
