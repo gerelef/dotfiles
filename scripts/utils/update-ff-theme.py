@@ -127,7 +127,7 @@ class BlurInstaller(Installer):
 
     @override
     def install(self, files: list[Path]) -> None:
-        zipfile = [fn for fn in files if ".zip" in fn][0]
+        zipfile = files[0]
         for destination in self.install_dirs:
             chrome_dir = os.path.join(destination, "chrome")
             if not os.path.exists(chrome_dir):
@@ -406,17 +406,9 @@ def setup_argument_options(args: argparse.Namespace) -> Manager:
         remote = UI_FIX_THEME_GITHUB_RELEASES_URL
         adiscriminator = KeywordAssetDiscriminator("esr-lepton.zip")
         installer = UIFixInstaller(install_dirs, resource_file)
-    if args.lepton_photon:
-        remote = UI_FIX_THEME_GITHUB_RELEASES_URL
-        adiscriminator = KeywordAssetDiscriminator("lepton-photon.zip")
-        installer = UIFixInstaller(install_dirs, resource_file)
     if args.lepton_proton:
         remote = UI_FIX_THEME_GITHUB_RELEASES_URL
         adiscriminator = KeywordAssetDiscriminator("lepton-proton.zip")
-        installer = UIFixInstaller(install_dirs, resource_file)
-    if args.lepton:
-        remote = UI_FIX_THEME_GITHUB_RELEASES_URL
-        adiscriminator = KeywordAssetDiscriminator("lepton.zip")
         installer = UIFixInstaller(install_dirs, resource_file)
     if args.uwp:
         raise NotImplementedError
@@ -424,6 +416,10 @@ def setup_argument_options(args: argparse.Namespace) -> Manager:
         raise NotImplementedError
     if args.keep:
         janitor: Janitor = SloppyJanitor()
+    if not remote or not installer or not adiscriminator:
+        print("Couldn't find valid remote! Check your flags.", file=sys.stderr)
+        exit(2)
+
     manager = Manager(remote)
     manager.submit_release_discriminator(rdiscriminator)
     manager.submit_asset_discriminator(adiscriminator)
