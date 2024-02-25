@@ -298,24 +298,6 @@ def create_argparser():
                 "required": False,
                 "action": "store_true"
             },
-            ("--lepton-photon",): {
-                "help": "Download & extract latest version of lepton-photon from firefox-ui-fix\n"
-                        "https://github.com/black7375/Firefox-UI-Fix",
-                "required": False,
-                "action": "store_true"
-            },
-            ("--lepton-proton",): {
-                "help": "Download & extract latest version of lepton-proton from firefox-ui-fix\n"
-                        "https://github.com/black7375/Firefox-UI-Fix",
-                "required": False,
-                "action": "store_true"
-            },
-            ("--lepton",): {
-                "help": "Download & extract latest version of lepton from firefox-ui-fix\n"
-                        "https://github.com/black7375/Firefox-UI-Fix",
-                "required": False,
-                "action": "store_true"
-            },
             ("--uwp",): {
                 "help": "Download & extract latest version of firefox-uwp-style\n"
                         "https://github.com/Guerra24/Firefox-UWP-Style",
