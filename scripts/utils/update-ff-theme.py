@@ -14,7 +14,7 @@ from modules.sela import exceptions
 from modules.sela.definitions import Filename, URL
 from modules.sela.helpers import euid_is_root
 from modules.sela.manager import Manager
-from modules.sela.stages.asset_discriminator import AssetDiscriminator
+from modules.sela.stages.asset_discriminator import AssetDiscriminator, KeywordAssetDiscriminator
 from modules.sela.stages.auditor import Auditor, NullAuditor
 from modules.sela.stages.downloader import DefaultDownloader
 from modules.sela.stages.installer import Installer
@@ -40,20 +40,6 @@ class ZipUserChromeAssetDiscriminator(AssetDiscriminator):
         for fn, url in release.assets.items():
             if "zip" in fn or "userChrome" in fn:
                 td[fn] = url
-        return td
-
-
-class KeywordAssetDiscriminator(AssetDiscriminator):
-    def __init__(self, *kws: str):
-        self.keywords = kws
-
-    @override
-    def discriminate(self, release: Release) -> dict[Filename, URL]:
-        td = {}
-        for fn, url in release.assets.items():
-            for kw in self.keywords:
-                if kw in fn.lower():
-                    td[fn] = url
         return td
 
 
@@ -315,6 +301,7 @@ DOWNLOAD_DIR: str = "/tmp/"
 
 def setup_argument_options(args: argparse.Namespace) -> Manager:
     def target() -> tuple[str, AssetDiscriminator, Installer]:
+        kw_preprocessor = lambda s: s.lower()
         # these three have no defaults and need to be set accordingly from required flags
         # noinspection PyTypeChecker
         remote: str = None
@@ -328,31 +315,31 @@ def setup_argument_options(args: argparse.Namespace) -> Manager:
             installer = GnomeInstaller(install_dirs, resource_file)
         if args.blur:
             remote = BLUR_THEME_GITHUB_RELEASES_URL
-            adiscriminator = KeywordAssetDiscriminator("zip", "userChrome")
+            adiscriminator = KeywordAssetDiscriminator("zip", "userchrome", preprocess=kw_preprocessor)
             installer = BlurInstaller(install_dirs, resource_file)
         if args.mono:
             remote = MONO_THEME_GITHUB_RELEASES_URL
-            adiscriminator = KeywordAssetDiscriminator("zip", "userChrome")
+            adiscriminator = KeywordAssetDiscriminator("zip", "userchrome", preprocess=kw_preprocessor)
             installer = MonoInstaller(install_dirs, resource_file)
         if args.gx:
             remote = GX_THEME_GITHUB_RELEASES_URL
-            adiscriminator = KeywordAssetDiscriminator("zip", "userChrome")
+            adiscriminator = KeywordAssetDiscriminator("zip", "userchrome", preprocess=kw_preprocessor)
             installer = GXInstaller(install_dirs, resource_file)
         if args.esr_lepton_photon:
             remote = UI_FIX_THEME_GITHUB_RELEASES_URL
-            adiscriminator = KeywordAssetDiscriminator("esr-lepton-photon")
+            adiscriminator = KeywordAssetDiscriminator("esr-lepton-photon", preprocess=kw_preprocessor)
             installer = UIFixInstaller(install_dirs, resource_file)
         if args.esr_lepton_proton:
             remote = UI_FIX_THEME_GITHUB_RELEASES_URL
-            adiscriminator = KeywordAssetDiscriminator("esr-lepton-proton")
+            adiscriminator = KeywordAssetDiscriminator("esr-lepton-proton", preprocess=kw_preprocessor)
             installer = UIFixInstaller(install_dirs, resource_file)
         if args.esr_lepton:
             remote = UI_FIX_THEME_GITHUB_RELEASES_URL
-            adiscriminator = KeywordAssetDiscriminator("esr-lepton.zip")
+            adiscriminator = KeywordAssetDiscriminator("esr-lepton.zip", preprocess=kw_preprocessor)
             installer = UIFixInstaller(install_dirs, resource_file)
         if args.lepton_proton:
             remote = UI_FIX_THEME_GITHUB_RELEASES_URL
-            adiscriminator = KeywordAssetDiscriminator("lepton-proton.zip")
+            adiscriminator = KeywordAssetDiscriminator("lepton-proton.zip", preprocess=kw_preprocessor)
             installer = UIFixInstaller(install_dirs, resource_file)
         if args.uwp:
             raise NotImplementedError
@@ -374,7 +361,7 @@ def setup_argument_options(args: argparse.Namespace) -> Manager:
     if args.temporary:
         temp_dir = os.path.abspath(os.path.expanduser(args.temporary))
     if args.version:
-        rdiscriminator = SimpleMatchDiscriminator(args.version)
+        rdiscriminator = KeywordReleaseDiscriminator(args.version)
     resource_file = None
     if args.resource:
         resource_file = args.resource
