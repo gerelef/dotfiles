@@ -6,7 +6,7 @@ import readline
 import shutil
 import sys
 from pathlib import Path
-from typing import Optional, override
+from typing import Optional
 from zipfile import ZipFile
 
 from modules.builder import ArgumentParserBuilder
@@ -14,42 +14,17 @@ from modules.sela import exceptions
 from modules.sela.definitions import Filename, URL
 from modules.sela.helpers import euid_is_root
 from modules.sela.manager import Manager
-from modules.sela.releases.abstract import Release
 from modules.sela.stages.asset_discriminator import AssetDiscriminator
 from modules.sela.stages.auditor import Auditor, NullAuditor
 from modules.sela.stages.downloader import DefaultDownloader
 from modules.sela.stages.installer import Installer
 from modules.sela.stages.janitor import Janitor, SloppyJanitor, PunctualJanitor
 from modules.sela.stages.logger import StandardLogger
-from modules.sela.stages.release_discriminator import ReleaseDiscriminator, FirstReleaseDiscriminator, \
-    SimpleMatchDiscriminator
+from modules.sela.stages.release_discriminator import *
 
 # global logger
 logger = StandardLogger()
 
-
-# @final
-# class ThemeManager(Manager):
-#
-#     def __init__(self, repository: URL,
-#                  temp_dir: Filename,
-#                  install_dirs: list[Filename],
-#                  version: str = None,
-#                  resource_file: str = None):
-#         super().__init__(repository, download_dir=temp_dir)
-#         self.install_dirs = install_dirs
-#         self.version = version
-#         self.resource_file = resource_file
-#
-#     @override
-#     def filter(self, release: Release) -> bool:
-#         lower_tag_name = release.name.lower()
-#
-#         version_matches = True
-#         if self.version:
-#             version_matches = self.version in lower_tag_name
-#
-#         return version_matches
 
 def join_txt_contents(appender: Filename, appendee: Filename):
     with open(appender, "r") as source:
