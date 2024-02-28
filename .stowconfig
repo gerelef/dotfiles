@@ -17,9 +17,11 @@ games/
 // redirect to home (move up)
 "scripts/.bashrc" ::: ".bashrc"
 "scripts/.nanorc" ::: ".nanorc"
+// redirect to nested (not created necessarily) directory
+".config/config.fish" ::: ".config/fish/config.fish"
 // move up & rename directory
 ".config/templates/*" ::: "Templates/"
-// move up & redirect to nested (not created necessarily) directory
+// redirect to nested (not created necessarily) directory
 ".config/alacritty.toml" ::: ".config/alacritty/alacritty.toml"
 ".config/pipewire.conf" ::: ".config/pipewire/pipewire.conf"
 // create subdirectories on the fly for sublime, don't nest unecessarily

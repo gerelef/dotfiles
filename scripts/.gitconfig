@@ -5,13 +5,12 @@
     stv = "!git diff --staged"
     list-changed = "!git diff-tree --no-commit-id --name-status -r"
     alias = "!git config -l | grep alias | cut -c 7-"
-    gone = "!gone() { git fetch --all --prune; git branch -vv | awk '/: gone]/{print $1}' | xargs git branch -D; }; gone"
 [includeIf "hasconfig:remote.*.url:git@github.com*/**"]
-    path = .gitconfig-github
+    path = ~/.gitconfig-github
 [includeIf "hasconfig:remote.*.url:git@gitlab.com*/**"]
-    path = .gitconfig-gitlab
+    path = ~/.gitconfig-gitlab
 [includeIf "hasconfig:remote.*.url:git@ssh.gitlab.gnome.org*/**"]
-    path = .gitconfig-gnome
+    path = ~/.gitconfig-gnome
 # the following section is ripped straight from git-delta
 [color]
 	ui = auto
