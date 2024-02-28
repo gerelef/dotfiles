@@ -1,9 +1,6 @@
 # exit for non-interactive shells
 [[ -z "$PS1" ]] && return
 
-# install required login shell packages
-require-login-shell-packages
-
 # AUTHOR NOTE:
 #  Treat these tutorials like you would PEP8. Read in detail.
 #   https://github.com/bahamas10/bash-style-guide#bashisms
@@ -16,11 +13,14 @@ require-login-shell-packages
 readonly DOTFILES_DIR="$HOME/dotfiles"
 readonly FUNCTIONS_DIR="$HOME/dotfiles/scripts/functions"
 
-#############################################################
-# EXPORTS
-
 # path is already exported, no need to reexport
 PATH=$PATH:$FUNCTIONS_DIR
+
+# install required login shell packages
+require-login-shell-packages
+
+#############################################################
+# EXPORTS
 
 # https://unix.stackexchange.com/questions/90759/where-should-i-install-manual-pages-in-user-directory
 export MANPATH="$MANPATH:$DOTFILES_DIR/.manpages"
