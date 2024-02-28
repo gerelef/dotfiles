@@ -1,11 +1,11 @@
 // Ignore section, header is implied since it's the first thing in the .stowconfig
 .git*
-.has-run*
 README.*
 .manpages/
 // ignore these since they're loaded dynamically anyways
 scripts/utils/
 scripts/setup/
+scripts/functions/
 // these are not true config files, they must be imported manually
 .config/gnome-extensions/
 // ignore submodule

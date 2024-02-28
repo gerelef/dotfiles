@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 
 update-ff-theme () (
-    # for future reference: curl -fsSL https:// | bash -s -- - "~/dotfiles/.config/mozilla/userChrome.css" "$@"
-    ~/dotfiles/scripts/utils/update-ff-theme.py --resource ~/dotfiles/.config/mozilla/userChrome.css "$@"
+    # for future reference: curl -fsSL https:// | bash -s -- - "$HOME/dotfiles/.config/mozilla/userChrome.css" "$@"
+    "$HOME/dotfiles/scripts/utils/update-ff-theme.py" --resource "$HOME/dotfiles/.config/mozilla/userChrome.css" "$@"
 )
 
 update-ff-theme "$@"
