@@ -8,21 +8,38 @@
 #   https://tldp.org/HOWTO/Man-Page/q2.html
 
 # git-delta are required for the current .gitconfig
-REQUIRE_DEPENDENCIES+="bat lsd git-delta"
+REQUIRE_DEPENDENCIES+="lsd git-delta"
 
 #############################################################
-
 # GLOBAL CONSTANTS
+
 readonly DOTFILES_DIR="$HOME/dotfiles"
 readonly HAS_RUN_FILE="$DOTFILES_DIR/.has-run"
 
+#############################################################
 # EXPORTS
+
 # https://unix.stackexchange.com/questions/90759/where-should-i-install-manual-pages-in-user-directory
 export MANPATH="$MANPATH:$DOTFILES_DIR/.manpages"
 export DOTNET_CLI_TELEMETRY_OPTOUT=1
+
 export HISTFILESIZE=100000
 export HISTSIZE=10000
 export HISTCONTROL=erasedups:ignoredups:ignorespace
+
+#############################################################
+# BASH OPTIONS
+
+PROMPT_COMMAND='mini-prompt; history -a'
+
+shopt -s autocd
+shopt -s cdspell
+shopt -s checkwinsize
+shopt -s histappend
+
+bind "set completion-ignore-case on"
+bind "set show-all-if-ambiguous on"
+
 #############################################################
 # package management
 
@@ -93,61 +110,8 @@ require-bashrc () {
 
 dnf-installed-packages-by-size () (
     # https://forums.fedoraforum.org/showthread.php?314323-Useful-one-liners-feel-free-to-update&p=1787643
-    dnf -q --disablerepo=* info installed | sed -n 's/^Name[[:space:]]*: \|^Size[[:space:]]*: //p' | sed 'N;s/\n/ /;s/ \(.\)$/\1/' | sort -hr -k 2 | less
+    dnf -q --disablerepo=* info installed | sed -n 's/^Name[[:space:]]*: \|^Size[[:space:]]*: //p' | sed 'N;s/\n/ /;s/ \(.\)$/\1/' | sort -hr -k 2 | less -R 
 )
-
-#############################################################
-# pure bash helpers
-
-# Highlight (and not filter) text with grep
-highlight () (
-    [[ -z "$*" ]] && return 2
-
-    grep --color=always -iE "$1|\$"
-)
-
-# Rename
-rn () (
-    [[ -z "$*" ]] && return 2
-    [[ $# -eq 2 ]] || return 2
-
-    mv -vn "$1" "$2"
-)
-
-restart-pipewire () (
-    systemctl --user restart pipewire
-)
-
-restart-network-manager () (
-    systemctl restart NetworkManager
-)
-
-#############################################################
-# PYTHON SCRIPTS
-
-update-ff-theme () (
-    # for future reference: curl -fsSL https:// | bash -s -- - "~/dotfiles/.config/mozilla/userChrome.css" "$@"
-    $DOTFILES_DIR/scripts/utils/update-ff-theme.py --resource ~/dotfiles/.config/mozilla/userChrome.css "$@"
-)
-
-update-compat-layers () (
-    # curl -fsSL https:// | bash -s -- - "$@"
-    return 1
-)
-
-pstow () (
-    # curl --tlsv1.2 -fsSL https://my/url.py | python -- -
-    "$DOTFILES_DIR/scripts/utils/pstow.py" "$@"
-)
-
-#############################################################
-# WRAPPERS TO BUILTINS OR PATH EXECUTABLES
-
-lss () (
-    lsd --almost-all --icon never --icon-theme unicode --group-directories-first "$@"
-)
-
-complete -A directory lss
 
 #############################################################
 # PYTHON VENV(s)
@@ -217,21 +181,49 @@ require-pip () {
     rm "$vpip_fname"
 }
 
-require-pip
+#############################################################
+# pure bash helpers
+
+# Highlight (and not filter) text with grep
+highlight () (
+    [[ -z "$*" ]] && return 2
+
+    grep --color=always -iE "$1|\$"
+)
+
+# Rename
+rn () (
+    [[ -z "$*" ]] && return 2
+    [[ $# -eq 2 ]] || return 2
+
+    mv -vn "$1" "$2"
+)
+
+restart-pipewire () (
+    systemctl --user restart pipewire
+)
+
+restart-network-manager () (
+    systemctl restart NetworkManager
+)
 
 #############################################################
-# BASH OPTIONS
+# PYTHON SCRIPTS
 
-require-bashrc
-PROMPT_COMMAND='mini-prompt; history -a'
+update-ff-theme () (
+    # for future reference: curl -fsSL https:// | bash -s -- - "~/dotfiles/.config/mozilla/userChrome.css" "$@"
+    $DOTFILES_DIR/scripts/utils/update-ff-theme.py --resource ~/dotfiles/.config/mozilla/userChrome.css "$@"
+)
 
-shopt -s autocd
-shopt -s cdspell
-shopt -s checkwinsize
-shopt -s histappend
+update-compat-layers () (
+    # curl -fsSL https:// | bash -s -- - "$@"
+    return 1
+)
 
-bind "set completion-ignore-case on"
-bind "set show-all-if-ambiguous on"
+pstow () (
+    # curl --tlsv1.2 -fsSL https://my/url.py | python -- -
+    "$DOTFILES_DIR/scripts/utils/pstow.py" "$@"
+)
 
 #############################################################
 
@@ -242,12 +234,16 @@ alias ....='cd ../../..'
 alias .....='cd ../../../..'
 
 # convenience alias
+alias lss="lsd --almost-all --icon never --icon-theme unicode --group-directories-first"
 alias wget="\wget -c --read-timeout=5 --tries=0"
+alias grep="\grep -i"
+alias rm="rm -v"
 
 alias reverse="tac"
 alias palindrome="rev"
 
-alias grep="\grep -i"
-alias rm="rm -v"
 alias gedit="gnome-text-editor" # gedit replacement of choice
 alias fuck='sudo $(history -p \!\!)'
+
+require-pip
+require-bashrc
