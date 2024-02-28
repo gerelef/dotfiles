@@ -1,23 +1,20 @@
 # exit for non-interactive shells
 [[ -z "$PS1" ]] && return
 
+# install required login shell packages
+require-login-shell-packages
+
 # AUTHOR NOTE:
 #  Treat these tutorials like you would PEP8. Read in detail.
 #   https://github.com/bahamas10/bash-style-guide#bashisms
 #   https://github.com/anordal/shellharden/blob/master/how_to_do_things_safely_in_bash.md
 #   https://tldp.org/HOWTO/Man-Page/q2.html
 
-# git-delta are required for the current .gitconfig
-REQUIRE_DEPENDENCIES+="lsd git-delta "
-
-# FIXME add yt-dlp yt-dlp-bash-completion ffmpeg git
-
 #############################################################
 # GLOBAL CONSTANTS
 
 readonly DOTFILES_DIR="$HOME/dotfiles"
 readonly FUNCTIONS_DIR="$HOME/dotfiles/scripts/functions"
-readonly HAS_RUN_FILE="$DOTFILES_DIR/.has-run"
 
 #############################################################
 # EXPORTS
@@ -45,46 +42,6 @@ shopt -s histappend
 
 bind "set completion-ignore-case on"
 bind "set show-all-if-ambiguous on"
-
-#############################################################
-# package management
-
-install-system-pkg () (
-    while :; do
-        [[ -n "$(command -v dnf)" ]] && sudo dnf install -y "$@" && break
-        [[ -n "$(command -v yum)" ]] && sudo yum install -y "$@" && break
-        [[ -n "$(command -v apt)" ]] && sudo apt install -y "$@" && break
-        break
-    done
-)
-
-require-bashrc-packages () (
-    [[ -f $HAS_RUN_FILE ]] && return 0
-
-    echo -e "Installing essential .bashrc packages: $_FGREEN"
-    echo -n "$REQUIRE_DEPENDENCIES" | tr " " "\n"
-    echo -ne "$_NOCOLOUR"
-
-    install-system-pkg $REQUIRE_DEPENDENCIES && touch $HAS_RUN_FILE && clear
-)
-
-require-bashrc () {
-    # Source global & private definitions
-    local _GLOBAL_BASHRC="/etc/bashrc"
-    local _PRIVATE_BASHRC="$HOME/.bashrc-private"
-
-    local _UTILITY_PROMPT="$DOTFILES_DIR/scripts/utils/__setprompt.sh"
-
-    [[ -f "$_GLOBAL_BASHRC" ]] && source "$_GLOBAL_BASHRC"
-    [[ -f "$_PRIVATE_BASHRC" ]] && source "$_PRIVATE_BASHRC"
-    [[ -f "~/.cargo/env" ]] && source "~/.cargo/env"
-
-    # HARD DEPENDENCIES
-    [[ -f "$_UTILITY_PROMPT" ]] && source "$_UTILITY_PROMPT"
-
-    # PACKAGE DEPENDENCIES
-    require-bashrc-packages || return 1
-}
 
 #############################################################
 # PYTHON VENV(s)
@@ -175,4 +132,8 @@ alias gedit="gnome-text-editor" # gedit replacement of choice
 alias fuck='sudo $(history -p \!\!)'
 
 require-pip
-require-bashrc
+
+# source utility prompt
+source "$DOTFILES_DIR/scripts/utils/__setprompt.sh"
+# source cargo environment if it exists
+[[ -f "$HOME/.cargo/env" ]] && source "$HOME/.cargo/env"

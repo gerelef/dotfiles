@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
-readonly SHELL_REQUIREMENTS="~/dotfiles/.shell-requirements"
-readonly HAS_RUN_FILE="~/.has-run"
+readonly SHELL_REQUIREMENTS="$HOME/dotfiles/.shell-requirements"
+readonly HAS_RUN_FILE="$HOME/.has-run"
 
 install-system-pkg () (
     while :; do
@@ -16,12 +16,16 @@ require-login-shell-packages () (
     [[ -f $HAS_RUN_FILE ]] && return 0
 
     mapfile -t required_dependencies < $SHELL_REQUIREMENTS
-
-    echo -e "Installing essential shell packages: $_FGREEN"
-    echo -n "$required_dependencies" | tr " " "\n"
-    echo -ne "$_NOCOLOUR"
     
-    install-system-pkg "${required_dependencies[*]}" && touch $HAS_RUN_FILE && clear
+    if [[ -n "$required_dependencies" ]]; then 
+        echo -e "Installing essential shell packages: \033[38;5;39m"
+        echo -n "${required_dependencies[*]}"
+        echo -e "\033[0m"
+
+        install-system-pkg "${required_dependencies[*]}" || return
+        touch $HAS_RUN_FILE
+        clear
+    fi
 )
 
 require-login-shell-packages "$@"
