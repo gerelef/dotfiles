@@ -1,7 +1,7 @@
 # dotfiles
 My personal dotfiles. I do not recommend to anyone seeking inspiration to blindly copy-paste my configs; they WILL introduce problems for you. The contents of each rc file, especially the .bashrc file, have been sourced by a variety of sources, including my personal experience & particularly my preferences.
 
-There is no particular philosophy to these configuration files, it's all personal taste, and adhere to the latest versions of applications I use between my different personal computing platforms, which are, for the most part, running the same version.
+There is no particular philosophy to these configuration files, it's all personal taste, and adhere to the latest versions of applications I use between platforms, which are, for the most part, running the same OS.
 
 ## Details:
 - `.shell-requirements` is a configuration file for `require-login-shell-packages` that are required for these dotfiles to work correctly.
@@ -34,8 +34,13 @@ There is no particular philosophy to these configuration files, it's all persona
 - `games/insurgency` contains [Insurgency](https://store.steampowered.com/app/222880/Insurgency/) specific configuration files, located in another github submodule. This is not something I use in each & every machine, so I thought it better not be inside the "root" `dotfile` directory.
 
 ## Installation
-The complete setup of my system requires that any `~/dotfiles/scripts/setup/...` script
-has run to create the most basic of prerequisites, & sane options for my usecase.
+First, clone in `$HOME`
+```bash
+cd ~ && git clone https://github.com/gerelef/dotfiles
+```
+
+The complete setup of my system assume that any `~/dotfiles/scripts/setup/...` script
+has run to create the most basic of prerequisites & sane options for my usecase.
 Afterwards, I just need to install my dotfiles & my themes.
 - To install my dotfiles I use `pstow`, which is a utility located under `scripts/utils/`.
 - To install my themes I use `update-ff-theme`, which is a utility located under `scripts/utils/`

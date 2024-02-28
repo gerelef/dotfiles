@@ -1,31 +1,41 @@
-// Ignore section, header is implied since it's the first thing in the .stowconfig
+// Ignore header is implied, since it's the first thing in the .stowconfig
 .git*
 README.*
-.manpages/
-// ignore these since they're loaded dynamically anyways
+
+// these are configuration files specifically for the dotfiles directory
+// and as such, they shouldn't be redirected (stowed) anywhere else
+.stowconfig
+.shell-requirements
+
+// ignore these since they're not meant to be linked anywhere
 scripts/utils/
 scripts/setup/
 scripts/functions/
-// these are not true config files, they must be imported manually
-.config/gnome-extensions/
-// ignore submodule
+.manpages/
+// ignore submodules
 games/
 
-.stowconfig
+// these are not true config files, they must be imported manually
+.config/gnome-extensions/
 
 [redirect]
 // redirect to home (move up)
 "scripts/.bashrc" ::: ".bashrc"
 "scripts/.nanorc" ::: ".nanorc"
-// redirect to nested (not created necessarily) directory
-".config/config.fish" ::: ".config/fish/config.fish"
+"scripts/.gitconfig" ::: ".gitconfig"
+
 // move up & rename directory
 ".config/templates/*" ::: "Templates/"
+
 // redirect to nested (not created necessarily) directory
 ".config/alacritty.toml" ::: ".config/alacritty/alacritty.toml"
+".config/config.fish" ::: ".config/fish/config.fish"
 ".config/pipewire.conf" ::: ".config/pipewire/pipewire.conf"
+
 // create subdirectories on the fly for sublime, don't nest unecessarily
 ".config/sublime-text/*" ::: ".config/sublime-text/Packages/User/"
+
 // find already created profile subdirectories on the fly, we can't nest anyways here
 ".config/mozilla/*" ::: ".mozilla/firefox/*.default-release/"
+
 // no hardlink section here!
