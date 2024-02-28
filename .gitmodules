@@ -7,7 +7,3 @@
 	path = games/insurgency
 	url = git@github.com:gerelef/insurc.git
     branch = master
-[submodule ".chess"]
-	path = games/chess
-	url = git@github.com:gerelef/chess-preparation.git
-    branch = master
