@@ -5,9 +5,17 @@ readonly HAS_RUN_FILE="$HOME/.has-run"
 
 install-system-pkg () (
     while :; do
-        [[ -n "$(command -v dnf)" ]] && sudo dnf install -y "$@" && break
-        [[ -n "$(command -v yum)" ]] && sudo yum install -y "$@" && break
-        [[ -n "$(command -v apt)" ]] && sudo apt install -y "$@" && break
+        if [[ -n "$(command -v dnf)" ]]; then
+            sudo dnf install -y "$@" || exit 
+            break
+        fi
+        if [[ -n "$(command -v yum)" ]]; then
+            sudo yum install -y "$@" || exit 
+            break
+        fi
+        if [[ -n "$(command -v apt)" ]]; then
+            sudo apt install -y "$@" 
+        fi 
         break
     done
 )
@@ -22,7 +30,7 @@ require-login-shell-packages () (
         echo -n "${required_dependencies[*]}"
         echo -e "\033[0m"
 
-        install-system-pkg "${required_dependencies[*]}" || return
+        install-system-pkg "${required_dependencies[@]}" || return
         touch $HAS_RUN_FILE
         clear
     fi
