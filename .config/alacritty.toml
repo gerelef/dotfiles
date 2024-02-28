@@ -1,5 +1,8 @@
 live_config_reload = true
 
+[shell]
+program = "/bin/fish"
+
 [colors.bright]
 black = "0x4c4c4c"
 blue = "0xb3deef"
