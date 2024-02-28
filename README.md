@@ -32,16 +32,23 @@ There is no particular philosophy to these configuration files, it's all persona
 ## Submodules
 - `games/cs2/` contains [CS:GO](https://store.steampowered.com/app/730/CounterStrike_Global_Offensive/) specific configuration files, located in another github submodule. This is not something I use in each & every machine, so I thought it'd better not be inside the "root" `dotfile` directory.
 - `games/insurgency` contains [Insurgency](https://store.steampowered.com/app/222880/Insurgency/) specific configuration files, located in another github submodule. This is not something I use in each & every machine, so I thought it better not be inside the "root" `dotfile` directory.
-- `games/chess` contains chess specific notes & configuration files for engines, openings and whatever. This is not something I use in each and every machine, so I thought it better not be inside the "root" `dotfile` directory.
 
 ## Installation
-### View
+The complete setup of my system requires that any `~/dotfiles/scripts/setup/...` script
+has run to create the most basic of prerequisites, & sane options for my usecase.
+Afterwards, I just need to install my dotfiles & my themes.
+- To install my dotfiles I use `pstow`, which is a utility located under `scripts/utils/`.
+- To install my themes I use `update-ff-theme`, which is a utility located under `scripts/utils/`
+- To install my compatibility layers for gaming, I use `update-compat-layers`, which is a utility located under `scripts/utils/`
+
+
+### View dotfiles
 If you just want to see what'll be softlinked if you were to actually run it:
 ```bash
 python3 ~/dotfiles/scripts/utils/pstow.py --source ~/dotfiles status
 ```
 
-### Run
+### Run dotfiles
 *Warning! This is a DESTRUCTIVE command, and it WILL overwrite files!*
 To automatically install the appropriate files and have a complete system, 
 as the author intended, execute the following:
