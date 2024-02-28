@@ -26,12 +26,10 @@ update-everything () (
         flatpak update -y || exit 
         flatpak uninstall --unused -y || exit
         sudo flatpak repair || exit
-        break
     fi 
     
     if [[ -n "$(command -v snap)" ]]; then
         snap refresh -y || exit
-        break
     fi 
 
     [[ -n "$(command -v updatedb)" ]] && sudo updatedb
