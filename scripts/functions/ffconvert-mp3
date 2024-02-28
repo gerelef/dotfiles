@@ -1,0 +1,13 @@
+#!/usr/bin/env bash
+
+# ffmpeg convert audio file to mp3
+ffconvert-mp3 () (
+    [[ -z "$*" ]] && return 2 
+    for arg in "$@"; do
+        local output=$(basename -- "${arg%.*}")
+        ffmpeg -i "$arg" -acodec libmp3lame "$PWD/$output-converted.mp3"  1> /dev/null
+        echo "Done $output-converted"
+    done
+)
+
+ffconvert-mp3 "$@"

@@ -1,0 +1,19 @@
+#!/usr/bin/env bash
+
+# convert (X1,Y1) (X2,Y2) coords with X delimiter instead of comma to ffmpeg format (X2-X1,Y2-Y1)
+__xy_rp_to_ffilter_coords () (
+    echo "$@" | awk -F'[x ]' '{ print $3-$1":"$4-$2 }';
+)
+
+# ffmpeg crop section of a clip
+ffcrop-mp4 () (
+    [[ -z "$*" ]] && return 2
+    [[ "$#" -ne 3 ]] && return 2
+    # $1 input
+    # $2 starting position (starting from (0,0) on top left)
+    # $3 ending position (starting from (0,0) on top left)
+    local output=$(basename -- "${1%.*}")
+    ffmpeg -i "$1" -filter:v "crop=$(__xy_rp_to_ffilter_coords "$2" "$3"):$(__xy_to_ffilter_coords "$2")" "$PWD/$output-cropped.mp4"
+)
+
+ffcrop-mp4 "$@"

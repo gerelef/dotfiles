@@ -1,0 +1,13 @@
+#!/usr/bin/env bash
+
+# ffmpeg extract audio from video with audio to mp3
+ffextract-audio-mp3 () (
+    [[ -z "$*" ]] && return 2
+    for arg in "$@"; do
+        local output=$(basename -- "${arg%.*}")
+        ffmpeg -i "$arg" -vn "$PWD/$output-audio.mp3" 1> /dev/null
+        echo "Done $output-audio"
+    done
+)
+
+ffextract-audio-mp3 "$@"

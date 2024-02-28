@@ -1,0 +1,10 @@
+#!/usr/bin/env bash
+
+# yt-dlp download to mp3
+ytdl-mp3 () (
+    [[ -z "$*" ]] && return 2 
+    
+    yt-dlp --extract-audio --audio-format mp3 --audio-quality 0 "$@" 
+)
+
+ytdl-mp3 "$@"

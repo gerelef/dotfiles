@@ -1,0 +1,27 @@
+#!/usr/bin/env bash
+
+readonly SHELL_REQUIREMENTS="~/dotfiles/.shell-requirements"
+readonly HAS_RUN_FILE="~/.has-run"
+
+install-system-pkg () (
+    while :; do
+        [[ -n "$(command -v dnf)" ]] && sudo dnf install -y "$@" && break
+        [[ -n "$(command -v yum)" ]] && sudo yum install -y "$@" && break
+        [[ -n "$(command -v apt)" ]] && sudo apt install -y "$@" && break
+        break
+    done
+)
+
+require-login-shell-packages () (
+    [[ -f $HAS_RUN_FILE ]] && return 0
+
+    mapfile -t required_dependencies < $SHELL_REQUIREMENTS
+
+    echo -e "Installing essential shell packages: $_FGREEN"
+    echo -n "$required_dependencies" | tr " " "\n"
+    echo -ne "$_NOCOLOUR"
+    
+    install-system-pkg "${required_dependencies[*]}" && touch $HAS_RUN_FILE && clear
+)
+
+require-login-shell-packages "$@"

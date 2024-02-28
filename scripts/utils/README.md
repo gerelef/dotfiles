@@ -18,3 +18,7 @@ Utility scripts, meant to make life easier. In detail, by descending order of co
     meant to maximize available terminal lines/cols usage when possible, instead of forcing you to scroll, or wrapping text around. 
 - `*.sh` files
     - dependencies for `../.bashrc`, various functions; see src of each one to understand; names should be self explanatory
+
+## Historical note
+A massive trim was done on 28/2/2024. You may find functions/utilities
+that were removed, on that date.

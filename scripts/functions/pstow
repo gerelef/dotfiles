@@ -1,0 +1,8 @@
+#!/usr/bin/env bash
+
+pstow () (
+    # curl --tlsv1.2 -fsSL https://my/url.py | python -- -
+    "~/dotfiles/scripts/utils/pstow.py" "$@"
+)
+
+pstow "$@"

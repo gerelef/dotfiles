@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+
+restart-network-manager () (
+    systemctl restart NetworkManager
+)
+
+restart-network-manager 

@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+
+restart-pipewire () (
+    systemctl --user restart pipewire
+)
+
+restart-pipewire

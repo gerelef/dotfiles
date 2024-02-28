@@ -1,0 +1,25 @@
+#!/usr/bin/env bash
+
+# ffmpeg concatenate multiple video files into one
+#  INPUTS: files >= 2
+ffconcat-video () (
+    [[ -z "$*" ]] && return 2
+    
+    local inputs=()
+    local audio_video_ftracks=""
+    local trimmed_arg=""
+    local output_name=""
+    local count=0
+    for arg in "$@"; do
+        local inputs+=( -i "$arg" )
+        local audio_video_ftracks+="[$count:v] [$count:a] "
+        local trimmed_arg="$(basename -- ${arg%.*})"
+        local output_name+=$(head -c 4 <<< "$trimmed_arg")
+        ((++count))
+    done
+    local output_name=$(head -c 30 <<< "$output_name")
+    local output_name+="-concat$count.mp4"
+    ffmpeg "${inputs[@]}" -filter_complex "$audio_video_ftracks concat=n=$count:v=1:a=1 [v] [a]" -map "[v]" -map "[a]" -vsync cfr -r 60 "$PWD/$output_name" 
+)
+
+ffconcat-video "$@"

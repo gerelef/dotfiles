@@ -8,16 +8,22 @@
 #   https://tldp.org/HOWTO/Man-Page/q2.html
 
 # git-delta are required for the current .gitconfig
-REQUIRE_DEPENDENCIES+="lsd git-delta"
+REQUIRE_DEPENDENCIES+="lsd git-delta "
+
+# FIXME add yt-dlp yt-dlp-bash-completion ffmpeg git
 
 #############################################################
 # GLOBAL CONSTANTS
 
 readonly DOTFILES_DIR="$HOME/dotfiles"
+readonly FUNCTIONS_DIR="$HOME/dotfiles/scripts/functions"
 readonly HAS_RUN_FILE="$DOTFILES_DIR/.has-run"
 
 #############################################################
 # EXPORTS
+
+# path is already exported, no need to reexport
+PATH=$PATH:$FUNCTIONS_DIR
 
 # https://unix.stackexchange.com/questions/90759/where-should-i-install-manual-pages-in-user-directory
 export MANPATH="$MANPATH:$DOTFILES_DIR/.manpages"
@@ -52,24 +58,6 @@ install-system-pkg () (
     done
 )
 
-update-everything () (
-    # the reason this for loop exists is to act as a "block", so we can break control flow
-    #  when we're done updating platform packages (since there will be only 1 package manager per sys)
-    while :; do
-        [[ -n "$(command -v dnf)" ]] && (sudo dnf upgrade -y --refresh && sudo dnf autoremove -y) && break
-        [[ -n "$(command -v pacman)" ]] && sudo pacman -Syu && break
-        [[ -n "$(command -v yum)" ]] && sudo yum update -y && break
-        [[ -n "$(command -v apt)" ]] && (sudo apt update -y && sudo apt upgrade -y && sudo apt autoremove -y) && break
-        break
-    done
-    [[ -n "$(command -v flatpak)" ]] && (flatpak update -y && flatpak uninstall --unused -y && sudo flatpak repair)
-    [[ -n "$(command -v snap)" ]] && snap refresh -y
-
-    [[ -n "$(command -v updatedb)" ]] && sudo updatedb
-    [[ -n "$(command -v update-grub)" ]] && sudo update-grub
-    return 0
-)
-
 require-bashrc-packages () (
     [[ -f $HAS_RUN_FILE ]] && return 0
 
@@ -85,20 +73,10 @@ require-bashrc () {
     local _GLOBAL_BASHRC="/etc/bashrc"
     local _PRIVATE_BASHRC="$HOME/.bashrc-private"
 
-    local _UTILITY_DEBUG="$DOTFILES_DIR/scripts/utils/debug.sh"
-    local _UTILITY_FFMPEG="$DOTFILES_DIR/scripts/utils/ffmpeg.sh"
-    local _UTILITY_YTDL="$DOTFILES_DIR/scripts/utils/ytdl.sh"
-    local _UTILITY_MATH="$DOTFILES_DIR/scripts/utils/math.sh"
     local _UTILITY_PROMPT="$DOTFILES_DIR/scripts/utils/__setprompt.sh"
 
     [[ -f "$_GLOBAL_BASHRC" ]] && source "$_GLOBAL_BASHRC"
     [[ -f "$_PRIVATE_BASHRC" ]] && source "$_PRIVATE_BASHRC"
-
-    # SOFT DEPENDENCIES
-    [[ -f "$_UTILITY_DEBUG" ]] && source "$_UTILITY_DEBUG"
-    [[ -f "$_UTILITY_FFMPEG" ]] && source "$_UTILITY_FFMPEG"
-    [[ -f "$_UTILITY_YTDL" ]] && source "$_UTILITY_YTDL"
-    [[ -f "$_UTILITY_MATH" ]] && source "$_UTILITY_MATH"
     [[ -f "~/.cargo/env" ]] && source "~/.cargo/env"
 
     # HARD DEPENDENCIES
@@ -107,11 +85,6 @@ require-bashrc () {
     # PACKAGE DEPENDENCIES
     require-bashrc-packages || return 1
 }
-
-dnf-installed-packages-by-size () (
-    # https://forums.fedoraforum.org/showthread.php?314323-Useful-one-liners-feel-free-to-update&p=1787643
-    dnf -q --disablerepo=* info installed | sed -n 's/^Name[[:space:]]*: \|^Size[[:space:]]*: //p' | sed 'N;s/\n/ /;s/ \(.\)$/\1/' | sort -hr -k 2 | less -R 
-)
 
 #############################################################
 # PYTHON VENV(s)
@@ -180,50 +153,6 @@ require-pip () {
     source "$vpip_fname"
     rm "$vpip_fname"
 }
-
-#############################################################
-# pure bash helpers
-
-# Highlight (and not filter) text with grep
-highlight () (
-    [[ -z "$*" ]] && return 2
-
-    grep --color=always -iE "$1|\$"
-)
-
-# Rename
-rn () (
-    [[ -z "$*" ]] && return 2
-    [[ $# -eq 2 ]] || return 2
-
-    mv -vn "$1" "$2"
-)
-
-restart-pipewire () (
-    systemctl --user restart pipewire
-)
-
-restart-network-manager () (
-    systemctl restart NetworkManager
-)
-
-#############################################################
-# PYTHON SCRIPTS
-
-update-ff-theme () (
-    # for future reference: curl -fsSL https:// | bash -s -- - "~/dotfiles/.config/mozilla/userChrome.css" "$@"
-    $DOTFILES_DIR/scripts/utils/update-ff-theme.py --resource ~/dotfiles/.config/mozilla/userChrome.css "$@"
-)
-
-update-compat-layers () (
-    # curl -fsSL https:// | bash -s -- - "$@"
-    return 1
-)
-
-pstow () (
-    # curl --tlsv1.2 -fsSL https://my/url.py | python -- -
-    "$DOTFILES_DIR/scripts/utils/pstow.py" "$@"
-)
 
 #############################################################
 

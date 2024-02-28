@@ -1,0 +1,19 @@
+#!/usr/bin/env bash
+
+# convert Minutes:Seconds (colon seperated) to seconds
+__hms () (
+    echo "$1" | awk -F: '{ print ($1 * 60) + $2 }';
+)
+
+# ffmpeg trim mp3 from start to end
+fftrim-mp3 () (
+    [[ -z "$*" ]] && return 2 
+    [[ "$#" -ne 3 ]] && return 2
+    # $1 input
+    # $2 start (seconds)
+    # $3 duration (seconds)
+    local output=$(basename -- "${1%.*}")
+    ffmpeg -ss "$(__hms "$2")" -to "$(__hms "$3")" -i "$1" -acodec copy "$PWD/$output-trimmed.mp3" 
+)
+
+fftrim-mp3 "$@"

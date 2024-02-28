@@ -1,0 +1,8 @@
+#!/usr/bin/env bash
+
+dnf-installed-packages-by-size () (
+    # https://forums.fedoraforum.org/showthread.php?314323-Useful-one-liners-feel-free-to-update&p=1787643
+    dnf -q --disablerepo=* info installed | sed -n 's/^Name[[:space:]]*: \|^Size[[:space:]]*: //p' | sed 'N;s/\n/ /;s/ \(.\)$/\1/' | sort -hr -k 2 | less -R 
+)
+
+dnf-installed-packages-by-size "$@"

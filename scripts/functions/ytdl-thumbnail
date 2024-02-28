@@ -1,0 +1,9 @@
+#!/usr/bin/env bash
+
+ytdl-thumbnail () (
+    [[ -z "$*" ]] && return 2
+    
+    yt-dlp --write-thumbnail --skip-download "$@"
+)
+
+ytdl-thumbnail "$@"

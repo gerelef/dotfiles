@@ -1,0 +1,13 @@
+#!/usr/bin/env bash
+
+# ffmpeg convert video file to mp4
+ffconvert-mp4 () (
+    [[ -z "$*" ]] && return 2
+    for arg in "$@"; do
+        local output=$(basename -- "${arg%.*}")
+        ffmpeg -i "$arg" -codec copy "$PWD/$output-converted.mp4" 1> /dev/null
+        echo "Done $output-converted"
+    done
+)
+
+ffconvert-mp4 "$@"

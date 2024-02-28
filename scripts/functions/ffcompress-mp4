@@ -1,0 +1,14 @@
+#!/usr/bin/env bash
+
+# ffmpeg compress mp4 video
+ffcompress-mp4 () (
+    [[ -z "$*" ]] && return 2 
+    [[ "$#" -ne 2 ]] && return 2
+    # $1 input
+    # $2 crf logarithmic value for x265
+    #  good values are from 27 to 30
+    local output=$(basename -- "${1%.*}")
+    ffmpeg -i "$1" -vcodec libx265 -crf "$2" -vsync cfr -r 60 "$PWD/$output-compressed.mp4"
+)
+
+ffcompress-mp4 "$@"
