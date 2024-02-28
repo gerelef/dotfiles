@@ -15,9 +15,6 @@ REQUIRE_DEPENDENCIES+="bat lsd git-delta"
 # GLOBAL CONSTANTS
 readonly DOTFILES_DIR="$HOME/dotfiles"
 readonly HAS_RUN_FILE="$DOTFILES_DIR/.has-run"
-readonly HAS_RUN_ZSH_FILE="$DOTFILES_DIR/.has-run-zsh"
-readonly HAS_RUN_FSH_FILE="$DOTFILES_DIR/.has-run-fsh"
-readonly HAS_RUN_KSH_FILE="$DOTFILES_DIR/.has-run-ksh"
 
 # EXPORTS
 # https://unix.stackexchange.com/questions/90759/where-should-i-install-manual-pages-in-user-directory
@@ -99,32 +96,8 @@ dnf-installed-packages-by-size () (
     dnf -q --disablerepo=* info installed | sed -n 's/^Name[[:space:]]*: \|^Size[[:space:]]*: //p' | sed 'N;s/\n/ /;s/ \(.\)$/\1/' | sort -hr -k 2 | less
 )
 
-_dnf-installed-packages-by-size_completions () {
-    COMPREPLY=()
-}
-
-complete -F _dnf-installed-packages-by-size_completions dnf-installed-packages-by-size
-
 #############################################################
 # pure bash helpers
-# Get directory size
-gds () (
-    if [[ -n "$*" ]]; then
-        for arg in "$@"; do
-            du -sh --apparent-size "$arg"
-        done
-    else
-        du -sh --apparent-size .
-    fi
-)
-
-complete -A directory gds
-
-watch-dir () (
-    [[ $# -ne 1 ]] && return 2
-
-    watch -n 1 "lsof +D $1"
-)
 
 # Highlight (and not filter) text with grep
 highlight () (
@@ -145,21 +118,9 @@ restart-pipewire () (
     systemctl --user restart pipewire
 )
 
-_restart-pipewire_completions () {
-    COMPREPLY=()
-}
-
-complete -F _restart-pipewire_completions restart-pipewire
-
 restart-network-manager () (
     systemctl restart NetworkManager
 )
-
-_restart-network-manager_completions () {
-    COMPREPLY=()
-}
-
-complete -F _restart-network-manager_completions restart-network-manager
 
 #############################################################
 # PYTHON SCRIPTS
@@ -182,27 +143,11 @@ pstow () (
 #############################################################
 # WRAPPERS TO BUILTINS OR PATH EXECUTABLES
 
-# journalctl wrapper for ease of use
-_journalctl () (
-    [[ $# -eq 0 ]] && command journalctl -e -n 2000 && return
-    # called with just a service name (-u)
-    [[ $# -eq 1 ]] &&  command journalctl -e -n 5000 -u "$1" && return
-    command journalctl "$@"
-)
-
 lss () (
     lsd --almost-all --icon never --icon-theme unicode --group-directories-first "$@"
 )
 
 complete -A directory lss
-
-alias journalctl="_journalctl"
-complete -A service journalctl
-
-# Automatically do an ls after each cd
-cd () {
-	builtin cd "$@" && lss
-}
 
 #############################################################
 # PYTHON VENV(s)
@@ -290,35 +235,14 @@ bind "set show-all-if-ambiguous on"
 
 #############################################################
 
-alias rebootsafe='sudo shutdown -r now'
-alias rebootforce='sudo shutdown -r -n now'
-
-# archives
-alias mktar='tar -cvf'
-alias mkbz2='tar -cvjf'
-alias mkgz='tar -cvzf'
-alias untar='tar -xvf'
-alias unbz2='tar -xvjf'
-alias ungz='tar -xvzf'
-alias unxz="tar -xf"
-
-alias bd='cd "$OLDPWD"'
-alias less='less -R'
-
 # dir up
 alias ..='cd ..'
 alias ...='cd ../..'
 alias ....='cd ../../..'
 alias .....='cd ../../../..'
 
-# substitutes for commands
-alias flatpak-log="flatpak remote-info --log flathub"
-alias flatpak-checkout="flatpak update --commit="
-
 # convenience alias
-alias c="clear"
 alias wget="\wget -c --read-timeout=5 --tries=0"
-alias mkvenv="python -m venv venv" # create venv (pythonXX cvenv)
 
 alias reverse="tac"
 alias palindrome="rev"
