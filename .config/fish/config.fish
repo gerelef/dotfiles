@@ -6,4 +6,7 @@ if status is-interactive
 
     set -g fish_greeting ""
     alias lss "lsd --almost-all --icon never --icon-theme unicode --group-directories-first"
+    alias ... "cd ../../"
+    alias .... "cd ../../../"
+    alias ..... "cd ../../../../"
 end
