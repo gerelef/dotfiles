@@ -82,7 +82,7 @@ mini-prompt () {
     [[ -n "$(_git-status 2> /dev/null)" ]] && PS1+="\[$_FBROWN\](changes)\[${_NOCOLOUR}\] "
 
     # Show error exit code if there is one
-    [[ $LAST_COMMAND != 0 ]] && PS1+="\[${_FRED}\]($LAST_COMMAND)\[${_NOCOLOUR}\] "
+    [[ $LAST_COMMAND != 0 ]] && PS1+="\[${_FLRED}\][$LAST_COMMAND]\[${_NOCOLOUR}\] "
 
     PS1+="\[${PCOLOUR}\]$PHINT\[${_NOCOLOUR}\] "
     # PS2 is used to continue a command using the \ character
@@ -90,7 +90,7 @@ mini-prompt () {
     # PS3 is used to enter a number choice in a script
     PS3='Please enter a number from above list: '
     # PS4 is used for tracing a script in debug mode
-    PS4="\[${_FLRED}\]+\[${_NOCOLOUR}\] "
+    PS4="+ "
 }
 
 export -f og-prompt
