@@ -1,17 +1,21 @@
 #!/usr/bin/env python3
-import os
+import argparse
 import re
 import sys
-from dataclasses import dataclass
+from pathlib import Path
 
-from typing import Any, Optional, override, final
-
-from modules.sela import exceptions
 from modules.builder import ArgumentParserBuilder
-from modules.sela.helpers import run_subprocess, euid_is_root
+from modules.sela import exceptions
+from modules.sela.exceptions import FileVerificationFailed
+from modules.sela.helpers import euid_is_root, run_subprocess
 from modules.sela.manager import Manager
-from modules.sela.releases.abstract import Release
-from modules.sela.definitions import Filename, URL
+from modules.sela.stages.asset_discriminator import LambdaAssetDiscriminator
+from modules.sela.stages.auditor import Auditor, NullAuditor
+from modules.sela.stages.downloader import DefaultDownloader
+from modules.sela.stages.installer import Installer
+from modules.sela.stages.janitor import PunctualJanitor, SloppyJanitor
+from modules.sela.stages.logger import StandardLogger
+from modules.sela.stages.release_discriminator import KeywordReleaseDiscriminator, FirstReleaseDiscriminator
 
 try:
     import requests
@@ -19,92 +23,54 @@ except NameError:
     print("Couldn't find requests library! Is it installed in the current environment?", file=sys.stderr)
     exit(1)
 
-
-@dataclass
-class Criteria:
-    version: Optional[str] = None
-    keyword: Optional[str] = None
+SHA_CHECKSUM_REGEX = re.compile(r".*(sha[0-9][0-9]?[0-9]?sum)", flags=re.IGNORECASE & re.DOTALL)
+logger = StandardLogger()
 
 
-@final
-class CompatibilityManager(Manager):
-    SHA_CHECKSUM_REGEX = re.compile(r".*(sha[0-9][0-9]?[0-9]?sum)", flags=re.IGNORECASE & re.DOTALL)
+class ChecksumAuditor(Auditor):
+    def verify(self, files: list[Path]) -> None:
+        if not files:
+            return
 
-    def __init__(self, repository: URL, install_dir: Filename, temp_dir: Filename, _filter: Criteria):
-        super().__init__(repository, download_dir=temp_dir)
-        self.install_dir = install_dir
-        self.keyword = _filter.keyword
-        self.version = _filter.version
-        self.last_msg_lvl = None
-
-    @override
-    def filter(self, release: Release) -> bool:
-        lower_tag_name = release.name.lower()
-
-        version_matches = True
-        if self.version:
-            version_matches = self.version in lower_tag_name
-
-        keyword_matches = True
-        if self.keyword:
-            keyword_matches = self.keyword in lower_tag_name
-        return version_matches and keyword_matches
-
-    @override
-    def get_assets(self, r: Release) -> dict[Filename, URL]:
-        items = {}
-        for fname, url in r.assets.items():
-            if "tar" in fname or CompatibilityManager.SHA_CHECKSUM_REGEX.match(fname):
-                items[fname] = url
-        return items
-
-    @override
-    def verify(self, files: list[Filename]) -> bool:
-        checksums = filter(lambda fn: bool(CompatibilityManager.SHA_CHECKSUM_REGEX.match(fn)), files)
+        download_dir = files[0].parent.absolute()
+        files_to_check: list[Path] = filter(lambda fnp: bool(SHA_CHECKSUM_REGEX.match(fnp.name)), files)
         results: list[bool] = []
-        for fname in checksums:
+        for matched_file in files_to_check:
             # there should be only one match
-            checksum_command = CompatibilityManager.SHA_CHECKSUM_REGEX.findall(fname)[0].lower()
-            command = [checksum_command, "-c", fname]
-            status, _, _ = run_subprocess(command, cwd=self.download_dir)
+            checksum_command = SHA_CHECKSUM_REGEX.findall(matched_file.name)[0].lower()
+            command = [checksum_command, "-c", matched_file.name]
+            status, _, _ = run_subprocess(command, cwd=download_dir)
             results.append(status)
-        return False not in results
 
-    @override
-    def install(self, files: list[Filename]):
-        if not os.path.exists(self.install_dir):
-            os.makedirs(self.install_dir)
-        tars = list(map(lambda fn: os.path.join(self.download_dir, fn), filter(lambda fn: "tar" in fn, files)))
+        if not all(results):
+            failed = list(filter(lambda e: not e, results))
+            raise FileVerificationFailed(f"Couldn't verify {failed} !")
+
+
+class RegularInstaller(Installer):
+    def __init__(self, destination: Path):
+        self.target = destination
+
+    def install(self, files: list[Path]) -> None:
+        if not self.target.is_dir():
+            raise ValueError()
+        if not self.target.exists(follow_symlinks=False):
+            self.target.mkdir(mode=0o740, parents=True, exist_ok=True)
+
+        # FIXME
+        # https://docs.python.org/3/library/tarfile.html#tarfile-extraction-filter
+        tars: list[Path] = list(filter(lambda fnp: "tar" in fnp.name, files))
         for tarball in tars:
-            command = ["tar", "-xPf", tarball, f"--directory={self.install_dir}"]
-            status, _, _ = run_subprocess(command, cwd=self.download_dir)
+            command = ["tar", "-xPf", tarball.absolute(), f"--directory={self.target.absolute()}"]
+            status, _, _ = run_subprocess(command, cwd=tarball.parent)
             if not status:
-                raise RuntimeError(f"{' '.join(command)} errored! !")
-
-    @override
-    def cleanup(self, files: list[Filename]):
-        for filename in files:
-            real_path = os.path.join(self.download_dir, filename)
-            if os.path.exists(real_path):
-                os.remove(real_path)
-
-    @override
-    def log(self, level: Manager.Level, msg: str):
-        # print debug info into stderr
-        if level.value >= level.INFO:
-            print(msg, file=sys.stderr)
-            return
-
-        if level == level.PROGRESS_BAR:
-            sys.stdout.write(msg)
-            return
-
-        print(msg)
+                raise RuntimeError(f"{' '.join(command)} errored!!")
 
 
 # noinspection PyTypeChecker
 def create_argparser():
     ap_builder = (ArgumentParserBuilder("Download & extract latest version of numerous game compatibility layers.")
+    .add_version()
     .add_keep()
     .add_unsafe()
     .add_temporary()
@@ -179,125 +145,127 @@ def create_argparser():
     return ap_builder.build()
 
 
-PROTON_GE_GITHUB_RELEASES_URL = "https://api.github.com/repos/GloriousEggroll/proton-ge-custom/releases"
-WINE_GE_GITHUB_RELEASES_URL = "https://api.github.com/repos/gloriouseggroll/wine-ge-custom/releases"
-LUXTORPEDA_GITHUB_RELEASES_URL = "https://api.github.com/repos/luxtorpeda-dev/luxtorpeda/releases"
-STEAM_INSTALL_DIR = os.path.expanduser(
-    "~/.local/share/Steam/compatibilitytools.d/"
-)
-STEAM_FLATPAK_INSTALL_DIR = os.path.expanduser(
-    "~/.var/app/com.valvesoftware.Valve/.local/share/Steam/compatibilitytools.d/"
-)
-LUTRIS_INSTALL_DIR = os.path.expanduser(
-    "~/.local/share/lutris/runners/wine/"
-)
-LUTRIS_FLATPAK_INSTALL_DIR = os.path.expanduser(
-    "~/.var/app/net.lutris.Lutris/data/lutris/runners/wine/"
-)
-DOWNLOAD_DIR = "/tmp/"
+def get_manager(args: argparse.Namespace) -> Manager:
+    keywords: list[str] = []
 
+    def get_remote(args) -> tuple[str, Auditor]:
+        nonlocal keywords
+        # noinspection PyTypeChecker
+        remote: str = None
+        # noinspection PyTypeChecker
+        auditor: Auditor = None
+        if args.golden_egg or args.proton_ge:
+            remote = PROTON_GE_GITHUB_RELEASES_URL
+            auditor = ChecksumAuditor()
+        if args.wine:
+            remote = WINE_GE_GITHUB_RELEASES_URL
+            auditor = ChecksumAuditor()
+        if args.league:
+            remote = WINE_GE_GITHUB_RELEASES_URL
+            keywords.append("lol")  # ugly solution, but still more elegant than the alternatives
+            auditor = ChecksumAuditor()
+        if args.luxtorpeda:
+            remote = LUXTORPEDA_GITHUB_RELEASES_URL
+            auditor = NullAuditor()
+        if args.unsafe:
+            auditor = NullAuditor()
+        return remote, auditor
 
-def setup_argument_options(args: dict[str, Any]) -> CompatibilityManager:
-    remote = None
-    _filter = Criteria()
+    def get_destination(args) -> Path:
+        install_dir = None
+        if args.destination:
+            install_dir = Path(args.destination).expanduser().absolute()
+            if not install_dir.exists():
+                install_dir.mkdir(0o740, parents=True, exist_ok=True)
+        if args.steam:
+            install_dir = STEAM_INSTALL_DIR
+        if args.steam_flatpak:
+            install_dir = STEAM_FLATPAK_INSTALL_DIR
+        if args.lutris:
+            install_dir = LUTRIS_INSTALL_DIR
+        if args.lutris_flatpak:
+            install_dir = LUTRIS_FLATPAK_INSTALL_DIR
+        return install_dir
+
+    remote, auditor = get_remote(args)
+    install_dir = get_destination(args)
+
     temp_dir = DOWNLOAD_DIR
-    install_dir = None
-    # pick the first version by default
-    filter_method = CompatibilityManager.FILTER_FIRST
-    verification_method = CompatibilityManager.verify
-    cleanup_method = CompatibilityManager.cleanup
+    if args.temporary:
+        temp_dir = Path(args.temporary).expanduser().absolute()
+        if not temp_dir.exists():
+            temp_dir.mkdir(0o700, parents=True, exist_ok=True)
 
-    for arg in args:
-        match arg:
-            case "golden_egg" | "proton_ge":
-                if args[arg]:
-                    remote = PROTON_GE_GITHUB_RELEASES_URL
-            case "wine":
-                if args[arg]:
-                    remote = WINE_GE_GITHUB_RELEASES_URL
-            case "league":
-                if args[arg]:
-                    remote = WINE_GE_GITHUB_RELEASES_URL
-                    filter_method = CompatibilityManager.filter
-                    _filter.keyword = "lol"
-            case "luxtorpeda":
-                if args[arg]:
-                    remote = LUXTORPEDA_GITHUB_RELEASES_URL
-                    verification_method = CompatibilityManager.VERIFY_NOTHING
-            case "destination":
-                if args[arg]:
-                    install_dir = os.path.abspath(os.path.expanduser(args[arg]))
-                    if not os.path.exists(install_dir):
-                        os.makedirs(install_dir)
-            case "steam":
-                if args[arg]:
-                    install_dir = STEAM_INSTALL_DIR
-            case "steam_flatpak":
-                if args[arg]:
-                    install_dir = STEAM_FLATPAK_INSTALL_DIR
-            case "lutris":
-                if args[arg]:
-                    install_dir = LUTRIS_INSTALL_DIR
-            case "lutris_flatpak":
-                if args[arg]:
-                    install_dir = LUTRIS_FLATPAK_INSTALL_DIR
-            case "unsafe":
-                if args[arg]:
-                    verification_method = CompatibilityManager.VERIFY_NOTHING
-            case "temporary":
-                if args[arg]:
-                    temp_dir = os.path.abspath(os.path.expanduser(args[arg]))
-                    if not os.path.exists(temp_dir):
-                        os.makedirs(temp_dir)
-            case "keep":
-                if args[arg]:
-                    cleanup_method = CompatibilityManager.DO_NOTHING
-            case "version":
-                if args[arg]:
-                    filter_method = CompatibilityManager.filter
-                    _filter.version = args[arg]
-            case _:
-                raise RuntimeError(f"Unknown argument {arg}")
-    manager = CompatibilityManager(
-        repository=remote,
-        install_dir=install_dir,
-        temp_dir=temp_dir,
-        _filter=_filter
+    if args.version:
+        keywords.append(args.version)
+
+    janitor = PunctualJanitor()
+    if args.keep:
+        janitor = SloppyJanitor()
+
+    rdiscriminator = FirstReleaseDiscriminator()
+    if keywords:
+        rdiscriminator = KeywordReleaseDiscriminator(
+            *keywords,
+            preprocess=lambda s: s.lower(),
+            strict=True
+        )
+
+    manager = Manager(remote)
+    manager.submit_release_discriminator(rdiscriminator)
+    manager.submit_asset_discriminator(
+        LambdaAssetDiscriminator(
+            lambda fn, url: "tar" in fn and url is not None,
+            lambda fn, url: SHA_CHECKSUM_REGEX.match(fn) and url is not None,
+            strict=False
+        )
     )
-    # noinspection PyTypeChecker
-    Manager.bind(manager, manager.filter, filter_method)
-    # noinspection PyTypeChecker
-    Manager.bind(manager, manager.verify, verification_method)
-    # noinspection PyTypeChecker
-    Manager.bind(manager, manager.cleanup, cleanup_method)
+    manager.submit_downloader(DefaultDownloader(logger, manager.provider, temp_dir))
+    manager.submit_auditor(auditor)
+    manager.submit_installer(RegularInstaller(install_dir))
+    manager.submit_janitor(janitor)
+
     return manager
 
 
-if euid_is_root():
-    print("Do NOT run this script as root!", file=sys.stderr)
-    exit(2)
+PROTON_GE_GITHUB_RELEASES_URL = "https://api.github.com/repos/GloriousEggroll/proton-ge-custom/releases"
+WINE_GE_GITHUB_RELEASES_URL = "https://api.github.com/repos/gloriouseggroll/wine-ge-custom/releases"
+LUXTORPEDA_GITHUB_RELEASES_URL = "https://api.github.com/repos/luxtorpeda-dev/luxtorpeda/releases"
+STEAM_INSTALL_DIR = Path("~/.local/share/Steam/compatibilitytools.d/").expanduser().absolute()
+LUTRIS_INSTALL_DIR = Path("~/.local/share/lutris/runners/wine/").expanduser().absolute()
+LUTRIS_FLATPAK_INSTALL_DIR = Path("~/.var/app/net.lutris.Lutris/data/lutris/runners/wine/").expanduser().absolute()
+STEAM_FLATPAK_INSTALL_DIR = Path(
+    "~/.var/app/com.valvesoftware.Valve/.local/share/Steam/compatibilitytools.d/"
+).expanduser().absolute()
+DOWNLOAD_DIR = Path("/tmp/").absolute()
 
 if __name__ == "__main__":
+    if euid_is_root():
+        print("Do NOT run this script as root!", file=sys.stderr)
+        exit(2)
+
     parser = create_argparser()
-    compat_manager = setup_argument_options(vars(parser.parse_args()))
-    print("""
-        \033[5m
-                                  _          
-                                 | |         
-   ___ ___  _ __ ___  _ __   __ _| |_        
-  / __/ _ \\| '_ ` _ \\| '_ \\ / _` | __|       
- | (_| (_) | | | | | | |_) | (_| | |_        
-  \\___\\___/|_| |_| |_| .__/ \\__,_|\\__|       
-                     | |                     
-  ______ ______ _____|_|_____ ______         
- |______|______|______|______|______|        
-         (_)         | |      | | |          
-          _ _ __  ___| |_ __ _| | | ___ _ __ 
-         | | '_ \\/ __| __/ _` | | |/ _ | '__|
-         | | | | \\__ | || (_| | | |  __| |   
-         |_|_| |_|___/\\__\\__,_|_|_|\\___|_|   
-\033[0m
-        """)
+    compat_manager = get_manager(parser.parse_args())
+
+    print("\033[5m", end="")
+    print(r"""
+                                 _          
+                                | |         
+  ___ ___  _ __ ___  _ __   __ _| |_        
+ / __/ _ \\| '_ ` _ \\| '_ \\ / _` | __|       
+| (_| (_) | | | | | | |_) | (_| | |_        
+ \\___\\___/|_| |_| |_| .__/ \\__,_|\\__|       
+                    | |                     
+ ______ ______ _____|_|_____ ______         
+|______|______|______|______|______|        
+        (_)         | |      | | |          
+         _ _ __  ___| |_ __ _| | | ___ _ __ 
+        | | '_ \\/ __| __/ _` | | |/ _ | '__|
+        | | | | \\__ | || (_| | | |  __| |   
+        |_|_| |_|___/\\__\\__,_|_|_|\\___|_|   
+    """)
+    print("\033[0m", end="")
+
     try:
         compat_manager.run()
     except KeyboardInterrupt:

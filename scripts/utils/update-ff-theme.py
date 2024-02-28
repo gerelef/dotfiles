@@ -199,6 +199,16 @@ class CascadeInstaller(Installer):
         raise NotImplementedError  # TODO implement
 
 
+def get_install_dirs() -> list[str]:
+    extension = "default-release"
+    profile_path = os.path.abspath(os.path.expanduser(os.path.join("~", ".mozilla", "firefox")))
+    if not os.path.exists(profile_path):
+        print(f"Couldn't find \"{profile_path}\" ! Is firefox installed, or launched at least once?")
+        exit(1)
+
+    return [os.path.join(profile_path, d) for d in os.listdir(profile_path) if extension in d]
+
+
 # noinspection PyTypeChecker
 def create_argparser():
     ap_builder = (ArgumentParserBuilder("Download & extract latest version of any firefox theme")
@@ -278,28 +288,7 @@ def create_argparser():
     return ap_builder.build()
 
 
-def get_install_dirs() -> list[str]:
-    extension = "default-release"
-    profile_path = os.path.abspath(os.path.expanduser(os.path.join("~", ".mozilla", "firefox")))
-    if not os.path.exists(profile_path):
-        print(f"Couldn't find \"{profile_path}\" ! Is firefox installed, or launched at least once?")
-        exit(1)
-
-    return [os.path.join(profile_path, d) for d in os.listdir(profile_path) if extension in d]
-
-
-MONO_THEME_GITHUB_RELEASES_URL = "https://api.github.com/repos/witalihirsch/Mono-firefox-theme/releases"
-GNOME_THEME_GITHUB_RELEASES_URL = "https://api.github.com/repos/rafaelmardojai/firefox-gnome-theme/releases"
-BLUR_THEME_GITHUB_RELEASES_URL = "https://api.github.com/repos/datguypiko/Firefox-Mod-Blur/releases"
-GX_THEME_GITHUB_RELEASES_URL = "https://api.github.com/repos/Godiesc/firefox-gx/releases"
-UI_FIX_THEME_GITHUB_RELEASES_URL = "https://api.github.com/repos/black7375/Firefox-UI-Fix/releases"
-UWP_THEME_GITHUB_BRANCHES_URL = "https://api.github.com/repos/Guerra24/Firefox-UWP-Style/branches"
-CASCADE_THEME_GITHUB_BRANCHES_URL = "https://api.github.com/repos/andreasgrafen/cascade/branches"
-DEFAULT_INSTALL_DIRECTORIES: list[str] = get_install_dirs()
-DOWNLOAD_DIR: str = "/tmp/"
-
-
-def setup_argument_options(args: argparse.Namespace) -> Manager:
+def get_manager(args: argparse.Namespace) -> Manager:
     def target() -> tuple[str, AssetDiscriminator, Installer]:
         kw_preprocessor = lambda s: s.lower()
         # these three have no defaults and need to be set accordingly from required flags
@@ -379,13 +368,23 @@ def setup_argument_options(args: argparse.Namespace) -> Manager:
     return manager
 
 
+MONO_THEME_GITHUB_RELEASES_URL = "https://api.github.com/repos/witalihirsch/Mono-firefox-theme/releases"
+GNOME_THEME_GITHUB_RELEASES_URL = "https://api.github.com/repos/rafaelmardojai/firefox-gnome-theme/releases"
+BLUR_THEME_GITHUB_RELEASES_URL = "https://api.github.com/repos/datguypiko/Firefox-Mod-Blur/releases"
+GX_THEME_GITHUB_RELEASES_URL = "https://api.github.com/repos/Godiesc/firefox-gx/releases"
+UI_FIX_THEME_GITHUB_RELEASES_URL = "https://api.github.com/repos/black7375/Firefox-UI-Fix/releases"
+UWP_THEME_GITHUB_BRANCHES_URL = "https://api.github.com/repos/Guerra24/Firefox-UWP-Style/branches"
+CASCADE_THEME_GITHUB_BRANCHES_URL = "https://api.github.com/repos/andreasgrafen/cascade/branches"
+DEFAULT_INSTALL_DIRECTORIES: list[str] = get_install_dirs()
+DOWNLOAD_DIR: str = "/tmp/"
+
 if __name__ == "__main__":
     if euid_is_root():
         print("Do NOT run this script as root.", file=sys.stderr)
         exit(2)
 
     parser = create_argparser()
-    theme_manager = setup_argument_options(parser.parse_args())
+    theme_manager = get_manager(parser.parse_args())
 
     print("""
 \033[5m
