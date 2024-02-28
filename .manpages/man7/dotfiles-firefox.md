@@ -2,7 +2,7 @@ dotfiles-firefox(7) -- configuration files for Firefox
 ===========================================================
 
 ## SYNOPSIS
-Firefox (FF) specific configuration files & themes. [mono-firefox-theme](https://github.com/witalihirsch/Mono-firefox-theme) is an external dependency & as such is not included in this repository. It should be automatically installed by the appropriate distribution setup script.
+Firefox (FF) specific configuration files & themes. [mono-firefox-theme](https://github.com/witalihirsch/Mono-firefox-theme) is an external dependency & as such is not included in this repository. It should be automatically installed by the appropriate setup script.
 This configuration file will, most likely, only work on the latest version of FF. It's focus is centered on privacy & security.
 
 ## AUTHOR
