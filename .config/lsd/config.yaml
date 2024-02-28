@@ -1,0 +1,7 @@
+blocks:
+  - permission
+  - user
+  - date
+  - name
+
+date: '+%d-%m-%y %H:%M:%S'
