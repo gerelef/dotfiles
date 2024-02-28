@@ -205,54 +205,6 @@ cd () {
 }
 
 #############################################################
-# DIFFERENT SHELLS
-
-require-ksh-packages () (
-    [[ -f $HAS_RUN_KSH_FILE ]] && return 0
-
-    echo -ne "$_FBROWN"
-    echo -e "Installing ksh $_NOCOLOUR"
-
-    install-system-pkg ksh && touch $HAS_RUN_KSH_FILE && clear
-)
-
-ksh () (
-    require-ksh-packages
-
-    /usr/bin/env ksh
-)
-
-require-fsh-packages () (
-    [[ -f $HAS_RUN_FSH_FILE ]] && return 0
-
-    echo -ne "$_FBLUE"
-    echo -e "Installing fish $_NOCOLOUR"
-
-    install-system-pkg fish && touch $HAS_RUN_FSH_FILE && clear
-)
-
-fsh () (
-    require-fsh-packages
-
-    /usr/bin/env fish
-)
-
-require-zsh-packages () (
-    [[ -f $HAS_RUN_ZSH_FILE ]] && return 0
-
-    echo -ne "$_FYELLOW"
-    echo -e "Installing zsh $_NOCOLOUR"
-
-    install-system-pkg zsh && touch $HAS_RUN_ZSH_FILE && clear
-)
-
-zsh () (
-    require-zsh-packages
-
-    /usr/bin/env zsh
-)
-
-#############################################################
 # PYTHON VENV(s)
 
 # goal: we want to create alot of different vpipN () (...) functions to call
