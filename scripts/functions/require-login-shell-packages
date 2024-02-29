@@ -1,7 +1,18 @@
 #!/usr/bin/env bash
 
 readonly SHELL_REQUIREMENTS="$HOME/dotfiles/.shell-requirements"
-readonly HAS_RUN_FILE="$HOME/.has-run"
+readonly HAS_RUN_DIR="$HOME/.config"
+readonly HAS_RUN_FILE="$HAS_RUN_DIR/.has-run"
+
+has-run () (
+    [[ -f "$HAS_RUN_FILE" ]] && exit 0
+    exit 1
+)
+
+mk-run-file () (
+    [[ ! -d "$HAS_RUN_DIR" ]] && mkdir "$HAS_RUN_DIR"
+    touch $HAS_RUN_FILE
+)
 
 install-system-pkg () (
     while :; do
@@ -21,7 +32,7 @@ install-system-pkg () (
 )
 
 require-login-shell-packages () (
-    [[ -f $HAS_RUN_FILE ]] && return 0
+    has-run && return 0
 
     mapfile -t required_dependencies < $SHELL_REQUIREMENTS
     
@@ -31,7 +42,7 @@ require-login-shell-packages () (
         echo -e "\033[0m"
 
         install-system-pkg "${required_dependencies[@]}" || return
-        touch $HAS_RUN_FILE
+        mk-run-file
         clear
     fi
 )
