@@ -8,16 +8,8 @@
 #   https://tldp.org/HOWTO/Man-Page/q2.html
 
 #############################################################
-# GLOBAL CONSTANTS
-
+# GLOBAL CONSTANTS & EXPORTS
 readonly DOTFILES_DIR="$HOME/dotfiles"
-readonly FUNCTIONS_DIR="$HOME/dotfiles/scripts/functions"
-
-#############################################################
-# EXPORTS
-
-# path is already exported, no need to reexport
-PATH=$PATH:$FUNCTIONS_DIR
 
 # https://unix.stackexchange.com/questions/90759/where-should-i-install-manual-pages-in-user-directory
 export MANPATH="$MANPATH:$DOTFILES_DIR/.manpages"
@@ -29,8 +21,6 @@ export HISTCONTROL=erasedups:ignoredups:ignorespace
 
 #############################################################
 # OPTIONS
-
-PROMPT_COMMAND='mini-prompt; history -a'
 
 shopt -s autocd
 shopt -s cdspell
@@ -189,12 +179,18 @@ require-pip () {
 #############################################################
 # SOURCES
 
+# add shell functions (executables) to $PATH
+PATH=$PATH:$DOTFILES_DIR/scripts/functions
+
 # install required login shell packages
 require-login-shell-packages
 # source global virtual python install(s)
 require-pip
 # source cargo environment if it exists
 [[ -f "$HOME/.cargo/env" ]] && source "$HOME/.cargo/env"
+
+# use custom prompt
+PROMPT_COMMAND='mini-prompt; history -a'
 
 #############################################################
 # ALIAS
