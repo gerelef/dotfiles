@@ -15,8 +15,6 @@ Utility scripts, meant to make life easier. In detail, by descending order of co
 - `pstow.py`
     - utility script meant to cover the basic usecase of GNU Stow, with enhanced
     functionality for personal use.
-- `*.sh` files
-    - Hard dependencies for `.bashrc`
 
 ## Historical note
 A massive trim was done on 28/2/2024. You may find functions/utilities
