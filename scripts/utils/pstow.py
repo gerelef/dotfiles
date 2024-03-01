@@ -376,6 +376,14 @@ class Tree:
         Sole argument is the destination (target) PosixPath.
         @param make_parents: equivalent --make-parents in mkdir -p
         """
+        def dirlink(srct: Tree, dst: PosixPath):
+            # if this is not a virtual tree
+            if srct.absolute.exists():
+                mode = dst.stat(follow_symlinks=False).st_mode
+                dst.mkdir(mode, parents=True, exist_ok=True)
+                return
+            dst.mkdir(0o755, parents=True, exist_ok=True)
+
         if not destination.exists(follow_symlinks=False) and not make_parents:
             raise PathError(f"Expected valid target, but got {destination}, which doesn't exist?!")
         if destination.exists(follow_symlinks=False) and not destination.is_dir():
@@ -383,14 +391,7 @@ class Tree:
 
         if not destination.exists(follow_symlinks=False) and make_parents:
             logger.info(f"\033[96mCreating destination which doesn't exist {destination}\033[0m")
-            shutil.copytree(
-                src=tree.absolute,
-                dst=destination.resolve(),
-                symlinks=False,
-                # ignore everything contained in the directory (i.e. do not copy contents)
-                ignore=lambda src, names: ['.'] + [name for name in names if os.path.isfile(os.path.join(src, name))],
-                dirs_exist_ok=False
-            )
+            dirlink(tree, destination)
 
         content: PosixPath
         for content in tree.contents:
@@ -400,21 +401,13 @@ class Tree:
                 continue
 
             logger.info(f"Symlinking src {content} to {destination_content}")
-
             destination_content.unlink(missing_ok=True)
-            destination_content.symlink_to(
-                target=content.resolve(),
-                target_is_directory=False
-            )
+            destination_content.symlink_to(target=content.resolve(), target_is_directory=False)
 
         branch: Tree
         for branch in tree.branches:
             destination_dir = PosixPath(destination / branch.name)
-            branch.rsymlink(
-                tree=branch,
-                destination=destination_dir,
-                fn=fn
-            )
+            branch.rsymlink(tree=branch, destination=destination_dir, fn=fn)
 
 
 class Stowconfig:
@@ -790,25 +783,22 @@ if __name__ == "__main__":
     try:
         is_dry = args.command == "status"
         if not is_dry and not args.target:
-            logger.error("--target must be set for non-dry runs.")
+            logger.error("Target must be set for non-dry runs.")
             sys.exit(2)
         if is_dry and not args.target:
-            args.target = "/"
+            args.target = f"{PosixPath().home()}"
         src = PosixPath(args.source).resolve(strict=not args.loose)
         dest = PosixPath(args.target).resolve(strict=not args.loose)
         excluded = [
             PosixPath(str_path).resolve(strict=not args.loose) for str_path in args.exclude
         ]
-        force = args.force
-        oo = args.overwrite_others
-        mp = not args.no_parents
 
         Stower(
             src, dest,
             skippables=excluded,
-            force=force,
-            overwrite_others=oo,
-            make_parents=mp,
+            force=args.force,
+            overwrite_others=args.overwrite_others,
+            make_parents=not args.no_parents,
         ).stow(dry_run=args.command == "status")
     except FileNotFoundError as e:
         logger.error(f"Couldn't find file!\n{e}")
