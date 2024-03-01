@@ -399,17 +399,17 @@ class Tree:
         Sole argument is the destination (target) PosixPath.
         @param make_parents: equivalent --make-parents in mkdir -p
         """
-        def dirlink(srct: Tree, dst: PosixPath):
+        def dlink(srct: Tree, dst: PosixPath):
             # if this is not a virtual tree
             if srct.absolute.exists():
-                logger.info(f"Creating virtual destination which doesn't exist {target}\033[0m")
+                logger.info(f"Creating destination which doesn't exist {dst}")
                 mode = dst.stat(follow_symlinks=False).st_mode
                 dst.mkdir(mode, parents=True, exist_ok=True)
                 return
-            logger.info(f"Creating virtual destination which doesn't exist {target}\033[0m")
+            logger.info(f"Creating virtual destination which doesn't exist {dst}")
             dst.mkdir(0o755, parents=True, exist_ok=True)
 
-        def link(src: PosixPath, dst: PosixPath):
+        def flink(src: PosixPath, dst: PosixPath):
             logger.info(f"Symlinking src {source} to {destination}")
             dst.unlink(missing_ok=True)
             dst.symlink_to(target=src, target_is_directory=False)
@@ -420,16 +420,16 @@ class Tree:
             raise PathError(f"Expected valid target, but got {target}, which isn't a directory?!")
 
         if not target.exists(follow_symlinks=False) and make_parents:
-            dirlink(tree, target)
+            dlink(tree, target)
 
         source: PosixPath
         for source in tree.contents:
             destination = PosixPath(target / source.name)
             if not fn(destination):
-                logger.info(f"\033[91mSkipping {destination} due to policy\033[0m")
+                logger.warning(f"Skipping {destination} due to policy")
                 continue
 
-            link(source, destination)
+            flink(source, destination)
 
         branch: Tree
         for branch in tree.branches:
