@@ -40,3 +40,7 @@ class UnsuccessfulRequest(Exception):
 
     def __str__(self):
         return f"Unsuccessful request with status {self.status}! {self.description}"
+
+
+class UninitializedComponents(BaseException):
+    pass

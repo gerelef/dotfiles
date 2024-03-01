@@ -1,3 +1,4 @@
+import sys
 from abc import ABC
 from pathlib import Path
 from typing import Self, final
@@ -65,6 +66,21 @@ class Manager(ABC):
         :raises requests.Timeout:
         :raises requests.TooManyRedirects:
         """
+        # verbose sanity check for end-users
+        uninitialized_components = list(filter(lambda o: not o, [
+            self.pfactory_cls,
+            self.released,
+            self.assetd,
+            self.downloader,
+            self.auditor,
+            self.installer,
+            self.janitor
+        ]))
+
+        if uninitialized_components:
+            print(f"FATAL! Got these uninitialized components: {uninitialized_components}", file=sys.stderr)
+            raise exceptions.UninitializedComponents(uninitialized_components)
+
         downloaded: list[Path] = []
         try:
             status, r = self.provider.get_release(self.released.discriminate)
