@@ -38,6 +38,7 @@ class StandardLogger(Logger):
     """
     Default class that will, by default, output logs to stdout/stderr.
     """
+
     @override
     def progress_bar(self, msg: str):
         sys.stdout.write(msg)
@@ -57,6 +58,32 @@ class StandardLogger(Logger):
     @override
     def warning(self, msg: str):
         print(msg, file=sys.stderr)
+
+    @override
+    def err(self, msg: str):
+        print(msg, file=sys.stderr)
+
+
+class NullLogger(Logger):
+    @override
+    def progress_bar(self, msg: str):
+        pass
+
+    @override
+    def progress(self, msg: str):
+        pass
+
+    @override
+    def info(self, msg: str):
+        pass
+
+    @override
+    def debug(self, msg: str):
+        pass
+
+    @override
+    def warning(self, msg: str):
+        pass
 
     @override
     def err(self, msg: str):
