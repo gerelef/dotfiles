@@ -744,14 +744,14 @@ def get_arparser() -> ArgumentParser:
         type=str,
         required=False,
         default=os.getcwd(),
-        help="Source directory links will be copied from."
+        help="Source directory links will be linked from."
     )
     ap.add_argument(
         "--target", "-t",
         type=str,
         required=False,
         default=f"{os.getcwd()}/..",
-        help="Target (destination) directory links will be soft-linked to."
+        help="Target (destination) directory links will be linked to."
     )
     ap.add_argument(
         "--loose", "-l",
@@ -827,13 +827,10 @@ if __name__ == "__main__":
         if not is_dry and not args.target:
             logger.error("Target must be set for non-dry runs.")
             sys.exit(2)
-        if is_dry and not args.target:
-            args.target = Tree.REAL_USER_HOME
-        src = PosixPath(args.source).resolve(strict=True)
-        dest = PosixPath(args.target).resolve(strict=True)
-        excluded = [
-            PosixPath(str_path).resolve(strict=not args.loose) for str_path in args.exclude
-        ]
+
+        src = PosixPath(args.source).resolve(strict=True)  # source MUST exist & be valid!
+        dest = PosixPath(args.target if not is_dry else Tree.REAL_USER_HOME).resolve(strict=not args.loose)
+        excluded = [PosixPath(str_path).resolve(strict=not args.loose) for str_path in args.exclude]
 
         Stower(
             src, dest,
