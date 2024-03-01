@@ -127,6 +127,9 @@ class Tree:
     def __repr__(self) -> str:
         return str(self.absolute)
 
+    def __hash__(self) -> int:
+        return hash(self.absolute)
+
     def repr(self, indentation: int = 0) -> str:
         """
         @param indentation: indentation level.
@@ -360,16 +363,26 @@ class Tree:
 
         return self
 
+    def vmove_redirectables(self, depth: int = math.inf) -> Self:
+        """
+        Recursively move all redirectable branches & elements,
+        from the existing .stowignore files, in each tld (top-level directory).
+        """
+
+        subtree: Tree
+        for subtree in self.branches:
+            subtree.vmove_redirectables(depth=depth - 1)
+
+        return self  # TODO implement!
+
     def vmove(self, src: PosixPath | Self, dst: Iterable[PosixPath | Self]) -> Self:
         """
         Move a file or tree to a new destination(s) (file or tree), through the virtual tree (self).
         @param src: Source
         @param dst: Destination(s)
         """
-        raise NotImplemented
-        return self
+        return self  # TODO implement!
 
-    # noinspection PyShadowingNames
     @classmethod
     def rsymlink(cls, tree: Self, destination: PosixPath, fn: Callable[[PosixPath], bool], make_parents=True) -> None:
         """
@@ -641,6 +654,8 @@ class Stower:
             self.src_tree.vtrim_file(content)
         for branch in filter(lambda sk: sk.is_dir() and sk in self.src_tree, self.skippables):
             self.src_tree.vtrim_branch(Tree(branch))
+        # third step: virtual move
+        self.src_tree.vmove_redirectables()
         # third step: trim the tree from top to bottom, for every .stowignore we find, we will apply
         #  the .stowignore rules only to the same-level trees and/or files, hence, provably and efficiently
         #  trimming all useless paths
@@ -674,15 +689,15 @@ class Stower:
         # and could be substituted for whatever in the future
         if approved:
             logger.info("Linking...")
-            # overwrite nothing that already exists rule
-            exists_rule = lambda dpp: not dpp.exists(follow_symlinks=False)
+            # overwrite just symlinks that already exist rule
+            exists_rule = lambda dpp: dpp.is_symlink() if dpp.exists(follow_symlinks=True) else True
             if self.force:
-                # overwrite only symlinks rule
-                exists_rule = lambda dpp: dpp.is_symlink() if dpp.exists(follow_symlinks=False) else True
+                # overwrite everything rule
+                exists_rule = lambda dpp: True
             # overwite only our own links rule
             #  .exists() is here for sanity reasons, because it's not a given that
             #  the file does actually exist, and due to lazy eval, this will work even if it isn't there
-            others_rule = lambda dpp: dpp.owner() == euidn if dpp.exists(follow_symlinks=False) else True
+            others_rule = lambda dpp: dpp.owner() == euidn if dpp.exists(follow_symlinks=True) else True
             if self.overwrite_others:
                 others_rule = lambda dpp: True
             # overwrite if not in the original tree rule
@@ -736,7 +751,7 @@ def get_arparser() -> ArgumentParser:
         required=False,
         action="store_true",
         default=False,
-        help="Force overwrite of any conflicting soft links. This will not overwrite regular files."
+        help="Force overwrite of any conflicting file. This WILL overwrite regular files!"
     )
     ap.add_argument(
         "--overwrite-others", "-o",
@@ -744,7 +759,7 @@ def get_arparser() -> ArgumentParser:
         action="store_true",
         default=False,
         help="Ovewrite links/files owned by other users than the current one."
-             "Default behaviour is to not overwrite files not owned by the current user/"
+             "Default behaviour is to not overwrite files not owned by the current user."
              "Functionally the same as --no-preserve-root in the rm command."
     )
     ap.add_argument(
