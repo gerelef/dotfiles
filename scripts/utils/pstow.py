@@ -128,14 +128,15 @@ class Tree:
         return str(self.absolute)
 
     def __hash__(self) -> int:
-        return hash(self.absolute)
+        # combine the hashes of the path + a fixed offset, so thet trees are only
+        #  compared against other trees regarding their uniqueness
+        return hash(self.absolute) + hash("TREE")
 
     def repr(self, indentation: int = 0) -> str:
         """
         @param indentation: indentation level.
         @return: Tree representation of the current tree.
         """
-
         def indent(indentation: int):
             tail_length = max((indentation - 1), 0)
             return f"{"─" * tail_length}{">" if tail_length else ""}"
@@ -384,7 +385,7 @@ class Tree:
         return self  # TODO implement!
 
     @classmethod
-    def rsymlink(cls, tree: Self, destination: PosixPath, fn: Callable[[PosixPath], bool], make_parents=True) -> None:
+    def rsymlink(cls, tree: Self, target: PosixPath, fn: Callable[[PosixPath], bool], make_parents=True) -> None:
         """
         Recursively symlink a tree to destination.
         Inclusive, meaning the top-level directory name of Tree will be considered the same as destination,
@@ -392,7 +393,7 @@ class Tree:
         for subtrees.
         If the directory doesn't exist, it'll be created.
         @param tree: Tree, whose contents we'll be moving.
-        @param destination: Top-level directory we'll be copying everything to.
+        @param target: Top-level directory we'll be copying everything to.
         @param fn: Business rule the destination PosixPath will have to fulfill.
         Should return true for items we *want* to create.
         Sole argument is the destination (target) PosixPath.
@@ -401,35 +402,39 @@ class Tree:
         def dirlink(srct: Tree, dst: PosixPath):
             # if this is not a virtual tree
             if srct.absolute.exists():
+                logger.info(f"Creating virtual destination which doesn't exist {target}\033[0m")
                 mode = dst.stat(follow_symlinks=False).st_mode
                 dst.mkdir(mode, parents=True, exist_ok=True)
                 return
+            logger.info(f"Creating virtual destination which doesn't exist {target}\033[0m")
             dst.mkdir(0o755, parents=True, exist_ok=True)
 
-        if not destination.exists(follow_symlinks=False) and not make_parents:
-            raise PathError(f"Expected valid target, but got {destination}, which doesn't exist?!")
-        if destination.exists(follow_symlinks=False) and not destination.is_dir():
-            raise PathError(f"Expected valid target, but got {destination}, which isn't a directory?!")
+        def link(src: PosixPath, dst: PosixPath):
+            logger.info(f"Symlinking src {source} to {destination}")
+            dst.unlink(missing_ok=True)
+            dst.symlink_to(target=src, target_is_directory=False)
 
-        if not destination.exists(follow_symlinks=False) and make_parents:
-            logger.info(f"\033[96mCreating destination which doesn't exist {destination}\033[0m")
-            dirlink(tree, destination)
+        if not target.exists(follow_symlinks=False) and not make_parents:
+            raise PathError(f"Expected valid target, but got {target}, which doesn't exist?!")
+        if target.exists(follow_symlinks=False) and not target.is_dir():
+            raise PathError(f"Expected valid target, but got {target}, which isn't a directory?!")
 
-        content: PosixPath
-        for content in tree.contents:
-            destination_content = PosixPath(destination / content.name)
-            if not fn(destination_content):
-                logger.info(f"\033[91mSkipping {destination_content} due to policy\033[0m")
+        if not target.exists(follow_symlinks=False) and make_parents:
+            dirlink(tree, target)
+
+        source: PosixPath
+        for source in tree.contents:
+            destination = PosixPath(target / source.name)
+            if not fn(destination):
+                logger.info(f"\033[91mSkipping {destination} due to policy\033[0m")
                 continue
 
-            logger.info(f"Symlinking src {content} to {destination_content}")
-            destination_content.unlink(missing_ok=True)
-            destination_content.symlink_to(target=content.resolve(), target_is_directory=False)
+            link(source, destination)
 
         branch: Tree
         for branch in tree.branches:
-            destination_dir = PosixPath(destination / branch.name)
-            branch.rsymlink(tree=branch, destination=destination_dir, fn=fn)
+            destination_dir = PosixPath(target / branch.name)
+            branch.rsymlink(tree=branch, target=destination_dir, fn=fn)
 
 
 class Stowconfig:
@@ -460,13 +465,13 @@ class Stowconfig:
 
         self.__cached = False
 
-    def _handle_ignore_line(self, entry: str) -> None:
+    def _handle_ignore_lines(self, entry: str) -> None:
         self.__ignorables.extend(Stowconfig.parse_glob_line(self.parent, entry))
 
-    def _handle_hardlink_line(self, entry: str) -> None:
+    def _handle_hardlink_lines(self, entry: str) -> None:
         self.__hardlinkables.extend(Stowconfig.parse_glob_line(self.parent, entry))
 
-    def _handle_redirect_line(self, entry: str) -> None:
+    def _handle_redirect_lines(self, entry: str) -> None:
         fm = Stowconfig.REDIRECT_LINE_REGEX.fullmatch(entry)
         if not fm:
             logger.warning(f"Skipping invalid redirect entry\n{entry}")
@@ -474,7 +479,7 @@ class Stowconfig:
         # both are globbable: a group of elements can be matched to a group of targets (N:M relationship)
         # fm.group(Stowconfig.REDIRECT_LINE_REGEX_SOURCE_GROUP)
         # fm.group(Stowconfig.REDIRECT_LINE_REGEX_TARGET_GROUP)
-        raise NotImplementedError
+        raise NotImplementedError  # TODO implement!
 
     def _is_comment(self, line: str) -> bool:
         return line.startswith(Stowconfig.COMMENT_PREFIX_TOK)
@@ -484,7 +489,7 @@ class Stowconfig:
         Resolve the structure of a STOWIGNORE_FN & cache results.
         """
         self.__cached = True
-        strategy: Callable[[str], None] = self._handle_ignore_line
+        strategy: Callable[[str], None] = self._handle_ignore_lines
         # noinspection PyShadowingNames
         with open(self.fstowignore, "r", encoding="UTF-8") as sti:
             for line in sti:
@@ -495,13 +500,13 @@ class Stowconfig:
                     continue
                 match trimmed_line:
                     case Stowconfig.IGNORE_SECTION_HEADER_TOK:
-                        strategy = self._handle_ignore_line
+                        strategy = self._handle_ignore_lines
                         continue  # eat line because it's a header
                     case Stowconfig.REDIRECT_SECTION_HEADER_TOK:
-                        strategy = self._handle_redirect_line
+                        strategy = self._handle_redirect_lines
                         continue  # eat line because it's a header
                     case Stowconfig.HARDLINK_SECTION_HEADER_TOK:
-                        strategy = self._handle_hardlink_line
+                        strategy = self._handle_hardlink_lines
                         continue  # eat line because it's a header
 
                 strategy(trimmed_line)
@@ -517,6 +522,7 @@ class Stowconfig:
     def hardlinkables(self) -> Iterable[PosixPath]:
         if not self.__cached:
             self._parse()
+            # FIXME remove entries that are in self.ignorables
         # don't leak reference
         return copy(self.__hardlinkables)
 
@@ -524,6 +530,7 @@ class Stowconfig:
     def redirectables(self) -> dict[PosixPath, os.PathLike]:
         if not self.__cached:
             self._parse()
+            # FIXME remove entries that are in self.ignorables
         # don't leak reference
         return copy(self.__redirectables)
 
@@ -654,14 +661,19 @@ class Stower:
             self.src_tree.vtrim_file(content)
         for branch in filter(lambda sk: sk.is_dir() and sk in self.src_tree, self.skippables):
             self.src_tree.vtrim_branch(Tree(branch))
-        # third step: virtual move
+        # third step: virtual move all redirectables first
+        #  this step is done here, so we don't get any invalid entries when ignoring things that
+        #  were previously considered redirectables
+        #  the fact of the matter is, we'd have to remove ignored files *again* if this were to happen as a seconds step
+        #  this is a concern regarding the internals, and is obviously not the best, however, even if the capability
+        #  is eventually added, it's still sane to do this first
         self.src_tree.vmove_redirectables()
-        # third step: trim the tree from top to bottom, for every .stowignore we find, we will apply
+        # fourth step: trim the tree from top to bottom, for every .stowignore we find, we will apply
         #  the .stowignore rules only to the same-level trees and/or files, hence, provably and efficiently
         #  trimming all useless paths
         self.src_tree.vtrim_ignored()
         if not self.overwrite_others:
-            # fourth step (optional): apply extra business rules to the tree:
+            # fifth step (optional): apply extra business rules to the tree:
             #  ignore items owned by other users
             # if the euid (effective user id) name is different from the folder's owner name, trim it
             self.src_tree.vtrim_content_rule(
@@ -671,22 +683,20 @@ class Stower:
                 lambda br, _: br.absolute.owner() != euidn
             )
 
-        # fourth step: apply preliminary business rule to the tree:
+        # sixth step: apply preliminary business rule to the tree:
         #  trim empty branches to avoid creation of directories whose contents are ignored entirely
         self.src_tree.vtrim_branch_rule(
             lambda br, _: len(br) == 0
         )
 
-        # fifth step: symlink the populated tree
+        # seventh step: symlink the populated tree
         logger.info(f"{self.src_tree.repr()}")
         approved = self._prompt() if not dry_run else False
         if not approved:
             logger.warning("Aborting.")
 
-        # Someone could say this is an ugly implementation due to the many lambda functions.
-        # However, I'd say it's a pretty cool implementation,
-        # since all of these rules are explicit business rules,
-        # and could be substituted for whatever in the future
+        # since all of these rules are explicit business rules, and could be substituted for whatever in the future
+        #  this is a pretty elegant solution. I've already refactored (one) case, and it's proved its value
         if approved:
             logger.info("Linking...")
             # overwrite just symlinks that already exist rule
