@@ -9,9 +9,9 @@ import os
 import re
 # noinspection PyUnresolvedReferences
 import readline
-import shutil
 import sys
 from argparse import ArgumentParser
+from copy import copy
 from glob import iglob
 from itertools import zip_longest
 from pathlib import PosixPath
@@ -194,7 +194,7 @@ class Tree:
 
     def traverse(self) -> Self:
         """
-        Traverse the directory tree and populate self.
+        Traverse the physical directory tree and populate self.
         """
         # the reason for this ugliness, is that os.walk is recursive by nature,
         #  and we do not want to recurse by os.walk, but rather by child.traverse() method
@@ -226,7 +226,7 @@ class Tree:
             yield PosixPath(self.absolute / pp)
         return
 
-    def rtrim_file(self, element: PosixPath, depth: int = math.inf) -> Self:
+    def vtrim_file(self, element: PosixPath, depth: int = math.inf) -> Self:
         """
         Recursively trim the PosixPath element from the contents.
         Falls back to children if it doesn't exist.
@@ -260,11 +260,11 @@ class Tree:
 
         # if we didn't get any matches, the file wasn't ours to trim, check children
         for branch in self.branches:
-            branch.rtrim_file(element, depth=depth - 1)
+            branch.vtrim_file(element, depth=depth - 1)
 
         return self
 
-    def rtrim_branch(self, removable_branch: Self, depth: int = math.inf) -> Self:
+    def vtrim_branch(self, removable_branch: Self, depth: int = math.inf) -> Self:
         """
         Recursively trim the Tree branch, removing it from the branches.
         Falls back to children if it doesn't exist.
@@ -295,11 +295,11 @@ class Tree:
             return self
 
         for branch in self.branches:
-            branch.rtrim_branch(removable_branch, depth=depth - 1)
+            branch.vtrim_branch(removable_branch, depth=depth - 1)
 
         return self
 
-    def rtrim_content_rule(self, fn: Callable[[PosixPath, int], bool], depth: int = math.inf) -> Self:
+    def vtrim_content_rule(self, fn: Callable[[PosixPath, int], bool], depth: int = math.inf) -> Self:
         """
         Recursively apply business rule to all contents.
         @param fn: Business function that determines whether the element will be removed or not, with depth provided.
@@ -312,13 +312,13 @@ class Tree:
         for pp in self.contents:
             if fn(pp, depth):
                 # we do not want to descent to children branches while trimming, just this level
-                self.rtrim_file(pp, depth=0)
+                self.vtrim_file(pp, depth=0)
 
         for branch in self.branches:
-            branch.rtrim_content_rule(fn, depth=depth - 1)
+            branch.vtrim_content_rule(fn, depth=depth - 1)
         return self
 
-    def rtrim_branch_rule(self, fn: Callable[[Self, int], bool], depth: int = math.inf) -> Self:
+    def vtrim_branch_rule(self, fn: Callable[[Self, int], bool], depth: int = math.inf) -> Self:
         """
         Apply business rule to branches.
         @param fn: Business function determines whether the element will be removed or not, with depth provided.
@@ -331,13 +331,13 @@ class Tree:
         for branch in self.branches:
             if fn(branch, depth):
                 # we do not want to descent to children branches while trimming, just this level
-                self.rtrim_branch(branch, depth=0)
+                self.vtrim_branch(branch, depth=0)
 
         for branch in self.branches:
-            branch.rtrim_branch_rule(fn, depth=depth - 1)
+            branch.vtrim_branch_rule(fn, depth=depth - 1)
         return self
 
-    def rtrim_ignored(self, depth: int = math.inf) -> Self:
+    def vtrim_ignored(self, depth: int = math.inf) -> Self:
         """
         Recursively trim all the branches & elements,
         from the existing .stowignore files, in each tld (top-level directory).
@@ -349,15 +349,24 @@ class Tree:
         if self.stowignore:
             for ignorable in self.stowignore.ignorables:
                 if isinstance(ignorable, Tree):
-                    self.rtrim_branch(ignorable, depth=depth)
+                    self.vtrim_branch(ignorable, depth=depth)
                     continue
 
-                self.rtrim_file(ignorable, depth=depth)
+                self.vtrim_file(ignorable, depth=depth)
 
         subtree: Tree
         for subtree in self.branches:
-            subtree.rtrim_ignored(depth=depth - 1)
+            subtree.vtrim_ignored(depth=depth - 1)
 
+        return self
+
+    def vmove(self, src: PosixPath | Self, dst: Iterable[PosixPath | Self]) -> Self:
+        """
+        Move a file or tree to a new destination(s) (file or tree), through the virtual tree (self).
+        @param src: Source
+        @param dst: Destination(s)
+        """
+        raise NotImplemented
         return self
 
     # noinspection PyShadowingNames
@@ -418,7 +427,7 @@ class Stowconfig:
 
     COMMENT_PREFIX_TOK = "//"
 
-    REDIRECT_LINE_REGEX = re.compile(r"\"(.+)\"\s+(:::)\s+\"(.+)\"")
+    REDIRECT_LINE_REGEX = re.compile(r"\"?(.+)\"?\s+(:::)\s+\"?(.+)\"?")
     REDIRECT_LINE_REGEX_SOURCE_GROUP = 1
     REDIRECT_LINE_REGEX_TARGET_GROUP = 3
 
@@ -438,27 +447,11 @@ class Stowconfig:
 
         self.__cached = False
 
-    def _parse_entry(self, entry: str) -> PosixPath | Tree:
-        pp = PosixPath(entry).resolve()
-        # return tree if it's a dir
-        if pp.is_dir():
-            return Tree(pp)
-        # return a posixpath for regular files
-        return pp
-
-    def _parse_glob_line(self, tail: str) -> Iterator[PosixPath | Tree]:
-        # the fact that we're forced to use os.path.join, and not PosixPath(tld / p)
-        #  is evil, and speaks to the fact that the development of these two modules (iglob & Path)
-        #  was completely disjointed
-        for p in iglob(os.path.join(self.parent / tail), recursive=True):
-            yield self._parse_entry(p)
-        return
-
     def _handle_ignore_line(self, entry: str) -> None:
-        self.__ignorables.extend(self._parse_glob_line(entry))
+        self.__ignorables.extend(Stowconfig.parse_glob_line(self.parent, entry))
 
     def _handle_hardlink_line(self, entry: str) -> None:
-        self.__hardlinkables.extend(self._parse_glob_line(entry))
+        self.__hardlinkables.extend(Stowconfig.parse_glob_line(self.parent, entry))
 
     def _handle_redirect_line(self, entry: str) -> None:
         fm = Stowconfig.REDIRECT_LINE_REGEX.fullmatch(entry)
@@ -504,19 +497,39 @@ class Stowconfig:
     def ignorables(self) -> Iterable[PosixPath]:
         if not self.__cached:
             self._parse()
-        return self.__ignorables
+        # don't leak reference
+        return copy(self.__ignorables)
 
     @property
     def hardlinkables(self) -> Iterable[PosixPath]:
         if not self.__cached:
             self._parse()
-        return self.__hardlinkables
+        # don't leak reference
+        return copy(self.__hardlinkables)
 
     @property
     def redirectables(self) -> dict[PosixPath, os.PathLike]:
         if not self.__cached:
             self._parse()
-        return self.__redirectables
+        # don't leak reference
+        return copy(self.__redirectables)
+
+    @staticmethod
+    def parse_glob_line(parent, tail: str) -> Iterator[PosixPath | Tree]:
+        def parse_entry(entry: str) -> PosixPath | Tree:
+            pp = PosixPath(entry).resolve()
+            # return tree if it's a dir
+            if pp.is_dir():
+                return Tree(pp)
+            # return a posixpath for regular files
+            return pp
+
+        # the fact that we're forced to use os.path.join, and not PosixPath(tld / p)
+        #  is evil, and speaks to the fact that the development of these two modules (iglob & Path)
+        #  was completely disjointed
+        for p in iglob(os.path.join(parent / tail), recursive=True):
+            yield parse_entry(p)
+        return
 
 
 @final
@@ -625,27 +638,27 @@ class Stower:
         #  the fact is that explicitly --exclude item(s) will most likely be less than the ones in .stowignore
         #  so, we're probably saving time since we don't have to trim .stowignored files that do not apply
         for content in filter(lambda sk: sk.is_file() and sk in self.src_tree, self.skippables):
-            self.src_tree.rtrim_file(content)
+            self.src_tree.vtrim_file(content)
         for branch in filter(lambda sk: sk.is_dir() and sk in self.src_tree, self.skippables):
-            self.src_tree.rtrim_branch(Tree(branch))
+            self.src_tree.vtrim_branch(Tree(branch))
         # third step: trim the tree from top to bottom, for every .stowignore we find, we will apply
         #  the .stowignore rules only to the same-level trees and/or files, hence, provably and efficiently
         #  trimming all useless paths
-        self.src_tree.rtrim_ignored()
+        self.src_tree.vtrim_ignored()
         if not self.overwrite_others:
             # fourth step (optional): apply extra business rules to the tree:
             #  ignore items owned by other users
             # if the euid (effective user id) name is different from the folder's owner name, trim it
-            self.src_tree.rtrim_content_rule(
+            self.src_tree.vtrim_content_rule(
                 lambda pp, _: pp.owner() != euidn
             )
-            self.src_tree.rtrim_branch_rule(
+            self.src_tree.vtrim_branch_rule(
                 lambda br, _: br.absolute.owner() != euidn
             )
 
         # fourth step: apply preliminary business rule to the tree:
         #  trim empty branches to avoid creation of directories whose contents are ignored entirely
-        self.src_tree.rtrim_branch_rule(
+        self.src_tree.vtrim_branch_rule(
             lambda br, _: len(br) == 0
         )
 
@@ -696,7 +709,7 @@ class Stower:
 
 def get_arparser() -> ArgumentParser:
     ap = ArgumentParser(
-        "A spiritual reimplementation, perhaps simpler but more verbose, of GNU Stow."
+        "A spiritual reimplementation, of GNU Stow."
     )
     ap.add_argument(
         "--source", "-s",
@@ -786,7 +799,7 @@ if __name__ == "__main__":
             logger.error("Target must be set for non-dry runs.")
             sys.exit(2)
         if is_dry and not args.target:
-            args.target = f"{PosixPath().home()}"
+            args.target = Tree.REAL_USER_HOME
         src = PosixPath(args.source).resolve(strict=not args.loose)
         dest = PosixPath(args.target).resolve(strict=not args.loose)
         excluded = [

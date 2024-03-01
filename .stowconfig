@@ -20,22 +20,22 @@ games/
 
 [redirect]
 // redirect to home (move up)
-"scripts/.bashrc" ::: ".bashrc"
-"scripts/.nanorc" ::: ".nanorc"
-"scripts/.gitconfig" ::: ".gitconfig"
+scripts/.bashrc ::: .bashrc
+scripts/.nanorc ::: .nanorc
+scripts/.gitconfig ::: .gitconfig
 
 // move up & rename directory
-".config/templates/*" ::: "Templates/"
+.config/templates/* ::: Templates/
 
 // redirect to nested (not created necessarily) directory
-".config/alacritty.toml" ::: ".config/alacritty/alacritty.toml"
-".config/config.fish" ::: ".config/fish/config.fish"
-".config/pipewire.conf" ::: ".config/pipewire/pipewire.conf"
+.config/alacritty.toml ::: .config/alacritty/alacritty.toml
+.config/config.fish ::: .config/fish/config.fish
+.config/pipewire.conf ::: .config/pipewire/pipewire.conf
 
 // create subdirectories on the fly for sublime, don't nest unecessarily
-".config/sublime-text/*" ::: ".config/sublime-text/Packages/User/"
+.config/sublime-text/* ::: .config/sublime-text/Packages/User/
 
 // find already created profile subdirectories on the fly, we can't nest anyways here
-".config/mozilla/*" ::: ".mozilla/firefox/*.default-release/"
+.config/mozilla/* ::: .mozilla/firefox/*.default-release/
 
 // no hardlink section here!
