@@ -419,15 +419,18 @@ class Tree:
         if target.exists(follow_symlinks=False) and not target.is_dir():
             raise PathError(f"Expected valid target, but got {target}, which isn't a directory?!")
 
-        if not target.exists(follow_symlinks=False) and make_parents:
-            dlink(tree, target)
-
         source: PosixPath
         for source in tree.contents:
             destination = PosixPath(target / source.name)
             if not fn(destination):
                 logger.warning(f"Skipping {destination} due to policy")
                 continue
+
+            if not target.exists(follow_symlinks=False):
+                if not make_parents:
+                    logger.error(f"Cannot link src {source} to dst {destination} without making parent dir!")
+                    continue
+                dlink(tree, target)
 
             flink(source, destination)
 
@@ -747,14 +750,15 @@ def get_arparser() -> ArgumentParser:
         "--target", "-t",
         type=str,
         required=False,
-        help="Destination/target directory links will be soft-linked to."
+        default=f"{os.getcwd()}/..",
+        help="Target (destination) directory links will be soft-linked to."
     )
     ap.add_argument(
         "--loose", "-l",
         required=False,
         action="store_false",
         default=True,
-        help="Loose restrictions on source & destination file paths. Will allow symlinks to be resolved."
+        help="Loose restrictions on source & destination file paths. Will allow for excluded symlinks to be resolved."
     )
     ap.add_argument(
         "--force", "-f",
@@ -825,8 +829,8 @@ if __name__ == "__main__":
             sys.exit(2)
         if is_dry and not args.target:
             args.target = Tree.REAL_USER_HOME
-        src = PosixPath(args.source).resolve(strict=not args.loose)
-        dest = PosixPath(args.target).resolve(strict=not args.loose)
+        src = PosixPath(args.source).resolve(strict=True)
+        dest = PosixPath(args.target).resolve(strict=True)
         excluded = [
             PosixPath(str_path).resolve(strict=not args.loose) for str_path in args.exclude
         ]
