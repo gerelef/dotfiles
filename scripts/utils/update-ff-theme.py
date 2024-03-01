@@ -365,6 +365,8 @@ def get_manager(args: argparse.Namespace) -> Manager:
     manager.submit_auditor(auditor)
     manager.submit_installer(installer)
     manager.submit_janitor(janitor)
+    manager.submit_logger(logger)
+    
     return manager
 
 

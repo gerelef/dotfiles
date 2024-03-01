@@ -151,6 +151,18 @@ class HTTPGroup(enum.IntEnum):
             raise KeyError(code)
         return DESCRIPTIONS[code]
 
+    def __str__(self) -> str:
+        if self == HTTPGroup.INFORMATIONAL:
+            return "Informational"
+        if self == HTTPGroup.SUCCESS:
+            return "Successful"
+        if self == HTTPGroup.REDIRECTION:
+            return "Redirection"
+        if self == HTTPGroup.CLIENT_ERROR:
+            return "Client-side error"
+        if self == HTTPGroup.SERVER_ERROR:
+            return "Server-side error"
+
 
 @final
 @auto_str

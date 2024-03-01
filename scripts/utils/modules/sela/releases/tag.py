@@ -4,6 +4,7 @@ from modules.sela.definitions import URL, Filename
 from modules.sela.helpers import auto_str
 from modules.sela.releases.abstract import Release
 
+
 @final
 @auto_str
 class Tag(Release):

@@ -4,7 +4,6 @@ from typing import Self, final
 
 from modules.sela import exceptions
 from modules.sela.definitions import URL
-from modules.sela.exceptions import UnsuccessfulRequest
 from modules.sela.factories.abstract import ProviderFactory
 from modules.sela.factories.github import GitHubProviderFactory
 from modules.sela.helpers import auto_str
@@ -14,7 +13,7 @@ from modules.sela.stages.auditor import Auditor, NullAuditor
 from modules.sela.stages.downloader import Downloader, DefaultDownloader
 from modules.sela.stages.installer import Installer
 from modules.sela.stages.janitor import Janitor, SloppyJanitor
-from modules.sela.stages.logger import Logger, StandardLogger
+from modules.sela.stages.logger import Logger, StandardLogger, NullLogger
 from modules.sela.stages.release_discriminator import ReleaseDiscriminator, FirstReleaseDiscriminator
 
 
@@ -47,6 +46,8 @@ class Manager(ABC):
         self.auditor: Auditor = None
         self.installer: Installer = None
         self.janitor: Janitor = None
+        # this doesn't require a valid
+        self.logger: Logger = NullLogger()
 
         # cached
         self.pfactory: ProviderFactory = None
@@ -68,15 +69,21 @@ class Manager(ABC):
         try:
             status, r = self.provider.get_release(self.released.discriminate)
             if not status.is_successful():
-                raise UnsuccessfulRequest("Couldn't get release from remote!", status)
+                self.logger.err(f"Couldn't get release from remote w/ {status}")
+                raise exceptions.UnsuccessfulRequest("Couldn't get release from remote!", status)
+            self.logger.info(f"Found valid release {r.name_human_readable}!")
 
             downloadables = self.assetd.discriminate(r)
             if not downloadables:
+                self.logger.err("No assets found, or matched! Is everything OK?")
                 raise exceptions.NoAssetsFound("No assets found, or matched! Is everything OK?")
+            self.logger.info(f"Found {len(downloadables)} assets to download!")
 
             downloaded = self.downloader.download(downloadables)
+
             self.auditor.verify(downloaded)
             self.installer.install(downloaded)
+            self.logger.info("Installed downloaded assets!")
         finally:
             self.janitor.cleanup(downloaded)
 
@@ -123,6 +130,13 @@ class Manager(ABC):
         """
         self.janitor = janitor
 
+    def submit_logger(self, logger: Logger):
+        """
+        Submits the logger, responsible for logging internal details.
+        @param logger:
+        """
+        self.logger = logger
+
     @property
     def provider(self) -> Provider:
         if not self.pfactory_cls:
@@ -156,5 +170,6 @@ class Manager(ABC):
         manager.submit_downloader(DefaultDownloader(logger, manager.provider))
         manager.submit_auditor(NullAuditor())
         manager.submit_janitor(SloppyJanitor())
+        manager.submit_logger(logger)
 
         return manager
