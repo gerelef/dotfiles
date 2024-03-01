@@ -1,5 +1,4 @@
 import sys
-from abc import ABC
 from pathlib import Path
 from typing import Self, final
 
@@ -18,9 +17,9 @@ from modules.sela.stages.logger import Logger, StandardLogger, NullLogger
 from modules.sela.stages.release_discriminator import ReleaseDiscriminator, FirstReleaseDiscriminator
 
 
-@auto_str
 @final
-class Manager(ABC):
+@auto_str
+class Manager:
     """
     The main Manager class. This class serves as the sole entry point to the framework. In order to use,
     instantiate with the appropriate stage directors and call .run(). There is a default implementation for every step,
