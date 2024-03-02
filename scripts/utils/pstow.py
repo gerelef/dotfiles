@@ -13,21 +13,12 @@ import sys
 from argparse import ArgumentParser
 from copy import copy
 from glob import iglob
-from itertools import zip_longest
 from pathlib import PosixPath
 from typing import Iterable, final, Self, Optional, Callable, Iterator
 
-
-class PathError(RuntimeError):
-    pass
+type StrPath = str | os.PathLike[str]
 
 
-class AbortError(RuntimeError):
-    pass
-
-
-# class & logger setup ripped straight out of here
-# https://stackoverflow.com/a/56944256
 class CustomFormatter(logging.Formatter):
     grey = "\x1b[38;20m"
     yellow = "\x1b[33;20m"
@@ -50,6 +41,31 @@ class CustomFormatter(logging.Formatter):
         return formatter.format(record)
 
 
+class PathError(RuntimeError):
+    pass
+
+
+# class & logger setup ripped straight out of here
+# https://stackoverflow.com/a/56944256
+class AbortError(RuntimeError):
+    pass
+
+
+class VPath(PosixPath):
+    @classmethod
+    def get_dir_parts(cls, thing: Self | ...) -> tuple[tuple[str, ...], int]:
+        """
+        @return: return the true path towards a thing, removing filenames, and counting fs structure
+        """
+        if isinstance(thing, VPath):
+            parts = thing.resolve().parts if thing.is_dir() else thing.resolve().parts[:-1]
+            return parts, len(parts)
+
+        # "thing" is a tree here by necessity due to prior explicit check
+        thing: Tree
+        return thing.absolute.parts, len(thing.absolute.parts)
+
+
 # AUTHOR'S NOTE:
 # For future refence, a nice refactor would be to move the tree ops outside the class because it's bloated
 #  but currently, I do not want to deal with multiple files for this particular project.
@@ -57,16 +73,16 @@ class CustomFormatter(logging.Formatter):
 # Recursive-trim functions do not affect the filesystem, they just remove them from the tree.
 @final
 class Tree:
-    REAL_USER_HOME = f"{str(PosixPath().home())}"
+    REAL_USER_HOME = f"{str(VPath().home())}"
 
-    def __init__(self, tld: PosixPath):
-        self.__tld: PosixPath = tld.resolve()
-        self.__tree: list[Self | PosixPath] = []
+    def __init__(self, tld: VPath):
+        self.__tld: VPath = tld.resolve()
+        self.__tree: list[Self | VPath] = []
         self.__stowignore: Optional[Stowconfig] = None
 
     def __len__(self) -> int:
         """
-        @return: The recursive length of structures to create, Trees and PosixPaths included.
+        @return: The recursive length of structures to create, Trees and VPaths included.
         """
         length = len(self.tree)
 
@@ -102,7 +118,7 @@ class Tree:
         """
         return not self == other
 
-    def __contains__(self, other: Self | PosixPath) -> bool:
+    def __contains__(self, other: Self | VPath) -> bool:
         """
         Non-recursive check if we contain an element.
         @param other: Element in question.
@@ -110,11 +126,11 @@ class Tree:
         """
         if other is None:
             return False
-        self_parts, self_parts_len = PosixPathUtils.get_fs_parts_len(self.absolute)
+        self_parts, self_parts_len = VPath.get_dir_parts(self.absolute)
         if isinstance(other, Tree):
-            other_parts, other_parts_len = PosixPathUtils.get_fs_parts_len(other.absolute)
+            other_parts, other_parts_len = VPath.get_dir_parts(other.absolute)
         else:
-            other_parts, other_parts_len = PosixPathUtils.get_fs_parts_len(other.resolve())
+            other_parts, other_parts_len = VPath.get_dir_parts(other.resolve())
 
         # if the other parts are less than ours, meaning
         #  my/path/1
@@ -149,8 +165,8 @@ class Tree:
             tail_length = max((indentation - 1), 0)
             return f"{"─" * tail_length}{">" if tail_length else ""}"
 
-        def shorten_home(p: Tree | PosixPath) -> str:
-            ps = p.name if isinstance(p, PosixPath) else repr(p)
+        def shorten_home(p: Tree | VPath) -> str:
+            ps = p.name if isinstance(p, VPath) else repr(p)
             if ps.startswith(Tree.REAL_USER_HOME):
                 return ps.replace(Tree.REAL_USER_HOME, "~", 1)
             return ps
@@ -167,9 +183,9 @@ class Tree:
         return self.__stowignore
 
     @property
-    def absolute(self) -> PosixPath:
+    def absolute(self) -> VPath:
         """
-        @return: Top-level directory, a PosixPath.
+        @return: Top-level directory, a VPath.
         """
         return self.__tld
 
@@ -178,11 +194,11 @@ class Tree:
         return self.__tld.name
 
     @property
-    def tree(self) -> list[Self | PosixPath]:
+    def tree(self) -> list[Self | VPath]:
         return self.__tree
 
     @tree.setter
-    def tree(self, element: Self | PosixPath):
+    def tree(self, element: Self | VPath):
         # subtree handling
         if isinstance(element, Iterable):
             self.__tree.extend(element)
@@ -198,26 +214,11 @@ class Tree:
         return filter(lambda el: isinstance(el, Tree), self.tree)
 
     @property
-    def contents(self) -> Iterable[PosixPath]:
+    def contents(self) -> Iterable[VPath]:
         """
-        Filter all the contents (PosixPaths) from the children, and return the iterator.
+        Filter all the contents (VPaths) from the children, and return the iterator.
         """
-        return filter(lambda el: isinstance(el, PosixPath), self.tree)
-
-    @property
-    def softlinkables(self) -> Iterable[PosixPath]:
-        """
-        Return the left-join union of our contents & stowconfig hardlinkables.
-        """
-        return list(set(self.contents) - set(self.stowignore.hardlinkables))
-
-    @property
-    def hardlinkables(self) -> Iterable[PosixPath]:
-        """
-        Return the union of stowconfig hardlinkables, and our tree's contents.
-        """
-        st_hardlinkables = set(self.stowignore.hardlinkables)
-        return filter(lambda pp: pp in st_hardlinkables, self.contents)
+        return filter(lambda el: isinstance(el, VPath), self.tree)
 
     def traverse(self) -> Self:
         """
@@ -232,7 +233,7 @@ class Tree:
             return self
 
         for fn in file_names:
-            pp = PosixPath(os.path.join(current_path, fn))
+            pp = VPath(os.path.join(current_path, fn))
             if fn == Stowconfig.STOWIGNORE_FN:
                 self.__stowignore = Stowconfig(pp)
 
@@ -243,19 +244,19 @@ class Tree:
 
         return self
 
-    def dfs(self) -> Iterable[PosixPath]:
+    def dfs(self) -> Iterable[VPath]:
         """
         Depth-first search, returns all the contents, bottom to top.
         """
         for branch in self.branches:
             yield branch.dfs()
         for pp in self.contents:
-            yield PosixPath(self.absolute / pp)
+            yield VPath(self.absolute / pp)
         return
 
-    def vtrim_file(self, element: PosixPath, depth: int = math.inf) -> Self:
+    def vtrim_file(self, element: VPath, depth: int = math.inf) -> Self:
         """
-        Recursively trim the PosixPath element from the contents.
+        Recursively trim the VPath element from the contents.
         Falls back to children if it doesn't exist.
         @param element: Element to be removed
         @param depth: Determines the maximum allowed depth to search.
@@ -264,16 +265,15 @@ class Tree:
         if depth < 0:
             return self
         if element is None:
-            raise RuntimeError(f"Expected PosixPath, got None?!")
-        if not isinstance(element, PosixPath):
-            raise RuntimeError(f"Expected PosixPath, got {type(element)}")
+            raise RuntimeError(f"Expected VPath, got None?!")
+        if not isinstance(element, VPath):
+            raise RuntimeError(f"Expected VPath, got {type(element)}")
         # early exit if we do not contain the element
         if element not in self:
             return self
 
         contents = self.contents
-        removable_contents: Iterable[PosixPath] = filter(lambda pp: PosixPathUtils.posixpath_equals(element, pp),
-                                                         contents)
+        removable_contents: Iterable[VPath] = filter(lambda pp: pp == element, contents)
         for rcont in removable_contents:
             # edge case for stowignore files:
             if rcont.name == Stowconfig.STOWIGNORE_FN:
@@ -282,7 +282,7 @@ class Tree:
             self.tree.remove(rcont)
 
         # early exit
-        if removable_contents:
+        if list(removable_contents):
             return self
 
         # if we didn't get any matches, the file wasn't ours to trim, check children
@@ -312,13 +312,13 @@ class Tree:
         if removable_branch not in self:
             return self
 
-        branches = self.branches
+        branches = self.branchesg
         subtrees = list(filter(lambda el: el == removable_branch, branches))
         for subtree in subtrees:
             self.tree.remove(subtree)
 
         # early exit
-        if subtrees:
+        if list(subtrees):
             return self
 
         for branch in self.branches:
@@ -326,7 +326,7 @@ class Tree:
 
         return self
 
-    def vtrim_content_rule(self, fn: Callable[[PosixPath, int], bool], depth: int = math.inf) -> Self:
+    def vtrim_file_rule(self, fn: Callable[[VPath, int], bool], depth: int = math.inf) -> Self:
         """
         Recursively apply business rule to all contents.
         @param fn: Business function that determines whether the element will be removed or not, with depth provided.
@@ -342,7 +342,7 @@ class Tree:
                 self.vtrim_file(pp, depth=0)
 
         for branch in self.branches:
-            branch.vtrim_content_rule(fn, depth=depth - 1)
+            branch.vtrim_file_rule(fn, depth=depth - 1)
         return self
 
     def vtrim_branch_rule(self, fn: Callable[[Self, int], bool], depth: int = math.inf) -> Self:
@@ -387,34 +387,58 @@ class Tree:
 
         return self
 
-    def vmove_redirectables(self, depth: int = math.inf) -> Self:
+    def vmove_redirected(self, target: VPath, depth: int = math.inf) -> Self:
         """
         Move all redirectable virtual branches & elements, to their actual target.
         """
+        if depth < 0:
+            return self
 
-        def vmove(src: PosixPath | Self, dst: Iterable[Self]) -> Self:
-            """
-            Move a file or tree to a new destination(s) (file or tree), through the virtual tree (self).
-            @param src: Source
-            @param dst: Destination(s)
-            """
-            if not isinstance(src, PosixPath) and not isinstance(src, Tree):
-                raise TypeError(f"Invalid type for src {type(src)}?!")
-            if not isinstance(src, Iterable):
-                raise TypeError(f"Invalid type for dst {type(dst)}?!")
-            if not dst:
-                raise RuntimeError(f"Cannot vmove {src} to non-existent dst {dst}!")
+        raise NotImplemented
+        # if self.stowignore:
+        #     for redirectable in self.stowignore.redirectables:
+        #         if isinstance(redirectable.src, VPath):
+        #             self.vtrim_file(redirectable.src, depth=depth)
+        #         print(redirectable)
+        #         self.vtouch(redirectable.src, redirectable.resolve(target))
+        #
+        # subtree: Tree
+        # for subtree in self.branches:
+        #     subtree.vmove_redirected(VPath(target / subtree.name), depth=depth - 1)
+        #
+        # return self
 
-            return self  # TODO implement!
-
-        subtree: Tree
-        for subtree in self.branches:
-            subtree.vmove_redirectables(depth=depth - 1)
-
-        return self  # TODO implement!
+    def vtouch(self, src: VPath, dst: Iterable[Self | VPath]) -> Self:
+        """
+        Create a new virtual file or tree (src) to new destination(s).
+        This changes the semantics of the virtual tree, and as such affects the ignore methods.
+        @param src: Source
+        @param dst: Destination Tree(s)
+        """
+        raise NotImplemented
+        # print(
+        #     f"src={src}\n"
+        #     f"dst={dst}\n"
+        # )
+        #
+        # if not isinstance(src, VPath):
+        #     raise TypeError(f"Invalid type for src {type(src)}?!")
+        # if not isinstance(dst, Iterable):
+        #     raise TypeError(f"Invalid type for dst {type(dst)}?!")
+        # if not src:
+        #     raise RuntimeError(f"Cannot vmove non-existent {src} to dst {dst}!")
+        # if not dst:
+        #     raise RuntimeError(f"Cannot vmove {src} to non-existent dst {dst}!")
+        #
+        #
+        # for destination in dst:
+        #
+        #     raise NotImplemented
+        #
+        # return self  # TODO implement!
 
     @classmethod
-    def rsymlink(cls, tree: Self, target: PosixPath, fn: Callable[[PosixPath], bool], make_parents=True) -> None:
+    def rsymlink(cls, tree: Self, target: VPath, fn: Callable[[VPath], bool], make_parents=True) -> None:
         """
         Recursively symlink a tree to destination.
         Inclusive, meaning the top-level directory name of Tree will be considered the same as destination,
@@ -423,13 +447,13 @@ class Tree:
         If the directory doesn't exist, it'll be created.
         @param tree: Tree, whose contents we'll be moving.
         @param target: Top-level directory we'll be copying everything to.
-        @param fn: Business rule the destination PosixPath will have to fulfill.
+        @param fn: Business rule the destination VPath will have to fulfill.
         Should return true for items we *want* to create.
-        Sole argument is the destination (target) PosixPath.
+        Sole argument is the destination (target) VPath.
         @param make_parents: equivalent --make-parents in mkdir -p
         """
 
-        def prerequisites(dst: PosixPath) -> bool:
+        def prerequisites(dst: VPath) -> bool:
             """
             @return: True if OK to continue
             """
@@ -445,7 +469,7 @@ class Tree:
 
             return True
 
-        def dlink(srct: Tree, dst: PosixPath):
+        def dlink(srct: Tree, dst: VPath):
             # if this is not a virtual tree
             if srct.absolute.exists():
                 logger.info(f"Creating destination which doesn't exist {dst}")
@@ -455,12 +479,13 @@ class Tree:
             logger.info(f"Creating virtual destination which doesn't exist {dst}")
             dst.mkdir(0o755, parents=True, exist_ok=True)
 
-        def slink(src: PosixPath, dst: PosixPath):
+        def slink(src: VPath, dst: VPath):
             logger.info(f"Symlinking src {source} to {destination}")
             dst.unlink(missing_ok=True)
             dst.symlink_to(target=src, target_is_directory=False)
 
-        def hlink(src: PosixPath, dst: PosixPath):
+        # noinspection PyUnusedLocal
+        def hlink(src: VPath, dst: VPath):
             logger.info(f"Symlinking src {source} to {destination}")
             dst.unlink(missing_ok=True)
             dst.hardlink_to(target=src)
@@ -470,9 +495,9 @@ class Tree:
         if target.exists(follow_symlinks=False) and not target.is_dir():
             raise PathError(f"Expected valid target, but got {target}, which isn't a directory?!")
 
-        source: PosixPath
-        for source in tree.softlinkables:
-            destination = PosixPath(target / source.name)
+        source: VPath
+        for source in tree.contents:
+            destination = VPath(target / source.name)
             try:
                 if not prerequisites(destination):
                     continue
@@ -482,22 +507,31 @@ class Tree:
                 logger.error(f"Got unexpected error {e} when softlinking {destination}?! Skipping...")
                 continue
 
-        source: PosixPath
-        for source in tree.hardlinkables:
-            destination = PosixPath(target / source.name)
-            try:
-                if not prerequisites(destination):
-                    continue
-
-                hlink(source, destination)
-            except Exception as e:
-                logger.error(f"Got unexpected error {e} when hardlinking {destination}?! Skipping...")
-                continue
-
         branch: Tree
         for branch in tree.branches:
-            destination_dir = PosixPath(target / branch.name)
+            destination_dir = VPath(target / branch.name)
             branch.rsymlink(tree=branch, target=destination_dir, fn=fn)
+
+
+class RedirectEntry:
+    def __init__(self, src: VPath, redirect: StrPath):
+        self.__src = src
+        self.__redirect = redirect
+
+    @property
+    def src(self) -> VPath:
+        return self.__src
+
+    @property
+    def redirect(self) -> StrPath:
+        return self.__redirect
+
+    def resolve(self, target) -> tuple[VPath]:
+        # return tuple(filter(lambda c: isinstance(c, VPath), Stowconfig.parse_glob_line(target, self.redirect)))
+        raise NotImplemented
+
+    def __str__(self) -> str:
+        return f"RedirectEntry(src='{self.src}'), redirect={self.redirect}"
 
 
 class Stowconfig:
@@ -512,20 +546,16 @@ class Stowconfig:
     REDIRECT_LINE_REGEX_SOURCE_GROUP = 1
     REDIRECT_LINE_REGEX_TARGET_GROUP = 3
 
-    def __init__(self, fstowignore: PosixPath):
+    def __init__(self, fstowignore: VPath):
         """
-        @param fstowignore: stowignore PosixPath
+        @param fstowignore: stowignore VPath
         """
         self.fstowignore = fstowignore
         self.parent = fstowignore.parent
 
-        # noinspection PyTypeChecker
-        self.__ignorables: list[PosixPath] = []
-        # noinspection PyTypeChecker
-        self.__hardlinkables: list[PosixPath] = []
-        self.__hardlinkables_sanitized = False
-        # noinspection PyTypeChecker
-        self.__redirectables: dict[PosixPath, os.PathLike] = {}
+        self.__ignorables: list[VPath] = []
+        self.__hardlinkables: list[VPath] = []
+        self.__redirectables: list[RedirectEntry] = []
         self.__redirectables_sanitized = False
 
         self.__cached = False
@@ -539,12 +569,12 @@ class Stowconfig:
     def _handle_redirect_lines(self, entry: str) -> None:
         fm = Stowconfig.REDIRECT_LINE_REGEX.fullmatch(entry)
         if not fm:
-            logger.warning(f"Skipping invalid redirect entry\n{entry}")
+            logger.warning(f"Skipping invalid redirect \n{entry}")
             return None
         # both are globbable: a group of elements can be matched to a group of targets (N:M relationship)
-        # fm.group(Stowconfig.REDIRECT_LINE_REGEX_SOURCE_GROUP)
-        # fm.group(Stowconfig.REDIRECT_LINE_REGEX_TARGET_GROUP)
-        raise NotImplementedError  # TODO implement!
+        s_src = fm.group(Stowconfig.REDIRECT_LINE_REGEX_SOURCE_GROUP)
+        s_dst = fm.group(Stowconfig.REDIRECT_LINE_REGEX_TARGET_GROUP)
+        raise NotImplemented
 
     def _is_comment(self, line: str) -> bool:
         return line.startswith(Stowconfig.COMMENT_PREFIX_TOK)
@@ -561,7 +591,6 @@ class Stowconfig:
                 trimmed_line = line.strip()
                 # skip empty lines, and comments (which are line separated)
                 if not trimmed_line or self._is_comment(trimmed_line):
-                    logger.debug(f"Skipping empty or comment line {trimmed_line}")
                     continue
                 match trimmed_line:
                     case Stowconfig.IGNORE_SECTION_HEADER_TOK:
@@ -577,43 +606,42 @@ class Stowconfig:
                 strategy(trimmed_line)
 
     @property
-    def ignorables(self) -> Iterable[PosixPath]:
+    def ignorables(self) -> Iterable[VPath]:
         if not self.__cached:
             self._parse()
         # don't leak reference
         return copy(self.__ignorables)
 
     @property
-    def hardlinkables(self) -> Iterable[PosixPath]:
+    def hardlinkables(self) -> Iterable[VPath]:
         if not self.__cached:
             self._parse()
-        if not self.__hardlinkables_sanitized:
-            self.__hardlinkables_sanitized = True
-            # FIXME remove entries that are in self.ignorables
-        # don't leak reference
-        return copy(self.__hardlinkables)
+        logger.warning("Hardlink section is currently not supported, and it'll do nothing.")
+        return set(self.__hardlinkables) - set(self.__ignorables)
 
     @property
-    def redirectables(self) -> dict[PosixPath, os.PathLike]:
+    def redirectables(self) -> Iterable[RedirectEntry]:
+        """
+        Returns an Iterator of VPath (src) to set of targets (Tree) (1:N)
+        """
         if not self.__cached:
             self._parse()
         if not self.__redirectables_sanitized:
             self.__redirectables_sanitized = True
-            # FIXME remove entries that are in self.ignorables
-        # don't leak reference
+            self.__redirectables = list(filter(lambda t: t.src not in self.ignorables, self.__redirectables))
         return copy(self.__redirectables)
 
     @staticmethod
-    def parse_glob_line(parent, tail: str) -> Iterator[PosixPath | Tree]:
-        def parse_entry(entry: str) -> PosixPath | Tree:
-            pp = PosixPath(entry).resolve()
+    def parse_glob_line(parent: VPath, tail: StrPath) -> Iterator[VPath | Tree]:
+        def parse_entry(entry: str) -> VPath | Tree:
+            pp = VPath(entry).expanduser().absolute()
             # return tree if it's a dir
             if pp.is_dir():
                 return Tree(pp)
-            # return a posixpath for regular files
+            # return a VPath for regular files
             return pp
 
-        # the fact that we're forced to use os.path.join, and not PosixPath(tld / p)
+        # the fact that we're forced to use os.path.join, and not VPath(tld / p)
         #  is evil, and speaks to the fact that the development of these two modules (iglob & Path)
         #  was completely disjointed
         for p in iglob(os.path.join(parent / tail), recursive=True):
@@ -622,51 +650,12 @@ class Stowconfig:
 
 
 @final
-class PosixPathUtils:
-    def __init__(self):
-        raise RuntimeError("Cannot instantiate static class!")
-
-    @staticmethod
-    def posixpath_equals(el1: PosixPath, el2: PosixPath) -> bool:
-        # if their "type" (file or dir) is different rather than the same, definitely doesn't equal
-        #  .is_file() is used for convenience, it could be is_dir() for both instead
-        if not (el1.is_file() == el2.is_file()):
-            return False
-
-        # if not on the same depth, doesn't equal
-        if len(el1.parts) != len(el2.parts):
-            return False
-
-        # reverse components, since the tail is the one most likely to be different
-        # zip_longest is used since if, for any reason, the path is not the same, on any level,
-        # they're not equal
-        for el1_components, el2_components in zip_longest(el1.parts[::-1], el2.parts[::-1]):
-            if el1_components != el2_components:
-                return False
-
-        return True
-
-    @staticmethod
-    def get_fs_parts_len(thing: Tree | PosixPath) -> tuple[tuple[str, ...], int]:
-        """
-        @return: return the true path towards a thing, removing filenames, and counting fs structure
-        """
-        if isinstance(thing, PosixPath):
-            parts = thing.resolve().parts if thing.is_dir() else thing.resolve().parts[:-1]
-            return parts, len(parts)
-
-        # "thing" is a tree here by necessity due to prior explicit check
-        thing: Tree
-        return thing.absolute.parts, len(thing.absolute.parts)
-
-
-@final
 class Stower:
     # noinspection PyShadowingNames
     def __init__(self,
-                 source: PosixPath,
-                 destination: PosixPath,
-                 skippables: list[PosixPath] = None,
+                 source: VPath,
+                 destination: VPath,
+                 skippables: list[VPath] = None,
                  force=False,
                  overwrite_others=False,
                  make_parents=False):
@@ -712,7 +701,7 @@ class Stower:
         @raise PathError: if src and dest are the same.
         @raise AbortError: if the aborts recursive symlink operation is aborted.
         """
-        if PosixPathUtils.posixpath_equals(self.src, self.dest):
+        if self.src == self.dest:
             raise PathError("Source cannot be the same as destination!")
 
         # effective user id name, to be compared to .owner()
@@ -723,7 +712,14 @@ class Stower:
         # early exit for empty trees
         if not len(self.src_tree):
             logger.warning(f"Source tree is empty?")
-        # second step: apply preliminary business rule to the tree:
+        # second step: virtual move all redirectables first
+        #  this step is done here, so we don't get any invalid entries when ignoring things that
+        #  were previously considered redirectables
+        #  the fact of the matter is, we'd have to remove ignored files *again* if this were to happen as a seconds step
+        #  this is a concern regarding the internals, and is obviously not the best, however, even if the capability
+        #  is eventually added, it's still sane to do this first
+        self.src_tree.vmove_redirected(self.dest)
+        # third step: apply preliminary business rule to the tree:
         #  trim explicitly excluded items
         # the reason we're doing the explicitly excluded items first, is simple
         #  the fact is that explicitly --exclude item(s) will most likely be less than the ones in .stowignore
@@ -732,13 +728,6 @@ class Stower:
             self.src_tree.vtrim_file(content)
         for branch in filter(lambda sk: sk.is_dir() and sk in self.src_tree, self.skippables):
             self.src_tree.vtrim_branch(Tree(branch))
-        # third step: virtual move all redirectables first
-        #  this step is done here, so we don't get any invalid entries when ignoring things that
-        #  were previously considered redirectables
-        #  the fact of the matter is, we'd have to remove ignored files *again* if this were to happen as a seconds step
-        #  this is a concern regarding the internals, and is obviously not the best, however, even if the capability
-        #  is eventually added, it's still sane to do this first
-        self.src_tree.vmove_redirectables()
         # fourth step: trim the tree from top to bottom, for every .stowignore we find, we will apply
         #  the .stowignore rules only to the same-level trees and/or files, hence, provably and efficiently
         #  trimming all useless paths
@@ -747,7 +736,7 @@ class Stower:
             # fifth step (optional): apply extra business rules to the tree:
             #  ignore items owned by other users
             # if the euid (effective user id) name is different from the folder's owner name, trim it
-            self.src_tree.vtrim_content_rule(
+            self.src_tree.vtrim_file_rule(
                 lambda pp, _: pp.owner() != euidn
             )
             self.src_tree.vtrim_branch_rule(
@@ -790,8 +779,8 @@ class Stower:
         if self.overwrite_others:
             others_rule = lambda dpp: True
         # overwrite if not in the original tree rule
-        #  here, we're comparing the absolute posixpath of the original tree,
-        #  with the target (destination) posixpath
+        #  here, we're comparing the absolute VPath of the original tree,
+        #  with the target (destination) VPath
         #  if they're the same, we do NOT want to overwrite the tree
         keep_original_rule = lambda dpp: dpp not in self.src_tree
         # If we'd overwrite the src tree by copying a specific link to dest, abort due to fatal conflict.
@@ -912,9 +901,9 @@ if __name__ == "__main__":
             logger.error("Target must be set for non-dry runs.")
             sys.exit(2)
 
-        src = PosixPath(args.source).resolve(strict=True)  # source MUST exist & be valid!
-        dest = PosixPath(args.target if not is_dry else Tree.REAL_USER_HOME).resolve(strict=not args.loose)
-        excluded = [PosixPath(str_path).resolve(strict=not args.loose) for str_path in args.exclude]
+        src = VPath(args.source).resolve(strict=True)  # source MUST exist & be valid!
+        dest = VPath(args.target if not is_dry else Tree.REAL_USER_HOME).resolve(strict=not args.loose)
+        excluded = [VPath(str_path).resolve(strict=not args.loose) for str_path in args.exclude]
 
         Stower(
             src, dest,
