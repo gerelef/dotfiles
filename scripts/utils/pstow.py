@@ -22,6 +22,10 @@ class PathError(RuntimeError):
     pass
 
 
+class AbortError(RuntimeError):
+    pass
+
+
 # class & logger setup ripped straight out of here
 # https://stackoverflow.com/a/56944256
 class CustomFormatter(logging.Formatter):
@@ -137,6 +141,7 @@ class Tree:
         @param indentation: indentation level.
         @return: Tree representation of the current tree.
         """
+
         def indent(indentation: int):
             tail_length = max((indentation - 1), 0)
             return f"{"─" * tail_length}{">" if tail_length else ""}"
@@ -369,7 +374,6 @@ class Tree:
         Recursively move all redirectable branches & elements,
         from the existing .stowignore files, in each tld (top-level directory).
         """
-
         subtree: Tree
         for subtree in self.branches:
             subtree.vmove_redirectables(depth=depth - 1)
@@ -399,6 +403,7 @@ class Tree:
         Sole argument is the destination (target) PosixPath.
         @param make_parents: equivalent --make-parents in mkdir -p
         """
+
         def dlink(srct: Tree, dst: PosixPath):
             # if this is not a virtual tree
             if srct.absolute.exists():
@@ -463,8 +468,10 @@ class Stowconfig:
         self.__ignorables: list[PosixPath] = []
         # noinspection PyTypeChecker
         self.__hardlinkables: list[PosixPath] = []
+        self.__hardlinkables_sanitized = False
         # noinspection PyTypeChecker
         self.__redirectables: dict[PosixPath, os.PathLike] = {}
+        self.__redirectables_sanitized = False
 
         self.__cached = False
 
@@ -525,6 +532,8 @@ class Stowconfig:
     def hardlinkables(self) -> Iterable[PosixPath]:
         if not self.__cached:
             self._parse()
+        if not self.__hardlinkables_sanitized:
+            self.__hardlinkables_sanitized = True
             # FIXME remove entries that are in self.ignorables
         # don't leak reference
         return copy(self.__hardlinkables)
@@ -533,6 +542,8 @@ class Stowconfig:
     def redirectables(self) -> dict[PosixPath, os.PathLike]:
         if not self.__cached:
             self._parse()
+        if not self.__redirectables_sanitized:
+            self.__redirectables_sanitized = True
             # FIXME remove entries that are in self.ignorables
         # don't leak reference
         return copy(self.__redirectables)
@@ -696,43 +707,42 @@ class Stower:
         logger.info(f"{self.src_tree.repr()}")
         approved = self._prompt() if not dry_run else False
         if not approved:
-            logger.warning("Aborting.")
+            raise AbortError("User aborted the symlink.")
 
         # since all of these rules are explicit business rules, and could be substituted for whatever in the future
         #  this is a pretty elegant solution. I've already refactored (one) case, and it's proved its value
-        if approved:
-            logger.info("Linking...")
-            # overwrite just symlinks that already exist rule
-            exists_rule = lambda dpp: dpp.is_symlink() if dpp.exists(follow_symlinks=True) else True
-            if self.force:
-                # overwrite everything rule
-                exists_rule = lambda dpp: True
-            # overwite only our own links rule
-            #  .exists() is here for sanity reasons, because it's not a given that
-            #  the file does actually exist, and due to lazy eval, this will work even if it isn't there
-            others_rule = lambda dpp: dpp.owner() == euidn if dpp.exists(follow_symlinks=True) else True
-            if self.overwrite_others:
-                others_rule = lambda dpp: True
-            # overwrite if not in the original tree rule
-            #  here, we're comparing the absolute posixpath of the original tree,
-            #  with the target (destination) posixpath
-            #  if they're the same, we do NOT want to overwrite the tree
-            keep_original_rule = lambda dpp: dpp not in self.src_tree
-            # If we'd overwrite the src tree by copying a specific link to dest, abort due to fatal conflict.
-            #  For example, consider the following src structure:
-            #  dotfiles
-            #    > dotfiles
-            #  gets stowed to destination /.../dotfiles/.
-            #  the inner dotfiles/dotfiles symlink to dotfiles/.
-            #  would overwrite the original tree, resulting in a catastrophic failure where everything is borked.
-            Tree.rsymlink(
-                self.src_tree,
-                self.dest,
-                make_parents=self.make_parents,
-                fn=lambda dpp: exists_rule(dpp) and
-                               others_rule(dpp) and
-                               keep_original_rule(dpp),
-            )
+        logger.info("Linking...")
+        # overwrite just symlinks that already exist rule
+        exists_rule = lambda dpp: dpp.is_symlink() if dpp.exists(follow_symlinks=True) else True
+        if self.force:
+            # overwrite everything rule
+            exists_rule = lambda dpp: True
+        # overwite only our own links rule
+        #  .exists() is here for sanity reasons, because it's not a given that
+        #  the file does actually exist, and due to lazy eval, this will work even if it isn't there
+        others_rule = lambda dpp: dpp.owner() == euidn if dpp.exists(follow_symlinks=True) else True
+        if self.overwrite_others:
+            others_rule = lambda dpp: True
+        # overwrite if not in the original tree rule
+        #  here, we're comparing the absolute posixpath of the original tree,
+        #  with the target (destination) posixpath
+        #  if they're the same, we do NOT want to overwrite the tree
+        keep_original_rule = lambda dpp: dpp not in self.src_tree
+        # If we'd overwrite the src tree by copying a specific link to dest, abort due to fatal conflict.
+        #  For example, consider the following src structure:
+        #  dotfiles
+        #    > dotfiles
+        #  gets stowed to destination /.../dotfiles/.
+        #  the inner dotfiles/dotfiles symlink to dotfiles/.
+        #  would overwrite the original tree, resulting in a catastrophic failure where everything is borked.
+        Tree.rsymlink(
+            self.src_tree,
+            self.dest,
+            make_parents=self.make_parents,
+            fn=lambda dpp: exists_rule(dpp) and
+                           others_rule(dpp) and
+                           keep_original_rule(dpp),
+        )
 
 
 def get_arparser() -> ArgumentParser:
@@ -839,6 +849,8 @@ if __name__ == "__main__":
             overwrite_others=args.overwrite_others,
             make_parents=not args.no_parents,
         ).stow(dry_run=args.command == "status")
+    except AbortError:
+        logger.warning("Aborting.")
     except FileNotFoundError as e:
         logger.error(f"Couldn't find file!\n{e}")
     except PathError as e:
