@@ -65,6 +65,9 @@ class Tree:
         self.__stowignore: Optional[Stowconfig] = None
 
     def __len__(self) -> int:
+        """
+        @return: The recursive length of structures to create, Trees and PosixPaths included.
+        """
         length = len(self.tree)
 
         for branch in self.branches:
@@ -102,8 +105,8 @@ class Tree:
     def __contains__(self, other: Self | PosixPath) -> bool:
         """
         Non-recursive check if we contain an element.
-        @param other:
-        @return:
+        @param other: Element in question.
+        @return: True if element is contained in this Tree, or deeper.
         """
         if other is None:
             return False
@@ -200,6 +203,21 @@ class Tree:
         Filter all the contents (PosixPaths) from the children, and return the iterator.
         """
         return filter(lambda el: isinstance(el, PosixPath), self.tree)
+
+    @property
+    def softlinkables(self) -> Iterable[PosixPath]:
+        """
+        Return the left-join union of our contents & stowconfig hardlinkables.
+        """
+        return list(set(self.contents) - set(self.stowignore.hardlinkables))
+
+    @property
+    def hardlinkables(self) -> Iterable[PosixPath]:
+        """
+        Return the union of stowconfig hardlinkables, and our tree's contents.
+        """
+        st_hardlinkables = set(self.stowignore.hardlinkables)
+        return filter(lambda pp: pp in st_hardlinkables, self.contents)
 
     def traverse(self) -> Self:
         """
@@ -371,21 +389,28 @@ class Tree:
 
     def vmove_redirectables(self, depth: int = math.inf) -> Self:
         """
-        Recursively move all redirectable branches & elements,
-        from the existing .stowignore files, in each tld (top-level directory).
+        Move all redirectable virtual branches & elements, to their actual target.
         """
+
+        def vmove(src: PosixPath | Self, dst: Iterable[Self]) -> Self:
+            """
+            Move a file or tree to a new destination(s) (file or tree), through the virtual tree (self).
+            @param src: Source
+            @param dst: Destination(s)
+            """
+            if not isinstance(src, PosixPath) and not isinstance(src, Tree):
+                raise TypeError(f"Invalid type for src {type(src)}?!")
+            if not isinstance(src, Iterable):
+                raise TypeError(f"Invalid type for dst {type(dst)}?!")
+            if not dst:
+                raise RuntimeError(f"Cannot vmove {src} to non-existent dst {dst}!")
+
+            return self  # TODO implement!
+
         subtree: Tree
         for subtree in self.branches:
             subtree.vmove_redirectables(depth=depth - 1)
 
-        return self  # TODO implement!
-
-    def vmove(self, src: PosixPath | Self, dst: Iterable[PosixPath | Self]) -> Self:
-        """
-        Move a file or tree to a new destination(s) (file or tree), through the virtual tree (self).
-        @param src: Source
-        @param dst: Destination(s)
-        """
         return self  # TODO implement!
 
     @classmethod
@@ -404,6 +429,22 @@ class Tree:
         @param make_parents: equivalent --make-parents in mkdir -p
         """
 
+        def prerequisites(dst: PosixPath) -> bool:
+            """
+            @return: True if OK to continue
+            """
+            if not fn(dst):
+                logger.warning(f"Skipping {dst} due to policy...")
+                return False
+
+            if not target.exists(follow_symlinks=False):
+                if not make_parents:
+                    logger.error(f"Cannot softlink src {source} to dst {dst} without making parent dir {target}!")
+                    return False
+                dlink(tree, target)
+
+            return True
+
         def dlink(srct: Tree, dst: PosixPath):
             # if this is not a virtual tree
             if srct.absolute.exists():
@@ -414,10 +455,15 @@ class Tree:
             logger.info(f"Creating virtual destination which doesn't exist {dst}")
             dst.mkdir(0o755, parents=True, exist_ok=True)
 
-        def flink(src: PosixPath, dst: PosixPath):
+        def slink(src: PosixPath, dst: PosixPath):
             logger.info(f"Symlinking src {source} to {destination}")
             dst.unlink(missing_ok=True)
             dst.symlink_to(target=src, target_is_directory=False)
+
+        def hlink(src: PosixPath, dst: PosixPath):
+            logger.info(f"Symlinking src {source} to {destination}")
+            dst.unlink(missing_ok=True)
+            dst.hardlink_to(target=src)
 
         if not target.exists(follow_symlinks=False) and not make_parents:
             raise PathError(f"Expected valid target, but got {target}, which doesn't exist?!")
@@ -425,19 +471,28 @@ class Tree:
             raise PathError(f"Expected valid target, but got {target}, which isn't a directory?!")
 
         source: PosixPath
-        for source in tree.contents:
+        for source in tree.softlinkables:
             destination = PosixPath(target / source.name)
-            if not fn(destination):
-                logger.warning(f"Skipping {destination} due to policy")
+            try:
+                if not prerequisites(destination):
+                    continue
+
+                slink(source, destination)
+            except Exception as e:
+                logger.error(f"Got unexpected error {e} when softlinking {destination}?! Skipping...")
                 continue
 
-            if not target.exists(follow_symlinks=False):
-                if not make_parents:
-                    logger.error(f"Cannot link src {source} to dst {destination} without making parent dir!")
+        source: PosixPath
+        for source in tree.hardlinkables:
+            destination = PosixPath(target / source.name)
+            try:
+                if not prerequisites(destination):
                     continue
-                dlink(tree, target)
 
-            flink(source, destination)
+                hlink(source, destination)
+            except Exception as e:
+                logger.error(f"Got unexpected error {e} when hardlinking {destination}?! Skipping...")
+                continue
 
         branch: Tree
         for branch in tree.branches:
@@ -650,10 +705,12 @@ class Stower:
                 continue
             return reply == "y"
 
-    def stow(self, dry_run: bool = False):
+    def stow(self, interactive: bool = True, dry_run: bool = False):
         """
-        @param dry_run: True stow will actually affect the filesystem, False if it'll simply output what it'd do instead
-        @raise PathError: if src and dest are the same
+        @param interactive: if True stow will not ask permission for things that affect the filesystem.
+        @param dry_run: if True stow will actually affect the destination filesystem.
+        @raise PathError: if src and dest are the same.
+        @raise AbortError: if the aborts recursive symlink operation is aborted.
         """
         if PosixPathUtils.posixpath_equals(self.src, self.dest):
             raise PathError("Source cannot be the same as destination!")
@@ -703,12 +760,21 @@ class Stower:
             lambda br, _: len(br) == 0
         )
 
-        # seventh step: symlink the populated tree
-        logger.info(f"{self.src_tree.repr()}")
-        approved = self._prompt() if not dry_run else False
+        if dry_run:
+            logger.info(f"{self.src_tree.repr()}")
+        # optional seventh step: ask for user permission if interactive
+        # if the current run is interactive, must be false
+        # if the current run is interactive, and is a dry run, must be false
+        # if the current run isn't interactive, and is a dry run, must be false
+        # if the current run isn't interactive, and isn't a dry run, must be true
+        approved = not interactive and not dry_run
+        if not dry_run and interactive:
+            logger.info(f"{self.src_tree.repr()}")
+            approved = self._prompt()
         if not approved:
-            raise AbortError("User aborted the symlink.")
+            raise AbortError("Aborted the rsymlink due to policy.")
 
+        # eighth step: symlink the populated tree
         # since all of these rules are explicit business rules, and could be substituted for whatever in the future
         #  this is a pretty elegant solution. I've already refactored (one) case, and it's proved its value
         logger.info("Linking...")
@@ -776,6 +842,14 @@ def get_arparser() -> ArgumentParser:
         action="store_true",
         default=False,
         help="Force overwrite of any conflicting file. This WILL overwrite regular files!"
+    )
+    ap.add_argument(
+        "--non-interactive", "-n",
+        required=False,
+        action="store_true",
+        default=False,
+        help="Don't ask for user permission before committing any destructive actions. "
+             "This is a dangerous flag!"
     )
     ap.add_argument(
         "--overwrite-others", "-o",
@@ -848,7 +922,10 @@ if __name__ == "__main__":
             force=args.force,
             overwrite_others=args.overwrite_others,
             make_parents=not args.no_parents,
-        ).stow(dry_run=args.command == "status")
+        ).stow(
+            interactive=not args.non_interactive,
+            dry_run=args.command == "status"
+        )
     except AbortError:
         logger.warning("Aborting.")
     except FileNotFoundError as e:
