@@ -433,8 +433,6 @@ class Tree:
         #
         # for destination in dst:
         #
-        #     raise NotImplemented
-        #
         # return self  # TODO implement!
 
     @classmethod
@@ -889,11 +887,7 @@ def get_logger() -> logging.Logger:
     return logger
 
 
-if __name__ == "__main__":
-    # set for reaaaaally deep trees
-    sys.setrecursionlimit(10_000_000)
-
-    logger = get_logger()
+def main():
     args = get_arparser().parse_args()
     try:
         is_dry = args.command == "status"
@@ -901,12 +895,12 @@ if __name__ == "__main__":
             logger.error("Target must be set for non-dry runs.")
             sys.exit(2)
 
-        src = VPath(args.source).resolve(strict=True)  # source MUST exist & be valid!
-        dest = VPath(args.target if not is_dry else Tree.REAL_USER_HOME).resolve(strict=not args.loose)
+        source = VPath(args.source).resolve(strict=True)  # source MUST exist & be valid!
+        destination = VPath(args.target if not is_dry else Tree.REAL_USER_HOME).resolve(strict=not args.loose)
         excluded = [VPath(str_path).resolve(strict=not args.loose) for str_path in args.exclude]
 
         Stower(
-            src, dest,
+            source, destination,
             skippables=excluded,
             force=args.force,
             overwrite_others=args.overwrite_others,
@@ -921,3 +915,11 @@ if __name__ == "__main__":
         logger.error(f"Couldn't find file!\n{e}")
     except PathError as e:
         logger.error(f"Invalid operation PathError!\n{e}")
+
+
+if __name__ == "__main__":
+    # set for reaaaaally deep trees
+    sys.setrecursionlimit(10_000_000)
+    logger = get_logger()
+
+    main()
