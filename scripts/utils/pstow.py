@@ -312,7 +312,7 @@ class Tree:
         if removable_branch not in self:
             return self
 
-        branches = self.branchesg
+        branches = self.branches
         subtrees = list(filter(lambda el: el == removable_branch, branches))
         for subtree in subtrees:
             self.tree.remove(subtree)
