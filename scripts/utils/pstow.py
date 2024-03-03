@@ -430,7 +430,7 @@ class Tree:
                     self.vtrim_branch(redirectable.src)
 
                 for resolved_target in redirectable.resolve(target):
-                    virtual_target = Tree(resolved_target.absolute().vredirect(target, self.absolute).parent)
+                    virtual_target = Tree(resolved_target.absolute().vredirect(target, self.absolute))
                     self.vtouch(redirectable.src, virtual_target)
 
         subtree: Tree
@@ -581,7 +581,7 @@ class RedirectEntry:
         #  a concrete path (even if it doesn't exist, it may be created in the future)
         # the second reason for this if is that lines that aren't globabbles,
         if not self._is_globbable():
-            yield VPath(os.path.join(target, self.redirect, self.src.name)).expanduser().absolute()
+            yield VPath(os.path.join(target, self.redirect, self.src.name)).expanduser().parent.absolute()
             return
 
         for vp in Stowconfig.parse_glob_line(target, self.redirect):
