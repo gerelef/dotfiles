@@ -16,7 +16,7 @@ scripts/functions/
 games/
 
 // firefox-specific redirect ignores; these are not true config files
-//  and must be imported manually
+// and must be imported manually
 .config/mozilla/ublock.txt
 .config/mozilla/sidebery.json
 .config/mozilla/userChrome.css
