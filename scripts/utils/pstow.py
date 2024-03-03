@@ -116,10 +116,9 @@ class Tree:
 
     def __len__(self) -> int:
         """
-        @return: The recursive length of structures to create, Trees and VPaths included.
+        @return: The recursive length of structures, Trees and VPaths included.
         """
         length = len(self.tree)
-
         for branch in self.branches:
             length += len(branch)
 
@@ -237,14 +236,14 @@ class Tree:
         """
         Filter all the branches (subtrees) from the children, and return the iterator.
         """
-        return filter(lambda el: isinstance(el, Tree), self.tree)
+        return list(filter(lambda el: isinstance(el, Tree), self.tree))
 
     @property
     def contents(self) -> Iterable[VPath]:
         """
         Filter all the contents (VPaths) from the children, and return the iterator.
         """
-        return filter(lambda el: isinstance(el, VPath), self.tree)
+        return list(filter(lambda el: isinstance(el, VPath), self.tree))
 
     def traverse(self) -> Self:
         """
@@ -299,7 +298,7 @@ class Tree:
             return self
 
         contents = self.contents
-        removable_contents: Iterable[VPath] = filter(lambda pp: pp == element, contents)
+        removable_contents: Iterable[VPath] = list(filter(lambda pp: pp == element, contents))
         for rcont in removable_contents:
             # edge case for stowignore files:
             if rcont.name == Stowconfig.STOWIGNORE_FN:
@@ -362,13 +361,15 @@ class Tree:
         """
         if depth < 0:
             return self
+
+        for branch in self.branches:
+            branch.vtrim_file_rule(fn, depth=depth - 1)
+
         for pp in self.contents:
             if fn(pp, depth):
                 # we do not want to descent to children branches while trimming, just this level
                 self.vtrim_file(pp, depth=0)
 
-        for branch in self.branches:
-            branch.vtrim_file_rule(fn, depth=depth - 1)
         return self
 
     def vtrim_branch_rule(self, fn: Callable[[Self, int], bool], depth: int = math.inf) -> Self:
@@ -382,12 +383,13 @@ class Tree:
         if depth < 0:
             return self
         for branch in self.branches:
+            branch.vtrim_branch_rule(fn, depth=depth - 1)
+
+        for branch in self.branches:
             if fn(branch, depth):
                 # we do not want to descent to children branches while trimming, just this level
                 self.vtrim_branch(branch, depth=0)
 
-        for branch in self.branches:
-            branch.vtrim_branch_rule(fn, depth=depth - 1)
         return self
 
     def vtrim_ignored(self, depth: int = math.inf) -> Self:
@@ -444,7 +446,6 @@ class Tree:
         Create a new file or tree to a new destination.
         This changes the semantics of the virtual tree, and as such affects the ignore methods.
         """
-        logger.debug(f"vtouch: [ \n\tself:{self}\n\tsrc: {src} \n\tdst: {dst}\n]")
         if not src:
             raise RuntimeError(f"Cannot btouch non-existent {src} to dst {dst}!")
         if dst not in self:
@@ -452,14 +453,12 @@ class Tree:
             return self
 
         if dst == self:
-            logger.debug(f"Placing src in {self}!")
             self.tree = src
             return self
 
         # if there's any existing Tree that is a component of our destination, delegate vtouch to that, and finish
         destination_components = list(filter(lambda st: dst in st, self.branches))
         for subtree in destination_components:
-            logger.debug(f"Delegating src creation to {subtree}")
             subtree.vtouch(src, dst)
             return self
 
@@ -468,9 +467,7 @@ class Tree:
         # by creating our own partial Tree towards the eventual parent Tree
         #  and delegate vtouch to that
         if dst in self:
-            next_vp = self.absolute.vnext(dst.absolute)
-            logger.debug(f"Next component is {next_vp}")
-            self.tree = Tree(next_vp).vtouch(src, dst)
+            self.tree = Tree(self.absolute.vnext(dst.absolute)).vtouch(src, dst)
 
         return self
 
@@ -679,7 +676,8 @@ class Stowconfig:
     def hardlinkables(self) -> Iterable[VPath]:
         if not self.__cached:
             self._parse()
-        # logger.warning("Hardlink section is currently not supported, and it'll do nothing.")
+        # TODO implement
+        logger.warning("Hardlink section is currently not supported, and it'll do nothing.")
         # return set(self.__hardlinkables) - set(self.__ignorables)
         return []
 
@@ -783,6 +781,7 @@ class Stower:
             logger.info(f"{self.src_tree.repr()}")
             logger.warning(f"Source tree is empty? Exiting...")
             sys.exit(1)
+
         # (optional) second step: virtual move all redirectables first
         #  this step is done here, so we don't get any invalid entries when ignoring things that
         #  were previously considered redirectables
@@ -807,22 +806,21 @@ class Stower:
         #  trimming all useless paths
         self.src_tree.vtrim_ignored()
 
-        # fifth step: apply preliminary business rule to the tree:
-        #  trim empty branches to avoid creation of directories whose contents are ignored entirely
-        self.src_tree.vtrim_branch_rule(
-            lambda br, _: len(br) == 0
-        )
-
-        # (optional) sixth step: apply extra business rules to the tree
+        # (optional) fifth step: apply extra business rules to the tree
         if not self.overwrite_others:
             # ignore items owned by other users
             # if the euid (effective user id) name is different from the folder's owner name, trim it
             self.src_tree.vtrim_file_rule(
-                lambda pp, _: pp.owner() != euidn if pp.exists(follow_symlinks=True) else False
+                lambda pp, _: pp.exists(follow_symlinks=True) and pp.owner() != euidn
             )
             self.src_tree.vtrim_branch_rule(
-                lambda br, _: br.absolute.owner() != euidn if br.absolute.exists(follow_symlinks=True) else False
+                lambda br, _: br.absolute.exists(follow_symlinks=True) and br.absolute.owner() != euidn
             )
+
+        # sixth step: apply preliminary business rule to the tree:
+        #  trim empty branches to avoid creation of directories whose contents are ignored entirely
+        # FIXME this doesn't work right self.src_tree.vtrim_file_rule(lambda _, __: True)
+        self.src_tree.vtrim_branch_rule(lambda br, __: len(br) == 0)
 
         if dry_run:
             logger.info(f"{self.src_tree.repr()}")
@@ -995,8 +993,8 @@ def main():
         )
     except AbortError:
         logger.warning("Aborting.")
-    # except FileNotFoundError as e:
-    #     logger.error(f"Couldn't find file!\n{e}")
+    except FileNotFoundError as e:
+        logger.error(f"Couldn't find file!\n{e}")
     except PathError as e:
         logger.error(f"Invalid operation PathError!\n{e}")
 
