@@ -15,27 +15,33 @@ scripts/functions/
 // ignore submodules
 games/
 
+// firefox-specific redirect ignores; these are not true config files
+//  and must be imported manually
+.config/mozilla/ublock.txt
+.config/mozilla/sidebery.json
+.config/mozilla/userChrome.css
+
 // these are not true config files, they must be imported manually
 .config/gnome-extensions/
 
 [redirect]
 // redirect to home (move up)
-scripts/.bashrc ::: .bashrc
-scripts/.nanorc ::: .nanorc
-scripts/.gitconfig ::: .gitconfig
+scripts/.bashrc ::: .
+scripts/.nanorc ::: .
+scripts/.gitconfig ::: .
 
 // move up & rename directory
 .config/templates/* ::: Templates/
 
 // redirect to nested (not created necessarily) directory
-.config/alacritty.toml ::: .config/alacritty/alacritty.toml
-.config/config.fish ::: .config/fish/config.fish
-.config/pipewire.conf ::: .config/pipewire/pipewire.conf
+.config/alacritty.toml ::: .config/alacritty/
+.config/pipewire.conf ::: .config/pipewire/
 
-// create subdirectories on the fly for sublime, don't nest unecessarily
+// create subdirectories on the fly, don't nest unecessarily
 .config/sublime-text/* ::: .config/sublime-text/Packages/User/
+.config/fish/fish_prompt.fish ::: .config/fish/functions/
 
-// find already created profile subdirectories on the fly, we can't nest anyways here
-.config/mozilla/* ::: .mozilla/firefox/*.default-release/
+// find already created profile subdirectories on the fly, we can't nest here anyways
+.config/mozilla/* ::: .mozilla/firefox/*.default*/
 
 // no hardlink section here!
