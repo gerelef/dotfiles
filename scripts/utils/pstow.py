@@ -13,10 +13,11 @@ import sys
 from argparse import ArgumentParser
 from copy import copy
 from glob import iglob
+from itertools import zip_longest
 from pathlib import PosixPath
 from typing import Iterable, final, Self, Optional, Callable, Iterator
 
-type StrPath = str | os.PathLike[str]
+type StrPath = str | os.PathLike[str] | PosixPath
 
 
 class CustomFormatter(logging.Formatter):
@@ -52,18 +53,51 @@ class AbortError(RuntimeError):
 
 
 class VPath(PosixPath):
-    @classmethod
-    def get_dir_parts(cls, thing: Self | ...) -> tuple[tuple[str, ...], int]:
+    def vredirect(self, __old: StrPath, __new: StrPath) -> Self:
         """
-        @return: return the true path towards a thing, removing filenames, and counting fs structure
+        Virtual redirect; return a new VPath whose __old component is replaced by __new.
+        """
+        # this is dumb beyond belief, but here's what it does:
+        #  since we need to create a target in a directory we own (and not our target's), we need to
+        #  redirect it somehow; this will replace all instances of the target, with our absolute path
+        #  and as a result, the resulting Tree will be ourselves (or some child)
+        return VPath(str(self).replace(str(__old), str(__new), 1)).absolute()
+
+    def vnext(self, other: Self) -> Self:
+        """
+        Get the next component in-line relative to another VPath. For example:
+        self: /home/user/component
+        other: /home/usr/component/something/else
+        will return VPath("/home/usr/component/something")
+        """
+        if not isinstance(other, VPath):
+            raise TypeError(f"No component can be traced between {self} for invalid type {type(other)}!")
+        self_components = self.get_dir_parts(self)
+        other_components = other.get_dir_parts(other)
+        if self_components == other_components:
+            return None
+
+        previous_components: list[StrPath] = []
+        for sc, oc in zip_longest(self_components, other_components):
+            current_component = sc if sc else oc
+            previous_components.append(current_component)
+            if sc != oc:
+                return VPath(*previous_components)
+        return None
+
+    @classmethod
+    def get_dir_parts(cls, thing: Self) -> tuple[str, ...]:
+        """
+        Return the true path towards a thing, removing filenames, and counting fs structure
         """
         if isinstance(thing, VPath):
-            parts = thing.resolve().parts if thing.is_dir() else thing.resolve().parts[:-1]
-            return parts, len(parts)
+            if thing.exists(follow_symlinks=False):
+                return thing.absolute().parts if thing.is_dir() else thing.absolute().parts[:-1]
+            return thing.absolute().parts
 
         # "thing" is a tree here by necessity due to prior explicit check
         thing: Tree
-        return thing.absolute.parts, len(thing.absolute.parts)
+        return thing.absolute.parts
 
 
 # AUTHOR'S NOTE:
@@ -76,7 +110,7 @@ class Tree:
     REAL_USER_HOME = f"{str(VPath().home())}"
 
     def __init__(self, tld: VPath):
-        self.__tld: VPath = tld.resolve()
+        self.__tld: VPath = tld.absolute()
         self.__tree: list[Self | VPath] = []
         self.__stowignore: Optional[Stowconfig] = None
 
@@ -100,17 +134,7 @@ class Tree:
         if self.name != other.name:
             return False
 
-        self_parts = self.absolute.parts
-        other_parts = other.absolute.parts
-        if len(self_parts) != len(other_parts):
-            return False
-
-        # reverse components, since the tail is the one most likely to be different
-        for spc, opc in zip(self_parts[::-1], other_parts[::-1]):
-            if spc != opc:
-                return False
-
-        return True
+        return hash(self) == hash(other)
 
     def __ne__(self, other: Self) -> bool:
         """
@@ -126,17 +150,17 @@ class Tree:
         """
         if other is None:
             return False
-        self_parts, self_parts_len = VPath.get_dir_parts(self.absolute)
+        self_parts = VPath.get_dir_parts(self.absolute)
         if isinstance(other, Tree):
-            other_parts, other_parts_len = VPath.get_dir_parts(other.absolute)
+            other_parts = VPath.get_dir_parts(other.absolute)
         else:
-            other_parts, other_parts_len = VPath.get_dir_parts(other.resolve())
+            other_parts = VPath.get_dir_parts(other.absolute())
 
         # if the other parts are less than ours, meaning
         #  my/path/1
         #  my/path
         # it means that my/path is definitely not contained within our tree
-        if other_parts_len < self_parts_len:
+        if len(other_parts) < len(self_parts):
             return False
 
         # zip_longest, not in reverse, since the other_parts might be in a subdirectory,
@@ -166,15 +190,17 @@ class Tree:
             return f"{"─" * tail_length}{">" if tail_length else ""}"
 
         def shorten_home(p: Tree | VPath) -> str:
-            ps = p.name if isinstance(p, VPath) else repr(p)
+            ps = p.name if isinstance(p, VPath) else f"{p.name}/"
             if ps.startswith(Tree.REAL_USER_HOME):
                 return ps.replace(Tree.REAL_USER_HOME, "~", 1)
             return ps
 
         out: list[str] = [f"\033[96m{indent(indentation)} \033[1m{shorten_home(self)}\033[0m"]
-        for content in self.contents:
+        contents: list[VPath] = sorted(self.contents)
+        for content in contents:
             out.append(f"\033[96m\033[93m{indent(indentation + 4)} \033[3m{shorten_home(content)}\033[0m")
-        for branch in self.branches:
+        branches: list[Tree] = sorted(self.branches, key=lambda br: br.name)
+        for branch in branches:
             out.append(branch.repr(indentation=indentation + 4))
         return "\n\033[96m\033[0m".join(out)
 
@@ -227,13 +253,13 @@ class Tree:
         # the reason for this ugliness, is that os.walk is recursive by nature,
         #  and we do not want to recurse by os.walk, but rather by child.traverse() method
         try:
-            current_path, directory_names, file_names = next(os.walk(self.absolute, followlinks=False))
+            _, directory_names, file_names = next(self.absolute.walk(follow_symlinks=False))
         except StopIteration:
             # stop iteration is called by os.walk when, on an edge case, pstow is called on ~
             return self
 
         for fn in file_names:
-            pp = VPath(os.path.join(current_path, fn))
+            pp = VPath(os.path.join(self.absolute, fn))
             if fn == Stowconfig.STOWIGNORE_FN:
                 self.__stowignore = Stowconfig(pp)
 
@@ -394,46 +420,59 @@ class Tree:
         if depth < 0:
             return self
 
-        raise NotImplemented
-        # if self.stowignore:
-        #     for redirectable in self.stowignore.redirectables:
-        #         if isinstance(redirectable.src, VPath):
-        #             self.vtrim_file(redirectable.src, depth=depth)
-        #         print(redirectable)
-        #         self.vtouch(redirectable.src, redirectable.resolve(target))
-        #
-        # subtree: Tree
-        # for subtree in self.branches:
-        #     subtree.vmove_redirected(VPath(target / subtree.name), depth=depth - 1)
-        #
-        # return self
+        if self.stowignore:
+            for redirectable in self.stowignore.redirectables:
+                # trim the original vpath from the tree, since it won't be needed anymore in any tree
+                #  this will affect files that are somehow redirected multiple times, and only the last one will be left
+                if isinstance(redirectable.src, VPath):
+                    self.vtrim_file(redirectable.src, depth=depth)
+                if isinstance(redirectable.src, Tree):
+                    self.vtrim_branch(redirectable.src)
 
-    def vtouch(self, src: VPath, dst: Iterable[Self | VPath]) -> Self:
+                for resolved_target in redirectable.resolve(target):
+                    virtual_target = Tree(resolved_target.absolute().vredirect(target, self.absolute).parent)
+                    self.vtouch(redirectable.src, virtual_target)
+
+        subtree: Tree
+        for subtree in self.branches:
+            subtree.vmove_redirected(VPath(target / subtree.name), depth=depth - 1)
+
+        return self
+
+    def vtouch(self, src: VPath | Self, dst: Self) -> Self:
         """
-        Create a new virtual file or tree (src) to new destination(s).
+        Create a new file or tree to a new destination.
         This changes the semantics of the virtual tree, and as such affects the ignore methods.
-        @param src: Source
-        @param dst: Destination Tree(s)
         """
-        raise NotImplemented
-        # print(
-        #     f"src={src}\n"
-        #     f"dst={dst}\n"
-        # )
-        #
-        # if not isinstance(src, VPath):
-        #     raise TypeError(f"Invalid type for src {type(src)}?!")
-        # if not isinstance(dst, Iterable):
-        #     raise TypeError(f"Invalid type for dst {type(dst)}?!")
-        # if not src:
-        #     raise RuntimeError(f"Cannot vmove non-existent {src} to dst {dst}!")
-        # if not dst:
-        #     raise RuntimeError(f"Cannot vmove {src} to non-existent dst {dst}!")
-        #
-        #
-        # for destination in dst:
-        #
-        # return self  # TODO implement!
+        logger.debug(f"vtouch: [ \n\tself:{self}\n\tsrc: {src} \n\tdst: {dst}\n]")
+        if not src:
+            raise RuntimeError(f"Cannot btouch non-existent {src} to dst {dst}!")
+        if dst not in self:
+            logger.warning(f"Skipping vtouch, we can't place dst {dst} in self {self} because it doesn't belong!")
+            return self
+
+        if dst == self:
+            logger.debug(f"Placing src in {self}!")
+            self.tree = src
+            return self
+
+        # if there's any existing Tree that is a component of our destination, delegate vtouch to that, and finish
+        destination_components = list(filter(lambda st: dst in st, self.branches))
+        for subtree in destination_components:
+            logger.debug(f"Delegating src creation to {subtree}")
+            subtree.vtouch(src, dst)
+            return self
+
+        # if we're part of the eventual destination, but we don't have any existing child
+        # that can delegate the creation of this, we need to "do our part"
+        # by creating our own partial Tree towards the eventual parent Tree
+        #  and delegate vtouch to that
+        if dst in self:
+            next_vp = self.absolute.vnext(dst.absolute)
+            logger.debug(f"Next component is {next_vp}")
+            self.tree = Tree(next_vp).vtouch(src, dst)
+
+        return self
 
     @classmethod
     def rsymlink(cls, tree: Self, target: VPath, fn: Callable[[VPath], bool], make_parents=True) -> None:
@@ -480,13 +519,13 @@ class Tree:
         def slink(src: VPath, dst: VPath):
             logger.info(f"Symlinking src {source} to {destination}")
             dst.unlink(missing_ok=True)
-            dst.symlink_to(target=src, target_is_directory=False)
+            dst.symlink_to(target=src.resolve(strict=True), target_is_directory=False)
 
         # noinspection PyUnusedLocal
         def hlink(src: VPath, dst: VPath):
             logger.info(f"Symlinking src {source} to {destination}")
             dst.unlink(missing_ok=True)
-            dst.hardlink_to(target=src)
+            dst.hardlink_to(target=src.resolve(strict=True))
 
         if not target.exists(follow_symlinks=False) and not make_parents:
             raise PathError(f"Expected valid target, but got {target}, which doesn't exist?!")
@@ -512,24 +551,46 @@ class Tree:
 
 
 class RedirectEntry:
-    def __init__(self, src: VPath, redirect: StrPath):
+    REDIRECT_GLOBBABLE_REGEX = re.compile(r"(?<!\\)\*")
+
+    def __init__(self, src: VPath | Tree, redirect: StrPath):
         self.__src = src
         self.__redirect = redirect
 
+    def __str__(self) -> str:
+        return f"RedirectEntry(src='{self.src}'), redirect={self.redirect}"
+
+    def _is_globbable(self) -> bool:
+        return bool(RedirectEntry.REDIRECT_GLOBBABLE_REGEX.search(self.redirect))
+
     @property
-    def src(self) -> VPath:
+    def src(self) -> VPath | Tree:
         return self.__src
 
     @property
     def redirect(self) -> StrPath:
         return self.__redirect
 
-    def resolve(self, target) -> tuple[VPath]:
-        # return tuple(filter(lambda c: isinstance(c, VPath), Stowconfig.parse_glob_line(target, self.redirect)))
-        raise NotImplemented
+    def resolve(self, target) -> Iterable[VPath]:
+        """
+        Resolve the redirectable for all valid Tree targets and return them.
+        """
+        # in cases where the path isn't a globbable, we don't want to check for matches or any existence
+        #  by using parse_glob_line
+        #  we just want to join the target/redirect/src.name together, even if it doesn't exist, since it's still
+        #  a concrete path (even if it doesn't exist, it may be created in the future)
+        # the second reason for this if is that lines that aren't globabbles,
+        if not self._is_globbable():
+            yield VPath(os.path.join(target, self.redirect, self.src.name)).expanduser().absolute()
+            return
 
-    def __str__(self) -> str:
-        return f"RedirectEntry(src='{self.src}'), redirect={self.redirect}"
+        for vp in Stowconfig.parse_glob_line(target, self.redirect):
+            if isinstance(vp, Tree):
+                yield vp.absolute
+                continue
+
+            yield vp
+        return
 
 
 class Stowconfig:
@@ -552,7 +613,6 @@ class Stowconfig:
         self.parent = fstowignore.parent
 
         self.__ignorables: list[VPath] = []
-        self.__hardlinkables: list[VPath] = []
         self.__redirectables: list[RedirectEntry] = []
         self.__redirectables_sanitized = False
 
@@ -562,17 +622,22 @@ class Stowconfig:
         self.__ignorables.extend(Stowconfig.parse_glob_line(self.parent, entry))
 
     def _handle_hardlink_lines(self, entry: str) -> None:
-        self.__hardlinkables.extend(Stowconfig.parse_glob_line(self.parent, entry))
+        # self.__hardlinkables.extend(Stowconfig.parse_glob_line(self.parent, entry))
+        pass
 
     def _handle_redirect_lines(self, entry: str) -> None:
         fm = Stowconfig.REDIRECT_LINE_REGEX.fullmatch(entry)
         if not fm:
             logger.warning(f"Skipping invalid redirect \n{entry}")
             return None
+        self.__redirectables_sanitized = False
         # both are globbable: a group of elements can be matched to a group of targets (N:M relationship)
+        #  however, we can't evaluate destination globbables (if they even *are* globbables) right now, since we
+        #  don't have the target, which is a requirement for matching this to paths
         s_src = fm.group(Stowconfig.REDIRECT_LINE_REGEX_SOURCE_GROUP)
         s_dst = fm.group(Stowconfig.REDIRECT_LINE_REGEX_TARGET_GROUP)
-        raise NotImplemented
+        for redirected in Stowconfig.parse_glob_line(self.parent, s_src):
+            self.__redirectables.append(RedirectEntry(redirected, s_dst))
 
     def _is_comment(self, line: str) -> bool:
         return line.startswith(Stowconfig.COMMENT_PREFIX_TOK)
@@ -614,8 +679,9 @@ class Stowconfig:
     def hardlinkables(self) -> Iterable[VPath]:
         if not self.__cached:
             self._parse()
-        logger.warning("Hardlink section is currently not supported, and it'll do nothing.")
-        return set(self.__hardlinkables) - set(self.__ignorables)
+        # logger.warning("Hardlink section is currently not supported, and it'll do nothing.")
+        # return set(self.__hardlinkables) - set(self.__ignorables)
+        return []
 
     @property
     def redirectables(self) -> Iterable[RedirectEntry]:
@@ -714,7 +780,9 @@ class Stower:
         self.src_tree.traverse()
         # early exit for empty trees
         if not len(self.src_tree):
-            logger.warning(f"Source tree is empty?")
+            logger.info(f"{self.src_tree.repr()}")
+            logger.warning(f"Source tree is empty? Exiting...")
+            sys.exit(1)
         # (optional) second step: virtual move all redirectables first
         #  this step is done here, so we don't get any invalid entries when ignoring things that
         #  were previously considered redirectables
@@ -723,6 +791,7 @@ class Stower:
         #  is eventually added, it's still sane to do this first
         if not self.no_redirects:
             self.src_tree.vmove_redirected(self.dest)
+
         # third step: apply preliminary business rule to the tree:
         #  trim explicitly excluded items
         # the reason we're doing the explicitly excluded items first, is simple
@@ -732,26 +801,28 @@ class Stower:
             self.src_tree.vtrim_file(content)
         for branch in filter(lambda sk: sk.is_dir() and sk in self.src_tree, self.skippables):
             self.src_tree.vtrim_branch(Tree(branch))
+
         # fourth step: trim the tree from top to bottom, for every .stowignore we find, we will apply
         #  the .stowignore rules only to the same-level trees and/or files, hence, provably and efficiently
         #  trimming all useless paths
         self.src_tree.vtrim_ignored()
-        if not self.overwrite_others:
-            # fifth step (optional): apply extra business rules to the tree:
-            #  ignore items owned by other users
-            # if the euid (effective user id) name is different from the folder's owner name, trim it
-            self.src_tree.vtrim_file_rule(
-                lambda pp, _: pp.owner() != euidn
-            )
-            self.src_tree.vtrim_branch_rule(
-                lambda br, _: br.absolute.owner() != euidn
-            )
 
-        # sixth step: apply preliminary business rule to the tree:
+        # fifth step: apply preliminary business rule to the tree:
         #  trim empty branches to avoid creation of directories whose contents are ignored entirely
         self.src_tree.vtrim_branch_rule(
             lambda br, _: len(br) == 0
         )
+
+        # (optional) sixth step: apply extra business rules to the tree
+        if not self.overwrite_others:
+            # ignore items owned by other users
+            # if the euid (effective user id) name is different from the folder's owner name, trim it
+            self.src_tree.vtrim_file_rule(
+                lambda pp, _: pp.owner() != euidn if pp.exists(follow_symlinks=True) else False
+            )
+            self.src_tree.vtrim_branch_rule(
+                lambda br, _: br.absolute.owner() != euidn if br.absolute.exists(follow_symlinks=True) else False
+            )
 
         if dry_run:
             logger.info(f"{self.src_tree.repr()}")
@@ -924,8 +995,8 @@ def main():
         )
     except AbortError:
         logger.warning("Aborting.")
-    except FileNotFoundError as e:
-        logger.error(f"Couldn't find file!\n{e}")
+    # except FileNotFoundError as e:
+    #     logger.error(f"Couldn't find file!\n{e}")
     except PathError as e:
         logger.error(f"Invalid operation PathError!\n{e}")
 
