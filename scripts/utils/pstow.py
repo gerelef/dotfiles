@@ -656,7 +656,8 @@ class Stower:
                  skippables: list[VPath] = None,
                  force=False,
                  overwrite_others=False,
-                 make_parents=False):
+                 make_parents=False,
+                 no_redirects=False):
         self.src = source
         self.dest = destination
         self.skippables = skippables
@@ -665,6 +666,7 @@ class Stower:
         self.force = force
         self.overwrite_others = overwrite_others
         self.make_parents = make_parents
+        self.no_redirects = no_redirects
 
         # aka working tree directory, reflects the current filesystem structure
         self.src_tree: Tree = Tree(self.src)
@@ -674,6 +676,7 @@ class Stower:
         Prompt the user for an input, [Y/n].
         @return:
         """
+        logger.info(f"{self.src_tree.repr()}")
         logger.info("The following action is not reversible.")
         while True:
             try:
@@ -687,10 +690,12 @@ class Stower:
                 #  leave it as-is
                 return False
 
-            if reply != "y" and reply != "n":
-                logger.info(f"Invalid reply {reply}, please answer with Y/y for Yes, or N/n for no.")
+            yes = reply == "y" or reply == "yes"
+            no = reply == "n" or reply == "no"
+            if not yes and not no:
+                logger.info(f"Invalid reply {reply}, please answer with y/yes for Yes, or n/no for no.")
                 continue
-            return reply == "y"
+            return yes
 
     def stow(self, interactive: bool = True, dry_run: bool = False):
         """
@@ -710,13 +715,14 @@ class Stower:
         # early exit for empty trees
         if not len(self.src_tree):
             logger.warning(f"Source tree is empty?")
-        # second step: virtual move all redirectables first
+        # (optional) second step: virtual move all redirectables first
         #  this step is done here, so we don't get any invalid entries when ignoring things that
         #  were previously considered redirectables
         #  the fact of the matter is, we'd have to remove ignored files *again* if this were to happen as a seconds step
         #  this is a concern regarding the internals, and is obviously not the best, however, even if the capability
         #  is eventually added, it's still sane to do this first
-        self.src_tree.vmove_redirected(self.dest)
+        if not self.no_redirects:
+            self.src_tree.vmove_redirected(self.dest)
         # third step: apply preliminary business rule to the tree:
         #  trim explicitly excluded items
         # the reason we're doing the explicitly excluded items first, is simple
@@ -756,7 +762,6 @@ class Stower:
         # if the current run isn't interactive, and isn't a dry run, must be true
         approved = not interactive and not dry_run
         if not dry_run and interactive:
-            logger.info(f"{self.src_tree.repr()}")
             approved = self._prompt()
         if not approved:
             raise AbortError("Aborted the rsymlink due to policy.")
@@ -831,7 +836,7 @@ def get_arparser() -> ArgumentParser:
         help="Force overwrite of any conflicting file. This WILL overwrite regular files!"
     )
     ap.add_argument(
-        "--non-interactive", "-n",
+        "--non-interactive", "-i",
         required=False,
         action="store_true",
         default=False,
@@ -863,6 +868,13 @@ def get_arparser() -> ArgumentParser:
         action="store_true",
         default=False,
         help="Don't make parent directories as we traverse the tree in destination, even if they do not exist."
+    )
+    ap.add_argument(
+        "--no-redirects", "-r",
+        required=False,
+        action="store_true",
+        default=False,
+        help="Don't respect redirects in any encountered stowconfig."
     )
     ap.add_subparsers(dest="command", required=False).add_parser(
         "status",
@@ -905,6 +917,7 @@ def main():
             force=args.force,
             overwrite_others=args.overwrite_others,
             make_parents=not args.no_parents,
+            no_redirects=args.no_redirects,
         ).stow(
             interactive=not args.non_interactive,
             dry_run=args.command == "status"
