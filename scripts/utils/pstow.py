@@ -429,11 +429,11 @@ class Tree:
                 if isinstance(redirectable.src, VPath):
                     self.vtrim_file(redirectable.src, depth=depth)
                 if isinstance(redirectable.src, Tree):
-                    self.vtrim_branch(redirectable.src)
+                    self.vtrim_branch(redirectable.src, depth=depth)
 
                 for resolved_target in redirectable.resolve(target):
                     virtual_target = Tree(resolved_target.absolute().vredirect(target, self.absolute))
-                    self.vtouch(redirectable.src, virtual_target)
+                    self.vtouch(redirectable.src, virtual_target, depth=depth)
 
         subtree: Tree
         for subtree in self.branches:
@@ -441,11 +441,13 @@ class Tree:
 
         return self
 
-    def vtouch(self, src: VPath | Self, dst: Self) -> Self:
+    def vtouch(self, src: VPath | Self, dst: Self, depth: int = math.inf) -> Self:
         """
         Create a new file or tree to a new destination.
         This changes the semantics of the virtual tree, and as such affects the ignore methods.
         """
+        if depth < 0:
+            return self
         if not src:
             raise RuntimeError(f"Cannot btouch non-existent {src} to dst {dst}!")
         if dst not in self:

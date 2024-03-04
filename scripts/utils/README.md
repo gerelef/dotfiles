@@ -17,5 +17,5 @@ Utility scripts, meant to make life easier. In detail, by descending order of co
     functionality for personal use.
 
 ## Historical note
-A massive trim was done on 28/2/2024. You may find functions/utilities
-that were removed, on this commit `fbc1fa8`.
+A massive trim was done on 28/2/2024. 
+You may find functions/utilities that were removed, here: `fbc1fa8`.
