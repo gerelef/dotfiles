@@ -187,11 +187,9 @@ class Tree:
             return ps
 
         out: list[str] = [f"\033[96m{indent(indentation)} \033[1m{shorten_name(self)}\033[0m"]
-        contents: list[VPath] = sorted(self.contents)
-        for content in contents:
+        for content in sorted(self.contents):
             out.append(f"\033[96m\033[93m{indent(indentation + 4)} \033[3m{shorten_name(content)}\033[0m")
-        branches: list[Tree] = sorted(self.branches, key=lambda br: br.name)
-        for branch in branches:
+        for branch in sorted(self.branches, key=lambda br: br.name):
             out.append(branch.repr(indentation=indentation + 4))
         return "\n\033[96m\033[0m".join(out)
 
@@ -260,19 +258,9 @@ class Tree:
 
         return self
 
-    def dfs(self) -> Iterable[VPath]:
+    def _vtrim_file(self, element: VPath, depth: int = math.inf) -> Self:
         """
-        Depth-first search, returns all the contents, bottom to top.
-        """
-        for branch in self.branches:
-            yield branch.dfs()
-        for pp in self.contents:
-            # copy reference so original reference isn't leaker
-            yield PosixPath(pp)
-        return
-
-    def vtrim_file(self, element: VPath, depth: int = math.inf) -> Self:
-        """
+        Internal usage only.
         Recursively trim the VPath element from the contents.
         Falls back to children if it doesn't exist.
         @param element: Element to be removed
@@ -303,12 +291,13 @@ class Tree:
 
         # if we didn't get any matches, the file wasn't ours to trim, check children
         for branch in self.branches:
-            branch.vtrim_file(element, depth=depth - 1)
+            branch._vtrim_file(element, depth=depth - 1)
 
         return self
 
-    def vtrim_branch(self, removable_branch: Self, depth: int = math.inf) -> Self:
+    def _vtrim_branch(self, removable_branch: Self, depth: int = math.inf) -> Self:
         """
+        Internal usage only.
         Recursively trim the Tree branch, removing it from the branches.
         Falls back to children if it doesn't exist.
         @param removable_branch:
@@ -337,10 +326,10 @@ class Tree:
             return self
 
         for branch in self.branches:
-            branch.vtrim_branch(removable_branch, depth=depth - 1)
+            branch._vtrim_branch(removable_branch, depth=depth - 1)
 
         return self
-    
+
     def vtrim_content(self, thing: VPath | Self | StrPath, depth: int = math.inf) -> Self:
         """
         Driver/wrapper function to avoid duplication of .vtrim_file or .vtrim_branch
@@ -349,10 +338,10 @@ class Tree:
             vpt = VPath(thing)
             thing = Tree(vpt) if vpt.is_dir() else vpt
         if isinstance(thing, Tree):
-            self.vtrim_branch(thing, depth=depth)
+            self._vtrim_branch(thing, depth=depth)
             return self
         if isinstance(thing, VPath):
-            self.vtrim_file(thing, depth=depth)
+            self._vtrim_file(thing, depth=depth)
             return self
 
         raise TypeError(f"Cannot resolve trim_content for thing {str(thing)} type {type(thing)}!")
@@ -373,7 +362,7 @@ class Tree:
         for pp in self.contents:
             if fn(pp, depth):
                 # we do not want to descent to children branches while trimming, just this level
-                self.vtrim_file(pp, depth=0)
+                self._vtrim_file(pp, depth=0)
 
         return self
 
@@ -393,7 +382,7 @@ class Tree:
         for branch in self.branches:
             if fn(branch, depth):
                 # we do not want to descent to children branches while trimming, just this level
-                self.vtrim_branch(branch, depth=0)
+                self._vtrim_branch(branch, depth=0)
 
         return self
 
