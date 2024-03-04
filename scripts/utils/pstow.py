@@ -335,8 +335,10 @@ class Tree:
         Driver/wrapper function to avoid duplication of .vtrim_file or .vtrim_branch
         """
         if isinstance(thing, str):
-            vpt = VPath(thing)
-            thing = Tree(vpt) if vpt.is_dir() else vpt
+            thing = VPath(thing)
+        # if thing is a directory, convert it to a Tree 
+        if isinstance(thing, VPath) and thing.exists(follow_symlinks=False) and thing.is_dir():
+            thing = Tree(thing)
         if isinstance(thing, Tree):
             self._vtrim_branch(thing, depth=depth)
             return self
