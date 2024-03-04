@@ -86,18 +86,16 @@ class VPath(PosixPath):
         return None
 
     @classmethod
-    def get_dir_parts(cls, thing: Self) -> tuple[str, ...]:
+    def get_dir_parts(cls, thing: Self | PosixPath | StrPath) -> tuple[str, ...]:
         """
         Return the true path towards a thing, removing filenames, and counting fs structure
         """
-        if isinstance(thing, VPath):
-            if thing.exists(follow_symlinks=False):
-                return thing.absolute().parts if thing.is_dir() else thing.absolute().parts[:-1]
-            return thing.absolute().parts
+        if isinstance(thing, str):
+            thing = VPath(thing)
 
-        # "thing" is a tree here by necessity due to prior explicit check
-        thing: Tree
-        return thing.absolute.parts
+        if thing.exists(follow_symlinks=False):
+            return thing.absolute().parts if thing.is_dir() else thing.absolute().parts[:-1]
+        return thing.absolute().parts
 
 
 # AUTHOR'S NOTE:
@@ -128,12 +126,8 @@ class Tree:
         """
         Does not check for content and branch equality, just path equality.
         """
-        if not isinstance(other, Tree):
-            return False
-        if self.name != other.name:
-            return False
-
-        return hash(self) == hash(other)
+        # check that the type is tree, name is our name, and we have the same hash (in this order, short-circuit)
+        return isinstance(other, Tree) and self.name == other.name and hash(self) == hash(other)
 
     def __ne__(self, other: Self) -> bool:
         """
@@ -149,11 +143,8 @@ class Tree:
         """
         if other is None:
             return False
-        self_parts = VPath.get_dir_parts(self.absolute)
-        if isinstance(other, Tree):
-            other_parts = VPath.get_dir_parts(other.absolute)
-        else:
-            other_parts = VPath.get_dir_parts(other.absolute())
+        self_parts = VPath.get_dir_parts(self.absolute())
+        other_parts = VPath.get_dir_parts(other.absolute())
 
         # if the other parts are less than ours, meaning
         #  my/path/1
@@ -171,12 +162,12 @@ class Tree:
         return True
 
     def __repr__(self) -> str:
-        return str(self.absolute)
+        return str(self.absolute())
 
     def __hash__(self) -> int:
         # combine the hashes of the path + a fixed offset, so thet trees are only
         #  compared against other trees regarding their uniqueness
-        return hash(self.absolute) + hash("TREE")
+        return hash(self.absolute()) + hash("TREE")
 
     def repr(self, indentation: int = 0) -> str:
         """
@@ -188,16 +179,17 @@ class Tree:
             tail_length = max((indentation - 1), 0)
             return f"{"─" * tail_length}{">" if tail_length else ""}"
 
-        def shorten_home(p: Tree | VPath) -> str:
+        def shorten_name(p: Tree | VPath) -> str:
             ps = p.name if isinstance(p, VPath) else f"{p.name}/"
+            # optionally, if the real user home exists in this path, substitute with ~
             if ps.startswith(Tree.REAL_USER_HOME):
                 return ps.replace(Tree.REAL_USER_HOME, "~", 1)
             return ps
 
-        out: list[str] = [f"\033[96m{indent(indentation)} \033[1m{shorten_home(self)}\033[0m"]
+        out: list[str] = [f"\033[96m{indent(indentation)} \033[1m{shorten_name(self)}\033[0m"]
         contents: list[VPath] = sorted(self.contents)
         for content in contents:
-            out.append(f"\033[96m\033[93m{indent(indentation + 4)} \033[3m{shorten_home(content)}\033[0m")
+            out.append(f"\033[96m\033[93m{indent(indentation + 4)} \033[3m{shorten_name(content)}\033[0m")
         branches: list[Tree] = sorted(self.branches, key=lambda br: br.name)
         for branch in branches:
             out.append(branch.repr(indentation=indentation + 4))
@@ -207,7 +199,6 @@ class Tree:
     def stowignore(self):
         return self.__stowignore
 
-    @property
     def absolute(self) -> VPath:
         """
         @return: Top-level directory, a VPath.
@@ -252,20 +243,20 @@ class Tree:
         # the reason for this ugliness, is that os.walk is recursive by nature,
         #  and we do not want to recurse by os.walk, but rather by child.traverse() method
         try:
-            _, directory_names, file_names = next(self.absolute.walk(follow_symlinks=False))
+            _, directory_names, file_names = next(self.absolute().walk(follow_symlinks=False))
         except StopIteration:
             # stop iteration is called by os.walk when, on an edge case, pstow is called on ~
             return self
 
         for fn in file_names:
-            pp = VPath(os.path.join(self.absolute, fn))
+            pp = VPath(os.path.join(self.absolute(), fn))
             if fn == Stowconfig.STOWIGNORE_FN:
                 self.__stowignore = Stowconfig(pp)
 
             self.tree = pp
 
         for dn in directory_names:
-            self.tree = Tree(self.absolute / dn).traverse()
+            self.tree = Tree(self.absolute() / dn).traverse()
 
         return self
 
@@ -349,6 +340,22 @@ class Tree:
             branch.vtrim_branch(removable_branch, depth=depth - 1)
 
         return self
+    
+    def vtrim_content(self, thing: VPath | Self | StrPath, depth: int = math.inf) -> Self:
+        """
+        Driver/wrapper function to avoid duplication of .vtrim_file or .vtrim_branch
+        """
+        if isinstance(thing, str):
+            vpt = VPath(thing)
+            thing = Tree(vpt) if vpt.is_dir() else vpt
+        if isinstance(thing, Tree):
+            self.vtrim_branch(thing, depth=depth)
+            return self
+        if isinstance(thing, VPath):
+            self.vtrim_file(thing, depth=depth)
+            return self
+
+        raise TypeError(f"Cannot resolve trim_content for thing {str(thing)} type {type(thing)}!")
 
     def vtrim_file_rule(self, fn: Callable[[VPath, int], bool], depth: int = math.inf) -> Self:
         """
@@ -401,11 +408,7 @@ class Tree:
             return self
         if self.stowignore:
             for ignorable in self.stowignore.ignorables:
-                if isinstance(ignorable, Tree):
-                    self.vtrim_branch(ignorable, depth=depth)
-                    continue
-
-                self.vtrim_file(ignorable, depth=depth)
+                self.vtrim_content(ignorable, depth=depth)
 
         subtree: Tree
         for subtree in self.branches:
@@ -423,13 +426,10 @@ class Tree:
             for redirectable in self.stowignore.redirectables:
                 # trim the original vpath from the tree, since it won't be needed anymore in any tree
                 #  this will affect files that are somehow redirected multiple times, and only the last one will be left
-                if isinstance(redirectable.src, VPath):
-                    self.vtrim_file(redirectable.src, depth=depth)
-                if isinstance(redirectable.src, Tree):
-                    self.vtrim_branch(redirectable.src, depth=depth)
+                self.vtrim_content(redirectable.src, depth=depth)
 
                 for resolved_target in redirectable.resolve(target):
-                    virtual_target = Tree(resolved_target.absolute().vredirect(target, self.absolute))
+                    virtual_target = Tree(resolved_target.absolute().vredirect(target, self.absolute()))
                     self.vtouch(redirectable.src, virtual_target, depth=depth)
 
         subtree: Tree
@@ -467,7 +467,7 @@ class Tree:
         # by creating our own partial Tree towards the eventual parent Tree
         #  and delegate vtouch to that
         if dst in self:
-            self.tree = Tree(self.absolute.vnext(dst.absolute)).vtouch(src, dst)
+            self.tree = Tree(self.absolute().vnext(dst.absolute())).vtouch(src, dst)
 
         return self
 
@@ -505,7 +505,7 @@ class Tree:
 
         def dlink(srct: Tree, dst: VPath):
             # if this is not a virtual tree
-            if srct.absolute.exists():
+            if srct.absolute().exists():
                 logger.info(f"Creating destination which doesn't exist {dst}")
                 mode = dst.stat(follow_symlinks=False).st_mode
                 dst.mkdir(mode, parents=True, exist_ok=True)
@@ -581,11 +581,7 @@ class RedirectEntry:
             return
 
         for vp in Stowconfig.parse_glob_line(target, self.redirect):
-            if isinstance(vp, Tree):
-                yield vp.absolute
-                continue
-
-            yield vp
+            yield vp.absolute()
         return
 
 
@@ -792,10 +788,8 @@ class Stower:
         # the reason we're doing the explicitly excluded items first, is simple
         #  the fact is that explicitly --exclude item(s) will most likely be less than the ones in .stowignore
         #  so, we're probably saving time since we don't have to trim .stowignored files that do not apply
-        for content in filter(lambda sk: sk.is_file() and sk in self.src_tree, self.skippables):
-            self.src_tree.vtrim_file(content)
-        for branch in filter(lambda sk: sk.is_dir() and sk in self.src_tree, self.skippables):
-            self.src_tree.vtrim_branch(Tree(branch))
+        for thing in filter(lambda sk: sk in self.src_tree, self.skippables):
+            self.src_tree.vtrim_content(thing)
 
         # fourth step: trim the tree from top to bottom, for every .stowignore we find, we will apply
         #  the .stowignore rules only to the same-level trees and/or files, hence, provably and efficiently
@@ -810,7 +804,7 @@ class Stower:
                 lambda pp, _: pp.exists(follow_symlinks=True) and pp.owner() != euidn
             )
             self.src_tree.vtrim_branch_rule(
-                lambda br, _: br.absolute.exists(follow_symlinks=True) and br.absolute.owner() != euidn
+                lambda br, _: br.absolute().exists(follow_symlinks=True) and br.absolute().owner() != euidn
             )
 
         # sixth step: apply preliminary business rule to the tree:
