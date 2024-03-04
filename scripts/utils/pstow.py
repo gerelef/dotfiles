@@ -276,7 +276,8 @@ class Tree:
         for branch in self.branches:
             yield branch.dfs()
         for pp in self.contents:
-            yield VPath(self.absolute / pp)
+            # copy reference so original reference isn't leaker
+            yield PosixPath(pp)
         return
 
     def vtrim_file(self, element: VPath, depth: int = math.inf) -> Self:
@@ -297,8 +298,7 @@ class Tree:
         if element not in self:
             return self
 
-        contents = self.contents
-        removable_contents: Iterable[VPath] = list(filter(lambda pp: pp == element, contents))
+        removable_contents: Iterable[VPath] = list(filter(lambda pp: pp == element, self.contents))
         for rcont in removable_contents:
             # edge case for stowignore files:
             if rcont.name == Stowconfig.STOWIGNORE_FN:
@@ -307,7 +307,7 @@ class Tree:
             self.tree.remove(rcont)
 
         # early exit
-        if list(removable_contents):
+        if removable_contents:
             return self
 
         # if we didn't get any matches, the file wasn't ours to trim, check children
@@ -337,13 +337,12 @@ class Tree:
         if removable_branch not in self:
             return self
 
-        branches = self.branches
-        subtrees = list(filter(lambda el: el == removable_branch, branches))
+        subtrees = list(filter(lambda el: el == removable_branch, self.branches))
         for subtree in subtrees:
             self.tree.remove(subtree)
 
         # early exit
-        if list(subtrees):
+        if subtrees:
             return self
 
         for branch in self.branches:
@@ -361,7 +360,6 @@ class Tree:
         """
         if depth < 0:
             return self
-
         for branch in self.branches:
             branch.vtrim_file_rule(fn, depth=depth - 1)
 
@@ -421,7 +419,6 @@ class Tree:
         """
         if depth < 0:
             return self
-
         if self.stowignore:
             for redirectable in self.stowignore.redirectables:
                 # trim the original vpath from the tree, since it won't be needed anymore in any tree
@@ -454,6 +451,7 @@ class Tree:
             logger.warning(f"Skipping vtouch, we can't place dst {dst} in self {self} because it doesn't belong!")
             return self
 
+        # if we're the eventual destination, place src in ourselves, and finish
         if dst == self:
             self.tree = src
             return self
@@ -520,7 +518,6 @@ class Tree:
             dst.unlink(missing_ok=True)
             dst.symlink_to(target=src.resolve(strict=True), target_is_directory=False)
 
-        # noinspection PyUnusedLocal
         def hlink(src: VPath, dst: VPath):
             logger.info(f"Symlinking src {source} to {destination}")
             dst.unlink(missing_ok=True)
@@ -647,7 +644,6 @@ class Stowconfig:
         """
         self.__cached = True
         strategy: Callable[[str], None] = self._handle_ignore_lines
-        # noinspection PyShadowingNames
         with open(self.fstowignore, "r", encoding="UTF-8") as sti:
             for line in sti:
                 trimmed_line = line.strip()
@@ -678,7 +674,6 @@ class Stowconfig:
     def hardlinkables(self) -> Iterable[VPath]:
         if not self.__cached:
             self._parse()
-        # TODO implement
         logger.warning("Hardlink section is currently not supported, and it'll do nothing.")
         # return set(self.__hardlinkables) - set(self.__ignorables)
         return []
@@ -715,7 +710,6 @@ class Stowconfig:
 
 @final
 class Stower:
-    # noinspection PyShadowingNames
     def __init__(self,
                  source: VPath,
                  destination: VPath,
@@ -821,7 +815,7 @@ class Stower:
 
         # sixth step: apply preliminary business rule to the tree:
         #  trim empty branches to avoid creation of directories whose contents are ignored entirely
-        # FIXME this doesn't work right self.src_tree.vtrim_file_rule(lambda _, __: True)
+        # FIXME this doesn't work right: self.src_tree.vtrim_file_rule(lambda _, __: True)
         self.src_tree.vtrim_branch_rule(lambda br, __: len(br) == 0)
 
         if dry_run:
