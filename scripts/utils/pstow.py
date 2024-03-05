@@ -135,29 +135,31 @@ class Tree:
         """
         return not self == other
 
-    def __contains__(self, other: Self | VPath | StrPath) -> bool:
+    def __contains__(self, other: Self | VPath) -> bool:
         """
-        Recursive check if we contain an element.
+        Non-recursive check if we contain an element.
         @param other: Element in question.
         @return: True if element is contained in this Tree, or deeper.
         """
         if other is None:
             return False
-        if isinstance(other, str):
-            other = VPath(other).absolute()
-        if other.exists(follow_symlinks=False) and other.is_dir():
-            other = Tree(other)
+        self_parts = VPath.get_dir_parts(self.absolute())
+        other_parts = VPath.get_dir_parts(other.absolute())
 
-        # preliminary check to check for our ownership before recusing
-        ours = bool(list(filter(lambda e: other == e, self.tree)))
-        if ours:
-            return True
+        # if the other parts are less than ours, meaning
+        #  my/path/1
+        #  my/path
+        # it means that my/path is definitely not contained within our tree
+        if len(other_parts) < len(self_parts):
+            return False
 
-        for branch in self.branches:
-            if other in branch:
-                return True
+        # zip_longest, not in reverse, since the other_parts might be in a subdirectory,
+        #  we just want to check if the tld equivalent is us
+        for spc, opc in zip(self_parts, other_parts):
+            if spc != opc:
+                return False
 
-        return False
+        return True
 
     def __repr__(self) -> str:
         return str(self.absolute())
