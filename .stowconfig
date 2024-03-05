@@ -17,9 +17,7 @@ games/
 
 // firefox-specific redirect ignores; these are not true config files
 // and must be imported manually
-.config/mozilla/ublock.txt
-.config/mozilla/sidebery.json
-.config/mozilla/userChrome.css
+.config/mozilla/*
 
 // these are not true config files, they must be imported manually
 .config/gnome-extensions/
@@ -32,11 +30,11 @@ scripts/.gitconfig ::: .
 
 // move up & rename directory
 .config/templates/* ::: Templates/
-.config/config.yaml ::: .config/lsd/
 
 // redirect to nested (not created necessarily) directory
 .config/alacritty.toml ::: .config/alacritty/
 .config/pipewire.conf ::: .config/pipewire/
+.config/config.yaml ::: .config/lsd/
 
 // create subdirectories on the fly, don't nest unecessarily
 .config/sublime-text/* ::: .config/sublime-text/Packages/User/
