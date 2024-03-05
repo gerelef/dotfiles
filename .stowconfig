@@ -32,7 +32,7 @@ scripts/.gitconfig ::: .
 
 // move up & rename directory
 .config/templates/* ::: Templates/
-.config/config.yaml ::: .config/yaml/config.yaml
+.config/config.yaml ::: .config/yaml/
 
 // redirect to nested (not created necessarily) directory
 .config/alacritty.toml ::: .config/alacritty/
