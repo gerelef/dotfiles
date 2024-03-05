@@ -145,7 +145,7 @@ class Tree:
             return False
         if isinstance(other, str):
             other = VPath(other).absolute()
-        if other.exists(follow_symlinks=False) and other.is_dir():
+        if isinstance(other, VPath) and other.exists(follow_symlinks=False) and other.is_dir():
             other = Tree(other)
 
         # preliminary check to check for our ownership before recusing
