@@ -273,9 +273,6 @@ class Tree:
             raise RuntimeError(f"Expected VPath, got None?!")
         if not isinstance(element, VPath):
             raise RuntimeError(f"Expected VPath, got {type(element)}")
-        # early exit if we do not contain the element
-        if element not in self:
-            return self
 
         removable_contents: Iterable[VPath] = list(filter(lambda pp: pp == element, self.contents))
         for rcont in removable_contents:
@@ -313,9 +310,6 @@ class Tree:
             raise RuntimeError(f"Expected Tree, got {type(removable_branch)}")
         if removable_branch == self:
             raise RuntimeError(f"Expected other, got self?!")
-        # early exit if we do not contain the element
-        if removable_branch not in self:
-            return self
 
         subtrees = list(filter(lambda el: el == removable_branch, self.branches))
         for subtree in subtrees:
@@ -335,7 +329,7 @@ class Tree:
         Driver/wrapper function to avoid duplication of .vtrim_file or .vtrim_branch
         """
         if isinstance(thing, str):
-            thing = VPath(thing)
+            thing = VPath(thing).absolute()
         # if thing is a directory, convert it to a Tree 
         if isinstance(thing, VPath) and thing.exists(follow_symlinks=False) and thing.is_dir():
             thing = Tree(thing)
@@ -815,7 +809,6 @@ class Stower:
 
         # sixth step: apply preliminary business rule to the tree:
         #  trim empty branches to avoid creation of directories whose contents are ignored entirely
-        # FIXME this doesn't work right: self.src_tree.vtrim_file_rule(lambda _, __: True)
         self.src_tree.vtrim_branch_rule(lambda br, __: len(br) == 0)
 
         if dry_run:
@@ -887,7 +880,7 @@ def get_arparser() -> ArgumentParser:
         help="Target (destination) directory links will be linked to."
     )
     ap.add_argument(
-        "--enforce-integrity", "-e",
+        "--enforce-integrity", "-i",
         required=False,
         action="store_true",
         default=False,
