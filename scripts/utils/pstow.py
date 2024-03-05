@@ -588,6 +588,8 @@ class Stowconfig:
     REDIRECT_LINE_REGEX_SOURCE_GROUP = 1
     REDIRECT_LINE_REGEX_TARGET_GROUP = 3
 
+    ERR_STRATEGY: Callable[[Exception], None] = lambda e: None
+
     def __init__(self, fstowignore: VPath):
         """
         @param fstowignore: stowignore VPath
@@ -652,15 +654,24 @@ class Stowconfig:
 
     @property
     def ignorables(self) -> Iterable[VPath]:
-        if not self.__cached:
-            self._parse()
+        try:
+            if not self.__cached:
+                self._parse()
+        except Exception as e:
+            logger.error(f"Got {e} while parsing stowconfig.")
+            Stowconfig.ERR_STRATEGY(e)
+
         # don't leak reference
         return copy(self.__ignorables)
 
     @property
     def hardlinkables(self) -> Iterable[VPath]:
-        if not self.__cached:
-            self._parse()
+        try:
+            if not self.__cached:
+                self._parse()
+        except Exception as e:
+            logger.error(f"Got {e} while parsing stowconfig.")
+            Stowconfig.ERR_STRATEGY(e)
         logger.warning("Hardlink section is currently not supported, and it'll do nothing.")
         # return set(self.__hardlinkables) - set(self.__ignorables)
         return []
@@ -670,8 +681,12 @@ class Stowconfig:
         """
         Returns an Iterator of VPath (src) to set of targets (Tree) (1:N)
         """
-        if not self.__cached:
-            self._parse()
+        try:
+            if not self.__cached:
+                self._parse()
+        except Exception as e:
+            logger.error(f"Got {e} while parsing stowconfig.")
+            Stowconfig.ERR_STRATEGY(e)
         if not self.__redirectables_sanitized:
             self.__redirectables_sanitized = True
             self.__redirectables = list(filter(lambda t: t.src not in self.ignorables, self.__redirectables))
@@ -872,11 +887,11 @@ def get_arparser() -> ArgumentParser:
         help="Target (destination) directory links will be linked to."
     )
     ap.add_argument(
-        "--loose", "-l",
+        "--enforce-integrity", "-e",
         required=False,
-        action="store_false",
-        default=True,
-        help="Loose restrictions on source & destination file paths. Will allow for excluded symlinks to be resolved."
+        action="store_true",
+        default=False,
+        help="Enforce integrity of any .stowconfig encountered; a.k.a. stop at any error."
     )
     ap.add_argument(
         "--force", "-f",
@@ -886,12 +901,11 @@ def get_arparser() -> ArgumentParser:
         help="Force overwrite of any conflicting file. This WILL overwrite regular files!"
     )
     ap.add_argument(
-        "--non-interactive", "-i",
+        "--yes", "-y",
         required=False,
         action="store_true",
         default=False,
-        help="Don't ask for user permission before committing any destructive actions. "
-             "This is a dangerous flag!"
+        help="Automatically assume 'yes' for any user prompt. Dangerous flag, possibly destructive!"
     )
     ap.add_argument(
         "--overwrite-others", "-o",
@@ -957,9 +971,12 @@ def main():
             logger.error("Target must be set for non-dry runs.")
             sys.exit(2)
 
-        source = VPath(args.source).resolve(strict=True)  # source MUST exist & be valid!
-        destination = VPath(args.target if not is_dry else Tree.REAL_USER_HOME).resolve(strict=not args.loose)
-        excluded = [VPath(str_path).resolve(strict=not args.loose) for str_path in args.exclude]
+        Stowconfig.ERR_STRATEGY = sys.exit if args.enforce_integrity else None
+
+        # source & destination MUST exist & be valid!
+        source = VPath(args.source).resolve(strict=True)
+        destination = VPath(args.target if not is_dry else Tree.REAL_USER_HOME).resolve(strict=True)
+        excluded = [VPath(str_path).absolute() for str_path in args.exclude]
 
         Stower(
             source, destination,
@@ -969,7 +986,7 @@ def main():
             make_parents=not args.no_parents,
             no_redirects=args.no_redirects,
         ).stow(
-            interactive=not args.non_interactive,
+            interactive=not args.yes,
             dry_run=args.command == "status"
         )
     except AbortError:
