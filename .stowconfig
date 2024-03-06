@@ -17,7 +17,9 @@ games/
 
 // firefox-specific redirect ignores; these are not true config files
 // and must be imported manually
-.config/mozilla/*
+.config/mozilla/sidebery.json
+.config/mozilla/ublock.txt
+.config/mozilla/userChrome.css
 
 // these are not true config files, they must be imported manually
 .config/gnome-extensions/
