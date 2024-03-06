@@ -503,11 +503,6 @@ class Tree:
             dst.unlink(missing_ok=True)
             dst.symlink_to(target=src.resolve(strict=True), target_is_directory=False)
 
-        def hlink(src: VPath, dst: VPath):
-            logger.info(f"Symlinking src {source} to {destination}")
-            dst.unlink(missing_ok=True)
-            dst.hardlink_to(target=src.resolve(strict=True))
-
         if not target.exists(follow_symlinks=False) and not make_parents:
             raise PathError(f"Expected valid target, but got {target}, which doesn't exist?!")
         if target.exists(follow_symlinks=False) and not target.is_dir():
@@ -574,7 +569,6 @@ class Stowconfig:
     STOWIGNORE_FN = ".stowconfig"
     IGNORE_SECTION_HEADER_TOK = "[ignore]"
     REDIRECT_SECTION_HEADER_TOK = "[redirect]"
-    HARDLINK_SECTION_HEADER_TOK = "[hardlink]"
 
     COMMENT_PREFIX_TOK = "//"
 
@@ -599,10 +593,6 @@ class Stowconfig:
 
     def _handle_ignore_lines(self, entry: str) -> None:
         self.__ignorables.extend(Stowconfig.parse_glob_line(self.parent, entry))
-
-    def _handle_hardlink_lines(self, entry: str) -> None:
-        # self.__hardlinkables.extend(Stowconfig.parse_glob_line(self.parent, entry))
-        pass
 
     def _handle_redirect_lines(self, entry: str) -> None:
         fm = Stowconfig.REDIRECT_LINE_REGEX.fullmatch(entry)
@@ -640,9 +630,6 @@ class Stowconfig:
                     case Stowconfig.REDIRECT_SECTION_HEADER_TOK:
                         strategy = self._handle_redirect_lines
                         continue  # eat line because it's a header
-                    case Stowconfig.HARDLINK_SECTION_HEADER_TOK:
-                        strategy = self._handle_hardlink_lines
-                        continue  # eat line because it's a header
 
                 strategy(trimmed_line)
 
@@ -657,18 +644,6 @@ class Stowconfig:
 
         # don't leak reference
         return copy(self.__ignorables)
-
-    @property
-    def hardlinkables(self) -> Iterable[VPath]:
-        try:
-            if not self.__cached:
-                self._parse()
-        except Exception as e:
-            logger.error(f"Got {e} while parsing stowconfig.")
-            Stowconfig.ERR_STRATEGY(e)
-        logger.warning("Hardlink section is currently not supported, and it'll do nothing.")
-        # return set(self.__hardlinkables) - set(self.__ignorables)
-        return []
 
     @property
     def redirectables(self) -> Iterable[RedirectEntry]:
