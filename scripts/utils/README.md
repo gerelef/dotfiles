@@ -12,9 +12,6 @@ Utility scripts, meant to make life easier. In detail, by descending order of co
     - utility script meant to install a few popular, actively maintained firefox themes; 
     see `update-ff-theme.py --help` for more. Appropriate compgen function should be in `.bashrc`, and if it isn't, it's being worked on.
     Based on `sela`.
-- `pstow.py`
-    - utility script meant to cover the basic usecase of GNU Stow, with enhanced
-    functionality for personal use.
 
 ## Historical note
 A massive trim was done on 28/2/2024. 
