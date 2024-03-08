@@ -84,17 +84,17 @@ require-pip
 set -g fish_greeting ""
 
 #############################################################
-# ALIAS
+# ABBREVIATIONS & ALIAS
+abbr -a lss "lsd --almost-all --icon never --group-directories-first"
+abbr -a wget "\wget -c --read-timeout=5 --tries=0"
+abbr -a grep "\grep -i"
+abbr -a rm "rm -v"
+abbr -a reverse "tac"
+abbr -a palindrome "rev"
+
 alias .. "cd .."
 alias ... "cd ../.."
 alias .... "cd ../../.."
 alias ..... "cd ../../../.."
-
-alias lss "lsd --almost-all --icon never --icon-theme unicode --group-directories-first"
-alias wget "\wget -c --read-timeout=5 --tries=0"
-alias grep "\grep -i"
-alias rm "rm -v"
-alias reverse "tac"
-alias palindrome "rev"
 
 alias fuck "sudo $history[2]"
