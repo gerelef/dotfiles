@@ -109,7 +109,7 @@ abbr -a rm "rm -v"
 abbr -a reverse "tac"
 abbr -a palindrome "rev"
 abbr -a unset "set --erase"
-abbr -a fuck "sudo $history[2]"
+abbr -a fuck "sudo \$history[2]"
 
 alias .. "cd .."
 alias ... "cd ../.."
