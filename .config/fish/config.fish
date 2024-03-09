@@ -20,11 +20,8 @@ if not status is-interactive; exit; end;
 # important note: the statement pythonX.x -m venv \"\$venv_dir\" won't work with 2.7 or lower,
 #  for that, we need the virtualenv module
 function prepare-pip
-    set vpip_fname "/tmp/vpip-temp-$(date +%s%N).fish"
-    set venv_dir "$HOME/.vpip"
-
-    # # get all the appropriate versions from the filesystem
-    # # https://stackoverflow.com/a/57485303
+    # get all the appropriate versions from the filesystem
+    # https://stackoverflow.com/a/57485303
     # set array
     # access elements with $array[INDEX]
     set -l python_versions
@@ -32,7 +29,9 @@ function prepare-pip
         set -a python_versions "$pv" # append to array
     end
 
-    # create mock functions
+    set vpip_fname "$(mktemp)"
+    set venv_dir "$HOME/.vpip"
+    # create functions for each version
     for pv in $python_versions
         # sanitize the filename and keep only the numbers at the end
         set pv_num $(echo $pv | tr -d -c 0-9.)
