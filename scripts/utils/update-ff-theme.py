@@ -326,10 +326,6 @@ def get_manager(args: argparse.Namespace) -> Manager:
             remote = UI_FIX_THEME_GITHUB_RELEASES_URL
             adiscriminator = KeywordAssetDiscriminator("esr-lepton.zip", preprocess=kw_preprocessor)
             installer = UIFixInstaller(install_dirs, resource_file)
-        if args.lepton_proton:
-            remote = UI_FIX_THEME_GITHUB_RELEASES_URL
-            adiscriminator = KeywordAssetDiscriminator("lepton-proton.zip", preprocess=kw_preprocessor)
-            installer = UIFixInstaller(install_dirs, resource_file)
         if args.uwp:
             raise NotImplementedError
         if args.cascade:
