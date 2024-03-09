@@ -1,8 +1,7 @@
 #!/usr/bin/env bash
 
 update-compat-layers () (
-    # curl -fsSL https:// | bash -s -- - "$@"
-    return 1
+    "$HOME/dotfiles/scripts/utils/update-compat-layers.py" "$@"
 )
 
 update-compat-layers "$@"
