@@ -66,7 +66,7 @@ class Manager:
         :raises requests.TooManyRedirects:
         """
         # verbose sanity check for end-users
-        uninitialized_components = list(filter(lambda o: not o, [
+        uninitialized_components = [
             self.pfactory_cls,
             self.released,
             self.assetd,
@@ -74,10 +74,11 @@ class Manager:
             self.auditor,
             self.installer,
             self.janitor
-        ]))
+        ]
 
-        if uninitialized_components:
+        if not all(uninitialized_components):
             print(f"FATAL! Got these uninitialized components: {uninitialized_components}", file=sys.stderr)
+            print('\n'.join(list(str(filter(lambda o: not o, uninitialized_components)))), file=sys.stderr)
             raise exceptions.UninitializedComponents(uninitialized_components)
 
         downloaded: list[Path] = []
