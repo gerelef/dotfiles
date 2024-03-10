@@ -868,7 +868,7 @@ gsettings set org.gnome.shell.extensions.forge.keybindings window-toggle-float "
 gsettings set org.gnome.shell.extensions.forge.keybindings workspace-active-tile-toggle "[]"
 gsettings set org.gnome.shell.extensions.forge primary-layout-mode 'tiling'
 gsettings set org.gnome.shell.extensions.forge float-always-on-top-enabled true
-gsettings set org.gnome.shell.extensions.forge preview-hint-enabled true
+gsettings set org.gnome.shell.extensions.forge preview-hint-enabled false
 gsettings set org.gnome.shell.extensions.forge auto-split-enabled true
 gsettings set org.gnome.shell.extensions.forge focus-border-toggle false
 gsettings set org.gnome.shell.extensions.forge split-border-toggle false
