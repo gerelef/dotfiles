@@ -13,6 +13,6 @@ Utility scripts, meant to make life easier. In detail, by descending order of co
     see `update-ff-theme.py --help` for more. Appropriate compgen function should be in `.bashrc`, and if it isn't, it's being worked on.
     Based on `sela`.
 
-## Historical note
+## historical note
 A massive trim was done on 28/2/2024. 
 You may find functions/utilities that were removed, here: `fbc1fa8`.

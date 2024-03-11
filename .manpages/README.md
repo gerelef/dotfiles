@@ -1,4 +1,7 @@
-## Manpages
+## .manpages
+Manual pages, authored in `Markdown`, converted to manpages through `ronn`. 
+
+## details
 Set like this in your `.bashrc`:
 ```sh
 export MANPATH="$MANPATH:$DOTFILES_DIR/man"
@@ -9,6 +12,7 @@ Further reading:
 - [man ronn](https://rtomayko.github.io/ronn/ronn.1.html)
 - [man ronn-format](https://rtomayko.github.io/ronn/ronn-format.7.html)
 
+## categories
 Categories are as follows (as per this [manual](https://tldp.org/HOWTO/Man-Page/q2.html)):
 1) User commands that may be started by everyone.[^1]
 2) System calls, that is, functions provided by the kernel.
