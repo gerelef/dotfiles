@@ -18,7 +18,7 @@ The common `$XDG_CONFIG_HOME` directory setup is semi-emulated, with exceptions 
 The complete setup of my system assume that any `~/dotfiles/scripts/setup/...` script
 has run to create the most basic of prerequisites & sane options for my usecase.
 Afterwards, I just need to install my dotfiles & my themes.
-- To install my dotfiles I use `pstow`, which is a utility located under `scripts/utils/`.
+- To install my dotfiles I use [pstow](https://github.com/gerelef/pstow).
 - To install my themes I use `update-ff-theme`, which is a utility located under `scripts/utils/`
 - To install my compatibility layers for gaming, I use `update-compat-layers`, which is a utility located under `scripts/utils/`
 
@@ -27,5 +27,5 @@ Afterwards, I just need to install my dotfiles & my themes.
 
 To automatically install the appropriate files:
 ```bash
-cd ~ && git clone https://github.com/gerelef/dotfiles && python3 ~/dotfiles/scripts/utils/pstow.py --source ~/dotfiles --target ~ --force --overwrite-others
+cd ~ && git clone https://github.com/gerelef/dotfiles && ~/dotfiles/scripts/functions/pstow --source ~/dotfiles --target ~ --force --overwrite-others
 ```
