@@ -1,6 +1,8 @@
 // Ignore header is implied, since it's the first thing in the .stowconfig
 .git*
 README.*
+.config/README.*
+scripts/README.*
 
 // these are configuration files specifically for the dotfiles directory
 // and as such, they shouldn't be redirected (stowed) anywhere else
