@@ -107,7 +107,6 @@ abbr --position command --add grep "grep -i"
 abbr --position command --add rm "rm -v"
 abbr --position command --add reverse "tac"
 abbr --position command --add palindrome "rev"
-abbr --position command --add unset "set --erase"
 
 function __sudo_last_command; echo "sudo $history[1]"; end
 abbr --position command --add fuck --function __sudo_last_command
