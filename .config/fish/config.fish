@@ -1,5 +1,5 @@
 if not status is-interactive; exit; end;
-# Commands to run in interactive sessions can go here
+# commands to run in interactive sessions go here
 
 #############################################################
 # PYTHON VENV(s)
@@ -101,14 +101,16 @@ set -g fish_greeting ""
 
 #############################################################
 # ABBREVIATIONS & ALIAS
-abbr -a lss "lsd --almost-all --icon never --group-directories-first"
-abbr -a wget "wget -c --read-timeout=5 --tries=0"
-abbr -a grep "grep -i"
-abbr -a rm "rm -v"
-abbr -a reverse "tac"
-abbr -a palindrome "rev"
-abbr -a unset "set --erase"
-abbr -a fuck "sudo \$history[2]"
+abbr --position command --add lss "lsd --almost-all --icon never --group-directories-first"
+abbr --position command --add wget "wget -c --read-timeout=5 --tries=0"
+abbr --position command --add grep "grep -i"
+abbr --position command --add rm "rm -v"
+abbr --position command --add reverse "tac"
+abbr --position command --add palindrome "rev"
+abbr --position command --add unset "set --erase"
+
+function __sudo_last_command; echo "sudo $history[1]"; end
+abbr --position command --add fuck --function __sudo_last_command
 
 alias .. "cd .."
 alias ... "cd ../.."
