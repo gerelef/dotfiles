@@ -135,17 +135,14 @@ install-proprietary-nvidia-drivers () (
     
     echo-status "-------------------INSTALLING NVIDIA DRIVERS----------------"
     echo-status "Found $NVIDIA_GPU running with nouveau drivers!"
-    dnf-install "$INSTALLABLE_NVIDIA_DRIVERS"
-    dnf-install "$INSTALLABLE_NVIDIA_UTILS"
     
-    # check arch wiki, these enable DRM
-    grubby --update-kernel=ALL --args="nvidia-drm.modeset=1"
-    grubby --update-kernel=ALL --args="nvidia-drm.fbdev=1"
-    echo-debug "Added modeset & fbdev."
     if is-uefi && [[ $(mokutil --sb-state 2> /dev/null) ]]; then
         # https://blog.monosoul.dev/2022/05/17/automatically-sign-nvidia-kernel-module-in-fedora-36/
         # https://github.com/NVIDIA/yum-packaging-precompiled-kmod/blob/main/UEFI.md
         # the official NVIDIA instructions recommend installing the driver first
+        # however, we're going to install the drivers *after* possibly enrolling MOK
+        # since we shouldn't reboot/shutdown for a few minutes after installing akmod drivers
+        # since they'll be compiling in the background!
         # Their recommendations talk about kmod, not akmod, but the process should be the same
         # FIXME needs checking that this actually works.
         if ask-user 'Do you want to enroll MOK and restart afterwards?'; then
@@ -161,7 +158,15 @@ install-proprietary-nvidia-drivers () (
     else
         echo-unexpected "UEFI not found; please restart & use UEFI in order to sign drivers..."
     fi
-    
+
+    dnf-install "$INSTALLABLE_NVIDIA_DRIVERS"
+    dnf-install "$INSTALLABLE_NVIDIA_UTILS"
+
+    # check arch wiki, these enable DRM
+    grubby --update-kernel=ALL --args="nvidia-drm.modeset=1"
+    grubby --update-kernel=ALL --args="nvidia-drm.fbdev=1"
+    echo-debug "Added modeset & fbdev."
+
     echo-debug "Regenerating akmod build..."
     akmods --force && dracut --force --regenerate-all
     echo-debug "Regenerated akmod build."
