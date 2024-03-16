@@ -6,7 +6,7 @@ readonly DIR=$(dirname -- "$BASH_SOURCE")
 source "$DIR/common-utils.sh"
 
 # DEPENDENCIES FOR THE CURRENT SCRIPT 
-dnf-install flatpak plocate pciutils udisks2
+dnf-install flatpak curl plocate pciutils udisks2
 
 install-gnome-essentials () (
     echo-status "-------------------INSTALLING GNOME----------------"
@@ -384,6 +384,7 @@ readonly DISTRIBUTION_NAME="fedora$(rpm -E %fedora)"
 #######################################################################################################
 
 readonly INSTALLABLE_ESSENTIAL_DESKTOP_PACKAGES="\
+ssh \
 glx-utils \
 mesa-dri-drivers \
 mesa-vulkan-drivers \
