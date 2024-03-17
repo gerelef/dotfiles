@@ -1,10 +1,18 @@
 [alias]
     ls = log --pretty=format:"%C(yellow)%h\\ %ad%Cred%d\\ %Creset%s%Cblue\\ [%cn]" --decorate --date=short
-    find = "!git ls-files | grep -i"
     st = status -sb
-    stv = "!git diff --staged"
-    list-changed = "!git diff-tree --no-commit-id --name-status -r"
+    stv = diff --staged
+    list-changed = diff-tree --no-commit-id --name-status -r
+    bl = blame -w -C -C -C -L
+    when = "!__git_when () ( git log -S $1 -p ); __git_when"
     alias = "!git config -l | grep alias | cut -c 7-"
+[rerere]
+    enabled = true  # REuse REcorded REsolution
+[core]
+    protectHFS = true
+    protectNTFS = true
+[branch]
+    sort = -committerdate  # sort branches by most recent commits in git branch
 [includeIf "hasconfig:remote.*.url:git@github.com*/**"]
     path = ~/.gitconfig-github
 [includeIf "hasconfig:remote.*.url:git@gitlab.com*/**"]
@@ -13,7 +21,7 @@
     path = ~/.gitconfig-gnome
 # the following section is ripped straight from git-delta
 [color]
-	ui = auto
+    ui = auto
 [core]
     pager = delta
 [interactive]
