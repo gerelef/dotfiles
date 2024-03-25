@@ -11,6 +11,8 @@ update-everything () (
         fi
         if [[ -n "$(command -v pacman)" ]]; then
             sudo pacman -Syu || exit
+            # recursively remove orphans and their configuration files
+            sudo pacman -Qdtq | sudo pacman -Rns - 2> /dev/null
             break
         fi
         if [[ -n "$(command -v apt)" ]]; then
@@ -19,6 +21,8 @@ update-everything () (
             sudo apt autoremove -y || exit
             break
         fi
+
+        echo "No package manager found! Continuing as usual..."
         break
     done
     
