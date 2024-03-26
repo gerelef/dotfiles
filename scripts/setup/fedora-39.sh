@@ -635,6 +635,7 @@ ninja-build \
 java-latest-openjdk \
 java-latest-openjdk-devel \
 tldr \
+info \
 "
 
 # NOTE: these are global and should be treated as desktop agnostic
