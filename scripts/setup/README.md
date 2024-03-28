@@ -1,13 +1,6 @@
 ## setup
 This directory contains scripts that are to be used upon initial startup of a standard distribution (indicated by the name), to setup the default configuration appropriate for it.
 
-### naming format
-Rules & regex:
-```bash
-name-version(-de).sh # desktop environment specifier is optional
-valid regex: [a-zA-Z0-9]+-[0-9]+(-gnome)?(-kde)?(-cinnamon)?(-hypr)?\.sh
-```
-
 ### library
 `common-utils.sh` is a REQUIRED catch-all "library" script to be used by the aformentioned scripts.
 

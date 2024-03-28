@@ -2,10 +2,10 @@
 
 readonly DIR=$(dirname -- "$BASH_SOURCE")
 
-[[ -f "$DIR/common-utils.sh" ]] || ( echo "$DIR/common-utils.sh doesn't exist! exiting..." && exit 2 ) 
+[[ -f "$DIR/common-utils.sh" ]] || ( echo "$DIR/common-utils.sh doesn't exist! exiting..." && exit 2 )
 source "$DIR/common-utils.sh"
 
-# DEPENDENCIES FOR THE CURRENT SCRIPT 
+# DEPENDENCIES FOR THE CURRENT SCRIPT
 dnf-install flatpak curl plocate pciutils udisks2 dnf5
 
 # change dnf4 to dnf5 (preview/unstable: is supposed to be shipped with fedora-41)
