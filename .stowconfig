@@ -13,7 +13,10 @@ scripts/README.*
 scripts/utils/
 scripts/setup/
 scripts/functions/
-.manpages/
+.manpages/README.md
+.manpages/man1/*.html
+.manpages/man1/*.md
+.manpages/man7/*
 // ignore submodules
 games/
 
@@ -46,5 +49,8 @@ scripts/.gitconfig ::: .
 
 // find already created profile subdirectories on the fly, we can't nest here anyways
 .config/mozilla/* ::: .mozilla/firefox/*.default*/
+
+// redirect manpages to user manpages
+.manpages/man1/* ::: .local/share/man/man1/
 
 // no hardlink section here!

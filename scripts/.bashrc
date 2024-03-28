@@ -11,8 +11,6 @@
 # GLOBAL CONSTANTS & EXPORTS
 readonly DOTFILES_DIR="$HOME/dotfiles"
 
-# https://unix.stackexchange.com/questions/90759/where-should-i-install-manual-pages-in-user-directory
-export MANPATH="$MANPATH:$DOTFILES_DIR/.manpages"
 export DOTNET_CLI_TELEMETRY_OPTOUT=1
 
 export HISTFILESIZE=100000
