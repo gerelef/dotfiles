@@ -254,7 +254,7 @@ install-jetbrains-toolbox () (
     if [[ "$validsum" == "$curlsum" ]]; then
         # we're overriding $HOME for this script since it doesn't know we're running as root
         #  and looks for $HOME, ruining everything in whatever "$HOME/.local/share/JetBrains/Toolbox/bin" and "$HOME/.local/bin" resolve into
-        (HOME="$REAL_USER_HOME" && curl --proto '=https' --tlsv1.2 -fsSL https://raw.githubusercontent.com/nagygergo/jetbrains-toolbox-install/master/jetbrains-toolbox.sh | bash)
+        (CI="setup"; HOME="$REAL_USER_HOME"; curl --proto '=https' --tlsv1.2 -fsSL https://raw.githubusercontent.com/nagygergo/jetbrains-toolbox-install/master/jetbrains-toolbox.sh | bash)
         echo-success "Done."
         return
     fi
