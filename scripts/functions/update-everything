@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 
 update-everything () (
+    echo "$(tput bold)$(tput setaf  6)────>Updating w/ package manager...$(tput sgr0)"
     # the reason this for loop exists is to act as a "block", so we can break control flow
     #  when we're done updating platform packages (since there will be only 1 package manager per sys)
     while :; do
@@ -25,17 +26,20 @@ update-everything () (
         echo "No package manager found! Continuing as usual..."
         break
     done
-    
+
     if [[ -n "$(command -v flatpak)" ]]; then
+        echo "$(tput bold)$(tput setaf  6)────>Updating flatpak...$(tput sgr0)"        
         flatpak update -y || exit 
         flatpak uninstall --unused -y || exit
         sudo flatpak repair || exit
     fi 
     
     if [[ -n "$(command -v snap)" ]]; then
+        echo "$(tput bold)$(tput setaf  6)────>Updating snap...$(tput sgr0)"
         snap refresh -y || exit
     fi 
 
+    echo "$(tput bold)$(tput setaf  6)────>Updating indexes...$(tput sgr0)"
     [[ -n "$(command -v updatedb)" ]] && sudo updatedb
     [[ -n "$(command -v update-grub)" ]] && sudo update-grub
     return 0
