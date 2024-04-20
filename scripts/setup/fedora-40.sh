@@ -456,7 +456,6 @@ readonly INSTALLABLE_GNOME_EXTENSIONS="\
 gnome-extensions-app \
 gnome-shell-extension-places-menu \
 gnome-shell-extension-forge \
-gnome-shell-extension-dash-to-panel \
 gnome-shell-extension-caffeine \
 gnome-shell-extension-appindicator \
 "
@@ -839,7 +838,7 @@ add-gsettings-shortcut "flameshot" "/usr/local/bin/flameshot-gui-workaround" "Pr
 add-gsettings-shortcut "alacritty" "alacritty" "<Shift><Control>KP_Add"
 
 # extension settings 
-gsettings set org.gnome.shell enabled-extensions "['places-menu@gnome-shell-extensions.gcampax.github.com', 'appindicatorsupport@rgcjonas.gmail.com', 'dash-to-panel@jderose9.github.com', 'forge@jmmaranan.com', 'caffeine@patapon.info']"
+gsettings set org.gnome.shell enabled-extensions "['places-menu@gnome-shell-extensions.gcampax.github.com', 'appindicatorsupport@rgcjonas.gmail.com', 'forge@jmmaranan.com']"
 
 gsettings set org.gnome.shell.extensions.forge.keybindings con-split-horizontal "[]"
 gsettings set org.gnome.shell.extensions.forge.keybindings con-split-layout-toggle "[]"
@@ -895,66 +894,6 @@ gsettings set org.gnome.shell.extensions.forge tiling-mode-enabled true
 gsettings set org.gnome.shell.extensions.forge window-gap-hidden-on-single true
 gsettings set org.gnome.shell.extensions.forge window-gap-size 1
 gsettings set org.gnome.shell.extensions.forge window-gap-size-increment 1
-gsettings set org.gnome.shell.extensions.dash-to-panel app-ctrl-hotkey-1 "[]"
-gsettings set org.gnome.shell.extensions.dash-to-panel app-ctrl-hotkey-10 "[]"
-gsettings set org.gnome.shell.extensions.dash-to-panel app-ctrl-hotkey-2 "[]"
-gsettings set org.gnome.shell.extensions.dash-to-panel app-ctrl-hotkey-3 "[]"
-gsettings set org.gnome.shell.extensions.dash-to-panel app-ctrl-hotkey-4 "[]"
-gsettings set org.gnome.shell.extensions.dash-to-panel app-ctrl-hotkey-5 "[]"
-gsettings set org.gnome.shell.extensions.dash-to-panel app-ctrl-hotkey-6 "[]"
-gsettings set org.gnome.shell.extensions.dash-to-panel app-ctrl-hotkey-7 "[]"
-gsettings set org.gnome.shell.extensions.dash-to-panel app-ctrl-hotkey-8 "[]"
-gsettings set org.gnome.shell.extensions.dash-to-panel app-ctrl-hotkey-9 "[]"
-gsettings set org.gnome.shell.extensions.dash-to-panel app-ctrl-hotkey-kp-1 "[]"
-gsettings set org.gnome.shell.extensions.dash-to-panel app-ctrl-hotkey-kp-"[]">
-gsettings set org.gnome.shell.extensions.dash-to-panel app-ctrl-hotkey-kp-2 "[]"
-gsettings set org.gnome.shell.extensions.dash-to-panel app-ctrl-hotkey-kp-3 "[]"
-gsettings set org.gnome.shell.extensions.dash-to-panel app-ctrl-hotkey-kp-4 "[]"
-gsettings set org.gnome.shell.extensions.dash-to-panel app-ctrl-hotkey-kp-5 "[]"
-gsettings set org.gnome.shell.extensions.dash-to-panel app-ctrl-hotkey-kp-6 "[]"
-gsettings set org.gnome.shell.extensions.dash-to-panel app-ctrl-hotkey-kp-7 "[]"
-gsettings set org.gnome.shell.extensions.dash-to-panel app-ctrl-hotkey-kp-8 "[]"
-gsettings set org.gnome.shell.extensions.dash-to-panel app-ctrl-hotkey-kp-9 "[]"
-gsettings set org.gnome.shell.extensions.dash-to-panel app-hotkey-1 "[]"
-gsettings set org.gnome.shell.extensions.dash-to-panel app-hotkey-10 "[]"
-gsettings set org.gnome.shell.extensions.dash-to-panel app-hotkey-2 "[]"
-gsettings set org.gnome.shell.extensions.dash-to-panel app-hotkey-3 "[]"
-gsettings set org.gnome.shell.extensions.dash-to-panel app-hotkey-4 "[]"
-gsettings set org.gnome.shell.extensions.dash-to-panel app-hotkey-5 "[]"
-gsettings set org.gnome.shell.extensions.dash-to-panel app-hotkey-6 "[]"
-gsettings set org.gnome.shell.extensions.dash-to-panel app-hotkey-7 "[]"
-gsettings set org.gnome.shell.extensions.dash-to-panel app-hotkey-8 "[]"
-gsettings set org.gnome.shell.extensions.dash-to-panel app-hotkey-9 "[]"
-gsettings set org.gnome.shell.extensions.dash-to-panel app-hotkey-kp-1 "[]"
-gsettings set org.gnome.shell.extensions.dash-to-panel app-hotkey-kp-10 "[]"
-gsettings set org.gnome.shell.extensions.dash-to-panel app-hotkey-kp-2 "[]"
-gsettings set org.gnome.shell.extensions.dash-to-panel app-hotkey-kp-3 "[]"
-gsettings set org.gnome.shell.extensions.dash-to-panel app-hotkey-kp-4 "[]"
-gsettings set org.gnome.shell.extensions.dash-to-panel app-hotkey-kp-5 "[]"
-gsettings set org.gnome.shell.extensions.dash-to-panel app-hotkey-kp-6 "[]"
-gsettings set org.gnome.shell.extensions.dash-to-panel app-hotkey-kp-7 "[]"
-gsettings set org.gnome.shell.extensions.dash-to-panel app-hotkey-kp-8 "[]"
-gsettings set org.gnome.shell.extensions.dash-to-panel app-hotkey-kp-9 "[]"
-gsettings set org.gnome.shell.extensions.dash-to-panel app-shift-hotkey-1 "[]"
-gsettings set org.gnome.shell.extensions.dash-to-panel app-shift-hotkey-10 "[]"
-gsettings set org.gnome.shell.extensions.dash-to-panel app-shift-hotkey-2 "[]"
-gsettings set org.gnome.shell.extensions.dash-to-panel app-shift-hotkey-3 "[]"
-gsettings set org.gnome.shell.extensions.dash-to-panel app-shift-hotkey-4 "[]"
-gsettings set org.gnome.shell.extensions.dash-to-panel app-shift-hotkey-5 "[]"
-gsettings set org.gnome.shell.extensions.dash-to-panel app-shift-hotkey-6 "[]"
-gsettings set org.gnome.shell.extensions.dash-to-panel app-shift-hotkey-7 "[]"
-gsettings set org.gnome.shell.extensions.dash-to-panel app-shift-hotkey-8 "[]"
-gsettings set org.gnome.shell.extensions.dash-to-panel app-shift-hotkey-9 "[]"
-gsettings set org.gnome.shell.extensions.dash-to-panel app-shift-hotkey-kp-1 "[]"
-gsettings set org.gnome.shell.extensions.dash-to-panel app-shift-hotkey-kp-10 "[]"
-gsettings set org.gnome.shell.extensions.dash-to-panel app-shift-hotkey-kp-2 "[]"
-gsettings set org.gnome.shell.extensions.dash-to-panel app-shift-hotkey-kp-3 "[]"
-gsettings set org.gnome.shell.extensions.dash-to-panel app-shift-hotkey-kp-4 "[]"
-gsettings set org.gnome.shell.extensions.dash-to-panel app-shift-hotkey-kp-5 "[]"
-gsettings set org.gnome.shell.extensions.dash-to-panel app-shift-hotkey-kp-6 "[]"
-gsettings set org.gnome.shell.extensions.dash-to-panel app-shift-hotkey-kp-7 "[]"
-gsettings set org.gnome.shell.extensions.dash-to-panel app-shift-hotkey-kp-8 "[]"
-gsettings set org.gnome.shell.extensions.dash-to-panel app-shift-hotkey-kp-9 "[]"
 flatpak run --branch=stable --arch=x86_64 --command=gsettings net.nokyan.Resources set net.nokyan.Resources apps-show-cpu true
 flatpak run --branch=stable --arch=x86_64 --command=gsettings net.nokyan.Resources set net.nokyan.Resources apps-show-drive-read-speed false
 flatpak run --branch=stable --arch=x86_64 --command=gsettings net.nokyan.Resources set net.nokyan.Resources apps-show-drive-read-total false
@@ -1117,7 +1056,7 @@ gsettings set org.gnome.desktop.wm.keybindings move-to-side-e  "[]"
 gsettings set org.gnome.desktop.wm.keybindings move-to-side-n  "[]"
 gsettings set org.gnome.desktop.wm.keybindings move-to-side-s  "[]"
 gsettings set org.gnome.desktop.wm.keybindings move-to-side-w  "[]"
-gsettings set org.gnome.desktop.wm.keybindings move-to-workspace-1 "['<Super><Shift>Home']"
+gsettings set org.gnome.desktop.wm.keybindings move-to-workspace-1 "[]"
 gsettings set org.gnome.desktop.wm.keybindings move-to-workspace-10  "[]"
 gsettings set org.gnome.desktop.wm.keybindings move-to-workspace-11  "[]"
 gsettings set org.gnome.desktop.wm.keybindings move-to-workspace-12  "[]"
