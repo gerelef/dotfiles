@@ -456,7 +456,6 @@ readonly INSTALLABLE_GNOME_EXTENSIONS="\
 gnome-extensions-app \
 gnome-shell-extension-places-menu \
 gnome-shell-extension-forge \
-gnome-shell-extension-caffeine \
 gnome-shell-extension-appindicator \
 "
 
