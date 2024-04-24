@@ -102,6 +102,16 @@ dnf-group-update () (
     echo-success "Finished group-updating."
 )
 
+dnf5-group-upgrade () (
+    [[ $# -eq 0 ]] && return 2
+    
+    echo-status "-------------------DNF-GROUP-UPDATE----------------"
+    while :; do 
+        dnf group upgrade -y --best --allowerasing $@ && break
+    done 
+    echo-success "Finished group-updating."
+)
+
 dnf-update-refresh () (
     echo-status "-------------------DNF-UPDATE----------------"
     while : ; do
@@ -112,6 +122,14 @@ dnf-update-refresh () (
 )
 
 dnf-remove () (
+    [[ $# -eq 0 ]] && return 2
+    
+    echo-status "-------------------DNF-REMOVE----------------"
+    dnf remove -y --skip-broken $@
+    echo-success "Finished removing."
+)
+
+dnf5-remove () (
     [[ $# -eq 0 ]] && return 2
     
     echo-status "-------------------DNF-REMOVE----------------"

@@ -179,7 +179,7 @@ install-media-codecs () (
     echo-status "-------------------INSTALLING CODECS / H/W VIDEO ACCELERATION----------------"
 
     # based on https://github.com/devangshekhawat/Fedora-39-Post-Install-Guide
-    dnf-group-update 'core' 'multimedia' 'sound-and-video' --setop='install_weak_deps=False' --exclude='PackageKit-gstreamer-plugin' --allowerasing && sync
+    dnf5-group-upgrade 'core' 'multimedia' 'sound-and-video' --setop='install_weak_deps=False' --exclude='PackageKit-gstreamer-plugin' --allowerasing && sync
     dnf install -y --best --allowerasing gstreamer1-plugins-{bad-\*,good-\*,base}
     dnf install -y --best --allowerasing lame\* --exclude=lame-devel
     dnf-install "gstreamer1-plugin-openh264" "gstreamer1-libav" "--exclude=gstreamer1-plugins-bad-free-devel" "ffmpeg" "gstreamer-ffmpeg"
@@ -736,7 +736,7 @@ fi
 
 echo-important "You will be asked a series of questions ahead of time, so you can go semi-AFK while installing."
 echo-important "Note that NVIDIA drivers require manual confirmation for MOK enrollment, and this cannot be automated"
-echo-important " due to it's intrusive nature."
+echo-important " due to its intrusive nature."
 
 ask-user 'Do you want to install virtualization packages?' && INSTALL_VIRTUALIZATION="yes"
 ask-user 'Do you want to install gaming packages?' && INSTALL_GAMING="yes"
@@ -749,7 +749,7 @@ ask-user 'Do you want to install zeno/scrcpy?' && INSTALL_SCRCPY="yes"
 
 #######################################################################################################
 
-dnf-remove "$UNINSTALLABLE_BLOAT"
+dnf5-remove "$UNINSTALLABLE_BLOAT"
 
 install-universal-necessities
 install-media-codecs
