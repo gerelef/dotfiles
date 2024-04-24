@@ -102,16 +102,6 @@ dnf-group-update () (
     echo-success "Finished group-updating."
 )
 
-dnf5-group-upgrade () (
-    [[ $# -eq 0 ]] && return 2
-    
-    echo-status "-------------------DNF-GROUP-UPDATE----------------"
-    while :; do 
-        dnf group upgrade -y --best --allowerasing $@ && break
-    done 
-    echo-success "Finished group-updating."
-)
-
 dnf-update-refresh () (
     echo-status "-------------------DNF-UPDATE----------------"
     while : ; do

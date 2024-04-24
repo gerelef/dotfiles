@@ -180,7 +180,6 @@ install-media-codecs () (
     echo-status "-------------------INSTALLING CODECS / H/W VIDEO ACCELERATION----------------"
 
     # based on https://github.com/devangshekhawat/Fedora-39-Post-Install-Guide
-    dnf5-group-upgrade --allowerasing 'core' 'multimedia' 'sound-and-video' && sync
     dnf install -y --best --allowerasing gstreamer1-plugins-{bad-\*,good-\*,base}
     dnf install -y --best --allowerasing lame\*
     dnf-install "gstreamer1-plugin-openh264" "gstreamer1-libav" "--exclude=gstreamer1-plugins-bad-free-devel" "ffmpeg" "gstreamer-ffmpeg"
