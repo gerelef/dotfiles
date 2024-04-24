@@ -9,7 +9,7 @@ user_pref("browser.bookmarks.restore_default_bookmarks", false);
 user_pref("browser.tabs.insertRelatedAfterCurrent", false);
 user_pref("network.prefetch-next", false);
 user_pref("browser.zoom.siteSpecific", false);
-user_pref("browser.urlbar.maxRichResults", 25);
+user_pref("browser.urlbar.maxRichResults", 20);
 user_pref("browser.ctrltabs.previews", false);
 user_pref("browser.sessionhistory.max_entries", 25);
 user_pref("browser.sessionstore.interval", 60000);
@@ -37,6 +37,7 @@ user_pref("browser.pocket.enabled", false);
 user_pref("extensions.pocket.enabled", false);
 user_pref("beacon.enabled", false);
 user_pref("browser.urlbar.speculativeConnect.enabled", false);
+user_pref("browser.urlbar.suggest.quicksuggest.sponsored", false);
 user_pref("privacy.trackingprotection.enabled", true);
 
 // everything below this line is found here:
