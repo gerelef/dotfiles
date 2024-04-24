@@ -133,7 +133,7 @@ dnf5-remove () (
     [[ $# -eq 0 ]] && return 2
     
     echo-status "-------------------DNF-REMOVE----------------"
-    dnf remove -y --skip-broken $@
+    dnf remove -y $@
     echo-success "Finished removing."
 )
 

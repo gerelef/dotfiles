@@ -10,6 +10,7 @@ dnf-install flatpak curl plocate pciutils udisks2 dnf5
 
 # change dnf4 to dnf5 (preview/unstable: is supposed to be shipped with fedora-41)
 update-alternatives --install /usr/bin/dnf dnf /usr/bin/dnf5 1
+dnf-install "dnf5-command(config-manager)"
 
 install-gnome-essentials () (
     echo-status "-------------------INSTALLING GNOME----------------"
@@ -179,14 +180,14 @@ install-media-codecs () (
     echo-status "-------------------INSTALLING CODECS / H/W VIDEO ACCELERATION----------------"
 
     # based on https://github.com/devangshekhawat/Fedora-39-Post-Install-Guide
-    dnf5-group-upgrade 'core' 'multimedia' 'sound-and-video' --setop='install_weak_deps=False' --exclude='PackageKit-gstreamer-plugin' --allowerasing && sync
+    dnf5-group-upgrade --allowerasing 'core' 'multimedia' 'sound-and-video' && sync
     dnf install -y --best --allowerasing gstreamer1-plugins-{bad-\*,good-\*,base}
-    dnf install -y --best --allowerasing lame\* --exclude=lame-devel
+    dnf install -y --best --allowerasing lame\*
     dnf-install "gstreamer1-plugin-openh264" "gstreamer1-libav" "--exclude=gstreamer1-plugins-bad-free-devel" "ffmpeg" "gstreamer-ffmpeg"
     dnf-group-install-with-optional "multimedia"
 
     dnf-install "ffmpeg" "ffmpeg-libs" "libva" "libva-utils"
-    dnf config-manager --set-enabled fedora-cisco-openh264
+    dnf reinstall -y "/etc/yum.repos.d/fedora-cisco-openh264.repo"
     dnf-install "openh264" "gstreamer1-plugin-openh264" "mozilla-openh264"
 )
 
@@ -772,8 +773,8 @@ configure-ssh-defaults
 [[ -n "$INSTALL_JETBRAINS" ]] && install-jetbrains-toolbox
 [[ -n "$INSTALL_VSC" ]] && install-visual-studio-code
 [[ -n "$INSTALL_SUBLIME" ]] && install-sublime-text-editor
-[[ -n "$INSTALL_VSC" ]] && dnf-remove "gnome-text-editor" "gedit"
-[[ -n "$INSTALL_SUBLIME" ]] && dnf-remove "gnome-text-editor" "gedit"
+[[ -n "$INSTALL_VSC" ]] && dnf5-remove "gnome-text-editor" "gedit"
+[[ -n "$INSTALL_SUBLIME" ]] && dnf5-remove "gnome-text-editor" "gedit"
 
 if [[ -n "$INSTALL_SCRCPY" ]]; then
     echo-status "Installing zeno/scrcpy ..."
