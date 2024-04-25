@@ -210,7 +210,7 @@ install-virtualization-packages () (
 install-dev-tools () (
     echo-status "-------------------INSTALLING DEV TOOLS----------------"
     
-    dnf-group-install-with-optional "C Development Tools and Libraries" "Development Tools"
+    dnf-group-install-with-optional "c-development" "development-tools"
     dnf-install "$INSTALLABLE_DEV_PKGS"
 
     echo-success "Done."
