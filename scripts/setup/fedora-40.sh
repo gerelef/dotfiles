@@ -182,10 +182,10 @@ install-media-codecs () (
     # based on https://github.com/devangshekhawat/Fedora-39-Post-Install-Guide
     dnf install -y --best --allowerasing gstreamer1-plugins-{bad-\*,good-\*,base}
     dnf install -y --best --allowerasing lame\*
-    dnf-install "gstreamer1-plugin-openh264" "gstreamer1-libav" "--exclude=gstreamer1-plugins-bad-free-devel" "ffmpeg" "gstreamer-ffmpeg"
+    dnf-install "gstreamer1-plugin-openh264" "gstreamer1-libav"
     dnf-group-install-with-optional "multimedia"
 
-    dnf-install "ffmpeg" "ffmpeg-libs" "libva" "libva-utils"
+    dnf-install "ffmpeg" "gstreamer-ffmpeg" "ffmpeg-libs" "libva" "libva-utils"
     dnf reinstall -y "/etc/yum.repos.d/fedora-cisco-openh264.repo"
     dnf-install "openh264" "gstreamer1-plugin-openh264" "mozilla-openh264"
 )
