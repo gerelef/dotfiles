@@ -343,9 +343,9 @@ _echo-stderr () (
 ask-user () (
     while : ; do
         read -p "$* [Y/n]: " -r
-        _echo-stderr ""
         [[ $REPLY =~ ^[Yy]$ ]] && return 0
         [[ $REPLY =~ ^[Nn]$ ]] && return 1
+        _echo-stderr ""
         _echo-stderr "Invalid reply \"$REPLY\", please answer with Y/y for Yes, or N/n for No."
     done
 )
@@ -364,13 +364,14 @@ ask-user-multiple-choice () (
             _echo-stderr "$((i++)). $option" 
         done
         read -p "Choice $range: " -r
-        _echo-stderr ""
         if [[ $REPLY =~ ^[0-9][0-9]*$ && $REPLY -lt $# ]]; then
+            _echo-stderr ""
             if ! ask-user "Are you sure you want to pick \"${args[$REPLY]}\"?"; then continue; fi
             
             echo "$REPLY"
             return
         fi
+        _echo-stderr ""
         _echo-stderr "Invalid reply > $REPLY, please answer in the range of $range."
     done
 )
