@@ -252,27 +252,13 @@ install-jetbrains-toolbox () (
     echo-status "-------------------INSTALLING JETBRAINS TOOLBOX----------------"
     dnf-install "fuse" "libXtst" "libXrender" "glx-utils" "fontconfig-devel" "gtk3" "tar"
 
-    readonly curlsum=$(curl --proto '=https' --tlsv1.2 -fsSL https://raw.githubusercontent.com/nagygergo/jetbrains-toolbox-install/master/jetbrains-toolbox.sh | sha512sum -)
-    readonly validsum="7eb50db1e6255eed35b27c119463513c44aee8e06f3014609a410033f397d2fd81d2605e4e5c243b1087a6c23651f6b549a7c4ee386d50a22cc9eab9e33c612e  -"
-    if [[ "$validsum" == "$curlsum" ]]; then
-        # we're overriding $HOME for this script since it doesn't know we're running as root
-        #  and looks for $HOME, ruining everything in whatever "$HOME/.local/share/JetBrains/Toolbox/bin" and "$HOME/.local/bin" resolve into
-        (CI="setup"; HOME="$REAL_USER_HOME"; curl --proto '=https' --tlsv1.2 -fsSL https://raw.githubusercontent.com/nagygergo/jetbrains-toolbox-install/master/jetbrains-toolbox.sh | bash)
-        echo-success "Done."
-        return
-    fi
-    echo-unexpected "Failure."
-    echo-unexpected "There has been a fatal sha512sum mismatch regarding the jetbrains toolbox autoinstall script."
-    echo-unexpected "This is most likely because the current validsum (see 'grep validsum < ./fedora-39.sh')"
-    echo-unexpected "being outdated w/ the remote repository. Regardless, installation of toolbox CANNOT continue"
-    echo-unexpected "for security concerns."
-    echo-unexpected "Do you want to: "
-    user_choice=$(ask-user-multiple-questions "continue installing everything else (recommended)" "exit")
-    [[ $user_choice -eq 0 ]] && return
-    [[ $user_choice -eq 1 ]] && exit 2
+    readonly ARCHIVE_URL=$(curl -s 'https://data.services.jetbrains.com/products/releases?code=TBA&latest=true&type=release' | grep -Po '"linux":.*?[^\\]",' | awk -F ':' '{print $3,":"$4}'| sed 's/[", ]//g')
+    wget -cO "./jetbrains-toolbox.tar.gz" "$ARCHIVE_URL"
+    tar -xzf "./jetbrains-toolbox.tar.gz" -C "$REAL_USER_HOME" --strip-components=1
+    rm "./jetbrains-toolbox.tar.gz"
     
-    echo-unexpected "This statement should never execute!"
-    exit 1
+    chmod a+x "./jetbrains-toolbox"
+    mv "./jetbrains-toolbox" "/usr/bin/jetbrains-toolbox"
 )
 
 configure-system-defaults () (
