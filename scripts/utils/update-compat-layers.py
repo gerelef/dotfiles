@@ -52,10 +52,10 @@ class RegularInstaller(Installer):
         self.target = destination
 
     def install(self, files: list[Path]) -> None:
-        if not self.target.is_dir():
-            raise ValueError()
         if not self.target.exists(follow_symlinks=False):
             self.target.mkdir(mode=0o740, parents=True, exist_ok=True)
+        if not self.target.is_dir():
+            raise ValueError()
 
         # FIXME
         # https://docs.python.org/3/library/tarfile.html#tarfile-extraction-filter
