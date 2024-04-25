@@ -250,7 +250,7 @@ install-jetbrains-toolbox () (
     # dependencies, described here
     #  https://github.com/nagygergo/jetbrains-toolbox-install
     echo-status "-------------------INSTALLING JETBRAINS TOOLBOX----------------"
-    dnf-install "fuse" "libXtst" "libXrender" "glx-utils" "libfontconfig" "gtk3" "tar"
+    dnf-install "fuse" "libXtst" "libXrender" "glx-utils" "fontconfig-devel" "gtk3" "tar"
 
     readonly curlsum=$(curl --proto '=https' --tlsv1.2 -fsSL https://raw.githubusercontent.com/nagygergo/jetbrains-toolbox-install/master/jetbrains-toolbox.sh | sha512sum -)
     readonly validsum="7eb50db1e6255eed35b27c119463513c44aee8e06f3014609a410033f397d2fd81d2605e4e5c243b1087a6c23651f6b549a7c4ee386d50a22cc9eab9e33c612e  -"
