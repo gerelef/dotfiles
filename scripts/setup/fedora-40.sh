@@ -848,7 +848,7 @@ gsettings set org.gnome.shell.extensions.forge.keybindings con-tabbed-showtab-de
 gsettings set org.gnome.shell.extensions.forge.keybindings focus-border-toggle "[]"
 gsettings set org.gnome.shell.extensions.forge.keybindings mod-mask-mouse-tile 'None'
 gsettings set org.gnome.shell.extensions.forge.keybindings prefs-open "[]"
-gsettings set org.gnome.shell.extensions.forge.keybindings prefs-tiling-toggle ['<Super>y']
+gsettings set org.gnome.shell.extensions.forge.keybindings prefs-tiling-toggle "['<Super>y']"
 gsettings set org.gnome.shell.extensions.forge.keybindings window-focus-down "[]"
 gsettings set org.gnome.shell.extensions.forge.keybindings window-focus-left "[]"
 gsettings set org.gnome.shell.extensions.forge.keybindings window-focus-right "[]"
