@@ -174,6 +174,7 @@ DNF_EOF
 try-enabling-power-profiles-daemon () (
     systemctl enable power-profiles-daemon.service
     systemctl start power-profiles-daemon.service
+    sleep 10  # sleep in order for the service to spin up
     readonly PLACEHOLDER_COUNT=$(powerprofilesctl list | grep placeholder | wc -l)
     if [[ $PLACEHOLDER_COUNT -gt 1 ]]; then
         systemctl stop power-profiles-daemon.service
