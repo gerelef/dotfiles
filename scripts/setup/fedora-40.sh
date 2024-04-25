@@ -22,6 +22,7 @@ install-gnome-essentials () (
     dnf-install "$INSTALLABLE_GNOME_ESSENTIAL_PACKAGES"
     dnf-install "$INSTALLABLE_GNOME_APPLICATION_PACKAGES"
     dnf-install "$INSTALLABLE_ADWAITA_PACKAGES" "$INSTALLABLE_GNOME_EXTENSIONS"
+    flatpak-install "$INSTALLABLE_ADWAITA_FLATPAKS"
     flatpak-install "$INSTALLABLE_GNOME_FLATPAKS"
     
     try-enabling-power-profiles-daemon
