@@ -432,6 +432,11 @@ qadwaitadecorations-qt6 \
 adwaita-qt6 \
 "
 
+readonly INSTALLABLE_ADWAITA_FLATPAKS="\
+org.gtk.Gtk3theme.adw-gtk3
+org.gtk.Gtk3theme.adw-gtk3-dark
+"
+
 readonly INSTALLABLE_GNOME_FLATPAKS="\
 net.nokyan.Resources \
 de.haeckerfelix.Fragments \
