@@ -254,11 +254,11 @@ install-jetbrains-toolbox () (
 
     readonly ARCHIVE_URL=$(curl -s 'https://data.services.jetbrains.com/products/releases?code=TBA&latest=true&type=release' | grep -Po '"linux":.*?[^\\]",' | awk -F ':' '{print $3,":"$4}'| sed 's/[", ]//g')
     wget -cO "./jetbrains-toolbox.tar.gz" "$ARCHIVE_URL"
-    tar -xzf "./jetbrains-toolbox.tar.gz" -C "$REAL_USER_HOME" --strip-components=1
+    tar -xzf "./jetbrains-toolbox.tar.gz" -C "$REAL_USER_HOME/jetbrains-toolbox" --strip-components=1
     rm "./jetbrains-toolbox.tar.gz"
     
-    chmod a+x "./jetbrains-toolbox"
-    mv "./jetbrains-toolbox" "/usr/bin/jetbrains-toolbox"
+    chmod a+x "$REAL_USER_HOME/jetbrains-toolbox"
+    mv "$REAL_USER_HOME/jetbrains-toolbox" "/usr/bin/jetbrains-toolbox"
 )
 
 configure-system-defaults () (
@@ -873,6 +873,7 @@ gsettings set org.gnome.shell.extensions.forge preview-hint-enabled false
 gsettings set org.gnome.shell.extensions.forge auto-split-enabled true
 gsettings set org.gnome.shell.extensions.forge focus-border-toggle false
 gsettings set org.gnome.shell.extensions.forge split-border-toggle false
+gsettings set org.gnome.shell.extensions.forge move-pointer-focus-enabled false
 gsettings set org.gnome.shell.extensions.forge stacked-tiling-mode-enabled true
 gsettings set org.gnome.shell.extensions.forge tabbed-tiling-mode-enabled false
 gsettings set org.gnome.shell.extensions.forge tiling-mode-enabled true
@@ -994,6 +995,9 @@ gsettings set org.gnome.system.location max-accuracy-level 'city'
 # disable event sound
 gsettings set org.gnome.desktop.sound event-sounds false
 gsettings set org.gnome.desktop.sound allow-volume-above-100-percent true
+
+# disable hot corners
+gsettings set org.gnome.desktop.interface enable-hot-corners false
 
 # modal & checkalive timeouts
 gsettings set org.gnome.mutter attach-modal-dialogs true
