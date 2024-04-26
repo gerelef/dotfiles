@@ -22,6 +22,7 @@ games/
 .config/mozilla/sidebery.json
 .config/mozilla/ublock.txt
 .config/mozilla/userChrome.css
+.config/mozilla/yt-enhancer.json
 
 // these are not true config files, they must be imported manually
 .config/gnome-extensions/
