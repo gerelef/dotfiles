@@ -1,8 +1,8 @@
 {
   "containers": {
-    "firefox-container-11": {
-      "id": "firefox-container-11",
-      "cookieStoreId": "firefox-container-11",
+    "firefox-container-6": {
+      "id": "firefox-container-6",
+      "cookieStoreId": "firefox-container-6",
       "name": "Google Suite | Personal",
       "icon": "briefcase",
       "color": "blue",
@@ -21,9 +21,9 @@
       "userAgentActive": false,
       "userAgent": ""
     },
-    "firefox-container-13": {
-      "id": "firefox-container-13",
-      "cookieStoreId": "firefox-container-13",
+    "firefox-container-7": {
+      "id": "firefox-container-7",
+      "cookieStoreId": "firefox-container-7",
       "name": "Google Suite | University",
       "icon": "briefcase",
       "color": "orange",
@@ -35,9 +35,9 @@
       "userAgentActive": false,
       "userAgent": ""
     },
-    "firefox-container-14": {
-      "id": "firefox-container-14",
-      "cookieStoreId": "firefox-container-14",
+    "firefox-container-8": {
+      "id": "firefox-container-8",
+      "cookieStoreId": "firefox-container-8",
       "name": "Brazil [Instagram, Facebook, TikTok]",
       "icon": "dollar",
       "color": "green",
@@ -56,9 +56,9 @@
       "userAgentActive": false,
       "userAgent": ""
     },
-    "firefox-container-16": {
-      "id": "firefox-container-16",
-      "cookieStoreId": "firefox-container-16",
+    "firefox-container-9": {
+      "id": "firefox-container-9",
+      "cookieStoreId": "firefox-container-9",
       "name": "Discord Personal",
       "icon": "fingerprint",
       "color": "purple",
@@ -70,9 +70,9 @@
       "userAgentActive": false,
       "userAgent": ""
     },
-    "firefox-container-17": {
-      "id": "firefox-container-17",
-      "cookieStoreId": "firefox-container-17",
+    "firefox-container-10": {
+      "id": "firefox-container-10",
+      "cookieStoreId": "firefox-container-10",
       "name": "Steam",
       "icon": "dollar",
       "color": "blue",
@@ -121,9 +121,9 @@
       "userAgentActive": false,
       "userAgent": ""
     },
-    "firefox-container-18": {
-      "id": "firefox-container-18",
-      "cookieStoreId": "firefox-container-18",
+    "firefox-container-11": {
+      "id": "firefox-container-11",
+      "cookieStoreId": "firefox-container-11",
       "name": "Microsoft Suite | Work",
       "icon": "briefcase",
       "color": "purple",
@@ -216,6 +216,7 @@
     "pinnedTabsList": false,
     "pinnedAutoGroup": false,
     "pinnedNoUnload": false,
+    "pinnedForcedDiscard": false,
     "tabsTree": true,
     "groupOnOpen": true,
     "tabsTreeLimit": 5,
@@ -226,16 +227,34 @@
     "rmChildTabs": "none",
     "tabsLvlDots": true,
     "discardFolded": false,
-    "discardFoldedDelay": 0,
-    "discardFoldedDelayUnit": "sec",
+    "discardFoldedDelay": 60,
+    "discardFoldedDelayUnit": "min",
     "tabsTreeBookmarks": true,
     "treeRmOutdent": "first_child",
+    "autoGroupOnClose": false,
+    "autoGroupOnClose0Lvl": false,
+    "autoGroupOnCloseMouseOnly": false,
     "ignoreFoldedParent": false,
+    "showNewGroupConf": true,
+    "sortGroupsFirst": true,
     "colorizeTabs": true,
     "colorizeTabsSrc": "container",
     "colorizeTabsBranches": false,
     "colorizeTabsBranchesSrc": "domain",
     "inheritCustomColor": true,
+    "previewTabs": false,
+    "previewTabsMode": "i",
+    "previewTabsPageModeFallback": "w",
+    "previewTabsInlineHeight": 70,
+    "previewTabsPopupWidth": 280,
+    "previewTabsSide": "right",
+    "previewTabsDelay": 500,
+    "previewTabsFollowMouse": true,
+    "previewTabsWinOffsetY": 36,
+    "previewTabsWinOffsetX": 6,
+    "previewTabsInPageOffsetY": 0,
+    "previewTabsInPageOffsetX": 0,
+    "previewTabsCropRight": 0,
     "hideInact": false,
     "hideFoldedTabs": false,
     "hideFoldedParent": "none",
@@ -270,9 +289,12 @@
     "snapAutoExportPath": "Sidebery/snapshot-%Y.%M.%D-%h.%m.%s",
     "snapMdFullTree": false,
     "hScrollAction": "switch_panels",
+    "onePanelSwitchPerScroll": false,
+    "wheelAccumulationX": true,
+    "wheelAccumulationY": true,
     "navSwitchPanelsDelay": 128,
     "scrollThroughTabs": "panel",
-    "scrollThroughVisibleTabs": false,
+    "scrollThroughVisibleTabs": true,
     "scrollThroughTabsSkipDiscarded": true,
     "scrollThroughTabsExceptOverflow": true,
     "scrollThroughTabsCyclic": true,
@@ -323,9 +345,6 @@
     "nav": [
       "firefox-default",
       "sd-3D4qWSKXS5NA",
-      "dbyYljBnsusV",
-      "K0Qg_mntG0sV",
-      "NA6L6g_OC6sV",
       "sp-0",
       "add_tp",
       "settings"
@@ -349,79 +368,6 @@
         "bookmarksFolderId": -1,
         "newTabBtns": [],
         "srcPanelConfig": null
-      },
-      "dbyYljBnsusV": {
-        "type": 2,
-        "id": "dbyYljBnsusV",
-        "name": "plesiome",
-        "color": "toolbar",
-        "iconSVG": "icon_tabs",
-        "iconIMGSrc": "",
-        "iconIMG": "",
-        "lockedPanel": false,
-        "skipOnSwitching": false,
-        "noEmpty": false,
-        "newTabCtx": "none",
-        "dropTabCtx": "none",
-        "moveRules": [],
-        "moveExcludedTo": -1,
-        "bookmarksFolderId": -1,
-        "newTabBtns": [],
-        "srcPanelConfig": null
-      },
-      "K0Qg_mntG0sV": {
-        "type": 2,
-        "id": "K0Qg_mntG0sV",
-        "name": "music",
-        "color": "toolbar",
-        "iconSVG": "icon_tabs",
-        "iconIMGSrc": "",
-        "iconIMG": "",
-        "lockedPanel": false,
-        "skipOnSwitching": false,
-        "noEmpty": false,
-        "newTabCtx": "none",
-        "dropTabCtx": "none",
-        "moveRules": [],
-        "moveExcludedTo": -1,
-        "bookmarksFolderId": -1,
-        "newTabBtns": [],
-        "srcPanelConfig": null
-      },
-      "NA6L6g_OC6sV": {
-        "type": 2,
-        "id": "NA6L6g_OC6sV",
-        "name": "study",
-        "color": "toolbar",
-        "iconSVG": "icon_tabs",
-        "iconIMGSrc": "",
-        "iconIMG": "",
-        "lockedPanel": false,
-        "skipOnSwitching": false,
-        "noEmpty": false,
-        "newTabCtx": "none",
-        "dropTabCtx": "none",
-        "moveRules": [],
-        "moveExcludedTo": -1,
-        "bookmarksFolderId": -1,
-        "newTabBtns": [],
-        "srcPanelConfig": null
-      },
-      "XlcIMlZPLmNA": {
-        "type": 1,
-        "id": "XlcIMlZPLmNA",
-        "name": "Bookmarks",
-        "iconSVG": "icon_bookmarks",
-        "iconIMGSrc": "",
-        "iconIMG": "",
-        "color": "toolbar",
-        "lockedPanel": false,
-        "tempMode": false,
-        "skipOnSwitching": false,
-        "rootId": "root________",
-        "viewMode": "tree",
-        "autoConvert": false,
-        "srcPanelConfig": null
       }
     }
   },
@@ -431,9 +377,19 @@
     "bookmarks": [],
     "bookmarksPanel": []
   },
-  "ver": "5.0.0",
+  "ver": "5.2.0",
   "keybindings": {
     "_execute_sidebar_action": "F1",
+    "next_panel": "Alt+Period",
+    "prev_panel": "Alt+Comma",
+    "new_tab_on_panel": "Ctrl+Space",
+    "new_tab_in_group": "Ctrl+Shift+Space",
+    "up": "Alt+Up",
+    "down": "Alt+Down",
+    "up_shift": "Alt+Shift+Up",
+    "down_shift": "Alt+Shift+Down",
+    "activate": "Alt+Space",
+    "reset_selection": "Alt+R",
     "search": "F2"
   }
 }
