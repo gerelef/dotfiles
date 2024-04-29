@@ -46,6 +46,6 @@ scripts/.gitconfig ::: .
 .config/fish/fish_prompt.fish ::: .config/fish/functions/
 
 // find already created profile subdirectories on the fly, we can't nest here anyways
-.config/mozilla/* ::: .mozilla/firefox/*.default*/
+.config/mozilla/* ::: .mozilla/firefox/*.default-release*/
 
 // no hardlink section here!
