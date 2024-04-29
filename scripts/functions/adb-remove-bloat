@@ -1,0 +1,10 @@
+#!/usr/bin/env bash
+
+adb-remove-bloat () (
+    # remove AppCloud, malware piece of backdoor shit
+    sudo adb uninstall --user 0 com.aura.oobe.samsung.gl
+    sudo adb uninstall --user 0 com.aura.oobe.samsung
+    sudo adb uninstall --user 0 com.ironsource.appcloud.oobe.hutchison
+)
+
+adb-remove-bloat

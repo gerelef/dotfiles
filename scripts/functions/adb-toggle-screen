@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+
+adb-toggle-screen () (
+    adb shell input keyevent KEYCODE_POWER
+)
+
+adb-toggle-screen
