@@ -66,8 +66,8 @@ class ExecuteShell(sublime_plugin.ApplicationCommand):
         <html>
             <body>
                 <code {status_style}><bold>Status code</bold>: <pre>{status_code}</pre></code><br>
-                <code style="color:DodgerBlue;"><bold>stdout</bold>: <pre>{html_stdout}</pre></code>
-                <code style="color:Tomato;"><bold>stderr</bold>: <pre>{html_stderr}</pre></code>
+                <code style="color:DodgerBlue;"><pre>{html_stdout}</pre></code> <br>
+                <code style="color:Tomato;"><pre>{html_stderr}</pre></code>
             </body>
         </html>
         """
