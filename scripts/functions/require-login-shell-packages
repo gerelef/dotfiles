@@ -25,7 +25,7 @@ install-system-pkg () (
             break
         fi
         if [[ -n "$(command -v apt)" ]]; then
-            sudo apt install -y "$@" 
+            sudo apt install -y "$@" || exit
         fi 
         break
     done
