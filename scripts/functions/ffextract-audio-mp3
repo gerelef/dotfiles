@@ -1,5 +1,10 @@
 #!/usr/bin/env bash
 
+if [[ -z "$(command -v ffmpeg)" ]]; then
+    echo "Cannot run $(basename $0) without dependency! Exiting..."
+    exit 1
+fi
+
 # ffmpeg extract audio from video with audio to mp3
 ffextract-audio-mp3 () (
     [[ -z "$*" ]] && return 2

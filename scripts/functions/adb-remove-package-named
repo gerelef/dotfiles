@@ -1,5 +1,10 @@
 #!/usr/bin/env bash
 
+if [[ -z "$(command -v adb)" ]]; then
+    echo "Cannot run $(basename $0) without dependency! Exiting..."
+    exit 1
+fi
+
 adb-uninstall-package () (
     if [[ $# != 2 ]]; then echo "id, package arguments must be given!"; exit 1; fi
     adb -s $1 uninstall --user 0 $2

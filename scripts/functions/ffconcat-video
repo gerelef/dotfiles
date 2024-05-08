@@ -1,5 +1,10 @@
 #!/usr/bin/env bash
 
+if [[ -z "$(command -v ffmpeg)" ]]; then
+    echo "Cannot run $(basename $0) without dependency! Exiting..."
+    exit 1
+fi
+
 # ffmpeg concatenate multiple video files into one
 #  INPUTS: files >= 2
 ffconcat-video () (

@@ -1,5 +1,10 @@
 #!/usr/bin/env bash
 
+if [[ -z "$(command -v ffmpeg)" ]]; then
+    echo "Cannot run $(basename $0) without dependency! Exiting..."
+    exit 1
+fi
+
 # convert (X,Y) coords with X delimiter instead of comma to ffmpeg format
 __xy_to_ffilter_coords () (
     echo "$1" | awk -Fx '{ print $1":"$2 }';

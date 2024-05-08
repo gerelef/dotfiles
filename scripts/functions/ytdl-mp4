@@ -1,5 +1,10 @@
 #!/usr/bin/env bash
 
+if [[ -z "$(command -v yt-dlp)" ]]; then
+    echo "Cannot run $(basename $0) without dependency! Exiting..."
+    exit 1
+fi
+
 # yt-dlp download to mp4
 ytdl-mp4 () (
     [[ -z "$*" ]] && return 2

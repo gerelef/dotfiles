@@ -1,5 +1,10 @@
 #!/usr/bin/env bash
 
+if [[ -z "$(command -v adb)" ]]; then
+    echo "Cannot run $(basename $0) without dependency! Exiting..."
+    exit 1
+fi
+
 adb-list-all-devices () (
     if [[ $# != 1 ]]; then echo "State argument must be given!"; exit 1; fi
     # "device" state is the correct state here for authorized devices

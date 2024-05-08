@@ -1,5 +1,10 @@
 #!/usr/bin/env bash
 
+if [[ -z "$(command -v ffmpeg)" ]]; then
+    echo "Cannot run $(basename $0) without dependency! Exiting..."
+    exit 1
+fi
+
 ffvideofy () (
     [[ -z "$*" ]] && return 2 
     [[ "$#" -ne 2 ]] && return 2
