@@ -3,7 +3,7 @@
 adb-list-all-devices () (
     if [[ $# != 1 ]]; then echo "State argument must be given!"; exit 1; fi
     # "device" state is the correct state here for authorized devices
-    adb devices | grep $1 | awk '{ if (NR > 1) { printf $1 " " } }'
+    adb devices | grep $1 | awk '{ if (NR > 1) { printf $1 " " } }' | xargs
 )
 
 adb-list-all-devices $@

@@ -1,0 +1,8 @@
+#!/usr/bin/env bash
+
+adb-get-packages-named () (
+    if [[ $# != 2 ]]; then echo "id, package-filter arguments must be given!"; exit 1; fi
+    adb -s $1 shell cmd package list packages | cut -c 9- | xargs
+)
+
+adb-get-packages-named $@

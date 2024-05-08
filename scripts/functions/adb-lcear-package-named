@@ -1,0 +1,8 @@
+#!/usr/bin/env bash
+
+adb-clear-caches () (
+    if [[ $# != 2 ]]; then echo "id, package arguments must be given!"; exit 1; fi
+    adb -s $1 shell pm clear $2
+)
+
+adb-clear-caches $@

@@ -1,0 +1,8 @@
+#!/usr/bin/env bash
+
+adb-uninstall-package () (
+    if [[ $# != 2 ]]; then echo "id, package arguments must be given!"; exit 1; fi
+    adb -s $1 uninstall --user 0 $2
+)
+
+adb-uninstall-package $@
