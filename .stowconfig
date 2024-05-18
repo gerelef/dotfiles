@@ -1,51 +1,51 @@
 // [ignore] header is implied, since it's the first thing in the .stowconfig
-[if-not-pkg:::delta]
-    // if git delta is not installed, don't link gitdelta configuration
-    scripts/.gitconfig-gitdelta
-[end]
-
-[if-not-pkg:::lsd]
-    // if lsd is not installed, don't link lsd configuration
-    .config/config.yaml
-[end]
-
-// if we're not using the default configuration:
-[if-not-profile:::default]
-    // don't link execute_shell sublime scripts
-    .config/sublime-text/execute_shell*
-
-    // don't link pipewire configuration
-    .config/pipewire.conf
-[end]
-
 // common .stowconfigs ignores
-.git*
-README.*
-.config/README.*
-scripts/README.*
-
 // these are configuration files specifically for the dotfiles directory
 //  and as such, they shouldn't be redirected (stowed) anywhere else
 .stowconfig
 .shell-requirements
+.git*
+README.*
+.config/README.*
 
-// ignore these since they're not meant to be linked anywhere
+// these are not meant to be linked anywhere
 .manpages/
-scripts/utils/
-scripts/setup/
-scripts/functions/
-// ignore submodules
+scripts/
 games/
 
-// firefox-specific redirect ignores; these are not true config files
-//  and must be imported manually
-.config/mozilla/sidebery.json
-.config/mozilla/ublock.txt
-.config/mozilla/userChrome.css
-.config/mozilla/yt-enhancer.json
-
-// these are not true config files, they must be imported manually
+// these must be imported manually
 .config/gnome-extensions/
+
+!!scripts/.bashrc
+!!scripts/.nanorc
+!!scripts/.gitconfig
+
+[if-not-pkg:::lsd]
+// if lsd is not installed, don't link lsd configuration
+.config/config.yaml
+[end]
+
+[if-pkg:::delta]
+// if git delta is installed, link gitdelta configuration
+!!scripts/.gitconfig-gitdelta
+[end]
+
+// link sublime-text only in default profile
+.config/sublime-text/
+[if-profile:::default]
+!!.config/sublime-text/*
+[end]
+
+// if we're not using the default profile, don't link pipewire configuration
+[if-not-profile:::default]
+.config/pipewire.conf
+[end]
+
+// firefox-specific ignores; must be imported manually except user.js
+.config/mozilla/*
+[if-profile:::default]
+!!.config/mozilla/user.js
+[end]
 
 [redirect]
 // redirect to home (move up)
