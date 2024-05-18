@@ -13,23 +13,11 @@
     protectNTFS = true
 [branch]
     sort = -committerdate  # sort branches by most recent commits in git branch
+[include]  # import error will automatically be supressed if the file doesn't exist
+    path = ~/.gitconfig-gitdelta
 [includeIf "hasconfig:remote.*.url:git@github.com*/**"]
     path = ~/.gitconfig-github
 [includeIf "hasconfig:remote.*.url:git@gitlab.com*/**"]
     path = ~/.gitconfig-gitlab
 [includeIf "hasconfig:remote.*.url:git@ssh.gitlab.gnome.org*/**"]
     path = ~/.gitconfig-gnome
-# the following section is ripped straight from git-delta
-[color]
-    ui = auto
-[core]
-    pager = delta
-[interactive]
-    diffFilter = delta --color-only
-[delta]
-    navigate = true    # use n and N to move between diff sections
-    light = false      # set to true if you're in a terminal w/ a light background color (e.g. the default macOS terminal)
-[merge]
-    conflictstyle = diff3
-[diff]
-    colorMoved = default

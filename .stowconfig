@@ -1,11 +1,31 @@
-// Ignore header is implied, since it's the first thing in the .stowconfig
+// [ignore] header is implied, since it's the first thing in the .stowconfig
+[if-not-pkg:::delta]
+    // if git delta is not installed, don't link gitdelta configuration
+    scripts/.gitconfig-gitdelta
+[end]
+
+[if-not-pkg:::lsd]
+    // if lsd is not installed, don't link lsd configuration
+    .config/config.yaml
+[end]
+
+// if we're not using the default configuration:
+[if-not-profile:::default]
+    // don't link execute_shell sublime scripts
+    .config/sublime-text/execute_shell*
+
+    // don't link pipewire configuration
+    .config/pipewire.conf
+[end]
+
+// common .stowconfigs ignores
 .git*
 README.*
 .config/README.*
 scripts/README.*
 
 // these are configuration files specifically for the dotfiles directory
-// and as such, they shouldn't be redirected (stowed) anywhere else
+//  and as such, they shouldn't be redirected (stowed) anywhere else
 .stowconfig
 .shell-requirements
 
@@ -18,7 +38,7 @@ scripts/functions/
 games/
 
 // firefox-specific redirect ignores; these are not true config files
-// and must be imported manually
+//  and must be imported manually
 .config/mozilla/sidebery.json
 .config/mozilla/ublock.txt
 .config/mozilla/userChrome.css
@@ -32,6 +52,7 @@ games/
 scripts/.bashrc ::: .
 scripts/.nanorc ::: .
 scripts/.gitconfig ::: .
+scripts/.gitconfig-gitdelta ::: .
 
 // move up & rename directory
 .config/templates/* ::: Templates/
@@ -47,5 +68,3 @@ scripts/.gitconfig ::: .
 
 // find already created profile subdirectories on the fly, we can't nest here anyways
 .config/mozilla/* ::: .mozilla/firefox/*.default-release*/
-
-// no hardlink section here!
