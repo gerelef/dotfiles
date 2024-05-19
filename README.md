@@ -15,17 +15,14 @@ The common `$XDG_CONFIG_HOME` directory setup is semi-emulated, with exceptions 
 - `games/insurgency` contains [Insurgency](https://store.steampowered.com/app/222880/Insurgency/) specific configuration files, located in another github submodule. This is not something I use in each & every machine, so I thought it better not be inside the "root" `dotfile` directory.
 
 ## installation
-The complete setup of my system assume that any `~/dotfiles/scripts/setup/...` script
-has run to create the most basic of prerequisites & sane options for my usecase.
-Afterwards, I just need to install my dotfiles & my themes.
-- To install my dotfiles I use [pstow](https://github.com/gerelef/pstow).
+After running a setup script in `dotfiles/scripts/setup/...` I just need to install my dotfiles & my themes.
+- To deploy my dotfiles I use [pstow](https://github.com/gerelef/pstow); check the command below.
 - To install my themes I use `update-ff-theme`, which is a utility located under `scripts/utils/`
 - To install my compatibility layers for gaming, I use `update-compat-layers`, which is a utility located under `scripts/utils/`
 
-### run
 **Warning! This is a DESTRUCTIVE command, and it WILL overwrite files!**
 
-To automatically install the appropriate files:
+To automatically deploy the default profile:
 ```bash
-cd ~ && git clone https://github.com/gerelef/dotfiles && ~/dotfiles/scripts/functions/pstow --source ~/dotfiles --target ~ --force --overwrite-others
+cd ~ && git clone https://github.com/gerelef/dotfiles && ~/dotfiles/scripts/functions/pstow --source ~/dotfiles --target ~ --profile default --force --yes
 ```
