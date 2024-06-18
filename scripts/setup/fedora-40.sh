@@ -109,6 +109,16 @@ optimize-hardware () (
         fwupdmgr update -y
     fi
     
+    # s2 sleep
+    if is-mobile-type; then
+        grubby --update-kernel=ALL --args="mem_sleep_default=s2idle"
+        if !is_service_running power-profiles-daemon; then
+            systemctl mask power-profiles-daemon
+            dnf-install tlp tlp-rdw powertop
+            powertop --auto-tune
+        fi
+    fi
+
     if is-desktop-type; then
         echo-status "Disabling mobile-gpu specific service (https://forums.developer.nvidia.com/t/no-matching-gpu-found-with-510-47-03/202315/5)"
         systemctl disable nvidia-powerd.service
@@ -166,6 +176,7 @@ install-proprietary-nvidia-drivers () (
 
     dnf-install "$INSTALLABLE_NVIDIA_DRIVERS"
     dnf-install "$INSTALLABLE_NVIDIA_UTILS"
+    dnf-install cowsay fortune
 
     # check arch wiki, these enable DRM
     grubby --update-kernel=ALL --args="nvidia-drm.modeset=1"
@@ -175,6 +186,16 @@ install-proprietary-nvidia-drivers () (
     echo-debug "Regenerating akmod build..."
     akmods --force && dracut --force --regenerate-all
     echo-debug "Regenerated akmod build."
+
+    echo-important "Script will hang while NVIDIA Drivers are being built."
+    echo-important "Please note this can take upwards of five (5) minutes to finish."
+    while !modinfo -F version nvidia; do
+        cowsay "$(fortune)"
+        sleep 10
+        echo-status "Waiting..."
+    done
+    echo-success "NVIDIA drivers built."
+    dnf-remove cowsay fortune
 )
 
 install-media-codecs () (

@@ -441,3 +441,10 @@ get-nvidia-gpu-model () (
     readonly mdl="$(lspci | grep -i vga | grep NVIDIA | grep -E --only-matching "(\[.+\])" | tr -d '[]')"
     echo "$mdl"
 )
+
+is-service-running () {
+    echo-debug "is-service-running $1"
+    [[ $# != 1 ]] && exit 1
+    systemctl is-active --quiet "$1" && return 0
+    return 1
+}
