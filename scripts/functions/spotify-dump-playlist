@@ -14,7 +14,8 @@ spotify-dump-playlist () (
         echo "playlist url must be given!"
         exit 1
     fi
-    readonly playlist_id="$(basename $1)"
+    filename_and_queries="$(basename $1))"
+    readonly playlist_id="${filename_and_queries%?*}"
     readonly bearer_header="Authorization: Bearer $(curl-bearer-token)"
     # getting the name of playlist: jq '.name'
     # getting the name of all tracks: jq '.tracks.items.[].track.name'
