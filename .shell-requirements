@@ -1,6 +1,7 @@
 git
 lsd
+curl
 yt-dlp
 ffmpeg
-adb
 findutils
+adb
