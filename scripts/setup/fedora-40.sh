@@ -58,7 +58,11 @@ configure-gdm-dconf () (
     create-gdm-dconf-db
 
     dconf update
-    echo-debug "Updated dconf db."
+    DCONF_PROFILE=gdm gsettings list-recursively org.gnome.login-screen
+    echo-success "Updated dconf db."
+    echo-important "Restarting GDM might be required for changes to take effect."
+    echo-important "Please note this will cause every logged in user to logout."
+    echo-important "sudo systemctl restart gdm.service"
 )
 
 install-universal-necessities () (
