@@ -39,6 +39,7 @@ spotify-dump-playlist () (
             echo "$(echo ${artist_names[i]} | tr -d "\"") - $(echo ${track_names[i]} | tr -d "\"")" >> "$fname"
         done
     done
+    echo "$fname"
 )
 
 spotify-dump-playlist $@
