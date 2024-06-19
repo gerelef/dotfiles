@@ -28,7 +28,22 @@ install-gnome-essentials () (
     try-enabling-power-profiles-daemon
     
     systemctl enable gdm
-    configure-gdm-dconf
+    login-as-service-user gdm "gsettings set org.gnome.desktop.interface clock-format '24h'"
+    login-as-service-user gdm "gsettings set org.gnome.desktop.interface clock-show-date true"
+    login-as-service-user gdm "gsettings set org.gnome.desktop.interface clock-show-seconds true"
+    login-as-service-user gdm "gsettings set org.gnome.desktop.interface clock-show-weekday true"
+    login-as-service-user gdm "gsettings set org.gnome.desktop.interface font-antialiasing 'rgba'"
+    login-as-service-user gdm "gsettings set org.gnome.desktop.interface font-hinting 'full'"
+    login-as-service-user gdm "gsettings set org.gnome.desktop.peripherals.keyboard numlock-state false"
+    login-as-service-user gdm "gsettings set org.gnome.desktop.peripherals.keyboard remember-numlock-state false"
+    login-as-service-user gdm "gsettings set org.gnome.desktop.peripherals.keyboard repeat true"
+    login-as-service-user gdm "gsettings set org.gnome.desktop.peripherals.keyboard repeat-interval 25"
+    login-as-service-user gdm "gsettings set org.gnome.desktop.peripherals.mouse double-click 250"
+    login-as-service-user gdm "gsettings set org.gnome.desktop.peripherals.mouse middle-click-emulation false"
+    login-as-service-user gdm "gsettings set org.gnome.desktop.peripherals.mouse natural-scroll false"
+    login-as-service-user gdm "gsettings set org.gnome.desktop.peripherals.mouse speed -0.2"
+    login-as-service-user gdm "gsettings set org.gnome.desktop.peripherals.mouse accel-profile 'flat'"
+    login-as-service-user gdm "gsettings set org.gnome.desktop.peripherals.touchpad disable-while-typing false"
     
     echo-success "Done."
 )
@@ -50,19 +65,6 @@ install-cinnamon-essentials () (
     systemctl enable lightdm
 
     echo-success "Done."
-)
-
-configure-gdm-dconf () (
-    echo-status "-------------------CONFIGURING GDM DCONF DB & USER GSETTINGS----------------"
-    create-gdm-dconf-profile
-    create-gdm-dconf-db
-
-    dconf update
-    DCONF_PROFILE=gdm gsettings list-recursively org.gnome.login-screen
-    echo-success "Updated dconf db."
-    echo-important "Restarting GDM might be required for changes to take effect."
-    echo-important "Please note this will cause every logged in user to logout."
-    echo-important "sudo systemctl restart gdm.service"
 )
 
 install-universal-necessities () (

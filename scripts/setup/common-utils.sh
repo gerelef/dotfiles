@@ -222,67 +222,6 @@ create-convenience-sudoers () (
     chmod 440 "$fname" # 440 is the default rights of /etc/sudoers file, so we're copying the rights just in case (even though visudo -f /etc/sudoers.d/test creates the file with 640)
 )
 
-create-gdm-dconf-profile () (
-    readonly fname="/etc/dconf/profile/gdm"
-
-    (cat <<GDM_END
-user-db:user
-system-db:gdm
-file-db:/usr/share/gdm/greeter-dconf-defaults
-GDM_END
-    ) > "$fname"
-    
-    chmod 644 "$fname"
-    
-    echo-debug "Created GDM DCONF PROFILE $fname"
-)
-
-create-gdm-dconf-db () (
-    (cat <<-GDM_END
-[org/gnome/desktop/interface] 
-clock-format='24h'
-clock-show-date=true
-clock-show-seconds=true
-clock-show-weekday=true
-font-antialiasing='rgba'
-font-hinting='full'
-show-battery-percentage=true
-GDM_END
-    ) > "/etc/dconf/db/gdm.d/01-interface"
-    chmod 644 "/etc/dconf/db/gdm.d/01-interface"
-    echo-debug "Created /etc/dconf/db/gdm.d/01-interface"
-    
-    (cat <<-GDM_END
-[org/gnome/desktop/peripherals/keyboard] 
-numlock-state=false
-remember-numlock-state=false
-repeat=true
-repeat-interval=25
-GDM_END
-    ) > "/etc/dconf/db/gdm.d/02-keyboard"
-    chmod 644 "/etc/dconf/db/gdm.d/02-keyboard"
-    echo-debug "Created /etc/dconf/db/gdm.d/02-keyboard"
-    
-    (cat <<-GDM_END
-[org/gnome/desktop/peripherals/mouse]
-double-click=250
-middle-click-emulation=false
-natural-scroll=false
-speed=-0.2
-GDM_END
-    ) > "/etc/dconf/db/gdm.d/03-mouse"
-    chmod 644 "/etc/dconf/db/gdm.d/03-mouse"
-    echo-debug "Created /etc/dconf/db/gdm.d/03-mouse"
-    
-    (cat <<-GDM_END
-[org/gnome/desktop/peripherals/touchpad]
-disable-while-typing=true
-GDM_END
-    ) > "/etc/dconf/db/gdm.d/04-touchpad"
-    chmod 644 "/etc/dconf/db/gdm.d/04-touchpad"
-    echo-debug "Created /etc/dconf/db/gdm.d/04-touchpad"
-)
-
 # USEFUL COMMAND: dnf whatprovides COMMAND
 #  e.g. dnf whatprovides nvidia-smi
 
@@ -448,3 +387,10 @@ is-service-running () {
     systemctl is-active --quiet "$1" && return 0
     return 1
 }
+
+login-as-service-user () (
+    # username and command must be given
+    echo-debug "login-as-systemd-service-user $1 $2"
+    [[ $# != 2 ]] && exit 1
+    machinectl shell "$1@" $(whereis bash | awk '{ printf $2 }') -c "$2"
+)
