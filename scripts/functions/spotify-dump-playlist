@@ -6,7 +6,7 @@ if [[ -z "$(command -v curl)" ]]; then
 fi
 
 curl-bearer-token () (
-    echo $(curl -sS --dump-header - --cookie-jar -L -b "" -X GET "https://open.spotify.com/" | grep --only-matching --extended-regexp '"accessToken":".+","accessTokenExpirationTimestampMs' | sed -nr 's/"accessToken":"(.+)","accessTokenExpirationTimestampMs/\1/p' -)
+    echo $(curl -sS --dump-header - -b "" -X GET "https://open.spotify.com/" | grep --only-matching --extended-regexp '"accessToken":".+","accessTokenExpirationTimestampMs' | sed -nr 's/"accessToken":"(.+)","accessTokenExpirationTimestampMs/\1/p' -)
 )
 
 spotify-dump-playlist () (
@@ -22,16 +22,16 @@ spotify-dump-playlist () (
     # getting the name of first artist: jq '.tracks.items.[].track.artists.[0].name'
     # getting the next page: jq '.tracks.next'
     # if .tracks.next -ne null, get the next batch
-    body="$(curl -sS --cookie-jar -L -b "" -H "$bearer_header" -X GET "https://api.spotify.com/v1/playlists/$playlist_id")"
+    body="$(curl -sS -b "" -H "$bearer_header" -X GET "https://api.spotify.com/v1/playlists/$playlist_id")"
     next_page="$(echo "$body" | jq '.tracks.next' | tr -d "\"")"
-    readonly fname="$(echo "$body" | jq '.name' | tr -d "\"" | tr -d "'")"
+    readonly fname="$(echo "$body" | jq '.name' | tr -d "\"" | tr -d "'" | tr "/" " ")"
     readarray -t track_names < <(echo "$body" | jq '.tracks.items.[].track.name')
     readarray -t artist_names < <(echo "$body" | jq '.tracks.items.[].track.artists.[0].name')
     for i in "${!track_names[@]}"; do
         echo "$(echo ${artist_names[i]} | tr -d "\"") - $(echo ${track_names[i]} | tr -d "\"")" >> "$fname"
     done
     while [[ "$next_page" != "null" && -n "$next_page" ]]; do
-        body="$(curl -sS --cookie-jar -L -b "" -H "$bearer_header" -X GET "$next_page")"
+        body="$(curl -sS -b "" -H "$bearer_header" -X GET "$next_page")"
         next_page="$(echo "$body" | jq '.tracks.next' | tr -d "\"")"
         readarray -t track_names < <(echo "$body" | jq '.items.[].track.name')
         readarray -t artist_names < <(echo "$body" | jq '.items.[].track.artists.[0].name')
