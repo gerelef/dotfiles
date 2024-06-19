@@ -47,4 +47,5 @@ require-login-shell-packages () (
     fi
 )
 
-require-login-shell-packages "$@"
+# run only if this file is not sourced
+[[ "${BASH_SOURCE[0]}" == "${0}" ]] && require-login-shell-packages "$@"

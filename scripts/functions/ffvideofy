@@ -16,4 +16,5 @@ ffvideofy () (
     ffmpeg -loop 1 -y -i "$1" -i "$2" -vcodec libx265 -shortest "$PWD/$output.mp4"
 )
 
-ffvideofy "$@"
+# run only if this file is not sourced
+[[ "${BASH_SOURCE[0]}" == "${0}" ]] && ffvideofy "$@"

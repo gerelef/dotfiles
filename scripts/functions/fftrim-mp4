@@ -21,4 +21,5 @@ fftrim-mp4 () (
     ffmpeg -ss "$(__hms "$2")" -to "$(__hms "$3")" -i "$1" -codec copy "$PWD/$output-trimmed.mp4"
 )
 
-fftrim-mp4 "$@"
+# run only if this file is not sourced
+[[ "${BASH_SOURCE[0]}" == "${0}" ]] && fftrim-mp4 "$@"

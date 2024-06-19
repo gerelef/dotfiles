@@ -11,4 +11,5 @@ ytdl-thumbnail () (
     yt-dlp --write-thumbnail --skip-download "$@"
 )
 
-ytdl-thumbnail "$@"
+# run only if this file is not sourced
+[[ "${BASH_SOURCE[0]}" == "${0}" ]] && ytdl-thumbnail "$@"

@@ -21,4 +21,5 @@ ffscale-mp4 () (
     ffmpeg -i "$1" -vf scale="$(__xy_to_ffilter_coords "$2")" -vcodec libx265 -crf 22 -vsync cfr -r 60 "$PWD/$output-scaled.mp4"
 )
 
-ffscale-mp4 "$@"
+# run only if this file is not sourced
+[[ "${BASH_SOURCE[0]}" == "${0}" ]] && ffscale-mp4 "$@"

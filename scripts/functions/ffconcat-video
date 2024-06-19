@@ -27,4 +27,5 @@ ffconcat-video () (
     ffmpeg "${inputs[@]}" -filter_complex "$audio_video_ftracks concat=n=$count:v=1:a=1 [v] [a]" -map "[v]" -map "[a]" -vsync cfr -r 60 "$PWD/$output_name" 
 )
 
-ffconcat-video "$@"
+# run only if this file is not sourced
+[[ "${BASH_SOURCE[0]}" == "${0}" ]] && ffconcat-video "$@"

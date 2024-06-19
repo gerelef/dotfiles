@@ -4,4 +4,5 @@ restart-network-manager () (
     sudo systemctl restart NetworkManager.service
 )
 
-restart-network-manager
+# run only if this file is not sourced
+[[ "${BASH_SOURCE[0]}" == "${0}" ]] && restart-network-manager

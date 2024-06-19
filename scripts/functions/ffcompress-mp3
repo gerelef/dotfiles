@@ -15,4 +15,5 @@ ffcompress-mp3 () (
     ffmpeg -i "$1" -map 0:a:0 -b:a "$2" "$PWD/output-compressed.mp3"
 )
 
-ffcompress-mp3 "$@"
+# run only if this file is not sourced
+[[ "${BASH_SOURCE[0]}" == "${0}" ]] && ffcompress-mp3 "$@"

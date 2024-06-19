@@ -42,4 +42,5 @@ spotify-dump-playlist () (
     echo "$fname"
 )
 
-spotify-dump-playlist $@
+# run only if this file is not sourced
+[[ "${BASH_SOURCE[0]}" == "${0}" ]] && spotify-dump-playlist $@

@@ -25,4 +25,5 @@ ffgiphify () (
     echo "Done $output-giphified"
 )
 
-ffgiphify "$@"
+# run only if this file is not sourced
+[[ "${BASH_SOURCE[0]}" == "${0}" ]] && ffgiphify "$@"

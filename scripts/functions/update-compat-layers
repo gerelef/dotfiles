@@ -4,4 +4,5 @@ update-compat-layers () (
     "$HOME/dotfiles/scripts/utils/update-compat-layers.py" "$@"
 )
 
-update-compat-layers "$@"
+# run only if this file is not sourced
+[[ "${BASH_SOURCE[0]}" == "${0}" ]] && update-compat-layers "$@"

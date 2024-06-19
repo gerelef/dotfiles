@@ -4,4 +4,5 @@ pstow () {
     curl --tlsv1.2 -fsSL "https://raw.githubusercontent.com/gerelef/pstow/master/pstow.py" | python3 - "$@"
 }
 
-pstow "$@"
+# run only if this file is not sourced
+[[ "${BASH_SOURCE[0]}" == "${0}" ]] && pstow "$@"

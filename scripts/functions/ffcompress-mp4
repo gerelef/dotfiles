@@ -16,4 +16,5 @@ ffcompress-mp4 () (
     ffmpeg -i "$1" -vcodec libx265 -crf "$2" -vsync cfr -r 60 "$PWD/$output-compressed.mp4"
 )
 
-ffcompress-mp4 "$@"
+# run only if this file is not sourced
+[[ "${BASH_SOURCE[0]}" == "${0}" ]] && ffcompress-mp4 "$@"

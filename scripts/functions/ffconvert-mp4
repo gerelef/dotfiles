@@ -15,4 +15,5 @@ ffconvert-mp4 () (
     done
 )
 
-ffconvert-mp4 "$@"
+# run only if this file is not sourced
+[[ "${BASH_SOURCE[0]}" == "${0}" ]] && ffconvert-mp4 "$@"

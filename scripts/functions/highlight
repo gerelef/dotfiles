@@ -7,4 +7,5 @@ highlight () (
     grep --color=always -iE "$1|\$"
 )
 
-highlight "$@"
+# run only if this file is not sourced
+[[ "${BASH_SOURCE[0]}" == "${0}" ]] && highlight "$@"

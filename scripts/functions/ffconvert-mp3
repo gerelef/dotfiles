@@ -15,4 +15,5 @@ ffconvert-mp3 () (
     done
 )
 
-ffconvert-mp3 "$@"
+# run only if this file is not sourced
+[[ "${BASH_SOURCE[0]}" == "${0}" ]] && ffconvert-mp3 "$@"

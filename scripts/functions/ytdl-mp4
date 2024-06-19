@@ -12,4 +12,5 @@ ytdl-mp4 () (
     yt-dlp --format "bv*[ext=mp4]+ba[ext=m4a]/b[ext=mp4]" "$@"
 )
 
-ytdl-mp4 "$@"
+# run only if this file is not sourced
+[[ "${BASH_SOURCE[0]}" == "${0}" ]] && ytdl-mp4 "$@"

@@ -10,4 +10,5 @@ adb-get-packages-named () (
     adb -s $1 shell cmd package list packages | cut -c 9- | xargs
 )
 
-adb-get-packages-named $@
+# run only if this file is not sourced
+[[ "${BASH_SOURCE[0]}" == "${0}" ]] && adb-get-packages-named $@

@@ -4,4 +4,5 @@ jproof () {
     curl --tlsv1.2 -fsSL "https://raw.githubusercontent.com/gerelef/jproof/master/jproof.py" | python3 - "$@"
 }
 
-jproof "$@"
+# run only if this file is not sourced
+[[ "${BASH_SOURCE[0]}" == "${0}" ]] && jproof "$@"

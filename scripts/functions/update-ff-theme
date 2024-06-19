@@ -5,4 +5,5 @@ update-ff-theme () (
     "$HOME/dotfiles/scripts/utils/update-ff-theme.py" --resource "$HOME/dotfiles/.config/mozilla/userChrome.css" "$@"
 )
 
-update-ff-theme "$@"
+# run only if this file is not sourced
+[[ "${BASH_SOURCE[0]}" == "${0}" ]] && update-ff-theme "$@"

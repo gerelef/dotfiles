@@ -11,4 +11,5 @@ adb-list-all-devices () (
     adb devices | grep $1 | awk '{ if (NR > 1) { printf $1 " " } }' | xargs
 )
 
-adb-list-all-devices $@
+# run only if this file is not sourced
+[[ "${BASH_SOURCE[0]}" == "${0}" ]] && adb-list-all-devices $@

@@ -10,4 +10,5 @@ adb-uninstall-package () (
     adb -s $1 uninstall --user 0 $2
 )
 
-adb-uninstall-package $@
+# run only if this file is not sourced
+[[ "${BASH_SOURCE[0]}" == "${0}" ]] && adb-uninstall-package $@

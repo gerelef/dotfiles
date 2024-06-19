@@ -4,4 +4,5 @@ restart-pipewire () (
     systemctl --user restart pipewire
 )
 
-restart-pipewire
+# run only if this file is not sourced
+[[ "${BASH_SOURCE[0]}" == "${0}" ]] && restart-pipewire
