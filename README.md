@@ -10,10 +10,6 @@ The common `$XDG_CONFIG_HOME` directory setup is semi-emulated, with exceptions 
 - `.config` contains generic configuration files. The most common `$XDG_CONFIG_HOME`directory setup is emulated, however with exceptions for convenience.
 - `.manpages/` contains manual pages, authored in `Markdown`, converted to manpages through `ronn`.
 
-## submodules
-- `games/cs2/` contains [CS:GO](https://store.steampowered.com/app/730/CounterStrike_Global_Offensive/) specific configuration files, located in another github submodule. This is not something I use in each & every machine, so I thought it'd better not be inside the "root" `dotfile` directory.
-- `games/insurgency` contains [Insurgency](https://store.steampowered.com/app/222880/Insurgency/) specific configuration files, located in another github submodule. This is not something I use in each & every machine, so I thought it better not be inside the "root" `dotfile` directory.
-
 ## installation
 After running a setup script in `dotfiles/scripts/setup/...` I just need to install my dotfiles & my themes.
 - To deploy my dotfiles I use [pstow](https://github.com/gerelef/pstow); check the command below.
