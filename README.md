@@ -26,3 +26,44 @@ To automatically deploy the default profile:
 ```bash
 cd ~ && git clone https://github.com/gerelef/dotfiles && ~/dotfiles/scripts/functions/pstow --source ~/dotfiles --target ~ --profile default --force --yes
 ```
+
+## spellbook
+- header guards
+```bash
+if [[ -n "$__FN_LOADED" ]]; then
+    return 0
+fi
+readonly __FN_LOADED="__LOADED"
+```
+- if `__name__ == '__main__'` python equivalent
+```bash
+[[ "${BASH_SOURCE[0]}" == "${0}" ]] && run-my_function "$@"
+```
+- if there are no arguments (`$*` is empty)
+```bash
+[[ -z "$*" ]] && return 2
+```
+- if the number of arguments != 2
+```bash
+[[ "$#" -ne 2 ]] && return 2
+```
+- loop over arguments w/ array, and increment `count` by once each time
+```bash
+local inputs=()
+local count=0
+for arg in "$@"; do
+    local inputs+=( -i "$arg" )
+    ((++count))
+done
+```
+- check if external/system dependency exists
+```bash
+if [[ -z "$(command -v ls)" ]]; then
+    # do stuff
+    exit 1
+fi
+```
+- redirect find output to bash array
+```bash
+readarray -d '' array < <(find . -name "$input" -print0)
+```
