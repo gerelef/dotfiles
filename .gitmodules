@@ -1,9 +1,0 @@
-
-[submodule ".csgorc"]
-	path = games/cs2
-	url = git@github.com:gerelef/csgorc.git
-	branch = master
-[submodule ".insurc"]
-	path = games/insurgency
-	url = git@github.com:gerelef/insurc.git
-    branch = master
