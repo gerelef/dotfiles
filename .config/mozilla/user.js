@@ -4,6 +4,20 @@ user_pref("svg.context-properties.content.enabled", true);
 user_pref("gnomeTheme.hideSingleTab", true);
 user_pref("media.ffmpeg.allow-openh264", true);
 
+// devtools
+user_pref("devtools.toolbox.alwaysOnTop", true)
+user_pref("devtools.toolbox.selectedTool", "netmonitor")
+user_pref("devtools.toolbox.tabsOrder", "netmonitor,inspector,webconsole,jsdebugger,styleeditor,performance,memory,storage,accessibility,application,dom")
+user_pref("devtools.netmonitor.enabled", true);
+user_pref("devtools.netmonitor.persistlog", true);
+user_pref("devtools.netmonitor.visibleColumns", ["status","method","domain","url","startTime"])
+user_pref("devtools.netmonitor.saveRequestAndResponseBodies", true);
+user_pref("devtools.netmonitor.features.search", true);
+user_pref("devtools.netmonitor.features.newEditAndResend", true);
+user_pref("devtools.webconsole.persistlog", true);
+user_pref("devtools.webconsole.timestampMessages", true);
+user_pref("devtools.editor.tabsize", 4);
+
 // GENERIC
 user_pref("browser.bookmarks.restore_default_bookmarks", false);
 user_pref("browser.tabs.insertRelatedAfterCurrent", false);
