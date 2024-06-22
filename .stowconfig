@@ -5,46 +5,40 @@
 .stowconfig
 .shell-requirements
 .git*
-README.*
-.config/README.*
+README*
+.config/README*
 
 // these are not meant to be linked anywhere
 .manpages/
-scripts/
-games/
-
-// these must be imported manually
 .config/gnome-extensions/
 
+scripts/
+// only link these specific files from the scripts directory
 !!scripts/.bashrc
 !!scripts/.nanorc
 !!scripts/.gitconfig
 
-[if-not-pkg:::lsd]
-// if lsd is not installed, don't link lsd configuration
-.config/config.yaml
+[if-pkg:::lsd]
+    // if lsd is installed, link lsd configuration
+    !!.config/config.yaml
 [end]
 
 [if-pkg:::delta]
-// if git delta is installed, link gitdelta configuration
-!!scripts/.gitconfig-gitdelta
+    !!scripts/.gitconfig-gitdelta
 [end]
 
-// link sublime-text only in default profile
+// link only in default profile
 .config/sublime-text/
-[if-profile:::default]
-!!.config/sublime-text/*
-[end]
-
-// if we're not using the default profile, don't link pipewire configuration
-[if-not-profile:::default]
-.config/pipewire.conf
-[end]
-
-// firefox-specific ignores; must be imported manually except user.js
 .config/mozilla/*
+.config/pipewire.conf
+.config/config
 [if-profile:::default]
-!!.config/mozilla/user.js
+    !!.config/sublime-text/*
+    !!.config/mozilla/user.js
+    !!.config/pipewire.conf
+
+    // ssh config
+    !!.config/config
 [end]
 
 [redirect]
@@ -53,6 +47,8 @@ scripts/.bashrc ::: .
 scripts/.nanorc ::: .
 scripts/.gitconfig ::: .
 scripts/.gitconfig-gitdelta ::: .
+
+.config/config ::: .ssh/
 
 // move up & rename directory
 .config/templates/* ::: Templates/

@@ -1,0 +1,8 @@
+# ssh config, place in ~/.ssh/config
+
+# keepalive
+ServerAliveInterval 120
+
+# do not forward ssh-agent to all hosts
+Host *
+  ForwardAgent no
