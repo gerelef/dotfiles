@@ -7,7 +7,10 @@
 .git*
 README*
 .config/README*
-
+csgorc/
+csgorc/*
+insurc/
+insurc/*
 // these are not meant to be linked anywhere
 .manpages/
 .config/gnome-extensions/
