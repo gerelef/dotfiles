@@ -88,6 +88,12 @@ function require-pip
     rm "$vpip_fname"
 end
 
+function __venv_activate_fish
+    set activate_fish "$(find . -name "activate.fish" | head -n 1)"
+    if test -e "$activate_fish"; echo "fish --init-command \"source $activate_fish\""; return 0; end
+    return 1
+end
+
 #############################################################
 # SOURCES & CONFIG
 # add executable script (lambdas) dir 
@@ -110,6 +116,7 @@ abbr --position command --add palindrome "rev"
 
 function __sudo_last_command; echo "sudo $history[1]"; end
 abbr --position command --add fuck --function __sudo_last_command
+abbr --position command --add vpip --function __venv_activate_fish
 
 alias .. "cd .."
 alias ... "cd ../.."

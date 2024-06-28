@@ -174,6 +174,15 @@ require-pip () {
     rm "$vpip_fname"
 }
 
+vpip () {
+    readonly activate_bash="$(find . -name "activate" | head -n 1)"
+    if [[ -f "$activate_bash" ]]; then
+        bash --init-file <(echo "source \"$HOME/.bashrc\"; source $activate_bash")
+        return
+    fi
+    return 1
+}
+
 #############################################################
 # SOURCES
 
