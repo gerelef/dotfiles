@@ -9,8 +9,9 @@ import unicodedata
 from dataclasses import dataclass
 from pathlib import Path
 from functools import partial
-from typing import Iterator, TextIO
+from typing import Iterator, TextIO, List
 from copy import copy
+
 
 # HELP "./findt <path> <contents...>; search for text <contents> in <path> (dir or file)
 
@@ -27,19 +28,20 @@ class Colours(enum.Enum):
 
 
 class UTF8Table:
-    V_BORDER   = "│"
-    H_BORDER   = "─"
+    V_BORDER = "│"
+    H_BORDER = "─"
     L_JUNCTION = "├"
     R_JUNCTION = "┤"
-    TL_BORDER  = "┌"
-    TR_BORDER  = "┐"
-    BL_BORDER  = "└"
-    BR_BORDER  = "┘"
+    TL_BORDER = "┌"
+    TR_BORDER = "┐"
+    BL_BORDER = "└"
+    BR_BORDER = "┘"
 
     def __init__(self):
         self.width, self.height = shutil.get_terminal_size()
 
-    def _colour_offset(self, s: str) -> int:
+    @staticmethod
+    def _colour_offset(s: str) -> int:
         offset = Colours.RED.offset(s)
         offset += Colours.GRN.offset(s)
         offset += Colours.CLR.offset(s)
@@ -48,21 +50,21 @@ class UTF8Table:
     def header(self, string) -> str:
         assert "\n" not in string
         offset = self._colour_offset(string)
-        strwidth = self.width - 2
-        string = string[:strwidth + offset]
-        top_section  = f"{UTF8Table.TL_BORDER}{UTF8Table.H_BORDER*(self.width - 2)}{UTF8Table.TR_BORDER}"
-        mid_section  = f"{UTF8Table.V_BORDER}{string:<{strwidth + offset}}{UTF8Table.V_BORDER}{Colours.CLR.value}"
-        bot_junction = f"{UTF8Table.L_JUNCTION}{UTF8Table.H_BORDER*(self.width - 2)}{UTF8Table.R_JUNCTION}"
+        str_width = self.width - 2
+        string = string[:str_width + offset]
+        top_section = f"{UTF8Table.TL_BORDER}{UTF8Table.H_BORDER * (self.width - 2)}{UTF8Table.TR_BORDER}"
+        mid_section = f"{UTF8Table.V_BORDER}{string:<{str_width + offset}}{UTF8Table.V_BORDER}{Colours.CLR.value}"
+        bot_junction = f"{UTF8Table.L_JUNCTION}{UTF8Table.H_BORDER * (self.width - 2)}{UTF8Table.R_JUNCTION}"
         return "\n".join([top_section, mid_section, bot_junction])
 
     def row(self, string) -> str:
         offset = self._colour_offset(string)
-        strwidth = self.width + offset - 2
-        string = string[:strwidth]
-        return f"{UTF8Table.V_BORDER}{string:<{strwidth}}{UTF8Table.V_BORDER}"
+        str_width = self.width + offset - 2
+        string = string[:str_width]
+        return f"{UTF8Table.V_BORDER}{string:<{str_width}}{UTF8Table.V_BORDER}"
 
     def end(self) -> str:
-        return f"{UTF8Table.BL_BORDER}{UTF8Table.H_BORDER*(self.width - 2)}{UTF8Table.BR_BORDER}"
+        return f"{UTF8Table.BL_BORDER}{UTF8Table.H_BORDER * (self.width - 2)}{UTF8Table.BR_BORDER}"
 
 
 # https://stackoverflow.com/a/518232
@@ -71,10 +73,12 @@ def normalize(string, normalized=False) -> str:
         return string
     return "".join(c for c in unicodedata.normalize("NFD", string) if unicodedata.category(c) != "Mn")
 
+
 def upper(string, uppercase=False) -> str:
     if not uppercase:
         return string
     return string.upper()
+
 
 def merge_intervals(intervals):
     # sort intervals by start time
@@ -109,7 +113,7 @@ class Block:
         return self.exact_match_lc + 1
 
     def lines(self) -> Iterator[tuple[int, str]]:
-        block_lc = self.rank -len(self.before)
+        block_lc = self.rank - len(self.before)
         for bline in self.before:
             yield block_lc, bline
             block_lc += 1
@@ -122,6 +126,7 @@ class Block:
             block_lc += 1
 
         return
+
 
 class Aggregate:
     def __init__(self, owner: Path, padding: int):
@@ -145,14 +150,16 @@ class Aggregate:
                     continue
                 self.__lines[line_count] = line
 
-    def ppretty(self, highlighted: bool = False) -> str:
-        MAX_LC_PADDING = len(str(self.__end_lc))
+    def ppretty(self, highlighted: bool = False) -> Iterator[str]:
+        max_lc_padding = len(str(self.__end_lc))
+
         def decorate(lc, line) -> str:
             if not highlighted or lc not in self.__matched_lines:
                 return line
 
             def region_range(t: tuple[int]) -> int:
                 return t[-1] - t[0]
+
             # we want to match all processed queries against our string
             #  for all matches, suppose the following:
             #  content line
@@ -169,10 +176,10 @@ class Aggregate:
             #  for every region start, check if it's under our max
             #  if it is, we overlap, and we should extend our end to theirs, and pop it
             #  if it isn't, continue
-            #  fortunately, this is a solved problem and google carried me so
-            #  i don't have to waste my time here
+            #  fortunately, this is a solved problem and google carried me, so
+            #  I don't have to waste my time here
             pline = self.__lines[lc]
-            areas: list[list[int]] = []
+            areas: Iterable[list[int]] = []
             for q in self.__pqueries:
                 if q in pline:
                     start = pline.index(q)
@@ -184,11 +191,11 @@ class Aggregate:
             end = biggest_area[1]
             return f"{line[:start]}{Colours.RED.value}{line[start:end]}{Colours.CLR.value}{line[end:]}"
 
-        def is_sequential(oldk, newk) -> bool:
-            return oldk + 1 == newk
+        def is_sequential(old_k, new_k) -> bool:
+            return old_k + 1 == new_k
 
         def build(lc: int, line: str) -> str:
-            return f"{format(lc, f"{MAX_LC_PADDING}d")}: {decorate(lc, line)}"
+            return f"{format(lc, f"{max_lc_padding}d")}: {decorate(lc, line)}"
 
         int_to_str = str if not highlighted else lambda i: f"{Colours.GRN.value}{i}{Colours.CLR.value}"
         header_content = f" ".join(list(map(int_to_str, sorted(self.__matched_lines))))
@@ -209,10 +216,10 @@ class Aggregate:
 
 def match_blocks(file: Path,
                  queries: list[str],
-                 padding:int = 2,
+                 padding: int = 2,
                  normalized: bool = False,
                  uppercase: bool = False) -> Iterator[Block]:
-    def insert(q: list, e: object, padding:int = padding) -> None:
+    def insert(q: list, e: object, padding: int = padding) -> None:
         assert len(q) <= padding
         if len(q) >= padding:
             # remove the oldest element (if we're using .append)
@@ -220,7 +227,6 @@ def match_blocks(file: Path,
         q.append(e)
 
     def advance(f: TextIO) -> Iterator[tuple[int, str]]:
-        previous_tell = None
         tell = f.tell()
         while True:
             line = upper(normalize(f.readline().rstrip(), normalized=normalized), uppercase=uppercase)
@@ -230,8 +236,9 @@ def match_blocks(file: Path,
             if tell == previous_tell:
                 return
 
-    def peek(f: TextIO, pc: int) -> Iterator[str]:
+    def peek(f: TextIO, pc: int) -> list[str]:
         """
+        :param f: fhandle
         :param pc: peek count
         """
         tell = f.tell()
@@ -248,8 +255,7 @@ def match_blocks(file: Path,
 
     def drive(f: TextIO, padding: int = padding) -> Iterator[Block]:
         lc = 0
-        before=[]
-        after=[]
+        before = []
         for tell, line in advance(f):
             truthy_query_results = []
             for query in queries:
@@ -257,7 +263,6 @@ def match_blocks(file: Path,
                 if query in line:
                     truthy_query_results.append(query)
 
-            matched = bool(truthy_query_results)
             yield from map(
                 lambda query: Block(
                     owner=file,
@@ -279,31 +284,31 @@ def match_blocks(file: Path,
     try:
         with open(file, "r") as fhandle:
             yield from drive(fhandle, padding=padding)
-    except UnicodeDecodeError as ignored:
+    except UnicodeDecodeError:
         pass  # silently skip undecodeable files
 
 
-def preprocess(dir: Path) -> list[Path]:
+def preprocess(directory: Path) -> list[Path]:
     """
     Find all files from the directory provided, and return their path.
     If the path provided is a file, it will return itself.
     :returns: list of absolute files, that exist
     """
-    if dir is None:
+    if directory is None:
         raise ValueError("dir null not permitted")
-    if not dir.exists():
+    if not directory.exists():
         return []
-    if dir.is_file():
-        return [dir]
+    if directory.is_file():
+        return [directory]
     # block devices etc. check
-    if not dir.is_dir():
+    if not directory.is_dir():
         return []
     return list(
         filter(
             lambda p: p.is_file(),
             map(
                 lambda p: p,
-                [Path(p) for p in dir.rglob("*")]
+                [Path(p) for p in directory.rglob("*")]
             )
         )
     )
@@ -315,7 +320,7 @@ def main(options):
     normalized = options.normalized
     decorated = options.decorated
     highlighted = options.highlighted
-    multimatches: dict[str, Block] = {}
+    multimatches: dict[str, list[Block]] = {}
     paths = preprocess(Path(options.path))
     for p in paths:
         matched_blocks = match_blocks(
