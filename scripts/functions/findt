@@ -4,6 +4,7 @@ import os
 import sys
 import enum
 import shutil
+import argparse
 import unicodedata
 from dataclasses import dataclass
 from pathlib import Path
@@ -49,7 +50,6 @@ class UTF8Table:
         offset = self._colour_offset(string)
         strwidth = self.width - 2
         string = string[:strwidth + offset]
-        # TODO this is an example
         top_section  = f"{UTF8Table.TL_BORDER}{UTF8Table.H_BORDER*(self.width - 2)}{UTF8Table.TR_BORDER}"
         mid_section  = f"{UTF8Table.V_BORDER}{string:<{strwidth + offset}}{UTF8Table.V_BORDER}{Colours.CLR.value}"
         bot_junction = f"{UTF8Table.L_JUNCTION}{UTF8Table.H_BORDER*(self.width - 2)}{UTF8Table.R_JUNCTION}"
@@ -108,12 +108,6 @@ class Block:
     def rank(self) -> int:
         return self.exact_match_lc + 1
 
-    def process(self, content) -> str:
-        """
-        :returns: processed content, after applying rules
-        """
-        return upper(normalize(content, normalized=self._query_normalized), uppercase=self._query_uppercase)
-
     def lines(self) -> Iterator[tuple[int, str]]:
         block_lc = self.rank -len(self.before)
         for bline in self.before:
@@ -133,11 +127,8 @@ class Aggregate:
     def __init__(self, owner: Path, padding: int):
         self.__owner: Path = owner
         self.__padding: int = padding
-        # processed queries (default)
         self.__pqueries: list[str] = []
         self.__lines: dict[int, str] = {}
-        # internal processed lines, to be used for internal checks
-        self.__plines: dict[int, str] = {}
         self.__matched_lines: list[int] = []
         self.__start_lc: int = 9999999
         self.__end_lc: int = -1
@@ -146,13 +137,12 @@ class Aggregate:
         blocks = sorted(blocks, key=lambda b: b.rank)
         for b in blocks:
             self.__matched_lines.append(b.rank)
-            self.__pqueries.append(b.process(b._query))
+            self.__pqueries.append(b._query)
             for line_count, line in b.lines():
                 self.__start_lc = min(line_count, self.__start_lc)
                 self.__end_lc = max(line_count, self.__end_lc)
                 if line_count in self.__lines:
                     continue
-                self.__plines[line_count] = b.process(line)
                 self.__lines[line_count] = line
 
     def ppretty(self, highlighted: bool = False) -> str:
@@ -181,7 +171,7 @@ class Aggregate:
             #  if it isn't, continue
             #  fortunately, this is a solved problem and google carried me so
             #  i don't have to waste my time here
-            pline = self.__plines[lc]
+            pline = self.__lines[lc]
             areas: list[list[int]] = []
             for q in self.__pqueries:
                 if q in pline:
@@ -200,7 +190,8 @@ class Aggregate:
         def build(lc: int, line: str) -> str:
             return f"{format(lc, f"{MAX_LC_PADDING}d")}: {decorate(lc, line)}"
 
-        header_content = f" ".join(list(map(lambda i: f"{Colours.GRN.value}{i}{Colours.CLR.value}", sorted(self.__matched_lines))))
+        int_to_str = str if not highlighted else lambda i: f"{Colours.GRN.value}{i}{Colours.CLR.value}"
+        header_content = f" ".join(list(map(int_to_str, sorted(self.__matched_lines))))
         yield f"{self.__owner} lines~{self.__padding}: {header_content}"
 
         previous_k = 0
@@ -318,22 +309,18 @@ def preprocess(dir: Path) -> list[Path]:
     )
 
 
-def main():
-    if len(sys.argv) < 3:
-        print("./findt <path> <contents...> argument must be given!")
-        exit(2)
-
-    padding = 3
-    uppercase = False
-    normalized = False
-    decorated = True
-    highlighted = True
+def main(options):
+    padding = options.padding
+    uppercase = options.insensitive
+    normalized = options.normalized
+    decorated = options.decorated
+    highlighted = options.highlighted
     multimatches: dict[str, Block] = {}
-    paths = preprocess(Path(sys.argv[1]))
+    paths = preprocess(Path(options.path))
     for p in paths:
         matched_blocks = match_blocks(
             p,
-            queries=sys.argv[2:],
+            queries=options.filters,
             padding=padding,
             normalized=normalized,
             uppercase=uppercase
@@ -368,16 +355,38 @@ def main():
 
 @dataclass
 class UserOptions:
+    path: str
+    filters: list[str]
     # -i, --insensitive
     insensitive: bool
-    normalize: bool
+    normalized: bool
     # --padding <int>
     padding: int
     # --no-highlight is the inverse of this value
     highlighted: bool
     # --no-decorations is the inverse of this value
-    decorationed: bool
+    decorated: bool
+
+
+def _parse_args(args) -> UserOptions:
+    parser = argparse.ArgumentParser(description="findt: a recursive content text locator")
+    parser.add_argument("path", type=str)
+    parser.add_argument("filters", nargs="+")
+    parser.add_argument("-i", "--insensitive", default=False, action="store_true")
+    parser.add_argument("-m", "--no-highlights", default=False, action="store_true")
+    parser.add_argument("-d", "--no-decorations", default=False, action="store_true")
+    parser.add_argument("--padding", type=int, default=3, required=False)
+    options = parser.parse_args(args)
+    return UserOptions(
+        path=options.path,
+        filters=options.filters,
+        insensitive=options.insensitive,
+        normalized=options.insensitive,
+        padding=options.padding,
+        highlighted=not options.no_highlights,
+        decorated=not options.no_decorations
+    )
 
 
 if __name__ == "__main__":
-    main()
+    main(_parse_args(sys.argv[1:]))
