@@ -1,9 +1,20 @@
 #!/usr/bin/env ruby
 
+# HELP list all available utility functions
+
 # ruby is an unholy language
 #  im torn, i do not know if this is disgusting or really cool
 def dir_contents(dir)
-    return puts(Dir.entries(File.dirname(dir)).sort().select{ |fn| ! fn.include? "."})
+    files = Dir.entries(File.dirname(dir)).sort().select{ |fn| ! fn.include? "."}
+    for fn in files do
+        found = false
+        File.open("%s/%s" % [File.dirname(dir), fn]) do |file|
+            regexr_match = file.find { |line| line =~ /#\sHELP\s(.+)/ }
+            found = !regexr_match.to_s.strip.empty?
+            found ? puts("%s -> %s" % [fn, $1]) : nil
+        end
+        found ? nil : puts(fn)
+    end
 end
 
 if __FILE__ == $0
