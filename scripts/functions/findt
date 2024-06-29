@@ -2,6 +2,7 @@
 
 import os
 import sys
+import enum
 import shutil
 import unicodedata
 from dataclasses import dataclass
@@ -11,6 +12,54 @@ from typing import Iterator, TextIO
 from copy import copy
 
 # HELP "./findt <path> <contents...>; search for text <contents> in <path> (dir or file)
+
+class Colours(enum.Enum):
+    RED = "\033[32m"
+    CLR = "\033[0m"
+
+
+class UTF8Table:
+    V_BORDER   = "│"
+    H_BORDER   = "─"
+    L_JUNCTION = "├"
+    R_JUNCTION = "┤"
+    TL_BORDER  = "┌"
+    TR_BORDER  = "┐"
+    BL_BORDER  = "└"
+    BR_BORDER  = "┘"
+
+    def __init__(self):
+        self.width, self.height = shutil.get_terminal_size()
+
+    def header(self, string) -> str:
+        assert "\n" not in string
+        string = string[:self.width - 2]
+        strwidth = self.width-2
+        top_section  = f"{UTF8Table.TL_BORDER}{UTF8Table.H_BORDER*(self.width - 2)}{UTF8Table.TR_BORDER}"
+        mid_section  = f"{UTF8Table.V_BORDER}{string:<{strwidth}}{UTF8Table.V_BORDER}"
+        bot_junction = f"{UTF8Table.L_JUNCTION}{UTF8Table.H_BORDER*(self.width - 2)}{UTF8Table.R_JUNCTION}"
+        return "\n".join([top_section, mid_section, bot_junction])
+
+    def row(self, string) -> str:
+        strwidth = self.width-2
+        string = string[:self.width - 2]
+        return f"{UTF8Table.V_BORDER}{string:<{strwidth}}{UTF8Table.V_BORDER}"
+
+    def end(self) -> str:
+        return f"{UTF8Table.BL_BORDER}{UTF8Table.H_BORDER*(self.width - 2)}{UTF8Table.BR_BORDER}"
+
+
+# https://stackoverflow.com/a/518232
+def normalize(string, normalized=False) -> str:
+    if not normalized:
+        return string
+    return "".join(c for c in unicodedata.normalize("NFD", string) if unicodedata.category(c) != "Mn")
+
+def upper(string, uppercase=False) -> str:
+    if not uppercase:
+        return string
+    return string.upper()
+
 
 @dataclass
 class Block:
@@ -75,12 +124,16 @@ class Aggregate:
         def build(lc: int, line: str) -> str:
             return f"{format(lc, f"{MAX_LC_PADDING}d")}: {decorate(lc, line)}"
 
-        yield f"{self.__owner} lines~{self.__padding}: {' '.join(list(map(str, sorted(self.__matched_lines))))}"
+        header_content = ' '.join(list(map(str, sorted(self.__matched_lines))))
+        yield f"{self.__owner} lines~{self.__padding}: {header_content}"
 
         previous_k = 0
         for k in sorted(self.__lines.keys()):
-            if not is_sequential(previous_k, k):
-                yield build(k-1, "...")
+            # if this is not a sequential line, and it's insignificant, show ...
+            if not is_sequential(previous_k, k) and k not in self.__matched_lines:
+                previous_k = k
+                yield build(k, "...")
+                continue
             yield build(k, self.__lines[k])
             previous_k = k
 
@@ -185,72 +238,25 @@ def preprocess(dir: Path) -> list[Path]:
         )
     )
 
-# https://stackoverflow.com/a/518232
-def normalize(string, normalized=False) -> str:
-    if not normalized:
-        return string
-    return "".join(c for c in unicodedata.normalize("NFD", string) if unicodedata.category(c) != "Mn")
 
-def upper(string, uppercase=False) -> str:
-    if not uppercase:
-        return string
-    return string.upper()
-
-
-class UTF8Table:
-    V_BORDER   = "│"
-    H_BORDER   = "─"
-    L_JUNCTION = "├"
-    R_JUNCTION = "┤"
-    TL_BORDER  = "┌"
-    TR_BORDER  = "┐"
-    BL_BORDER  = "└"
-    BR_BORDER  = "┘"
-
-    def __init__(self):
-        self.width, self.height = shutil.get_terminal_size()
-
-    def header(self, string) -> str:
-        assert "\n" not in string
-        string = string[:self.width - 2]
-        strwidth = self.width-2
-        top_section  = f"{UTF8Table.TL_BORDER}{UTF8Table.H_BORDER*(self.width - 2)}{UTF8Table.TR_BORDER}"
-        mid_section  = f"{UTF8Table.V_BORDER}{string:<{strwidth}}{UTF8Table.V_BORDER}"
-        bot_junction = f"{UTF8Table.L_JUNCTION}{UTF8Table.H_BORDER*(self.width - 2)}{UTF8Table.R_JUNCTION}"
-        return "\n".join([top_section, mid_section, bot_junction])
-
-    def row(self, string) -> str:
-        strwidth = self.width-2
-        string = string[:self.width - 2]
-        return f"{UTF8Table.V_BORDER}{string:<{strwidth}}{UTF8Table.V_BORDER}"
-
-    def end(self) -> str:
-        return f"{UTF8Table.BL_BORDER}{UTF8Table.H_BORDER*(self.width - 2)}{UTF8Table.BR_BORDER}"
-
-
-@dataclass
-class UserOptions:
-    # -i, --insensitive
-    insensitive: bool
-    normalize: bool
-    # --padding <int>
-    padding: int
-    # --no-highlight is the inverse of this value
-    highlight: bool
-    # --no-decorations is the inverse of this value
-    decorations: bool
-
-
-if __name__ == "__main__":
+def main():
     if len(sys.argv) < 3:
         print("./findt <path> <contents...> argument must be given!")
         exit(2)
 
-    padding = 2
+    padding = 3
+    uppercase = False
+    normalized = False
     multimatches: dict[str, Block] = {}
     paths = preprocess(Path(sys.argv[1]))
     for p in paths:
-        matched_blocks = match_blocks(p, queries=sys.argv[2:], padding=padding)
+        matched_blocks = match_blocks(
+            p,
+            queries=sys.argv[2:],
+            padding=padding,
+            normalized=normalized,
+            uppercase=uppercase
+        )
 
         key = str(p)
         try:
@@ -272,3 +278,20 @@ if __name__ == "__main__":
         for table_entry in ppretty:
             print(table.row(table_entry))
         print(table.end())
+
+
+@dataclass
+class UserOptions:
+    # -i, --insensitive
+    insensitive: bool
+    normalize: bool
+    # --padding <int>
+    padding: int
+    # --no-highlight is the inverse of this value
+    highlight: bool
+    # --no-decorations is the inverse of this value
+    decorations: bool
+
+
+if __name__ == "__main__":
+    main()
