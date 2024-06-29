@@ -1,5 +1,23 @@
 # ssh config, place in ~/.ssh/config
 
+# section form: https://raw.githubusercontent.com/brandon-rhodes/homedir/master/.ssh/config.default
+
+# Keep secret the hostnames I have connected to.
+HashKnownHosts yes
+
+# When SSH cannot set up a -D, -L, or -R port-forward, I would rather
+# that it fail and return me to the command line than for it to show me
+# that it succeeded in getting a prompt.
+ExitOnForwardFailure yes
+
+# Since Amazon instances are transitory and IP addresses get re-used,
+# there is no point in SSH remembering their IP address and identity.
+# Also, I chronically forget to use "ubuntu" as the username.
+
+Host *.amazonaws.com
+  StrictHostKeyChecking no
+  UserKnownHostsFile /dev/null
+
 # keepalive
 ServerAliveInterval 120
 
