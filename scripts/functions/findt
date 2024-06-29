@@ -14,8 +14,15 @@ from copy import copy
 # HELP "./findt <path> <contents...>; search for text <contents> in <path> (dir or file)
 
 class Colours(enum.Enum):
-    RED = "\033[32m"
+    RED = "\033[31m"
+    GRN = "\033[32m"
     CLR = "\033[0m"
+
+    def offset(self, s) -> int:
+        if self.value in s:
+            count = s.count(self.value)
+            return len(self.value) * count
+        return 0
 
 
 class UTF8Table:
@@ -31,18 +38,27 @@ class UTF8Table:
     def __init__(self):
         self.width, self.height = shutil.get_terminal_size()
 
+    def _colour_offset(self, s: str) -> int:
+        offset = Colours.RED.offset(s)
+        offset += Colours.GRN.offset(s)
+        offset += Colours.CLR.offset(s)
+        return offset
+
     def header(self, string) -> str:
         assert "\n" not in string
-        string = string[:self.width - 2]
-        strwidth = self.width-2
+        offset = self._colour_offset(string)
+        strwidth = self.width - 2
+        string = string[:strwidth + offset]
+        # TODO this is an example
         top_section  = f"{UTF8Table.TL_BORDER}{UTF8Table.H_BORDER*(self.width - 2)}{UTF8Table.TR_BORDER}"
-        mid_section  = f"{UTF8Table.V_BORDER}{string:<{strwidth}}{UTF8Table.V_BORDER}"
+        mid_section  = f"{UTF8Table.V_BORDER}{string:<{strwidth + offset}}{UTF8Table.V_BORDER}{Colours.CLR.value}"
         bot_junction = f"{UTF8Table.L_JUNCTION}{UTF8Table.H_BORDER*(self.width - 2)}{UTF8Table.R_JUNCTION}"
         return "\n".join([top_section, mid_section, bot_junction])
 
     def row(self, string) -> str:
-        strwidth = self.width-2
-        string = string[:self.width - 2]
+        offset = self._colour_offset(string)
+        strwidth = self.width + offset - 2
+        string = string[:strwidth]
         return f"{UTF8Table.V_BORDER}{string:<{strwidth}}{UTF8Table.V_BORDER}"
 
     def end(self) -> str:
@@ -60,11 +76,28 @@ def upper(string, uppercase=False) -> str:
         return string
     return string.upper()
 
+def merge_intervals(intervals):
+    # sort intervals by start time
+    intervals.sort(key=lambda x: x[0])
+
+    merged = []
+    for interval in intervals:
+        # If the list of merged intervals is empty or if the current interval does not overlap with the previous, append it to merged
+        if not merged or merged[-1][1] < interval[0]:
+            merged.append(interval)
+        else:
+            # Otherwise, there is overlap, so we merge the current and previous intervals
+            merged[-1][1] = max(merged[-1][1], interval[1])
+
+    return merged
+
 
 @dataclass
 class Block:
     owner: Path
-    query: str
+    _query: str
+    _query_uppercase: bool
+    _query_normalized: bool
 
     before: list[str]
     exact_match_lc: int
@@ -74,6 +107,12 @@ class Block:
     @property
     def rank(self) -> int:
         return self.exact_match_lc + 1
+
+    def process(self, content) -> str:
+        """
+        :returns: processed content, after applying rules
+        """
+        return upper(normalize(content, normalized=self._query_normalized), uppercase=self._query_uppercase)
 
     def lines(self) -> Iterator[tuple[int, str]]:
         block_lc = self.rank -len(self.before)
@@ -94,8 +133,11 @@ class Aggregate:
     def __init__(self, owner: Path, padding: int):
         self.__owner: Path = owner
         self.__padding: int = padding
-        self.__queries: list[str] = []
-        self.__lines: dict[str, str] = {}
+        # processed queries (default)
+        self.__pqueries: list[str] = []
+        self.__lines: dict[int, str] = {}
+        # internal processed lines, to be used for internal checks
+        self.__plines: dict[int, str] = {}
         self.__matched_lines: list[int] = []
         self.__start_lc: int = 9999999
         self.__end_lc: int = -1
@@ -104,19 +146,53 @@ class Aggregate:
         blocks = sorted(blocks, key=lambda b: b.rank)
         for b in blocks:
             self.__matched_lines.append(b.rank)
+            self.__pqueries.append(b.process(b._query))
             for line_count, line in b.lines():
                 self.__start_lc = min(line_count, self.__start_lc)
                 self.__end_lc = max(line_count, self.__end_lc)
                 if line_count in self.__lines:
                     continue
+                self.__plines[line_count] = b.process(line)
                 self.__lines[line_count] = line
 
-    def ppretty(self, decorated: bool = False) -> str:
+    def ppretty(self, highlighted: bool = False) -> str:
         MAX_LC_PADDING = len(str(self.__end_lc))
         def decorate(lc, line) -> str:
-            if not decorated or lc not in self.__matched_lines:
+            if not highlighted or lc not in self.__matched_lines:
                 return line
-            raise NotImplementedError()  # TODO implement
+
+            def region_range(t: tuple[int]) -> int:
+                return t[-1] - t[0]
+            # we want to match all processed queries against our string
+            #  for all matches, suppose the following:
+            #  content line
+            #       ^      *
+            #  ^     *
+            #    ^ *
+            #  this is an overlapping regions issue
+            #  these are some sample indices (st, end):
+            #  (1, 5), (3, 7), (4, 6), (10, 15). . .
+            #  this should be simplified to:
+            #  (1, 7), (10, 15)
+            #  a sane way to solve this issue would be, starting from the
+            #  earliest region (sorted by [0]):
+            #  for every region start, check if it's under our max
+            #  if it is, we overlap, and we should extend our end to theirs, and pop it
+            #  if it isn't, continue
+            #  fortunately, this is a solved problem and google carried me so
+            #  i don't have to waste my time here
+            pline = self.__plines[lc]
+            areas: list[list[int]] = []
+            for q in self.__pqueries:
+                if q in pline:
+                    start = pline.index(q)
+                    end = start + len(q)
+                    areas.append([start, end])
+            areas = merge_intervals(areas)
+            biggest_area = sorted(areas, key=region_range)[-1]
+            start = biggest_area[0]
+            end = biggest_area[1]
+            return f"{line[:start]}{Colours.RED.value}{line[start:end]}{Colours.CLR.value}{line[end:]}"
 
         def is_sequential(oldk, newk) -> bool:
             return oldk + 1 == newk
@@ -124,7 +200,7 @@ class Aggregate:
         def build(lc: int, line: str) -> str:
             return f"{format(lc, f"{MAX_LC_PADDING}d")}: {decorate(lc, line)}"
 
-        header_content = ' '.join(list(map(str, sorted(self.__matched_lines))))
+        header_content = f" ".join(list(map(lambda i: f"{Colours.GRN.value}{i}{Colours.CLR.value}", sorted(self.__matched_lines))))
         yield f"{self.__owner} lines~{self.__padding}: {header_content}"
 
         previous_k = 0
@@ -156,7 +232,7 @@ def match_blocks(file: Path,
         previous_tell = None
         tell = f.tell()
         while True:
-            line = upper(normalize(f.readline().strip(), normalized=normalized), uppercase=uppercase)
+            line = upper(normalize(f.readline().rstrip(), normalized=normalized), uppercase=uppercase)
             yield tell, line
             previous_tell = tell
             tell = f.tell()
@@ -171,7 +247,7 @@ def match_blocks(file: Path,
         try:
             lines = []
             for i in range(pc):
-                lines.append(upper(normalize(f.readline().strip(), normalized=normalized), uppercase=uppercase))
+                lines.append(upper(normalize(f.readline().rstrip(), normalized=normalized), uppercase=uppercase))
                 itell = f.tell()
                 if tell == itell:
                     return lines
@@ -186,6 +262,7 @@ def match_blocks(file: Path,
         for tell, line in advance(f):
             truthy_query_results = []
             for query in queries:
+                query = upper(normalize(query, normalized=normalized), uppercase=uppercase)
                 if query in line:
                     truthy_query_results.append(query)
 
@@ -193,7 +270,9 @@ def match_blocks(file: Path,
             yield from map(
                 lambda query: Block(
                     owner=file,
-                    query=query,
+                    _query=query,
+                    _query_uppercase=uppercase,
+                    _query_normalized=normalized,
                     before=copy(before),
                     after=peek(f, padding),
                     exact_match=line,
@@ -247,6 +326,8 @@ def main():
     padding = 3
     uppercase = False
     normalized = False
+    decorated = True
+    highlighted = True
     multimatches: dict[str, Block] = {}
     paths = preprocess(Path(sys.argv[1]))
     for p in paths:
@@ -271,13 +352,18 @@ def main():
     for k, v in multimatches.items():
         aggregate = Aggregate(Path(k), padding)
         aggregate.aggregate(v)
-        ppretty = aggregate.ppretty()
-        header = next(ppretty)
-        table = UTF8Table()
-        print(table.header(header))
-        for table_entry in ppretty:
-            print(table.row(table_entry))
-        print(table.end())
+        if not decorated:
+            for entry in aggregate.ppretty(highlighted=highlighted):
+                print(entry)
+
+        if decorated:
+            ppretty = aggregate.ppretty(highlighted=highlighted)
+            header = next(ppretty)
+            table = UTF8Table()
+            print(table.header(header))
+            for table_entry in ppretty:
+                print(table.row(table_entry))
+            print(table.end())
 
 
 @dataclass
@@ -288,9 +374,9 @@ class UserOptions:
     # --padding <int>
     padding: int
     # --no-highlight is the inverse of this value
-    highlight: bool
+    highlighted: bool
     # --no-decorations is the inverse of this value
-    decorations: bool
+    decorationed: bool
 
 
 if __name__ == "__main__":
