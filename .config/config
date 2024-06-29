@@ -1,6 +1,6 @@
 # ssh config, place in ~/.ssh/config
 
-# section form: https://raw.githubusercontent.com/brandon-rhodes/homedir/master/.ssh/config.default
+# section from: https://raw.githubusercontent.com/brandon-rhodes/homedir/master/.ssh/config.default
 
 # Keep secret the hostnames I have connected to.
 HashKnownHosts yes
