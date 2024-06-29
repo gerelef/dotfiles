@@ -1,0 +1,35 @@
+#!/usr/bin/env python3
+
+import os
+import sys
+import shlex
+import time
+import subprocess as sb
+
+# HELP every <seconds> <command1> [<command2>] [<...>]; execute something ([command1:]) every seconds.
+
+def every(interval_seconds, incantation: str | list[str]):
+    print("Starting; exit via keyboard interrupt (Ctrl+C)...")
+    while True:
+        try:
+            incantation = shlex.split(incantation) if isinstance(incantation, str) else incantation
+            sb.Popen(
+                incantation,
+                cwd=os.getcwd(),
+                env=os.environ.copy()
+            )
+            time.sleep(interval_seconds)
+        except KeyboardInterrupt:
+            print("Exiting via keyboard interrupt (Ctrl+C)...", file=sys.stderr)
+            exit(130)
+    
+
+if __name__ == "__main__":
+    if len(sys.argv) < 3:
+        exit(2)
+        
+    try:
+        every(int(sys.argv[1]), sys.argv[2:])
+    except ValueError:
+        print("First argument must be an integer >= 0!", file=sys.stderr)
+        exit(2)

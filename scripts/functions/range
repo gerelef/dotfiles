@@ -1,0 +1,6 @@
+#!/usr/bin/env bash
+
+# HELP range <n>; alias for `seq`, same arguments apply
+
+# run only if this file is not sourced
+[[ "${BASH_SOURCE[0]}" == "${0}" ]] && seq "$@"

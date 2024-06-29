@@ -1,0 +1,23 @@
+#!/usr/bin/env python3
+
+import sys
+from datetime import date
+from dateutil.relativedelta import relativedelta
+
+# HELP until <year> [<month>] [<day>]; calculate how many years, months, days till args
+
+def until(year: str) -> str:
+    diff = relativedelta(year, date.today())
+    return f"{diff.years} years, {diff.months} months, {diff.days} days"
+
+if __name__ == "__main__":
+    if len(sys.argv) < 2:
+        exit(1)
+    year = sys.argv[1]
+    month = sys.argv[2] if len(sys.argv) >= 3 else 1
+    day = sys.argv[3] if len(sys.argv) >= 4 else 1
+    try:
+        print(until(date(year=int(year), month=int(month), day=int(day))))
+    except ValueError:
+        print("Arguments must be integers!", file=sys.stderr)
+        exit(2)
