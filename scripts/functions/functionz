@@ -1,0 +1,11 @@
+#!/usr/bin/env ruby
+
+# ruby is an unholy language
+#  im torn, i do not know if this is disgusting or really cool
+def dir_contents(dir)
+    return puts(Dir.entries(File.dirname(dir)).sort().select{ |fn| ! fn.include? "."})
+end
+
+if __FILE__ == $0
+    dir_contents(__FILE__)
+end
