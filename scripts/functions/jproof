@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+# HELP a json-schema generator
+
 jproof () {
     curl --tlsv1.2 -fsSL "https://raw.githubusercontent.com/gerelef/jproof/master/jproof.py" | python3 - "$@"
 }

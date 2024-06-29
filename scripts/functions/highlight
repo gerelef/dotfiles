@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 
-# Highlight (and not filter) text with grep
+# HELP highlight (not filter) text with grep
+
 highlight () (
     [[ -z "$*" ]] && return 2
 

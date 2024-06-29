@@ -11,9 +11,9 @@ def dir_contents(dir)
         File.open("%s/%s" % [File.dirname(dir), fn]) do |file|
             regexr_match = file.find { |line| line =~ /#\sHELP\s(.+)/ }
             found = !regexr_match.to_s.strip.empty?
-            found ? puts("%s -> %s" % [fn, $1]) : nil
+            found ? puts("\033[0;31m%s\033[0m -> %s" % [fn, $1]) : nil
         end
-        found ? nil : puts(fn)
+        found ? nil : puts("\033[0;31m%s\033[0m" % fn)
     end
 end
 

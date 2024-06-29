@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+# HELP fftrim-mp4 <file> <sta:rt> <end:ing>; trim mp4 from start to end
+
 if [[ -z "$(command -v ffmpeg)" ]]; then
     echo "Cannot run $(basename $0) without dependency! Exiting..."
     exit 1
@@ -10,7 +12,6 @@ __hms () (
     echo "$1" | awk -F: '{ print ($1 * 60) + $2 }';
 )
 
-# ffmpeg trim mp4 from start to end
 fftrim-mp4 () (
     [[ -z "$*" ]] && return 2 
     [[ "$#" -ne 3 ]] && return 2

@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+# HELP ffconvert-mp4 <file1> <file2> <...>; convert N video files to mp4
+
 if [[ -z "$(command -v ffmpeg)" ]]; then
     echo "Cannot run $(basename $0) without dependency! Exiting..."
     exit 1

@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+# HELP ffconvert-mp3 <file1> <file2> <...>; convert N audio files to mp3
+
 if [[ -z "$(command -v ffmpeg)" ]]; then
     echo "Cannot run $(basename $0) without dependency! Exiting..."
     exit 1

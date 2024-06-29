@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+# HELP ffcompress-mp3 <path/to/file1> <bitrate>; Compress an mp3 file. Good bitrate values are, for example, `96k`.
+
 if [[ -z "$(command -v ffmpeg)" ]]; then
     echo "Cannot run $(basename $0) without dependency! Exiting..."
     exit 1

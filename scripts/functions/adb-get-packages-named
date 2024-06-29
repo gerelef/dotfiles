@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+# HELP adb-get-packages-named "id" "package.name"; find package for phone id
+
 if [[ -z "$(command -v adb)" ]]; then
     echo "Cannot run $(basename $0) without dependency! Exiting..."
     exit 1

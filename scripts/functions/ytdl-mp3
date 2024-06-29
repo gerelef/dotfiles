@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+# HELP download an .mp3 file
+
 if [[ -z "$(command -v yt-dlp)" ]]; then
     echo "Cannot run $(basename $0) without dependency! Exiting..."
     exit 1

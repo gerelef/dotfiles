@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+# HELP download & extract latest version of any firefox theme
+
 update-ff-theme () (
     # for future reference: curl -fsSL https:// | bash -s -- - "$HOME/dotfiles/.config/mozilla/userChrome.css" "$@"
     "$HOME/dotfiles/scripts/utils/update-ff-theme.py" --resource "$HOME/dotfiles/.config/mozilla/userChrome.css" "$@"

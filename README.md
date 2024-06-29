@@ -8,7 +8,6 @@ The common `$XDG_CONFIG_HOME` directory setup is semi-emulated, with exceptions 
 - `.stowconfig` is a configuration file for the `pstow.py` utility under `./scripts/utils/`. The file format should be self-explanatory, however documentation should exist somewhere.
 - `scripts/` contain scripts as well as some configuration files. The filenames should be a hint to their usage. 
 - `.config` contains generic configuration files. The most common `$XDG_CONFIG_HOME`directory setup is emulated, however with exceptions for convenience.
-- `.manpages/` contains manual pages, authored in `Markdown`, converted to manpages through `ronn`.
 
 ## installation
 After running a setup script in `dotfiles/scripts/setup/...` I just need to install my dotfiles & my themes.

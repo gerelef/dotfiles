@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+# HELP ffvideofy <image> <audio>; convert an image and an audio to a video
+
 if [[ -z "$(command -v ffmpeg)" ]]; then
     echo "Cannot run $(basename $0) without dependency! Exiting..."
     exit 1

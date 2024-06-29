@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+# HELP restart pipewire service
+
 restart-pipewire () (
     systemctl --user restart pipewire
 )

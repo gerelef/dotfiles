@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+# HELP dump a spotify playlist to stdout
+
 if [[ -z "$(command -v curl)" ]]; then
     echo "Cannot run $(basename $0) without dependency! Exiting..."
     exit 1

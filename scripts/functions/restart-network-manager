@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+# HELP restart NetworkManager.service
+
 restart-network-manager () (
     sudo systemctl restart NetworkManager.service
 )

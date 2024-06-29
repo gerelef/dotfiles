@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+# HELP ffscale-mp4 <file> <width:height>; scale video file to selected resolution
+
 if [[ -z "$(command -v ffmpeg)" ]]; then
     echo "Cannot run $(basename $0) without dependency! Exiting..."
     exit 1
@@ -10,8 +12,6 @@ __xy_to_ffilter_coords () (
     echo "$1" | awk -Fx '{ print $1":"$2 }';
 )
 
-
-# ffmpeg scale video file to selected resolution
 ffscale-mp4 () (
     [[ -z "$*" ]] && return 2
     [[ "$#" -ne 2 ]] && return 2

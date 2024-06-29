@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+# HELP a barebones json generator, for testing
+
 json-roulette () {
     curl --tlsv1.2 -fsSL "https://raw.githubusercontent.com/gerelef/json-roulette/master/json-roulette.py" | python3 - "$@"
 }

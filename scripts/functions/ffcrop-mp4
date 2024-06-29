@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+# HELP ffscale-mp4 <path/to/file> <starting width x starting height> <ending width x ending height>; crop an mp4's contents from start to end coordinates
+
 if [[ -z "$(command -v ffmpeg)" ]]; then
     echo "Cannot run $(basename $0) without dependency! Exiting..."
     exit 1

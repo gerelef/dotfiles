@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+# HELP download & extract latest version of numerous game compatibility layers.
+
 update-compat-layers () (
     "$HOME/dotfiles/scripts/utils/update-compat-layers.py" "$@"
 )
