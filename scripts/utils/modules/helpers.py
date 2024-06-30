@@ -186,11 +186,12 @@ class Colour(enum.Enum):
 
 class ColouredString:
     def __init__(self, s: str):
-        self.src = str(s)
         self.colour_indexes: list[list[int | Colour]] = []
         if isinstance(s, ColouredString):
-            s = s.src
             self.colour_indexes = copy(s.colour_indexes)
+        if isinstance(s, ColouredString):
+            s = s.src
+        self.src = str(s)
 
     def __merge_intervals(self):
         # sort intervals by start time
