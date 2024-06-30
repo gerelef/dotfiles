@@ -240,18 +240,21 @@ class ColouredString:
         out = self.src[item]
         cs = ColouredString(self)
         cs.src = out
+        print(out)
         return cs
 
     def __setitem__(self, item):
         out = self.src[item]
         cs = ColouredString(self)
         cs.src = out
+        print(out)
         return cs
 
     def __delitem__(self, item):
         out = self.src[item]
         cs = ColouredString(self)
         cs.src = out
+        print(out)
         return cs
 
     def colour(self, start: int, end: int, c: Colour):
