@@ -210,7 +210,7 @@ class ColouredString:
 
         self.colour_indexes = merged
 
-    def __add__(self, other) -> ColouredString:
+    def __add__(self, other):
         cs = ColouredString()
         if isinstance(other, ColouredString):
             cs.src = self.src + other.src
