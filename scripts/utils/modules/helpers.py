@@ -185,7 +185,9 @@ class Colour(enum.Enum):
 
 
 class ColouredString:
-    def __init__(self, s: str):
+    def __init__(self, s: str = None):
+        if s is None:
+            s = ""
         self.colour_indexes: list[list[int | Colour]] = []
         if isinstance(s, ColouredString):
             self.colour_indexes = copy(s.colour_indexes)
@@ -207,6 +209,19 @@ class ColouredString:
                 merged[-1][1] = max(merged[-1][1], interval[1])
 
         self.colour_indexes = merged
+
+    def __add__(self, other) -> ColouredString:
+        cs = ColouredString()
+        if isinstance(other, ColouredString):
+            cs.src = self.src + other.src
+            cs.colour_indexes = self.colour_indexes + other.colour_indexes
+            return cs
+
+        if isinstance(other, str):
+            cs.src = self.src + other
+            return cs
+
+        raise TypeError(f"Can't support concat between ColouredString and {type(other)}")
 
     def __str__(self) -> str:
         #  for all colours, suppose the following:
