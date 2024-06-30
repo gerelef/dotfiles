@@ -84,8 +84,6 @@ def merge_intervals(intervals):
 class Block:
     owner: Path
     _query: str
-    _query_uppercase: bool
-    _query_normalized: bool
 
     before: list[str]
     exact_match_lc: int
@@ -170,14 +168,15 @@ def match_blocks(file: Path,
         if padding != 0:
             q.append(e)
 
-    def advance(f: TextIO) -> Iterator[tuple[int, str]]:
+    def advance(f: TextIO) -> Iterator[tuple[int, str, str]]:
         while True:
             previous_tell = f.tell()
-            line = upper(normalize(f.readline().rstrip(), normalized=normalized), uppercase=uppercase)
+            raw_line = f.readline().rstrip()
+            line = upper(normalize(raw_line, normalized=normalized), uppercase=uppercase)
             current_tell = f.tell()
             if current_tell == previous_tell:
-                return current_tell, None
-            yield current_tell, line
+                return current_tell, None, None
+            yield current_tell, line, raw_line
 
     def peek(f: TextIO, pc: int) -> list[str]:
         """
@@ -189,8 +188,8 @@ def match_blocks(file: Path,
         try:
             advance_iterator = advance(f)
             for i in range(pc):
-                _, line = next(advance_iterator)
-                lines.append(line)
+                _, _, raw_line = next(advance_iterator)
+                lines.append(raw_line)
             return lines
         except StopIteration:
             return lines
@@ -200,27 +199,26 @@ def match_blocks(file: Path,
     def drive(f: TextIO, padding: int = padding) -> Iterator[Block]:
         lc = 0
         before = []
-        for tell, line in advance(f):
+        for tell, line, raw_line in advance(f):
             truthy_query_results = []
             for query in queries:
                 query = upper(normalize(query, normalized=normalized), uppercase=uppercase)
                 if query in line:
-                    truthy_query_results.append(query)
+                    query_start = line.index(query)
+                    truthy_query_results.append((query, query_start, query_start + len(query)))
 
             yield from map(
-                lambda query: Block(
+                lambda result: Block(
                     owner=file,
-                    _query=query,
-                    _query_uppercase=uppercase,
-                    _query_normalized=normalized,
+                    _query=result[0],
                     before=copy(before),
                     after=peek(f, padding),
-                    exact_match=line,
+                    exact_match=raw_line,
                     exact_match_lc=lc
                 ),
                 truthy_query_results
             )
-            insert(before, line)
+            insert(before, raw_line)
             lc += 1
         return
 
