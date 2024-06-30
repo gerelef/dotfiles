@@ -2,11 +2,14 @@
 
 import argparse
 import enum
+import os
 import shutil
 import sys
 import unicodedata
 from copy import copy
 from dataclasses import dataclass
+from functools import partial
+from multiprocessing import Pool
 from pathlib import Path
 from typing import Iterator, TextIO
 
@@ -59,7 +62,7 @@ class UTF8Table:
         offset = self._colour_offset(string)
         str_width = self.width + offset - 2
         string = string[:str_width]
-        return f"{UTF8Table.V_BORDER}{string:<{str_width}}{UTF8Table.V_BORDER}"
+        return f"{UTF8Table.V_BORDER}{string:<{str_width}}{UTF8Table.V_BORDER}{Colours.CLR.value}"
 
     def end(self) -> str:
         return f"{UTF8Table.BL_BORDER}{UTF8Table.H_BORDER * (self.width - 2)}{UTF8Table.BR_BORDER}"
@@ -190,9 +193,6 @@ class Aggregate:
             end = biggest_area[1]
             return f"{line[:start]}{Colours.RED.value}{line[start:end]}{Colours.CLR.value}{line[end:]}"
 
-        def is_sequential(old_k, new_k) -> bool:
-            return old_k + 1 == new_k
-
         def build(lc: int, line: str) -> str:
             return f"{format(lc, str(max_lc_padding) + 'd')}: {decorate(lc, line)}"
 
@@ -274,7 +274,8 @@ def match_blocks(file: Path,
             lc += 1
         return
 
-    assert file.exists()
+    if not file.exists():
+        return []
     try:
         with open(file, "r") as fhandle:
             yield from drive(fhandle, padding=padding)
@@ -308,32 +309,38 @@ def preprocess(directory: Path) -> list[Path]:
     )
 
 
+def pmap_match(path, options) -> tuple[str, list[Block]] | tuple[None, None]:
+    matched_blocks = match_blocks(
+        path,
+        queries=options.filters,
+        padding=options.padding,
+        normalized=options.normalized,
+        uppercase=options.insensitive
+    )
+    key = str(path)
+    blocks = []
+    try:
+        for block in matched_blocks:
+            blocks.append(block)
+        return key, blocks
+    except PermissionError:
+        print(f"Permission denied to read {key}!", file=sys.stderr)
+    return None, None
+
+
 def main(options):
     padding = options.padding
-    uppercase = options.insensitive
-    normalized = options.normalized
     decorated = options.decorated
     highlighted = options.highlighted
     multimatches: dict[str, list[Block]] = {}
     paths = preprocess(Path(options.path))
-    for p in paths:
-        matched_blocks = match_blocks(
-            p,
-            queries=options.filters,
-            padding=padding,
-            normalized=normalized,
-            uppercase=uppercase
-        )
 
-        key = str(p)
-        try:
-            for block in matched_blocks:
-                if key not in multimatches:
-                    multimatches[key] = [block]
-                    continue
-                multimatches[key].append(block)
-        except PermissionError:
-            print(f"Permission denied to read {key}!", file=sys.stderr)
+    partial_match = partial(pmap_match, options=options)
+    with Pool(os.cpu_count()) as pool:
+        match_filter = lambda res: bool(res[1])
+        results = tuple(filter(match_filter, pool.map(partial_match, paths)))
+        for k, v in results:
+            multimatches[k] = v
 
     for k, v in multimatches.items():
         aggregate = Aggregate(Path(k), padding)
