@@ -1,16 +1,14 @@
 #!/usr/bin/env python3
 
-import os
-import sys
+import argparse
 import enum
 import shutil
-import argparse
+import sys
 import unicodedata
+from copy import copy
 from dataclasses import dataclass
 from pathlib import Path
-from functools import partial
-from typing import Iterator, TextIO, List
-from copy import copy
+from typing import Iterator, TextIO
 
 
 # HELP "./findt <path> <contents...>; search for text <contents> in <path> (dir or file)
@@ -179,13 +177,14 @@ class Aggregate:
             #  fortunately, this is a solved problem and google carried me, so
             #  I don't have to waste my time here
             pline = self.__lines[lc]
-            areas: Iterable[list[int]] = []
+            areas: list[list[int]] = []
             for q in self.__pqueries:
                 if q in pline:
                     start = pline.index(q)
                     end = start + len(q)
                     areas.append([start, end])
             areas = merge_intervals(areas)
+            # noinspection PyTypeChecker
             biggest_area = sorted(areas, key=region_range)[-1]
             start = biggest_area[0]
             end = biggest_area[1]
@@ -195,7 +194,7 @@ class Aggregate:
             return old_k + 1 == new_k
 
         def build(lc: int, line: str) -> str:
-            return f"{format(lc, f"{max_lc_padding}d")}: {decorate(lc, line)}"
+            return f"{format(lc, str(max_lc_padding) + 'd')}: {decorate(lc, line)}"
 
         int_to_str = str if not highlighted else lambda i: f"{Colours.GRN.value}{i}{Colours.CLR.value}"
         header_content = f" ".join(list(map(int_to_str, sorted(self.__matched_lines))))
