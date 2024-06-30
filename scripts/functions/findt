@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 
 import argparse
-import enum
 import os
 import shutil
 import sys
@@ -16,17 +15,6 @@ from typing import Iterator, TextIO
 
 # HELP "./findt <path> <contents...>; search for text <contents> in <path> (dir or file)
 
-class Colours(enum.Enum):
-    RED = "\033[31m"
-    GRN = "\033[32m"
-    CLR = "\033[0m"
-
-    def offset(self, s) -> int:
-        if self.value in s:
-            count = s.count(self.value)
-            return len(self.value) * count
-        return 0
-
 
 class UTF8Table:
     V_BORDER = "│"
@@ -39,33 +27,30 @@ class UTF8Table:
     BR_BORDER = "┘"
 
     def __init__(self):
-        self.width, self.height = shutil.get_terminal_size()
+        self.__width, self.height = shutil.get_terminal_size()
 
-    @staticmethod
-    def _colour_offset(s: str) -> int:
-        offset = Colours.RED.offset(s)
-        offset += Colours.GRN.offset(s)
-        offset += Colours.CLR.offset(s)
-        return offset
+    @property
+    def width(self) -> int:
+        return self.__width - 2
+
+    def top(self):
+        return f"{UTF8Table.TL_BORDER}{UTF8Table.H_BORDER * self.width}{UTF8Table.TR_BORDER}"
+
+    def junction(self):
+        return f"{UTF8Table.L_JUNCTION}{UTF8Table.H_BORDER * self.width}{UTF8Table.R_JUNCTION}"
 
     def header(self, string) -> str:
         assert "\n" not in string
-        offset = self._colour_offset(string)
-        str_width = self.width - 2
-        string = string[:str_width + offset]
-        top_section = f"{UTF8Table.TL_BORDER}{UTF8Table.H_BORDER * (self.width - 2)}{UTF8Table.TR_BORDER}"
-        mid_section = f"{UTF8Table.V_BORDER}{string:<{str_width + offset}}{UTF8Table.V_BORDER}{Colours.CLR.value}"
-        bot_junction = f"{UTF8Table.L_JUNCTION}{UTF8Table.H_BORDER * (self.width - 2)}{UTF8Table.R_JUNCTION}"
-        return "\n".join([top_section, mid_section, bot_junction])
+        string = string[:self.width]
+        mid_section = f"{UTF8Table.V_BORDER}{string:<{self.width}}{UTF8Table.V_BORDER}"
+        return "\n".join([self.top(), mid_section, self.junction()])
 
     def row(self, string) -> str:
-        offset = self._colour_offset(string)
-        str_width = self.width + offset - 2
-        string = string[:str_width]
-        return f"{UTF8Table.V_BORDER}{string:<{str_width}}{UTF8Table.V_BORDER}{Colours.CLR.value}"
+        string = string[:self.width]
+        return f"{UTF8Table.V_BORDER}{string:<{self.width}}{UTF8Table.V_BORDER}"
 
-    def end(self) -> str:
-        return f"{UTF8Table.BL_BORDER}{UTF8Table.H_BORDER * (self.width - 2)}{UTF8Table.BR_BORDER}"
+    def bot(self) -> str:
+        return f"{UTF8Table.BL_BORDER}{UTF8Table.H_BORDER * self.width}{UTF8Table.BR_BORDER}"
 
 
 # https://stackoverflow.com/a/518232
@@ -151,57 +136,25 @@ class Aggregate:
                     continue
                 self.__lines[line_count] = line
 
-    def ppretty(self, highlighted: bool = False) -> Iterator[str]:
+    def ppretty(self) -> Iterator[tuple[bool, str]]:
         max_lc_padding = len(str(self.__end_lc))
 
-        def decorate(lc, line) -> str:
-            if not highlighted or lc not in self.__matched_lines:
-                return line
-
-            def region_range(t: tuple[int]) -> int:
-                return t[-1] - t[0]
-
-            # we want to match all processed queries against our string
-            #  for all matches, suppose the following:
-            #  content line
-            #       ^      *
-            #  ^     *
-            #    ^ *
-            #  this is an overlapping regions issue
-            #  these are some sample indices (st, end):
-            #  (1, 5), (3, 7), (4, 6), (10, 15). . .
-            #  this should be simplified to:
-            #  (1, 7), (10, 15)
-            #  a sane way to solve this issue would be, starting from the
-            #  earliest region (sorted by [0]):
-            #  for every region start, check if it's under our max
-            #  if it is, we overlap, and we should extend our end to theirs, and pop it
-            #  if it isn't, continue
-            #  fortunately, this is a solved problem and google carried me, so
-            #  I don't have to waste my time here
-            pline = self.__lines[lc]
-            areas: list[list[int]] = []
-            for q in self.__pqueries:
-                if q in pline:
-                    start = pline.index(q)
-                    end = start + len(q)
-                    areas.append([start, end])
-            areas = merge_intervals(areas)
-            # noinspection PyTypeChecker
-            biggest_area = sorted(areas, key=region_range)[-1]
-            start = biggest_area[0]
-            end = biggest_area[1]
-            return f"{line[:start]}{Colours.RED.value}{line[start:end]}{Colours.CLR.value}{line[end:]}"
-
         def build(lc: int, line: str) -> str:
-            return f"{format(lc, str(max_lc_padding) + 'd')}: {decorate(lc, line)}"
+            return f"{format(lc, str(max_lc_padding) + 'd')}: {line}"
 
-        int_to_str = str if not highlighted else lambda i: f"{Colours.GRN.value}{i}{Colours.CLR.value}"
-        header_content = f" ".join(list(map(int_to_str, sorted(self.__matched_lines))))
-        yield f"{self.__owner} lines~{self.__padding}: {header_content}"
+        header_content = f" ".join(list(map(str, sorted(self.__matched_lines))))
+        yield True, f"{self.__owner} lines~{self.__padding}: {header_content}"
 
+        old_k = -1
+        first = True
         for k in sorted(self.__lines.keys()):
-            yield build(k, self.__lines[k])
+            is_seq = old_k + 1 == k
+            if first:
+                first = False
+                is_seq = True
+
+            yield is_seq, build(k, self.__lines[k])
+            old_k = k
 
         return
 
@@ -331,7 +284,6 @@ def pmap_match(path, options) -> tuple[str, list[Block]] | tuple[None, None]:
 def main(options):
     padding = options.padding
     decorated = options.decorated
-    highlighted = options.highlighted
     multimatches: dict[str, list[Block]] = {}
     paths = preprocess(Path(options.path))
 
@@ -346,17 +298,19 @@ def main(options):
         aggregate = Aggregate(Path(k), padding)
         aggregate.aggregate(v)
         if not decorated:
-            for entry in aggregate.ppretty(highlighted=highlighted):
+            for _, entry in aggregate.ppretty():
                 print(entry)
 
         if decorated:
-            ppretty = aggregate.ppretty(highlighted=highlighted)
-            header = next(ppretty)
+            ppretty = aggregate.ppretty()
+            _, header = next(ppretty)
             table = UTF8Table()
             print(table.header(header))
-            for table_entry in ppretty:
+            for is_seq, table_entry in ppretty:
+                if not is_seq:
+                    print(table.junction())
                 print(table.row(table_entry))
-            print(table.end())
+            print(table.bot())
 
 
 @dataclass
@@ -368,8 +322,6 @@ class UserOptions:
     normalized: bool
     # --padding <int>
     padding: int
-    # --no-highlight is the inverse of this value
-    highlighted: bool
     # --no-decorations is the inverse of this value
     decorated: bool
 
@@ -379,7 +331,6 @@ def _parse_args(args) -> UserOptions:
     parser.add_argument("path", type=str)
     parser.add_argument("filters", nargs="+")
     parser.add_argument("-i", "--insensitive", default=False, action="store_true")
-    parser.add_argument("-m", "--no-highlights", default=False, action="store_true")
     parser.add_argument("-d", "--no-decorations", default=False, action="store_true")
     parser.add_argument("--padding", type=int, default=2, required=False)
     options = parser.parse_args(args)
@@ -389,7 +340,6 @@ def _parse_args(args) -> UserOptions:
         insensitive=options.insensitive,
         normalized=options.insensitive,
         padding=options.padding,
-        highlighted=not options.no_highlights,
         decorated=not options.no_decorations
     )
 
