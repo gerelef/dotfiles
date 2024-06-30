@@ -136,14 +136,14 @@ class Aggregate:
                     continue
                 self.__lines[line_count] = line
 
-    def ppretty(self) -> Iterator[tuple[bool, str]]:
+    def ppretty(self, max_width) -> Iterator[tuple[bool, str]]:
         max_lc_padding = len(str(self.__end_lc))
 
         def build(lc: int, line: str) -> str:
             return f"{format(lc, str(max_lc_padding) + 'd')}: {line}"
 
         header_content = f" ".join(list(map(str, sorted(self.__matched_lines))))
-        yield True, f"{self.__owner} lines~{self.__padding}: {header_content}"
+        yield True, f"{str(self.__owner)[:max_width - len(header_content)]} lines~{self.__padding}: {header_content}"
 
         old_k = -1
         first = True
@@ -165,11 +165,12 @@ def match_blocks(file: Path,
                  normalized: bool = False,
                  uppercase: bool = False) -> Iterator[Block]:
     def insert(q: list, e: object, padding: int = padding) -> None:
-        assert len(q) <= padding
-        if len(q) >= padding:
+        if len(q) >= padding != 0:
             # remove the oldest element (if we're using .append)
             q.pop(0)
-        q.append(e)
+
+        if padding != 0:
+            q.append(e)
 
     def advance(f: TextIO) -> Iterator[tuple[int, str]]:
         tell = f.tell()
@@ -298,13 +299,13 @@ def main(options):
         aggregate = Aggregate(Path(k), padding)
         aggregate.aggregate(v)
         if not decorated:
-            for _, entry in aggregate.ppretty():
+            for _, entry in aggregate.ppretty(999999):
                 print(entry)
 
         if decorated:
-            ppretty = aggregate.ppretty()
-            _, header = next(ppretty)
             table = UTF8Table()
+            ppretty = aggregate.ppretty(table.width)
+            _, header = next(ppretty)
             print(table.header(header))
             for is_seq, table_entry in ppretty:
                 if not is_seq:
