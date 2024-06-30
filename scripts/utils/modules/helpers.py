@@ -7,6 +7,7 @@ import subprocess
 import random
 import string
 import enum
+from copy import copy
 from random import randint
 from pathlib import Path
 from typing import Sequence
@@ -187,6 +188,9 @@ class ColouredString:
     def __init__(self, s: str):
         self.src = str(s)
         self.colour_indexes: list[list[int | Colour]] = []
+        if isinstance(s, ColouredString):
+            s = s.src
+            self.colour_indexes = copy(s.colour_indexes)
 
     def __merge_intervals(self):
         # sort intervals by start time
@@ -230,6 +234,24 @@ class ColouredString:
             temp_str = f"{temp_str[:start]}{colour.value}{temp_str[start:end]}{Colour.CLR.value}{temp_str[end:]}"
             offset += colour.offset() + Colour.CLR.offset()
         return temp_str
+
+    def __getitem__(self, item):
+        out = self.src[item]
+        cs = ColouredString(self)
+        cs.src = out
+        return cs
+
+    def __setitem__(self, item):
+        out = self.src[item]
+        cs = ColouredString(self)
+        cs.src = out
+        return cs
+
+    def __delitem__(self, item):
+        out = self.src[item]
+        cs = ColouredString(self)
+        cs.src = out
+        return cs
 
     def colour(self, start: int, end: int, c: Colour):
         self.colour_indexes.append([start, end, c])
