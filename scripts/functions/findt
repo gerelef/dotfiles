@@ -41,13 +41,11 @@ class UTF8Table:
 
     def header(self, string) -> str:
         assert "\n" not in string
-        string = string[:self.width]
-        mid_section = f"{UTF8Table.V_BORDER}{string:<{self.width}}{UTF8Table.V_BORDER}"
+        mid_section = f"{UTF8Table.V_BORDER}{string[:self.width]:<{self.width}}{UTF8Table.V_BORDER}"
         return "\n".join([self.top(), mid_section, self.junction()])
 
     def row(self, string) -> str:
-        string = string[:self.width]
-        return f"{UTF8Table.V_BORDER}{string:<{self.width}}{UTF8Table.V_BORDER}"
+        return f"{UTF8Table.V_BORDER}{string.replace("\t", "    ")[:self.width]:<{self.width}}{UTF8Table.V_BORDER}"
 
     def bot(self) -> str:
         return f"{UTF8Table.BL_BORDER}{UTF8Table.H_BORDER * self.width}{UTF8Table.BR_BORDER}"
