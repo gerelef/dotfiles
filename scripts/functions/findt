@@ -173,14 +173,13 @@ def match_blocks(file: Path,
             q.append(e)
 
     def advance(f: TextIO) -> Iterator[tuple[int, str]]:
-        tell = f.tell()
         while True:
+            previous_tell = f.tell()
             line = upper(normalize(f.readline().rstrip(), normalized=normalized), uppercase=uppercase)
-            yield tell, line
-            previous_tell = tell
-            tell = f.tell()
-            if tell == previous_tell:
-                return
+            current_tell = f.tell()
+            if current_tell == previous_tell:
+                return current_tell, None
+            yield current_tell, line
 
     def peek(f: TextIO, pc: int) -> list[str]:
         """
@@ -188,15 +187,14 @@ def match_blocks(file: Path,
         :param pc: peek count
         """
         tell = f.tell()
+        lines = []
         try:
-            lines = []
             advance_iterator = advance(f)
             for i in range(pc):
                 _, line = next(advance_iterator)
                 lines.append(line)
-                itell = f.tell()
-                if tell == itell:
-                    return lines
+            return lines
+        except StopIteration:
             return lines
         finally:
             f.seek(tell)
@@ -331,8 +329,8 @@ def _parse_args(args) -> UserOptions:
     parser = argparse.ArgumentParser(description="findt: a recursive content text locator")
     parser.add_argument("path", type=str)
     parser.add_argument("filters", nargs="+")
-    parser.add_argument("-i", "--insensitive", default=False, action="store_true")
-    parser.add_argument("-d", "--no-decorations", default=False, action="store_true")
+    parser.add_argument("-i", "--insensitive", default=False, action="store_true", required=False)
+    parser.add_argument("-d", "--no-decorations", default=False, action="store_true", required=False)
     parser.add_argument("--padding", type=int, default=2, required=False)
     options = parser.parse_args(args)
     return UserOptions(
