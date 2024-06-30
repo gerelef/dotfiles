@@ -6,10 +6,10 @@ import os
 import subprocess
 import random
 import string
+import enum
 from random import randint
 from pathlib import Path
 from typing import Sequence
-
 
 LOREM_IPSUM_TOKENS = [
     'pulvinar', 'a', 'eleifend', 'libero', 'elit', 'neque', 'ullamcorper', 'commodo', 'sodales', 'magna',
@@ -86,7 +86,7 @@ def auto_hash(cls):
     cls.__hash__ = __hash__
 
     return cls
-    
+
 
 def timeit(fn):
     def wrapper(*args, **kwargs):
@@ -171,3 +171,75 @@ def get_logger() -> logging.Logger:
 
     logger.addHandler(ch)
     return logger
+
+
+class Colour(enum.Enum):
+    CLR = "\033[0m"
+
+    FRED = "\033[31m"
+    FGRN = "\033[32m"
+
+    def offset(self) -> int:
+        return len(self.value)
+
+
+class ColouredString:
+    def __init__(self, s: str):
+        self.src = s
+        self.colour_indexes: list[list[int | Colour]] = []
+
+    def __merge_intervals(self):
+        # sort intervals by start time
+        self.colour_indexes.sort(key=lambda x: x[0])
+
+        merged = []
+        for interval in self.colour_indexes:
+            # If the list of merged intervals is empty or if the current interval does not overlap with the previous, append it to merged
+            if not merged or merged[-1][1] < interval[0]:
+                merged.append(interval)
+            else:
+                # Otherwise, there is overlap, so we merge the current and previous intervals
+                merged[-1][1] = max(merged[-1][1], interval[1])
+
+        self.colour_indexes = merged
+
+    def __str__(self) -> str:
+        #  for all colours, suppose the following:
+        #  content line
+        #       ^      *
+        #  ^     *
+        #    ^ *
+        #  this is an overlapping regions issue
+        #  these are some sample indices (st, end):
+        #  (1, 5), (3, 7), (4, 6), (10, 15). . .
+        #  this should be simplified to:
+        #  (1, 7), (10, 15)
+        #  a sane way to solve this issue would be, starting from the
+        #  earliest region (sorted by [0]):
+        #  for every region start, check if it's under our max
+        #  if it is, we overlap, and we should extend our end to theirs, and pop it
+        #  if it isn't, continue
+        #  fortunately, this is a solved problem and google carried me, so
+        #  I don't have to waste my time here
+        offset = 0
+        temp_str = self.src
+        for area in self.colour_indexes:
+            start, end, colour = area
+            start += offset
+            end += offset
+            temp_str = f"{temp_str[:start]}{colour.value}{temp_str[start:end]}{Colour.CLR.value}{temp_str[end:]}"
+            offset += colour.offset() + Colour.CLR.offset()
+        return temp_str
+
+    def colour(self, start: int, end: int, c: Colour):
+        self.colour_indexes.append([start, end, c])
+        self.__merge_intervals()
+        return self
+
+
+if __name__ == "__main__":
+    cs = ColouredString("thing one two three")
+    cs.colour(0, 2, Colour.FRED)
+    cs.colour(1, 4, Colour.FGRN)
+    cs.colour(6, 8, Colour.FGRN)
+    print(cs)
