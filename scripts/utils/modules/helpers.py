@@ -185,7 +185,7 @@ class Colour(enum.Enum):
 
 class ColouredString:
     def __init__(self, s: str):
-        self.src = s
+        self.src = str(s)
         self.colour_indexes: list[list[int | Colour]] = []
 
     def __merge_intervals(self):
