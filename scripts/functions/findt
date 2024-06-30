@@ -200,15 +200,8 @@ class Aggregate:
         header_content = f" ".join(list(map(int_to_str, sorted(self.__matched_lines))))
         yield f"{self.__owner} lines~{self.__padding}: {header_content}"
 
-        previous_k = 0
         for k in sorted(self.__lines.keys()):
-            # if this is not a sequential line, and it's insignificant, show ...
-            if not is_sequential(previous_k, k) and k not in self.__matched_lines:
-                previous_k = k
-                yield build(k, "...")
-                continue
             yield build(k, self.__lines[k])
-            previous_k = k
 
         return
 
@@ -243,8 +236,10 @@ def match_blocks(file: Path,
         tell = f.tell()
         try:
             lines = []
+            advance_iterator = advance(f)
             for i in range(pc):
-                lines.append(upper(normalize(f.readline().rstrip(), normalized=normalized), uppercase=uppercase))
+                _, line = next(advance_iterator)
+                lines.append(line)
                 itell = f.tell()
                 if tell == itell:
                     return lines
@@ -379,7 +374,7 @@ def _parse_args(args) -> UserOptions:
     parser.add_argument("-i", "--insensitive", default=False, action="store_true")
     parser.add_argument("-m", "--no-highlights", default=False, action="store_true")
     parser.add_argument("-d", "--no-decorations", default=False, action="store_true")
-    parser.add_argument("--padding", type=int, default=3, required=False)
+    parser.add_argument("--padding", type=int, default=2, required=False)
     options = parser.parse_args(args)
     return UserOptions(
         path=options.path,
