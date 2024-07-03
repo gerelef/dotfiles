@@ -15,6 +15,52 @@ from typing import Iterator, TextIO
 
 # HELP "./findt <path> <contents...>; search for text <contents> in <path> (dir or file)
 
+def shorten_path(p: Path, max_width: int) -> str:
+    def is_relative_to_home(p: Path):
+        return str(p).startswith(str(Path().home()))
+
+    def is_absolute(p: Path):
+        """
+        this will only work for unix-likes
+        """
+        return str(p).startswith("/")
+
+    is_relative = is_relative_to_home(p)
+    is_absolute = is_absolute(p)
+    relative_offset = 0
+    relative_offset = 2 if is_relative else relative_offset  # ~
+    relative_offset = 1 if (not is_relative) and is_absolute else relative_offset  # /
+
+    component_stack: list[str] = []
+    component_total_width: int = relative_offset
+
+    if (is_relative or is_absolute) and component_total_width + 3 < max_width:
+        component_total_width += 3 + 1  # offset by 1 because of the preceding os.sep
+
+    for c in p.parts[::-1]:
+        pc = str(c)
+        if len(pc) + component_total_width <= max_width:
+            component_total_width += 1  # offset by 1 because of the preceding os.sep
+            component_stack.insert(0, pc)
+            component_total_width += len(pc)
+            continue
+        break
+
+    if (is_relative or is_absolute) and component_total_width + 3 < max_width:
+        component_stack.insert(0, "...")
+
+    if is_relative:
+        for p in Path().home().parts:
+            has_dupe = p in component_stack
+            if has_dupe:
+                component_stack.remove(p)
+        component_stack.insert(0, "~")
+
+    if (not is_relative) and is_absolute:
+        component_stack.insert(0, "")
+
+    return os.sep.join(component_stack)
+
 
 class UTF8Table:
     V_BORDER = "│"
@@ -25,6 +71,7 @@ class UTF8Table:
     TR_BORDER = "┐"
     BL_BORDER = "└"
     BR_BORDER = "┘"
+    ESCAPES = str.maketrans('', '', ''.join([chr(char) for char in range(1, 32)]))
 
     def __init__(self):
         self.__width, self.height = shutil.get_terminal_size()
@@ -40,12 +87,14 @@ class UTF8Table:
         return f"{UTF8Table.L_JUNCTION}{UTF8Table.H_BORDER * self.width}{UTF8Table.R_JUNCTION}"
 
     def header(self, string) -> str:
-        assert "\n" not in string
-        mid_section = f"{UTF8Table.V_BORDER}{string[:self.width]:<{self.width}}{UTF8Table.V_BORDER}"
-        return "\n".join([self.top(), mid_section, self.junction()])
+        return "\n".join([
+            self.top(),
+            f"{UTF8Table.V_BORDER}{string[:self.width]}{UTF8Table.V_BORDER}",
+            self.junction()
+        ])
 
     def row(self, string) -> str:
-        return f"{UTF8Table.V_BORDER}{string.replace("\t", "    ")[:self.width]:<{self.width}}{UTF8Table.V_BORDER}"
+        return f"{UTF8Table.V_BORDER}{string:<{self.width}}{UTF8Table.V_BORDER}"
 
     def bot(self) -> str:
         return f"{UTF8Table.BL_BORDER}{UTF8Table.H_BORDER * self.width}{UTF8Table.BR_BORDER}"
@@ -62,22 +111,6 @@ def upper(string, uppercase=False) -> str:
     if not uppercase:
         return string
     return string.upper()
-
-
-def merge_intervals(intervals):
-    # sort intervals by start time
-    intervals.sort(key=lambda x: x[0])
-
-    merged = []
-    for interval in intervals:
-        # If the list of merged intervals is empty or if the current interval does not overlap with the previous, append it to merged
-        if not merged or merged[-1][1] < interval[0]:
-            merged.append(interval)
-        else:
-            # Otherwise, there is overlap, so we merge the current and previous intervals
-            merged[-1][1] = max(merged[-1][1], interval[1])
-
-    return merged
 
 
 @dataclass
@@ -133,13 +166,18 @@ class Aggregate:
                 self.__lines[line_count] = line
 
     def ppretty(self, max_width) -> Iterator[tuple[bool, str]]:
+        # line count padding
         max_lc_padding = len(str(self.__end_lc))
 
         def build(lc: int, line: str) -> str:
-            return f"{format(lc, str(max_lc_padding) + 'd')}: {line}"
+            stem = f"{format(lc, str(max_lc_padding) + 'd')}: "
+            return f"{stem}{line.replace("\t", "    ")[:max_width - len(stem)]}"
 
+        infix = f" lines~{self.__padding}: "
         header_content = f" ".join(list(map(str, sorted(self.__matched_lines))))
-        yield True, f"{str(self.__owner)[:max_width - len(header_content)]} lines~{self.__padding}: {header_content}"
+        stem = shorten_path(self.__owner, max(max_width - len(header_content) - len(infix), max_width // 3))
+        padding_width = max_width - len(stem) - len(infix)
+        yield True, f"{stem}{infix}{header_content[:max_width - len(stem) - len(infix)]:<{padding_width}}"
 
         old_k = -1
         first = True
@@ -286,8 +324,9 @@ def main(options):
     with Pool(os.cpu_count()) as pool:
         match_filter = lambda res: bool(res[1])
         results = tuple(filter(match_filter, pool.map(partial_match, paths)))
-        for k, v in results:
-            multimatches[k] = v
+
+    for k, v in results:
+        multimatches[k] = v
 
     for k, v in multimatches.items():
         aggregate = Aggregate(Path(k), padding)
