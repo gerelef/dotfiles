@@ -99,6 +99,14 @@ class UTF8Table:
     def bot(self) -> str:
         return f"{UTF8Table.BL_BORDER}{UTF8Table.H_BORDER * self.width}{UTF8Table.BR_BORDER}"
 
+    @staticmethod
+    def is_piped() -> bool:
+        try:
+            os.get_terminal_size()
+            return False
+        except OSError:
+            return True
+
 
 # https://stackoverflow.com/a/518232
 def normalize(string, normalized=False) -> str:
@@ -165,7 +173,29 @@ class Aggregate:
                     continue
                 self.__lines[line_count] = line
 
-    def ppretty(self, max_width) -> Iterator[tuple[bool, str]]:
+    def simple(self):
+        # line count padding
+        max_lc_padding = len(str(self.__end_lc))
+
+        def build(lc: int, line: str) -> str:
+            return f"{format(lc, str(max_lc_padding) + 'd')}: {line.replace("\t", "    ")}"
+
+        yield True, f"{str(self.__owner)} lines~{self.__padding}: {" ".join(list(map(str, sorted(self.__matched_lines))))}"
+
+        old_k = -1
+        first = True
+        for k in sorted(self.__lines.keys()):
+            is_seq = old_k + 1 == k
+            if first:
+                first = False
+                is_seq = True
+
+            yield is_seq, build(k, self.__lines[k])
+            old_k = k
+
+        return
+
+    def pretty(self, max_width) -> Iterator[tuple[bool, str]]:
         # line count padding
         max_lc_padding = len(str(self.__end_lc))
 
@@ -275,6 +305,10 @@ def preprocess(directory: Path) -> list[Path]:
     If the path provided is a file, it will return itself.
     :returns: list of absolute files, that exist
     """
+    def is_ignoreable(p: Path) -> bool:
+        parts = p.parts
+        return ".idea" in parts or ".git" in parts or ".vscode" in parts or "node_modules" in parts
+
     if directory is None:
         raise ValueError("dir null not permitted")
     if not directory.exists():
@@ -286,11 +320,8 @@ def preprocess(directory: Path) -> list[Path]:
         return []
     return list(
         filter(
-            lambda p: p.is_file(),
-            map(
-                lambda p: p,
-                [Path(p) for p in directory.rglob("*")]
-            )
+            lambda p: p.is_file() and not is_ignoreable(p),
+            [Path(p) for p in directory.rglob("*")]
         )
     )
 
@@ -331,13 +362,11 @@ def main(options):
     for k, v in multimatches.items():
         aggregate = Aggregate(Path(k), padding)
         aggregate.aggregate(v)
-        if not decorated:
-            for _, entry in aggregate.ppretty(999999):
-                print(entry)
 
-        if decorated:
+        is_piped = UTF8Table.is_piped()
+        if decorated and not is_piped:
             table = UTF8Table()
-            ppretty = aggregate.ppretty(table.width)
+            ppretty = aggregate.pretty(table.width)
             _, header = next(ppretty)
             print(table.header(header))
             for is_seq, table_entry in ppretty:
@@ -345,6 +374,10 @@ def main(options):
                     print(table.junction())
                 print(table.row(table_entry))
             print(table.bot())
+
+        if not decorated or is_piped:
+            for _, entry in aggregate.simple():
+                print(entry)
 
 
 @dataclass
