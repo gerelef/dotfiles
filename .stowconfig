@@ -30,6 +30,12 @@ scripts/
     !!scripts/.gitconfig-gitdelta
 [end]
 
+[if-not-pkg::fish]
+    // if fish is not installed, DO NOT link fish-based alacritty configuration
+    //  if fish doesn't exist, it'll cause the shell to never boot
+    .config/alacritty.toml
+[end]
+
 // link only in default profile
 .config/sublime-text/
 .config/mozilla/*

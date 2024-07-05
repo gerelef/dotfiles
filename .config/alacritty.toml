@@ -1,7 +1,7 @@
 live_config_reload = true
 
 [shell]
-program = "/bin/fish"
+program = "fish"
 
 [colors.bright]
 black = "0x4c4c4c"
