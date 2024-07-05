@@ -6,4 +6,5 @@ ffmpeg
 findutils
 adb
 ruby
-python3
+python3.12
+zoxide

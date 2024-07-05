@@ -217,3 +217,10 @@ alias reverse="tac"
 alias palindrome="rev"
 
 alias fuck='sudo $(history -p \!\!)'
+
+if [[ -n "$(command -v zoxide)" ]]; then
+    cd () {
+        z "$@"
+    }
+    eval "$(zoxide init bash)"
+fi

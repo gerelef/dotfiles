@@ -118,6 +118,11 @@ function __sudo_last_command; echo "sudo $history[1]"; end
 abbr --position command --add fuck --function __sudo_last_command
 abbr --position command --add vpip --function __venv_activate_fish
 
+if type -q zoxide
+    zoxide init fish | source
+    abbr --position command --add cd "z"
+end
+
 alias .. "cd .."
 alias ... "cd ../.."
 alias .... "cd ../../.."
