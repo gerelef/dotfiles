@@ -222,6 +222,15 @@ install-gaming-packages () (
     echo-status "-------------------INSTALLING GAMING PACKAGES----------------"
     dnf-install "$INSTALLABLE_EXTRAS" "$INSTALLABLE_WINE_GE_CUSTOM_PKGS" "$INSTALLABLE_OBS_STUDIO"
     flatpak-install "$INSTALLABLE_EXTRAS_FLATPAK"
+    # FIX FOR INPUT LAG / KEYBOARD KEYS GETTING STUCK:
+    #  https://discussion.fedoraproject.org/t/ibus-daemon-introduces-delays-and-even-locks-keyboard-up-in-some-steam-games/118095/4
+    #  https://github.com/ibus/ibus/issues/2618
+    #  https://gitlab.gnome.org/GNOME/mutter/-/issues/3369
+    #  https://www.google.com/search?client=firefox-b-d&q=XMODIFIERS%3D%E2%80%9C%40im%3Dnull%E2%80%9D
+    #  https://www.linuxquestions.org/questions/linux-general-1/what-does-xmodifiers%3D-%40im%3Dnull-do-exactly-4175671523/
+    #  https://github.com/chrislo27/PolyrhythmMania/issues/24
+    echo "XMODIFIERS=@im=null" >> /etc/environment
+    chmod 644 "/etc/environment"
     echo-success "Done."
 )
 
@@ -240,6 +249,7 @@ install-dev-tools () (
     
     dnf-group-install-with-optional "c-development" "development-tools"
     dnf-install "$INSTALLABLE_DEV_PKGS"
+    flatpak-install "net.werwolv.ImHex"
 
     echo-success "Done."
 )
@@ -328,10 +338,10 @@ create-swapfile () (
     # btrfs specific fstab entry
     if is-btrfs-rootfs; then
         echo "/swapfile none swap defaults 0 0" >> /etc/fstab
+        echo-success "Done."
         return
     fi
     echo "/swapfile swap swap defaults 0 0" >> /etc/fstab
-    
     echo-success "Done."
 )
 
