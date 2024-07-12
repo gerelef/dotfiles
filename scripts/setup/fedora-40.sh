@@ -249,21 +249,24 @@ install-dev-tools () (
 
 install-zed-text-editor () (
     echo-status "-------------------INSTALLING ZED EDITOR----------------"
-    # step 1 extract & move to /opt/zed.app
     echo-status "downloading zed to /tmp/zed-install/zed-linux-x86_64.tar.gz"
-    curl "https://zed.dev/api/releases/stable/latest/zed-linux-x86_64.tar.gz" > "/tmp/zed-install/zed-linux-x86_64.tar.gz"
-    tar -xzf "/tmp/zed-install/zed-linux-x86_64.tar.gz" -C "/opt"
+
+    # step 1 extract & move to /opt/zed.app
+    mkdir "/tmp/zed-install"
+    curl -L "https://zed.dev/api/releases/stable/latest/zed-linux-x86_64.tar.gz" --output "/tmp/zed-install/zed-linux-x86_64.tar.gz"
+    tar xf "/tmp/zed-install/zed-linux-x86_64.tar.gz" --directory=/opt
     rm -rf "/tmp/zed-install"  # remove tmp dir, unneeded
     echo-status "extracted zed to /opt/zed.app"
 
     chmod -R 755 "/opt/zed.app"
     chown -R root:root "/opt/zed.app"
     # step 2. link binary to sbin
-    ln -s "/opt/zed.app/bin/zed" "/usr/sbin/zed"
+    ln -sf "/opt/zed.app/bin/zed" "/usr/sbin/zed"
     # step 3. place & replace zed.app/share in /usr/
     chmod -R 644 "/opt/zed.app/share"
     chown -R root:root "/opt/zed.app/share"
-    mv "/opt/zed.app/share" "/usr"
+    cp -f "/opt/zed.app/share/applications/zed.desktop" "/usr/share/applications/zed.desktop"
+    cp -f "/opt/zed.app/share/icons/hicolor/512x512/apps/zed.png" "/usr/share/icons/zed.png"
 
     echo-success "Done."
 )
