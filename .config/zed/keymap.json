@@ -9,6 +9,7 @@
             "ctrl-`": "terminal_panel::ToggleFocus",
             "shift shift": "file_finder::Toggle",
             "ctrl ctrl": "command_palette::Toggle",
+            "alt alt": "project_symbols::Toggle",
             "ctrl-w": "pane::CloseActiveItem",
             "ctrl-shift-f": "pane::DeploySearch",
             "ctrl-f": "buffer_search::Deploy",
@@ -28,7 +29,10 @@
             "ctrl-alt-left": null,
             "ctrl-alt-right": null,
             // ---------------- JETBRAINS ----------------
-            "shift-f6": "project_panel::Rename"
+            "shift-f6": "project_panel::Rename",
+            // ---------------- BROWSER BINDS ----------------
+            "ctrl-t": "workspace::NewFile",
+            "ctrl-shift-t": "pane::ReopenClosedItem"
         }
     }
 ]
