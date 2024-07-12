@@ -46,7 +46,7 @@ readonly __PREFIX="\033["
 readonly __FOREGROUND="38;"
 readonly __BACKGROUND="48;"
 # https://man7.org/linux/man-pages/man4/console_codes.4.html
-readonly __INFIX="5;" 
+readonly __INFIX="5;"
 readonly __PFI="$__PREFIX$__FOREGROUND$__INFIX"
 readonly __PBI="$__PREFIX$__BACKGROUND$__INFIX"
 
@@ -64,21 +64,21 @@ readonly _FLRED="$__PFI$__LIGHT_RED"
 readonly _FBROWN="$__PFI$__BROWN"
 readonly _FORANGE="$__PFI$__ORANGE"
 
-# get current git branch in arg or current 
+# get current git branch in arg or current
 _git-branch () (
     # if superfluous arguments return to prevent misuse
     [[ $# -gt 1 ]] && return 2
-    
+
     git branch 2> /dev/null | sed -e '/^[^*]/d' -e 's/* \(.*\)/ (\1)/'
 )
 
 _git-status () (
     # path MUST be given
     [[ $# -gt 1 ]] && return 2
-    
+
     changed_files=$(git status -s --ignored=no 2> /dev/null)
     [[ -z $changed_files ]] && return
-    
+
     echo "(changes pending)"
 )
 
@@ -115,7 +115,7 @@ mini-prompt () {
 #  to do that, we're going to (1) create a mock file (2) dump all these different functions in it
 #  (3) source it (4) then promptly delete it so we don't create garbage files & for (perhaps) obscure security reasons
 #    these functions (which only differ by the python version they're calling) should:
-#      (1) check if a venv (for this specific version) exists in the venv directory. If it doesn't, 
+#      (1) check if a venv (for this specific version) exists in the venv directory. If it doesn't,
 #        (1a) create a new venv for this specific version
 #      (2) source the activation script (and enter the venv)
 
@@ -138,7 +138,7 @@ prepare-pip () (
         python_version_number="$(echo $python_version | tr -d -c 0-9.)"
 
         virtual_group_subshell="vpip$python_version_number () {
-            [[ \"\$EUID\" -eq 0 ]] && echo \"Do NOT run as root.\" && return 2; 
+            [[ \"\$EUID\" -eq 0 ]] && echo \"Do NOT run as root.\" && return 2;
             [[ ! -d \"$venv_dir\" ]] && mkdir -p \"$venv_dir\" # create root dir if doesn't exist
             local venv_dir=\"$venv_dir/dvpip$python_version_number\"
 
@@ -209,7 +209,6 @@ alias ....='cd ../../..'
 alias .....='cd ../../../..'
 
 # convenience alias
-alias lss="lsd --almost-all --icon never --icon-theme unicode --group-directories-first"
 alias wget="\wget -c --read-timeout=5 --tries=0"
 alias grep="\grep -i"
 alias rm="rm -v"
@@ -217,6 +216,10 @@ alias reverse="tac"
 alias palindrome="rev"
 
 alias fuck='sudo $(history -p \!\!)'
+
+if [[ -n "$(command -v lsd)" ]]; then
+    alias lss="lsd --almost-all --icon never --icon-theme unicode --group-directories-first"
+fi
 
 if [[ -n "$(command -v zoxide)" ]]; then
     cd () {

@@ -7,13 +7,13 @@ if not status is-interactive; exit; end;
 # goal: we want to create alot of different vpipN () (...) functions to call
 #  for every different virtual environment that we have; e.g. python3.11 will have vpip3.11
 #  which calls for the activation of the virtual environment of python3.11 stored somewhere on the system
-#  to do that, we're going to 
-#   (1) create a mock file 
+#  to do that, we're going to
+#   (1) create a mock file
 #   (2) dump all these different functions in it
-#   (3) source it 
+#   (3) source it
 #   (4) then promptly delete it so we don't create garbage files & for (perhaps) obscure security reasons
 #   these functions (which only differ by the python version they're calling) should:
-#      (1) check if a venv (for this specific version) exists in the venv directory. If it doesn't, 
+#      (1) check if a venv (for this specific version) exists in the venv directory. If it doesn't,
 #        (1a) create a new venv for this specific version
 #      (2) source the activation script (and enter the venv)
 
@@ -55,7 +55,7 @@ function prepare-pip
                 echo \"Global \$pv_dir doesn't exist; creating venv for it!\"
                 # the $pv expansion will execute, since it's expanded while making
                 #  the stringified version of this function
-                # special case of venv creation: 
+                # special case of venv creation:
                 #  if python version < 3 (2.7 e.g.) use a special way for init
 
                 # split on the dot (MAJOR.MINOR version spliterator)
@@ -65,7 +65,7 @@ function prepare-pip
                     command $pv -m ensurepip --user
                     command $pv -m pip install virtualenv --user
                     command $pv -m virtualenv --python=\"$pv\" \"\$pv_dir\"
-                else 
+                else
                     # for python >= 3
                     command $pv -m venv \$pv_dir
                 end
@@ -96,7 +96,7 @@ end
 
 #############################################################
 # SOURCES & CONFIG
-# add executable script (lambdas) dir 
+# add executable script (lambdas) dir
 fish_add_path -g ~/dotfiles/scripts/functions/
 # add login shell requirements
 require-login-shell-packages
@@ -107,7 +107,6 @@ set -g fish_greeting ""
 
 #############################################################
 # ABBREVIATIONS & ALIAS
-abbr --position command --add lss "lsd --almost-all --icon never --group-directories-first"
 abbr --position command --add wget "wget -c --read-timeout=5 --tries=0"
 abbr --position command --add grep "grep -i"
 abbr --position command --add rm "rm -v"
@@ -121,6 +120,10 @@ abbr --position command --add vpip --function __venv_activate_fish
 if type -q zoxide
     zoxide init fish | source
     abbr --position command --add cd "z"
+end
+
+if type -q lsd
+    abbr --position command --add lss "lsd --almost-all --icon never --group-directories-first"
 end
 
 alias .. "cd .."
