@@ -3,7 +3,7 @@
         "bindings": {
             // MISSING ctrl + scrollup/down increase/decrease buffer_font
             // ---------------- EDITOR TOGGLES ----------------
-            "f1": "project_panel::ToggleFocus",
+            "f1": "workspace::ToggleLeftDock",
             "ctrl-+": "zed::IncreaseBufferFontSize",
             "ctrl-_": "zed::DecreaseBufferFontSize",
             "ctrl-`": "terminal_panel::ToggleFocus",
