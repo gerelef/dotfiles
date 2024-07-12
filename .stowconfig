@@ -37,14 +37,16 @@ scripts/
 [end]
 
 // link only in default profile
+.config/zed/
 .config/sublime-text/
 .config/mozilla/*
 .config/pipewire.conf
 .config/config
 [if-profile:::default]
-    !!.config/sublime-text/*
     !!.config/mozilla/user.js
     !!.config/pipewire.conf
+    !!.config/sublime-text/*
+    !!.config/zed/*
 
     // ssh config
     !!.config/config
