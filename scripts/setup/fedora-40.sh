@@ -1,6 +1,7 @@
 #!/usr/bin/env -S sudo --preserve-env="XDG_CURRENT_DESKTOP" --preserve-env="XDG_RUNTIME_DIR" --preserve-env="XDG_DATA_DIRS" --preserve-env="DBUS_SESSION_BUS_ADDRESS" bash
 
 readonly DIR=$(dirname -- "$BASH_SOURCE")
+readonly DEBUG_SETUP_ON="yes"
 
 [[ -f "$DIR/common-utils.sh" ]] || ( echo "$DIR/common-utils.sh doesn't exist! exiting..." && exit 2 )
 source "$DIR/common-utils.sh"
@@ -308,12 +309,19 @@ install-jetbrains-toolbox () (
     dnf-install "fuse" "libXtst" "libXrender" "glx-utils" "fontconfig-devel" "gtk3" "tar"
 
     readonly ARCHIVE_URL=$(curl -s 'https://data.services.jetbrains.com/products/releases?code=TBA&latest=true&type=release' | grep -Po '"linux":.*?[^\\]",' | awk -F ':' '{print $3,":"$4}'| sed 's/[", ]//g')
-    wget -cO "./jetbrains-toolbox.tar.gz" "$ARCHIVE_URL"
-    tar -xzf "./jetbrains-toolbox.tar.gz" -C "$REAL_USER_HOME/jetbrains-toolbox" --strip-components=1
-    rm "./jetbrains-toolbox.tar.gz"
+    mkdir "/tmp/jetbrains-install"
+    wget -cO "/tmp/jetbrains-install/jetbrains-toolbox.tar.gz" "$ARCHIVE_URL"
 
-    chmod a+x "$REAL_USER_HOME/jetbrains-toolbox"
-    mv "$REAL_USER_HOME/jetbrains-toolbox" "/usr/bin/jetbrains-toolbox"
+    echo-debug "Extracting jetbrains-toolbox to /tmp/jetbrains-install ..."
+    tar -xzf "/tmp/jetbrains-install/jetbrains-toolbox.tar.gz" -C "/opt/jetbrains-toolbox" --strip-components=1
+    rm -f "/tmp/jetbrains-install/jetbrains-toolbox.tar.gz"
+
+    echo-debug "Linking /opt/jetbrains-toolbox to /usr/local/bin ..."
+    chmod 755 "/opt/jetbrains-toolbox"
+    chown root:root "/opt/jetbrains-toolbox"
+    ln -sf "/opt/jetbrains-toolbox" "/usr/local/bin/jetbrains-toolbox"
+    rm "/tmp/jetbrains-install"  # remove tmp dir, not needed anymore
+    echo-status "Done."
 )
 
 configure-system-defaults () (
