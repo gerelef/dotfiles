@@ -261,7 +261,7 @@ install-zed-text-editor () (
     chmod -R 755 "/opt/zed.app"
     chown -R root:root "/opt/zed.app"
     # step 2. link binary to sbin
-    ln -sf "/opt/zed.app/bin/zed" "/usr/sbin/zed"
+    ln -sf "/opt/zed.app/bin/zed" "/usr/local/bin/zed"
     # step 3. place & replace zed.app/share in /usr/
     chmod -R 644 "/opt/zed.app/share"
     chown -R root:root "/opt/zed.app/share"

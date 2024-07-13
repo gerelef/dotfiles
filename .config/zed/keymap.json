@@ -11,9 +11,13 @@
             "ctrl ctrl": "command_palette::Toggle",
             "alt alt": "project_symbols::Toggle",
             "ctrl-w": "pane::CloseActiveItem",
+            "ctrl-alt-f": "go_to_line::Toggle",
             "ctrl-shift-f": "pane::DeploySearch",
             "ctrl-f": "buffer_search::Deploy",
-            "ctrl-r": ["workspace::SendKeystrokes", "ctrl-h"],
+            "ctrl-r": [
+                "workspace::SendKeystrokes",
+                "ctrl-h"
+            ],
             // ---------------- LINE MANIP ----------------
             "ctrl-z": "editor::Undo",
             "ctrl-shift-z": "editor::Redo",
@@ -30,6 +34,7 @@
             "ctrl-alt-right": null,
             // ---------------- JETBRAINS ----------------
             "shift-f6": "project_panel::Rename",
+            "ctrl-l": "editor::Format",
             // ---------------- BROWSER BINDS ----------------
             "ctrl-t": "workspace::NewFile",
             "ctrl-shift-t": "pane::ReopenClosedItem"

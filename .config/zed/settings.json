@@ -48,7 +48,7 @@
     },
     "toolbar": {
         "breadcrumbs": true,
-        "quick_actions": false
+        "quick_actions": true
     },
     "inlay_hints": {
         "enabled": true,
