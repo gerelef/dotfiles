@@ -32,8 +32,10 @@ scripts/
 // if fish is not installed, DO NOT link fish-based alacritty configuration
 //  if fish doesn't exist, it'll cause alacritty to never boot
 .config/alacritty.toml
+.config/fish/
 [if-pkg:::fish]
     !!.config/alacritty.toml
+    !!.config/fish/
 [end]
 
 .config/zed/
