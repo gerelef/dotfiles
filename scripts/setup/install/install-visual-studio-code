@@ -1,0 +1,23 @@
+#!/usr/bin/env bash
+
+install-visual-studio-code () (
+    echo-status "-------------------INSTALLING VISUAL STUDIO CODE----------------"
+    # instructions taken from here (official site)
+    #  https://code.visualstudio.com/docs/setup/linux#_rhel-fedora-and-centos-based-distributions
+    rpm --import https://packages.microsoft.com/keys/microsoft.asc
+    (cat <<-VSC_END
+[code]
+name=Visual Studio Code
+baseurl=https://packages.microsoft.com/yumrepos/vscode
+enabled=1
+gpgcheck=1
+gpgkey=https://packages.microsoft.com/keys/microsoft.asc
+VSC_END
+    ) > /etc/yum.repos.d/vscode.repo
+    dnf check-update
+    dnf-install code
+
+    echo-success "Done."
+)
+
+[[ "${BASH_SOURCE[0]}" == "${0}" ]] && install-visual-studio-code "$@"

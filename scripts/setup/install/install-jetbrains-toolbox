@@ -1,0 +1,25 @@
+#!/usr/bin/env bash
+
+install-jetbrains-toolbox () (
+    # dependencies, described here
+    #  https://github.com/nagygergo/jetbrains-toolbox-install
+    echo-status "-------------------INSTALLING JETBRAINS TOOLBOX----------------"
+    dnf-install "fuse" "libXtst" "libXrender" "glx-utils" "fontconfig-devel" "gtk3" "tar"
+
+    readonly ARCHIVE_URL=$(curl -s 'https://data.services.jetbrains.com/products/releases?code=TBA&latest=true&type=release' | grep -Po '"linux":.*?[^\\]",' | awk -F ':' '{print $3,":"$4}'| sed 's/[", ]//g')
+    mkdir "/tmp/jetbrains-install"
+    wget -cO "/tmp/jetbrains-install/jetbrains-toolbox.tar.gz" "$ARCHIVE_URL"
+
+    echo-debug "Extracting jetbrains-toolbox to /tmp/jetbrains-install ..."
+    tar -xzf "/tmp/jetbrains-install/jetbrains-toolbox.tar.gz" -C "/opt/jetbrains-toolbox" --strip-components=1
+    rm -f "/tmp/jetbrains-install/jetbrains-toolbox.tar.gz"
+
+    echo-debug "Linking /opt/jetbrains-toolbox to /usr/local/bin ..."
+    chmod 755 "/opt/jetbrains-toolbox"
+    chown root:root "/opt/jetbrains-toolbox"
+    ln -sf "/opt/jetbrains-toolbox" "/usr/local/bin/jetbrains-toolbox"
+    rm "/tmp/jetbrains-install"  # remove tmp dir, not needed anymore
+    echo-status "Done."
+)
+
+[[ "${BASH_SOURCE[0]}" == "${0}" ]] && install-jetbrains-toolbox "$@"

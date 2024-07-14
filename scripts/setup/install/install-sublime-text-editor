@@ -1,0 +1,13 @@
+#!/usr/bin/env bash
+
+install-sublime-text-editor () (
+    echo-status "-------------------INSTALLING SUBLIME TEXT----------------"
+
+    rpm -v --import https://download.sublimetext.com/sublimehq-rpm-pub.gpg
+    dnf config-manager addrepo --from-repofile="https://download.sublimetext.com/rpm/stable/x86_64/sublime-text.repo"
+    dnf-install sublime-text
+
+    echo-success "Done."
+)
+
+[[ "${BASH_SOURCE[0]}" == "${0}" ]] && install-sublime-text-editor "$@"

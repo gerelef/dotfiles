@@ -7,4 +7,4 @@ adb-remove-bloat () (
     sudo adb uninstall --user 0 com.ironsource.appcloud.oobe.hutchison
 )
 
-adb-remove-bloat
+[[ "${BASH_SOURCE[0]}" == "${0}" ]] && adb-remove-bloat "$@"

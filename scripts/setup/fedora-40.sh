@@ -3,8 +3,8 @@
 readonly DIR=$(dirname -- "$BASH_SOURCE")
 readonly DEBUG_SETUP_ON="yes"
 
-[[ -f "$DIR/common-utils.sh" ]] || ( echo "$DIR/common-utils.sh doesn't exist! exiting..." && exit 2 )
-source "$DIR/common-utils.sh"
+[[ -f "$DIR/lib-commons" ]] || ( echo "$DIR/lib-commons doesn't exist! exiting..." && exit 2 )
+source "$DIR/lib-commons"
 
 install-gnome-essentials () (
     echo-status "-------------------INSTALLING GNOME----------------"
@@ -246,82 +246,6 @@ install-dev-tools () (
     flatpak-install "net.werwolv.ImHex"
 
     echo-success "Done."
-)
-
-install-zed-text-editor () (
-    echo-status "-------------------INSTALLING ZED EDITOR----------------"
-    echo-status "downloading zed to /tmp/zed-install/zed-linux-x86_64.tar.gz"
-
-    # step 1 extract & move to /opt/zed.app
-    mkdir "/tmp/zed-install"
-    curl -L "https://zed.dev/api/releases/stable/latest/zed-linux-x86_64.tar.gz" --output "/tmp/zed-install/zed-linux-x86_64.tar.gz"
-    tar xf "/tmp/zed-install/zed-linux-x86_64.tar.gz" --directory=/opt
-    rm -rf "/tmp/zed-install"  # remove tmp dir, unneeded
-    echo-status "extracted zed to /opt/zed.app"
-
-    chmod -R 755 "/opt/zed.app"
-    chown -R root:root "/opt/zed.app"
-    # step 2. link binary to sbin
-    ln -sf "/opt/zed.app/bin/zed" "/usr/local/bin/zed"
-    # step 3. place & replace zed.app/share in /usr/
-    chmod -R 644 "/opt/zed.app/share"
-    chown -R root:root "/opt/zed.app/share"
-    cp -f "/opt/zed.app/share/applications/zed.desktop" "/usr/share/applications/zed.desktop"
-    cp -f "/opt/zed.app/share/icons/hicolor/512x512/apps/zed.png" "/usr/share/icons/zed.png"
-
-    echo-success "Done."
-)
-
-install-sublime-text-editor () (
-    echo-status "-------------------INSTALLING SUBLIME TEXT----------------"
-
-    rpm -v --import https://download.sublimetext.com/sublimehq-rpm-pub.gpg
-    dnf config-manager addrepo --from-repofile="https://download.sublimetext.com/rpm/stable/x86_64/sublime-text.repo"
-    dnf-install sublime-text
-
-    echo-success "Done."
-)
-
-install-visual-studio-code () (
-    echo-status "-------------------INSTALLING VISUAL STUDIO CODE----------------"
-    # instructions taken from here (official site)
-    #  https://code.visualstudio.com/docs/setup/linux#_rhel-fedora-and-centos-based-distributions
-    rpm --import https://packages.microsoft.com/keys/microsoft.asc
-    (cat <<-VSC_END
-[code]
-name=Visual Studio Code
-baseurl=https://packages.microsoft.com/yumrepos/vscode
-enabled=1
-gpgcheck=1
-gpgkey=https://packages.microsoft.com/keys/microsoft.asc
-VSC_END
-    ) > /etc/yum.repos.d/vscode.repo
-    dnf check-update
-    dnf-install code
-
-    echo-success "Done."
-)
-
-install-jetbrains-toolbox () (
-    # dependencies, described here
-    #  https://github.com/nagygergo/jetbrains-toolbox-install
-    echo-status "-------------------INSTALLING JETBRAINS TOOLBOX----------------"
-    dnf-install "fuse" "libXtst" "libXrender" "glx-utils" "fontconfig-devel" "gtk3" "tar"
-
-    readonly ARCHIVE_URL=$(curl -s 'https://data.services.jetbrains.com/products/releases?code=TBA&latest=true&type=release' | grep -Po '"linux":.*?[^\\]",' | awk -F ':' '{print $3,":"$4}'| sed 's/[", ]//g')
-    mkdir "/tmp/jetbrains-install"
-    wget -cO "/tmp/jetbrains-install/jetbrains-toolbox.tar.gz" "$ARCHIVE_URL"
-
-    echo-debug "Extracting jetbrains-toolbox to /tmp/jetbrains-install ..."
-    tar -xzf "/tmp/jetbrains-install/jetbrains-toolbox.tar.gz" -C "/opt/jetbrains-toolbox" --strip-components=1
-    rm -f "/tmp/jetbrains-install/jetbrains-toolbox.tar.gz"
-
-    echo-debug "Linking /opt/jetbrains-toolbox to /usr/local/bin ..."
-    chmod 755 "/opt/jetbrains-toolbox"
-    chown root:root "/opt/jetbrains-toolbox"
-    ln -sf "/opt/jetbrains-toolbox" "/usr/local/bin/jetbrains-toolbox"
-    rm "/tmp/jetbrains-install"  # remove tmp dir, not needed anymore
-    echo-status "Done."
 )
 
 configure-system-defaults () (
@@ -812,7 +736,7 @@ ask-user 'Do you want to install zeno/scrcpy?' && INSTALL_SCRCPY="yes"
 
 #######################################################################################################
 
-dnf5-remove "$UNINSTALLABLE_BLOAT"
+dnf-remove "$UNINSTALLABLE_BLOAT"
 
 install-universal-necessities
 install-media-codecs
@@ -832,13 +756,13 @@ configure-ssh-defaults
 [[ -n "$INSTALL_VIRTUALIZATION" ]] && install-virtualization-packages
 [[ -n "$INSTALL_GAMING" ]] && install-gaming-packages
 [[ -n "$INSTALL_DEV_TOOLS" ]] && install-dev-tools
-[[ -n "$INSTALL_JETBRAINS" ]] && install-jetbrains-toolbox
-[[ -n "$INSTALL_VSC" ]] && install-visual-studio-code
-[[ -n "$INSTALL_ZED" ]] && install-zed-text-editor
-[[ -n "$INSTALL_SUBLIME" ]] && install-sublime-text-editor
-[[ -n "$INSTALL_ZED" ]] && dnf5-remove "gnome-text-editor" "gedit"
-[[ -n "$INSTALL_VSC" ]] && dnf5-remove "gnome-text-editor" "gedit"
-[[ -n "$INSTALL_SUBLIME" ]] && dnf5-remove "gnome-text-editor" "gedit"
+[[ -n "$INSTALL_JETBRAINS" ]] && "$DIR/install/install-jetbrains-toolbox"
+[[ -n "$INSTALL_VSC" ]] && "$DIR/install/install-visual-studio-code"
+[[ -n "$INSTALL_ZED" ]] && "$DIR/install/install-zed-text-editor"
+[[ -n "$INSTALL_SUBLIME" ]] && "$DIR/install/install-sublime-text-editor"
+[[ -n "$INSTALL_ZED" ]] && dnf-remove "gnome-text-editor" "gedit"
+[[ -n "$INSTALL_VSC" ]] && dnf-remove "gnome-text-editor" "gedit"
+[[ -n "$INSTALL_SUBLIME" ]] && dnf-remove "gnome-text-editor" "gedit"
 
 if [[ -n "$INSTALL_SCRCPY" ]]; then
     echo-status "Installing zeno/scrcpy ..."
@@ -889,7 +813,7 @@ if is-gnome-session; then
     # user gsettings using heredocs
     # https://tldp.org/LDP/abs/html/here-docs.html
     sudo --preserve-env="XDG_RUNTIME_DIR" --preserve-env="XDG_DATA_DIRS" --preserve-env="DBUS_SESSION_BUS_ADDRESS" -u "$REAL_USER" bash <<-GSETTINGS_DELIMITER
-source "$(dirname -- "$BASH_SOURCE")/common-utils.sh"
+source "$(dirname -- "$BASH_SOURCE")/lib-commons"
 
 # theme settings
 gsettings set org.gnome.desktop.interface cursor-theme 'Adwaita'

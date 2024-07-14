@@ -2,10 +2,10 @@
 
 readonly DIR=$(dirname -- "$BASH_SOURCE")
 
-[[ -f "$DIR/common-utils.sh" ]] || ( echo "$DIR/common-utils.sh doesn't exist! exiting..." && exit 2 ) 
-source "$DIR/common-utils.sh"
+[[ -f "$DIR/lib-commons" ]] || ( echo "$DIR/lib-commons doesn't exist! exiting..." && exit 2 )
+source "$DIR/lib-commons"
 
-# DEPENDENCIES FOR THE CURRENT SCRIPT 
+# DEPENDENCIES FOR THE CURRENT SCRIPT
 dnf-install flatpak curl plocate pciutils udisks2
 
 install-gnome-essentials () (
@@ -14,17 +14,17 @@ install-gnome-essentials () (
     dnf-install "f$(rpm -E %fedora)-backgrounds-gnome"
     # gnome currently supports X11; when xorg is dropped by GNOME, this will need to be removed
     dnf-group-install base-x
-    
+
     dnf-install "$INSTALLABLE_GNOME_ESSENTIAL_PACKAGES"
     dnf-install "$INSTALLABLE_GNOME_APPLICATION_PACKAGES"
     dnf-install "$INSTALLABLE_ADWAITA_PACKAGES" "$INSTALLABLE_GNOME_EXTENSIONS"
     flatpak-install "$INSTALLABLE_GNOME_FLATPAKS"
-    
+
     try-enabling-power-profiles-daemon
-    
+
     systemctl enable gdm
     configure-gdm-dconf
-    
+
     echo-success "Done."
 )
 
@@ -34,14 +34,14 @@ install-cinnamon-essentials () (
     dnf-install "f$(rpm -E %fedora)-backgrounds-gnome"
     # cinnamon is currently X11 only; when xorg is dropped by Cinnamon, this will need to be removed
     dnf-group-install base-x
-    
+
     dnf-install "$INSTALLABLE_CINNAMON_ESSENTIAL_PACKAGES"
     dnf-install "$INSTALLABLE_CINNAMON_APPLICATION_PACKAGES"
     dnf-install "$INSTALLABLE_CINNAMON_EXTENSIONS"
     flatpak-install "$INSTALLABLE_CINNAMON_FLATPAKS"
 
     try-enabling-power-profiles-daemon
-    
+
     systemctl enable lightdm
 
     echo-success "Done."
@@ -60,9 +60,9 @@ install-universal-necessities () (
     echo-status "-------------------INSTALLING ESSENTIAL PACKAGES----------------"
     dnf-install "$INSTALLABLE_ESSENTIAL_PACKAGES"
     dnf-install "$INSTALLABLE_PIPEWIRE_PACKAGES"
-    
+
     dnf-group-install-with-optional "hardware-support" "networkmanager-submodules" "printing"
-    
+
     dnf-install "$INSTALLABLE_APPLICATION_PACKAGES"
     flatpak-install "$INSTALLABLE_FLATPAKS"
 
@@ -70,7 +70,7 @@ install-universal-necessities () (
         echo-status "Found BTRFS, installing tools..."
         dnf-install "$INSTALLABLE_BTRFS_TOOLS"
     fi
-    
+
     # https://github.com/flameshot-org/flameshot/issues/3326#issuecomment-1855332738
     (cat <<GDM_END
 #!/bin/bash
@@ -80,7 +80,7 @@ GDM_END
     chmod a+x "/usr/local/bin/flameshot-gui-workaround"
     flameshot config -m white
     echo-debug "Configured flameshot."
-    
+
     (cat <<GR_END
 #!/bin/sh
 set -e
@@ -96,27 +96,27 @@ GR_END
 
 optimize-hardware () (
     echo-status "-------------------OPTIMIZING HARDWARE----------------"
-    
+
     if is-uefi; then
         echo-status "Updating UEFI with fwupdmgr..."
         fwupdmgr refresh --force -y
         fwupdmgr get-updates -y
         fwupdmgr update -y
     fi
-    
+
     if is-desktop-type; then
         echo-status "Disabling mobile-gpu specific service (https://forums.developer.nvidia.com/t/no-matching-gpu-found-with-510-47-03/202315/5)"
         systemctl disable nvidia-powerd.service
         return
     fi
-    
+
     echo-success "Done."
 )
 
 optimize-laptop-battery () (
     # if we're on anything but a mobile device, gtfo
     ! is-mobile-type && return 0
-    
+
     echo-status "-------------------OPTIMIZING LAPTOP BATTERY----------------"
     echo-status "Found mobile device type"
     # s3 sleep
@@ -129,13 +129,13 @@ optimize-laptop-battery () (
 
 install-proprietary-nvidia-drivers () (
     # install nvidia drivers if we have an NVIDIA card
-    if ! is-nvidia-gpu; then return; fi 
-    
+    if ! is-nvidia-gpu; then return; fi
+
     readonly NVIDIA_GPU="$(get-nvidia-gpu-model)"
-    
+
     echo-status "-------------------INSTALLING NVIDIA DRIVERS----------------"
     echo-status "Found $NVIDIA_GPU running with nouveau drivers!"
-    
+
     if is-uefi && [[ $(mokutil --sb-state 2> /dev/null) ]]; then
         # https://blog.monosoul.dev/2022/05/17/automatically-sign-nvidia-kernel-module-in-fedora-36/
         # https://github.com/NVIDIA/yum-packaging-precompiled-kmod/blob/main/UEFI.md
@@ -147,11 +147,11 @@ install-proprietary-nvidia-drivers () (
         # FIXME needs checking that this actually works.
         if ask-user 'Do you want to enroll MOK and restart afterwards?'; then
             echo-important "Make sure you enroll MOK when you restart."
-            
+
             echo-status "Signing GPU drivers..."
             kmodgenca -a
             mokutil --import /etc/pki/akmods/certs/public_key.der
-            
+
             echo-important "Finished signing GPU drivers."
             systemctl reboot
         fi
@@ -206,7 +206,7 @@ install-virtualization-packages () (
 
 install-dev-tools () (
     echo-status "-------------------INSTALLING DEV TOOLS----------------"
-    
+
     dnf-group-install-with-optional "C Development Tools and Libraries" "Development Tools"
     dnf-install "$INSTALLABLE_DEV_PKGS"
 
@@ -215,7 +215,7 @@ install-dev-tools () (
 
 install-sublime-text-editor () (
     echo-status "-------------------INSTALLING SUBLIME TEXT----------------"
-    
+
     rpm -v --import https://download.sublimetext.com/sublimehq-rpm-pub.gpg
     dnf config-manager --add-repo https://download.sublimetext.com/rpm/stable/x86_64/sublime-text.repo
     dnf-install sublime-text
@@ -267,7 +267,7 @@ install-jetbrains-toolbox () (
     user_choice=$(ask-user-multiple-questions "continue installing everything else (recommended)" "exit")
     [[ $user_choice -eq 0 ]] && return
     [[ $user_choice -eq 1 ]] && exit 2
-    
+
     echo-unexpected "This statement should never execute!"
     exit 1
 )
@@ -292,7 +292,7 @@ create-swapfile () (
     # if we haven't created /swapfile, go ahead, otherwise get out
     [[ -n $(cat /etc/fstab | grep "/swapfile swap swap defaults 0 0") ]] && return
     [[ -n $(cat /etc/fstab | grep "/swapfile none swap defaults 0 0") ]] && return
-    
+
     echo-status "-------------------CREATING /swapfile----------------"
     # btrfs specific no copy-on-write
     # https://unix.stackexchange.com/questions/599949/swapfile-swapon-invalid-argument
@@ -300,46 +300,46 @@ create-swapfile () (
         truncate -s 0 /swapfile
         chattr +C /swapfile
     fi
-    
-    kbs=$(cat /proc/meminfo | grep MemTotal | grep -E -o "[0-9]+") 
+
+    kbs=$(cat /proc/meminfo | grep MemTotal | grep -E -o "[0-9]+")
     dd if=/dev/zero of=/swapfile bs=1KB count=$kbs
-    chmod 600 /swapfile 
-    chown root /swapfile 
+    chmod 600 /swapfile
+    chown root /swapfile
     mkswap /swapfile
     swapon /swapfile
-    
+
     # btrfs specific fstab entry
     if is-btrfs-rootfs; then
         echo "/swapfile none swap defaults 0 0" >> /etc/fstab
         return
     fi
     echo "/swapfile swap swap defaults 0 0" >> /etc/fstab
-    
+
     echo-success "Done."
 )
 
 modify-grub () (
     # if we haven't modified GRUB already, go ahead, otherwise get out
     readonly DEFAULT_GRUB_CFG="/etc/default/grub"
-    [[ -n $(cat $DEFAULT_GRUB_CFG | grep "GRUB_HIDDEN_TIMEOUT") ]] && return 
-    
+    [[ -n $(cat $DEFAULT_GRUB_CFG | grep "GRUB_HIDDEN_TIMEOUT") ]] && return
+
     echo-status "-------------------MODIFYING GRUB----------------"
     dnf-install "hwinfo"
-    out="$(sed -r 's/GRUB_TERMINAL_OUTPUT=.+/GRUB_TERMINAL_OUTPUT="gfxterm"/' < $DEFAULT_GRUB_CFG)" 
+    out="$(sed -r 's/GRUB_TERMINAL_OUTPUT=.+/GRUB_TERMINAL_OUTPUT="gfxterm"/' < $DEFAULT_GRUB_CFG)"
     echo "$out" | dd of="$DEFAULT_GRUB_CFG"
-    
+
     echo 'GRUB_HIDDEN_TIMEOUT=0' >> /etc/default/grub
     echo 'GRUB_HIDDEN_TIMEOUT_QUIET=true' >> /etc/default/grub
     echo 'GRUB_GFXPAYLOAD_LINUX=keep' >> /etc/default/grub
     top_res="$(hwinfo --framebuffer | tail -n 2 | grep -E -o '[0-9]{3,4}x[0-9]{3,4}')"
     top_dep="$(hwinfo --framebuffer | tail -n 2 | grep Mode | grep -E -o ', [0-9]{2} bits' | grep -E -o '[0-9]{2}')"
     echo "GRUB_GFXMODE=$top_res x $top_dep" | tr -d ' ' >> /etc/default/grub
-    
+
     echo "GRUB_DISABLE_OS_PROBER=false" >> /etc/default/grub
 
     readonly GRUB_OUT_LOCATION="$(locate grub.cfg | grep /boot | head -n 1)"
     [[ -n $GRUB_OUT_LOCATION ]] && grub2-mkconfig --output="$GRUB_OUT_LOCATION"
-    
+
     echo-success "Done."
 )
 
@@ -359,14 +359,14 @@ tweak-minor-details () (
     echo-debug "Disabled NetworkManager-wait-online.service"
     # if GNOME, stop Software from autostarting & updating in the background, no reason
     is-gnome-session && rm /etc/xdg/autostart/org.gnome.Software.desktop 2> /dev/null
-    
+
     echo-success "Done."
 )
 
 configure-ssh-defaults () (
     # if the directory already exists, abandon
     [[ -d "$REAL_USER_HOME/.ssh" ]] && return
-    
+
     echo-status "-------------------GENERATING SSH KEY----------------"
     mkdir -p "$REAL_USER_HOME/.ssh"
     ssh-keygen -q -t ed25519 -N '' -C "$REAL_USER@$DISTRIBUTION_NAME" -f "$REAL_USER_HOME/.ssh/id_ed25519" -P "" <<< $'\ny' >/dev/null 2>&1
@@ -377,7 +377,7 @@ configure-ssh-defaults () (
     echo-success "Done."
 )
 
-####################################################################################################### 
+#######################################################################################################
 
 readonly DISTRIBUTION_NAME="fedora$(rpm -E %fedora)"
 
@@ -708,10 +708,10 @@ if [[ -z $XDG_CURRENT_DESKTOP ]]; then
     choice=$(ask-user-multiple-choice "${dei[@]}" )
     # run installer ...
     ${dei[$choice]}
-    
+
     echo-important "Making sure we're booting into a DE next time we boot..."
     systemctl set-default graphical.target
-    
+
     systemctl reboot
 fi
 
@@ -794,7 +794,7 @@ for part in "${parts[@]}"; do
     part_size=$(( $(cat /sys/class/block/$part_name/size)/2097152 ))
     # if it's a really small partition, it's probably something like a uefi/bootmenu partition, skip it
     [[ $part_size -lt 2 ]] && continue
-    
+
     echo-important "Found PARTITION $part with SIZE $part_size GB"
     echo-important "Mount with mount --mkdir $part $REAL_USER_HOME/MOUNTPOINT"
     echo-important "FOR REGULAR PARTITIONS add $part to fstab as: "
@@ -815,12 +815,12 @@ if is-gnome-session; then
     echo-important "Personalizing GNOME session..."
     echo-important "Make sure to get the legacy GTK3 Theme Auto Switcher"
     echo-important "https://extensions.gnome.org/extension/4998/legacy-gtk3-theme-scheme-auto-switcher/"
-    
+
     echo-status "Configuring all gsettings for $REAL_USER . . ."
     # user gsettings using heredocs
     # https://tldp.org/LDP/abs/html/here-docs.html
     sudo --preserve-env="XDG_RUNTIME_DIR" --preserve-env="XDG_DATA_DIRS" --preserve-env="DBUS_SESSION_BUS_ADDRESS" -u "$REAL_USER" bash <<-GSETTINGS_DELIMITER
-source "$(dirname -- "$BASH_SOURCE")/common-utils.sh"
+source "$(dirname -- "$BASH_SOURCE")/lib-commons"
 gsettings set org.gnome.shell enabled-extensions "['places-menu@gnome-shell-extensions.gcampax.github.com', 'appindicatorsupport@rgcjonas.gmail.com', 'dash-to-panel@jderose9.github.com', 'forge@jmmaranan.com', 'caffeine@patapon.info']"
 gsettings set org.gnome.settings-daemon.plugins.media-keys custom-keybindings '[]'
 add-gsettings-shortcut "resource-monitor" "/usr/bin/flatpak run --branch=stable --arch=x86_64 --command=resources net.nokyan.Resources" "<Shift><Control>Escape"

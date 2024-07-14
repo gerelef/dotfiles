@@ -1,3 +1,5 @@
+#!/usr/bin/env bash
+
 # check if this file is being executed directly & if it is, die
 if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then
     tput setaf 1
@@ -37,23 +39,23 @@ add-gsettings-shortcut () (
     # $1 is the name
     # $2 is the command
     # $3 is the bind, in <Modifier>Key format
-    
+
     custom_keybinds_enum="$(gsettings get org.gnome.settings-daemon.plugins.media-keys custom-keybindings | sed -e "s/@as//" | tr "'" "\"")"
     custom_keybinds_length="$(echo "$custom_keybinds_enum"  | jq ". | length")"
-    
+
     keybind_version="custom$custom_keybinds_length"
     new_keybind_enumerator="/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/$keybind_version/"
-    
+
     new_custom_keybinds_enum="$(echo "$custom_keybinds_enum" | jq -c ". += [\"$new_keybind_enumerator\"]" | tr '"' "'")"
     new_keybind_name=( "org.gnome.settings-daemon.plugins.media-keys.custom-keybinding:/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/$keybind_version/" "name" "$1" )
     new_keybind_command=( "org.gnome.settings-daemon.plugins.media-keys.custom-keybinding:/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/$keybind_version/" "command" "$2" )
     new_keybind_bind=( "org.gnome.settings-daemon.plugins.media-keys.custom-keybinding:/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/$keybind_version/" "binding" "$3" )
-    
+
     gsettings set "org.gnome.settings-daemon.plugins.media-keys" "custom-keybindings" "$new_custom_keybinds_enum"
     gsettings set "${new_keybind_name[@]}"
     gsettings set "${new_keybind_command[@]}"
     gsettings set "${new_keybind_bind[@]}"
-    
+
     #gsettings set org.gnome.settings-daemon.plugins.media-keys custom-keybindings "[<altered_list>]"
     #gsettings set org.gnome.settings-daemon.plugins.media-keys.custom-keybinding:/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom0/ name '<newname>'
     #gsettings set org.gnome.settings-daemon.plugins.media-keys.custom-keybinding:/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom0/ command '<newcommand>'
@@ -62,7 +64,7 @@ add-gsettings-shortcut () (
 
 dnf-install () (
     [[ $# -eq 0 ]] && return 2
-    
+
     echo-status "-------------------DNF-INSTALL----------------"
     while : ; do
         dnf install -y --best --allowerasing $@ && break
@@ -73,39 +75,39 @@ dnf-install () (
 dnf-group-install () (
     echo-status "-------------------DNF-GROUP-INSTALL----------------"
     for g in "$@"; do
-        while :; do 
+        while :; do
             dnf group install -y --best --allowerasing "$g" && break
-        done 
+        done
     done
     echo-success "Finished group-installing."
 )
 
 dnf-group-install-with-optional () (
     [[ $# -eq 0 ]] && return 2
-    
+
     echo-status "-------------------DNF-GROUP-INSTALL-WITH-OPTIONAL----------------"
     for g in "$@"; do
-        while :; do 
+        while :; do
             dnf group install -y --best --allowerasing --with-optional "$g" && break
-        done 
+        done
     done
     echo-success "Finished group-installing."
 )
 
 dnf-group-update () (
     [[ $# -eq 0 ]] && return 2
-    
+
     echo-status "-------------------DNF-GROUP-UPDATE----------------"
-    while :; do 
+    while :; do
         dnf group update -y --best --allowerasing $@ && break
-    done 
+    done
     echo-success "Finished group-updating."
 )
 
 dnf-update-refresh () (
     echo-status "-------------------DNF-UPDATE----------------"
     while : ; do
-        dnf update -y 
+        dnf update -y
         dnf upgrade -y --refresh && break
     done
     echo-success "Finished updating."
@@ -113,24 +115,17 @@ dnf-update-refresh () (
 
 dnf-remove () (
     [[ $# -eq 0 ]] && return 2
-    
-    echo-status "-------------------DNF-REMOVE----------------"
-    dnf remove -y --skip-broken $@
-    echo-success "Finished removing."
-)
 
-dnf5-remove () (
-    [[ $# -eq 0 ]] && return 2
-    
     echo-status "-------------------DNF-REMOVE----------------"
-    dnf remove -y $@
+    [[ -n "$(command -v dnf5)" ]] && SKIP_BROKEN="--skip-broken"
+    dnf remove -y $SKIP_BROKEN $@
     echo-success "Finished removing."
 )
 
 flatpak-install () (
     [[ $# -eq 0 ]] && return 2
     [[ -z "$REAL_USER" ]] && return 2
-    
+
     echo-status "-------------------FLATPAK-INSTALL-SYSTEM----------------"
     while : ; do
         su - "$REAL_USER" -c "flatpak install --system --noninteractive -y $@" && break
@@ -142,21 +137,21 @@ configure-residual-permissions () (
     echo-status "-------------------CHANGING ROOT OWNERSHIP AND GROUPS IN HOME----------------"
     chown "$REAL_USER" "$REAL_USER_HOME"
     chgrp "$REAL_USER" "$REAL_USER_HOME"
-    
+
     # everything in home should be owned by the user and in the user's group
     # this filter finds which f
     find "$REAL_USER_HOME" -user root -print0 2> /dev/null | while read -d $'\0' file; do
         echo-debug "chown chgrp $file"
-        
+
         chown "$REAL_USER" "$file"
         chgrp "$REAL_USER" "$file"
     done
-    
+
     echo-success "Done."
 )
 
 copy-dnf () (
-    (cat <<-DNF_EOF 
+    (cat <<-DNF_EOF
 [main]
 gpgcheck=1
 installonly_limit=5
@@ -185,8 +180,8 @@ try-enabling-power-profiles-daemon () (
 # man 5 sysctl.d
 #    CONFIGURATION DIRECTORIES AND PRECEDENCE
 #    ...
-#    All configuration files are sorted by their filename in lexicographic order, regardless of which of the directories they reside in. 
-#    If multiple files specify the same option, the entry in the file with the lexicographically latest name will take precedence. 
+#    All configuration files are sorted by their filename in lexicographic order, regardless of which of the directories they reside in.
+#    If multiple files specify the same option, the entry in the file with the lexicographically latest name will take precedence.
 #    It is recommended to prefix all filenames with a two-digit number and a dash, to simplify the ordering of the files.
 
 lower-swappiness () (
@@ -207,7 +202,7 @@ raise-memory-map-counts () (
 
 cap-nproc-count () (
     [[ -z "$REAL_USER" ]] && return 0;
-    
+
     echo "$REAL_USER hard nproc 10000" > "/etc/security/limits.d/90-nproc.conf"
 )
 
@@ -217,7 +212,7 @@ cap-max-logins-system () (
 
 create-convenience-sudoers () (
     readonly fname="/etc/sudoers.d/convenience-defaults"
-    
+
     echo "Defaults timestamp_timeout=120, pwfeedback" > "$fname"
     chmod 440 "$fname" # 440 is the default rights of /etc/sudoers file, so we're copying the rights just in case (even though visudo -f /etc/sudoers.d/test creates the file with 640)
 )
@@ -233,16 +228,16 @@ echo-important () (
     tput bold
     echo "[IMPORTANT] [$(date +"%H:%M:%S")] $@"
     tput sgr0
-    
+
     echo "[IMPORTANT] $@" | systemd-cat --identifier="setup.sh" --priority="notice"
 )
 
 echo-success () (
-    tput setaf 2 # green 
+    tput setaf 2 # green
     tput bold
     echo "[SUCCESS] [$(date +"%H:%M:%S")] $@"
     tput sgr0
-    
+
     echo "[SUCCESS] $@" | systemd-cat --identifier="setup.sh" --priority="notice"
 )
 
@@ -251,7 +246,7 @@ echo-status () (
     tput setaf 6 # cyan
     echo "[STATUS] [$(date +"%H:%M:%S")] $@"
     tput sgr0
-    
+
     echo "[STATUS] $@" | systemd-cat --identifier="setup.sh" --priority="notice"
 )
 
@@ -260,7 +255,7 @@ echo-unexpected () (
     tput bold
     echo "[UNEXPECTED] [$(date +"%H:%M:%S")] $@"
     tput sgr0
-    
+
     echo "[UNEXPECTED] $@" | systemd-cat --identifier="setup.sh" --priority="err"
 )
 
@@ -269,12 +264,12 @@ echo-debug () (
     tput setaf 5
     echo "[DEBUG] [$(date +"%H:%M:%S")] $@"
     tput sgr0
-    
-    echo "[DEBUG] $@" | systemd-cat --identifier="setup.sh" --priority="notice" 
+
+    echo "[DEBUG] $@" | systemd-cat --identifier="setup.sh" --priority="notice"
 )
 
 # do NOT use this for anything else other than echoing from a call whose stdout is meant to be caught!
-# use echo-debug for debug information, and echo-important and friends for everything else 
+# use echo-debug for debug information, and echo-important and friends for everything else
 # https://stackoverflow.com/questions/2990414/echo-that-outputs-to-stderr
 _echo-stderr () (
     echo "$@" 1>&2
@@ -293,21 +288,21 @@ ask-user () (
 ask-user-multiple-choice () (
     # $1 onwards should be the options users have in detail
     # output is in stdout, so we need to capture that;
-    #  unfortunately, (one of) the only sane way(s) to still output 
+    #  unfortunately, (one of) the only sane way(s) to still output
     #  while capturing stdout, is to output to stderr
     readonly args=($@)
     readonly range="[0-$(($#-1))]"
-    
+
     while : ; do
         i=0
         for option in "$@"; do
-            _echo-stderr "$((i++)). $option" 
+            _echo-stderr "$((i++)). $option"
         done
         read -p "Choice $range: " -r
         if [[ $REPLY =~ ^[0-9][0-9]*$ && $REPLY -lt $# ]]; then
             _echo-stderr ""
             if ! ask-user "Are you sure you want to pick \"${args[$REPLY]}\"?"; then continue; fi
-            
+
             echo "$REPLY"
             return
         fi
