@@ -21,32 +21,38 @@ scripts/
 !!scripts/.nanorc
 !!scripts/.gitconfig
 
-[if-pkg:::lsd]
-    // if lsd is installed, link lsd configuration
-    !!.config/config.yaml
-[end]
-
 [if-pkg:::delta]
     !!scripts/.gitconfig-gitdelta
 [end]
 
-[if-not-pkg::fish]
-    // if fish is not installed, DO NOT link fish-based alacritty configuration
-    //  if fish doesn't exist, it'll cause the shell to never boot
-    .config/alacritty.toml
+[if-pkg:::lsd]
+    !!.config/config.yaml
 [end]
 
-// link only in default profile
+// if fish is not installed, DO NOT link fish-based alacritty configuration
+//  if fish doesn't exist, it'll cause alacritty to never boot
+.config/alacritty.toml
+[if-pkg:::fish]
+    !!.config/alacritty.toml
+[end]
+
 .config/zed/
+[if-pkg:::zed]
+    !!.config/zed/*
+[end]
+
 .config/sublime-text/
-.config/mozilla/*
-.config/pipewire.conf
+[if-pkg:::sublime-text]
+    !!.config/sublime-text/*
+[end]
+
 .config/config
+.config/pipewire.conf
+.config/mozilla/
+// link only in default profile
 [if-profile:::default]
     !!.config/mozilla/user.js
     !!.config/pipewire.conf
-    !!.config/sublime-text/*
-    !!.config/zed/*
 
     // ssh config
     !!.config/config
