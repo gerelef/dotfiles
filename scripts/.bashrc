@@ -32,37 +32,22 @@ bind "set show-all-if-ambiguous on"
 # PROMPT
 
 # https://www.ditig.com/256-colors-cheat-sheet
-readonly __GREEN="34m"
-readonly __LIGHT_BLUE="39m"
-readonly __PALE_GREEN="42m"
-readonly __RED="124m"
-readonly __BROWN="138m"
-readonly __LIGHT_MAGENTA="163m"
-readonly __ORANGE="172m"
-readonly __YELLOW="178m"
-readonly __LIGHT_RED="196m"
-
-readonly __PREFIX="\033["
-readonly __FOREGROUND="38;"
-readonly __BACKGROUND="48;"
 # https://man7.org/linux/man-pages/man4/console_codes.4.html
-readonly __INFIX="5;"
-readonly __PFI="$__PREFIX$__FOREGROUND$__INFIX"
-readonly __PBI="$__PREFIX$__BACKGROUND$__INFIX"
-
+# foreground prefix is "\033[38;5;"
 readonly _NOCOLOUR="\033[0m"
 readonly _BOLD="\033[1m"
 readonly _UNDERLINE="\033[4m"
 readonly _BLINK="\033[5m"
-readonly _FLBLUE="$__PFI$__LIGHT_BLUE"
-readonly _FGREEN="$__PFI$__GREEN"
-readonly _FPGREEN="$__PFI$__PALE_GREEN"
-readonly _FLMAGENTA="$__PFI$__LIGHT_MAGENTA"
-readonly _FYELLOW="$__PFI$__YELLOW"
-readonly _FRED="$__PFI$__RED"
-readonly _FLRED="$__PFI$__LIGHT_RED"
-readonly _FBROWN="$__PFI$__BROWN"
-readonly _FORANGE="$__PFI$__ORANGE"
+readonly _FLBLUE="\033[38;5;39m"
+readonly _FGREEN="\033[38;5;34m"
+readonly _FPGREEN="\033[38;5;42m"
+readonly _FLMAGENTA="\033[38;5;163m"
+readonly _FYELLOW="\033[38;5;178m"
+readonly _FRED="\033[38;5;124m"
+readonly _FLRED="\033[38;5;196m"
+readonly _FBROWN="\033[38;5;138m"
+readonly _FORANGE="\033[38;5;172m"
+# background prefix is "\033[48;5;"
 
 # get current git branch in arg or current
 _git-branch () (
