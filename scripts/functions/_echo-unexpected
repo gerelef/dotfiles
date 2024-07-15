@@ -1,0 +1,12 @@
+#!/usr/bin/env bash
+
+echo-unexpected () (
+    tput setaf 1 # red
+    tput bold
+    echo "[UNEXPECTED] [$(date +"%H:%M:%S")] $@"
+    tput sgr0
+
+    echo "[UNEXPECTED] $@" | systemd-cat --identifier="setup.sh" --priority="err"
+)
+
+[[ "${BASH_SOURCE[0]}" == "${0}" ]] && echo-unexpected "$@"

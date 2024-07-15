@@ -1,0 +1,9 @@
+#!/usr/bin env bash
+
+is-xcinnamon-session () (
+    echo-debug "is-xcinnamon-session $XDG_CURRENT_DESKTOP"
+    [[ $XDG_CURRENT_DESKTOP == "X-Cinnamon" ]] && return 0
+    return 1
+)
+
+[[ "${BASH_SOURCE[0]}" == "${0}" ]] && is-xcinnamon-session "$@"

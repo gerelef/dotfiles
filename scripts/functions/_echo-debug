@@ -1,0 +1,12 @@
+#!/usr/bin/env bash
+
+echo-debug () (
+    [[ -z "${DEBUG_SETUP_ON}" ]] && return
+    tput setaf 5
+    echo "[DEBUG] [$(date +"%H:%M:%S")] $@"
+    tput sgr0
+
+    echo "[DEBUG] $@" | systemd-cat --identifier="setup.sh" --priority="notice"
+)
+
+[[ "${BASH_SOURCE[0]}" == "${0}" ]] && echo-debug "$@"

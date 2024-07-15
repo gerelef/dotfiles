@@ -1,0 +1,9 @@
+#!/usr/bin env bash
+
+is-desktop-type () (
+    echo-debug "is-desktop-type $(dmidecode --string chassis-type)"
+    [[ "$(dmidecode --string chassis-type)" == "Desktop" ]] && return 0
+    return 1
+)
+
+[[ "${BASH_SOURCE[0]}" == "${0}" ]] && is-desktop-type "$@"

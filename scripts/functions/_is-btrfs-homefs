@@ -1,0 +1,10 @@
+#!/usr/bin env bash
+
+is-btrfs-homefs () (
+    home_fs=$(stat -f --format=%T "$(eval echo "~${SUDO_USER:-$(whoami)}")")
+    echo-debug "is-btrfs-homefs $home_fs"
+    [[ "btrfs" == $home_fs ]] && return 0
+    return 1
+)
+
+[[ "${BASH_SOURCE[0]}" == "${0}" ]] && is-btrfs-homefs "$@"

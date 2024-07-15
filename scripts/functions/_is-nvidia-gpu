@@ -1,0 +1,8 @@
+#!/usr/bin env bash
+
+is-nvidia-gpu () (
+    (lspci | grep -i vga | grep NVIDIA) && return 0
+    return 1
+)
+
+[[ "${BASH_SOURCE[0]}" == "${0}" ]] && is-nvidia-gpu "$@"

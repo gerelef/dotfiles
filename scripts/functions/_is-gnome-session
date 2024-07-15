@@ -1,0 +1,9 @@
+#!/usr/bin env bash
+
+is-gnome-session () (
+    echo-debug "is-gnome-session $XDG_CURRENT_DESKTOP"
+    [[ $XDG_CURRENT_DESKTOP == "GNOME" ]] && return 0
+    return 1
+)
+
+[[ "${BASH_SOURCE[0]}" == "${0}" ]] && is-gnome-session "$@"

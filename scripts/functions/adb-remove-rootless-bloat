@@ -1,5 +1,10 @@
 #!/usr/bin/env bash
 
+if [[ -z "$(command -v adb)" ]]; then
+    echo "Cannot run $(basename $0) without adb! Exiting..."
+    exit 1
+fi
+
 adb-remove-bloat () (
     # remove AppCloud, malware piece of backdoor shit
     sudo adb uninstall --user 0 com.aura.oobe.samsung.gl

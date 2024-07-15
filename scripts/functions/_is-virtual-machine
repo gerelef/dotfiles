@@ -1,0 +1,9 @@
+#!/usr/bin env bash
+
+is-virtual-machine () (
+    echo-debug "is-virtual-machine $(systemd-detect-virt)"
+    [[ $(systemd-detect-virt) != "none" ]] && return 0
+    return 1
+)
+
+[[ "${BASH_SOURCE[0]}" == "${0}" ]] && is-virtual-machine "$@"

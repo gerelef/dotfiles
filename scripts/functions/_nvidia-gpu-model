@@ -1,0 +1,8 @@
+#!/usr/bin env bash
+
+get-nvidia-gpu-model () (
+    readonly mdl="$(lspci | grep -i vga | grep NVIDIA | grep -E --only-matching "(\[.+\])" | tr -d '[]')"
+    echo "$mdl"
+)
+
+[[ "${BASH_SOURCE[0]}" == "${0}" ]] && get-nvidia-gpu-model "$@"

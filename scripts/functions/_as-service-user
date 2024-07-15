@@ -1,0 +1,10 @@
+#!/usr/bin/env bash
+
+as-service-user () (
+    # username and command must be given
+    echo "as-systemd-service-user $1 $2"
+    [[ $# != 2 ]] && exit 1
+    sudo machinectl shell "$1@" $(whereis bash | awk '{ printf $2 }') -c "$2"
+)
+
+[[ "${BASH_SOURCE[0]}" == "${0}" ]] && as-service-user "$@"

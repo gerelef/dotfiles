@@ -1,0 +1,10 @@
+#!/usr/bin env bash
+
+is-mobile-type () (
+    echo-debug "is-mobile-type $(dmidecode --string chassis-type)"
+    readonly CHASSIS_TYPE="$(dmidecode --string chassis-type)"
+    [[ $CHASSIS_TYPE == "Notebook" || $CHASSIS_TYPE == "Tablet" || $CHASSIS_TYPE == "Convertible" ]] && return 0
+    return 1
+)
+
+[[ "${BASH_SOURCE[0]}" == "${0}" ]] && is-mobile-type "$@"
