@@ -1,5 +1,7 @@
 #!/usr/bin env bash
 
+# HELP check if nvidia gpu is available
+
 is-nvidia-gpu () (
     (lspci | grep -i vga | grep NVIDIA) && return 0
     return 1

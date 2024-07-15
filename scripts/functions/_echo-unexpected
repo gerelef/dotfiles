@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+# HELP echo unexpected text
+
 echo-unexpected () (
     tput setaf 1 # red
     tput bold

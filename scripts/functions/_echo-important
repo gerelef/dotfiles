@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+# HELP echo important txt
+
 echo-important () (
     tput setaf 3 # yellow
     tput bold

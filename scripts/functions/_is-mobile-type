@@ -1,5 +1,7 @@
 #!/usr/bin env bash
 
+# HELP check if the computer running the script is a mobile type (e.g. laptop)
+
 is-mobile-type () (
     echo-debug "is-mobile-type $(dmidecode --string chassis-type)"
     readonly CHASSIS_TYPE="$(dmidecode --string chassis-type)"

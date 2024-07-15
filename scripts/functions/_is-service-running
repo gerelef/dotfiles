@@ -1,5 +1,7 @@
 #!/usr/bin env bash
 
+# HELP check if service $1 is running
+
 is-service-running () {
     echo-debug "is-service-running $1"
     [[ $# != 1 ]] && exit 1

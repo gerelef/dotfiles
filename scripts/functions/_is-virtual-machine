@@ -1,5 +1,7 @@
 #!/usr/bin env bash
 
+# HELP check if running under vm
+
 is-virtual-machine () (
     echo-debug "is-virtual-machine $(systemd-detect-virt)"
     [[ $(systemd-detect-virt) != "none" ]] && return 0

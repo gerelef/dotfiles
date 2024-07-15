@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+# HELP echo debug txt
+
 echo-debug () (
     [[ -z "${DEBUG_SETUP_ON}" ]] && return
     tput setaf 5

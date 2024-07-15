@@ -1,5 +1,7 @@
 #!/usr/bin env bash
 
+# HELP check if rootfs is btrfs
+
 is-btrfs-rootfs () (
     root_fs="$(stat -f --format=%T /)"
     echo-debug "is-btrfs-rootfs $root_fs"

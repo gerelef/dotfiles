@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+# HELP as-service-user <service-username> <commands...>; execute commands as a service user
+
 as-service-user () (
     # username and command must be given
     echo "as-systemd-service-user $1 $2"

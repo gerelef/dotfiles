@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+# HELP echo status text
+
 echo-status () (
     # echo for status updates
     tput setaf 6 # cyan

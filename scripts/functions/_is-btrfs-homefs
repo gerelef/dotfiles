@@ -1,5 +1,7 @@
 #!/usr/bin env bash
 
+# HELP check if homefs is btrfs
+
 is-btrfs-homefs () (
     home_fs=$(stat -f --format=%T "$(eval echo "~${SUDO_USER:-$(whoami)}")")
     echo-debug "is-btrfs-homefs $home_fs"

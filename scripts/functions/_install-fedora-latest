@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+# HELP install the latest personal fedora setup
+
 # USEFUL COMMAND: sudo dnf whatprovides COMMAND
 #  e.g. sudo dnf whatprovides nvidia-smi
 
@@ -762,12 +764,6 @@ sudo dnf install -y --best --allowerasing flatpak curl plocate pciutils udisks2 
 # change dnf4 to dnf5 (preview/unstable: is supposed to be shipped with fedora-41)
 update-alternatives --install /usr/bin/sudo dnf sudo dnf /usr/bin/dnf5 1
 sudo dnf install -y --best --allowerasing "dnf5-command(config-manager)"
-
-# ref: https://askubuntu.com/a/30157/8698
-if ! _is-root; then
-    _echo-unexpected "The script needs to be run as root." >&2
-    exit 2
-fi
 
 if ! ping -q -c 1 -W 1 google.com > /dev/null; then
     _echo-unexpected "Network connection was not detected."

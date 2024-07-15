@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+# HELP echo success text
+
 echo-success () (
     tput setaf 2 # green
     tput bold
