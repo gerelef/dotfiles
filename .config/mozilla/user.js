@@ -41,7 +41,7 @@ user_pref("browser.uitour.enabled", false);
 user_pref("browser.quitShortcut.disabled", true);
 
 // Disable Firefox VPN ff >= 108
-user_pref("browser.vpn_promo.enabled", true);
+user_pref("browser.vpn_promo.enabled", false);
 user_pref("browser.contentblocking.report.hide_vpn_banner", true);
 
 // PRIVACY
@@ -52,7 +52,9 @@ user_pref("extensions.pocket.enabled", false);
 user_pref("beacon.enabled", false);
 user_pref("browser.urlbar.speculativeConnect.enabled", false);
 user_pref("browser.urlbar.suggest.quicksuggest.sponsored", false);
+user_pref("browser.urlbar.groupLabels.enabled", false);
 user_pref("privacy.trackingprotection.enabled", true);
+user_pref("privacy.globalprivacycontrol.enabled", true);
 
 // everything below this line is found here:
 // https://github.com/pyllyukko/user.js/blob/relaxed/user.js
@@ -63,18 +65,19 @@ user_pref("dom.telephony.enabled", false);
 user_pref("media.webspeech.synth.enabled", false);
 user_pref("browser.send_pings.require_same_host", true);
 user_pref("dom.vr.enabled", false);
+user_pref("dom.private-attribution.submission.enabled", false);
 // enabled because of moovit
 //  user_pref("webgl.min_capability_mode", true);
 //  user_pref("webgl.disable-extensions", true);
 user_pref("webgl.enable-debug-renderer-info", false);
-user_pref("dom.maxHardwareConcurrency", 4);
+user_pref("dom.maxHardwareConcurrency", 8);
 user_pref("camera.control.face_detection.enabled", false);
 user_pref("intl.accept_languages", "en-US, en");
 user_pref("intl.locale.matchOS", false);
 user_pref("javascript.use_us_english_locale", true);
 user_pref("network.manage-offline-status", false);
 user_pref("general.buildID.override", "20100101");
-user_pref("browser.startup.homepage_override.buildID", "20100101"); 
+user_pref("browser.startup.homepage_override.buildID", "20100101");
 
 user_pref("security.dialog_enable_delay", 1000);
 
@@ -116,6 +119,7 @@ user_pref("browser.shell.checkDefaultBrowser", false);
 user_pref("network.stricttransportsecurity.preloadlist", true);
 user_pref("security.tls.version.min", 1);
 user_pref("security.tls.version.max", 4);
+user_pref("security.tls.enable_kyber", true);
 user_pref("security.pki.sha1_enforcement_level", 1);
 
 user_pref("security.ssl3.ecdh_ecdsa_rc4_128_sha", false);
