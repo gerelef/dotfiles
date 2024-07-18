@@ -182,13 +182,9 @@ create-convenience-sudoers () (
 
 install-gnome-essentials () (
     _echo-status "-------------------INSTALLING GNOME----------------"
-    sudo dnf install -y --best --allowerasing "$INSTALLABLE_ESSENTIAL_DESKTOP_PACKAGES"
 
+    sudo dnf install -y --best --allowerasing "$INSTALLABLE_ESSENTIAL_DESKTOP_PACKAGES"
     sudo dnf install -y --best --allowerasing "$INSTALLABLE_GNOME_ESSENTIAL_PACKAGES"
-    sudo dnf install -y --best --allowerasing "$INSTALLABLE_GNOME_APPLICATION_PACKAGES"
-    sudo dnf install -y --best --allowerasing "$INSTALLABLE_ADWAITA_PACKAGES" "$INSTALLABLE_GNOME_EXTENSIONS"
-    flatpak install --system --noninteractive -y "$INSTALLABLE_ADWAITA_FLATPAKS"
-    flatpak install --system --noninteractive -y "$INSTALLABLE_GNOME_FLATPAKS"
 
     try-enabling-power-profiles-daemon
 
@@ -213,21 +209,6 @@ install-gnome-essentials () (
     _echo-success "Done."
 )
 
-install-cinnamon-essentials () (
-    _echo-status "-------------------INSTALLING CINNAMON----------------"
-    sudo dnf install -y --best --allowerasing "$INSTALLABLE_ESSENTIAL_DESKTOP_PACKAGES"
-    # cinnamon is currently X11 only; when xorg is dropped by Cinnamon, this will need to be removed
-    dnf-group-install base-x
-
-    sudo dnf install -y --best --allowerasing "$INSTALLABLE_CINNAMON_ESSENTIAL_PACKAGES"
-    sudo dnf install -y --best --allowerasing "$INSTALLABLE_CINNAMON_APPLICATION_PACKAGES"
-
-    try-enabling-power-profiles-daemon
-
-    sudo systemctl enable lightdm
-
-    _echo-success "Done."
-)
 
 install-universal-necessities () (
     _echo-status "-------------------INSTALLING ESSENTIAL PACKAGES----------------"
@@ -799,14 +780,12 @@ if [[ -z $XDG_CURRENT_DESKTOP ]]; then
     sudo systemctl reboot
 fi
 
-if [[ -z $XDG_CURRENT_DESKTOP || -z $XDG_RUNTIME_DIR || -z $XDG_DATA_DIRS || -z $DBUS_SESSION_BUS_ADDRESS ]]; then
-    _echo-unexpected "The following environment variables must be set for this script to work:"
-    _echo-unexpected "\$XDG_CURRENT_DESKTOP ($XDG_CURRENT_DESKTOP), \$XDG_RUNTIME_DIR ($XDG_RUNTIME_DIR), \$XDG_DATA_DIRS ($XDG_DATA_DIRS), \$DBUS_SESSION_BUS_ADDRESS ($DBUS_SESSION_BUS_ADDRESS)"
-    _echo-unexpected "Check the shebang for more information on how to correctly run this script."
-    exit 2
-fi
+sudo dnf install -y --best --allowerasing "$INSTALLABLE_GNOME_APPLICATION_PACKAGES"
+sudo dnf install -y --best --allowerasing "$INSTALLABLE_ADWAITA_PACKAGES" "$INSTALLABLE_GNOME_EXTENSIONS"
+flatpak install --system --noninteractive -y "$INSTALLABLE_ADWAITA_FLATPAKS"
+flatpak install --system --noninteractive -y "$INSTALLABLE_GNOME_FLATPAKS"
 
-# we need this to be up-to-date for some commands
+# this needs to be up-to-date for some commands
 sudo updatedb 2> /dev/null
 if [[ ! $? -eq 0 ]]; then
     _echo-unexpected "updatedb errored, retrying with absolute path"
