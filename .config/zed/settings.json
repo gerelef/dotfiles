@@ -26,9 +26,9 @@
         "dark": "JetBrains New Dark"
     },
     "project_panel": {
-      "button": true,
-      "dock": "left",
-      "git_status": true
+        "button": true,
+        "dock": "left",
+        "git_status": true
     },
     "scrollbar": {
         "show": "system",

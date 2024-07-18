@@ -37,7 +37,8 @@
             "ctrl-l": "editor::Format",
             // ---------------- BROWSER BINDS ----------------
             "ctrl-t": "workspace::NewFile",
-            "ctrl-shift-t": "pane::ReopenClosedItem"
+            "ctrl-shift-t": "pane::ReopenClosedItem",
+            "ctrl-alt-t": "workspace::NewTerminal"
         }
     }
 ]
