@@ -18,9 +18,15 @@
   <action id="CloseContent">
     <keyboard-shortcut first-keystroke="ctrl w" />
   </action>
-  <action id="CollapseExpandableComponent">
-    <keyboard-shortcut first-keystroke="ctrl alt subtract" />
-  </action>
+  <action id="CollapseAll" />
+  <action id="CollapseExpandableComponent" />
+  <action id="CollapseRegion" />
+  <action id="CollapseRegionRecursively" />
+  <action id="Console.TableResult.DeleteRows" />
+  <action id="Console.TableResult.NextPage" />
+  <action id="Console.TableResult.PreviousPage" />
+  <action id="Console.TableResult.SetDefault" />
+  <action id="ContextHelp" />
   <action id="DSM.ZoomIn">
     <keyboard-shortcut first-keystroke="ctrl add" />
   </action>
@@ -43,15 +49,23 @@
   <action id="EditorDecreaseFontSizeGlobal">
     <keyboard-shortcut first-keystroke="ctrl minus" />
   </action>
+  <action id="EditorDeleteLine" />
   <action id="EditorIncreaseFontSizeGlobal">
     <keyboard-shortcut first-keystroke="ctrl equals" />
   </action>
+  <action id="EditorMoveToPageBottom" />
+  <action id="EditorMoveToPageTop" />
   <action id="EditorResetFontSizeGlobal">
     <keyboard-shortcut first-keystroke="ctrl 0" />
   </action>
-  <action id="ExpandExpandableComponent">
-    <keyboard-shortcut first-keystroke="ctrl alt equals" />
-  </action>
+  <action id="EditorSelectWord" />
+  <action id="EditorUnSelectWord" />
+  <action id="ExpandAll" />
+  <action id="ExpandExpandableComponent" />
+  <action id="ExpandRegion" />
+  <action id="ExpandRegionRecursively" />
+  <action id="ExternalSystem.CollapseAll" />
+  <action id="ExternalSystem.ExpandAll" />
   <action id="Find">
     <keyboard-shortcut first-keystroke="ctrl f" />
   </action>
@@ -61,18 +75,23 @@
   <action id="FindSelectionInPath">
     <keyboard-shortcut first-keystroke="shift" second-keystroke="shift" />
   </action>
+  <action id="GotoBookmark0" />
   <action id="GotoLine">
     <keyboard-shortcut first-keystroke="ctrl alt f" />
   </action>
   <action id="GotoSymbol">
     <keyboard-shortcut first-keystroke="alt" second-keystroke="alt" />
   </action>
+  <action id="GotoTest" />
+  <action id="GuiDesigner.ShrinkSelection" />
   <action id="Images.Editor.ZoomIn">
     <keyboard-shortcut first-keystroke="ctrl add" />
   </action>
   <action id="Images.Editor.ZoomOut">
     <keyboard-shortcut first-keystroke="ctrl subtract" />
   </action>
+  <action id="IntroduceField" />
+  <action id="IntroduceProperty" />
   <action id="Maven.CollapseAll">
     <keyboard-shortcut first-keystroke="ctrl subtract" />
   </action>
@@ -88,6 +107,7 @@
   <action id="PreviousTab">
     <keyboard-shortcut first-keystroke="ctrl page_up" />
   </action>
+  <action id="QuickChangeScheme" />
   <action id="ReformatCode">
     <keyboard-shortcut first-keystroke="ctrl alt l" />
     <keyboard-shortcut first-keystroke="ctrl l" />
@@ -95,33 +115,6 @@
   <action id="ReopenClosedTab">
     <keyboard-shortcut first-keystroke="shift ctrl t" />
   </action>
-  <action id="ToggleDistractionFreeMode">
-    <keyboard-shortcut first-keystroke="f1" />
-  </action>
-  <action id="CollapseAll" />
-  <action id="CollapseRegion" />
-  <action id="CollapseRegionRecursively" />
-  <action id="ExpandAll"/>
-  <action id="ExpandRegion"/>
-  <action id="ExpandRegionRecursively"/>
-  <action id="ExternalSystem.CollapseAll"/>
-  <action id="ExternalSystem.ExpandAll"/>
-  <action id="Console.TableResult.DeleteRows" />
-  <action id="Console.TableResult.NextPage" />
-  <action id="Console.TableResult.PreviousPage" />
-  <action id="Console.TableResult.SetDefault" />
-  <action id="ContextHelp" />
-  <action id="EditorDeleteLine" />
-  <action id="EditorMoveToPageBottom" />
-  <action id="EditorMoveToPageTop" />
-  <action id="EditorSelectWord" />
-  <action id="EditorUnSelectWord" />
-  <action id="GotoBookmark0" />
-  <action id="GotoTest" />
-  <action id="GuiDesigner.ShrinkSelection" />
-  <action id="IntroduceField" />
-  <action id="IntroduceProperty" />
-  <action id="QuickChangeScheme" />
   <action id="RunAnything" />
   <action id="ServiceView.GroupByContributor" />
   <action id="ServiceView.ShowServices" />
@@ -133,6 +126,9 @@
   <action id="TableResult.ShrinkSelection" />
   <action id="Terminal.DeletePreviousWord" />
   <action id="Terminal.NewTab" />
+  <action id="ToggleDistractionFreeMode">
+    <keyboard-shortcut first-keystroke="f1" />
+  </action>
   <action id="UsageFiltering.WriteAccess" />
   <action id="UsageGrouping.DirectoryStructure" />
   <action id="UsageGrouping.FileStructure" />
