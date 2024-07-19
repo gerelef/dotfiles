@@ -1,163 +1,143 @@
-<keymap version="1" name="gerelef" parent="Common">
-    <action id="$Redo">
-        <keyboard-shortcut first-keystroke="ctrl y" />
-        <keyboard-shortcut first-keystroke="shift ctrl z" />
-    </action>
-    <action id="$Undo">
-        <keyboard-shortcut first-keystroke="ctrl z" />
-    </action>
-    <action id="ActivateTerminalToolWindow">
-        <keyboard-shortcut first-keystroke="ctrl back_quote" />
-    </action>
-    <action id="CloseActiveTab">
-        <keyboard-shortcut first-keystroke="ctrl w" />
-    </action>
-    <action id="CloseAllEditors">
-        <keyboard-shortcut first-keystroke="shift ctrl w" />
-    </action>
-    <action id="CloseContent">
-        <keyboard-shortcut first-keystroke="ctrl w" />
-    </action>
-    <action id="CollapseAll">
-        <keyboard-shortcut first-keystroke="ctrl subtract" />
-    </action>
-    <action id="CollapseExpandableComponent">
-        <keyboard-shortcut first-keystroke="ctrl subtract" />
-    </action>
-    <action id="CollapseRegion">
-        <keyboard-shortcut first-keystroke="ctrl subtract" />
-    </action>
-    <action id="CollapseRegionRecursively">
-        <keyboard-shortcut first-keystroke="ctrl alt subtract" />
-    </action>
-    <action id="Console.TableResult.DeleteRows" />
-    <action id="Console.TableResult.NextPage" />
-    <action id="Console.TableResult.PreviousPage" />
-    <action id="Console.TableResult.SetDefault" />
-    <action id="ContextHelp" />
-    <action id="DSM.ZoomIn">
-        <keyboard-shortcut first-keystroke="ctrl add" />
-    </action>
-    <action id="Diff.ShowDiff">
-        <keyboard-shortcut first-keystroke="ctrl alt d" />
-    </action>
-    <action id="Editor Redo">
-        <keyboard-shortcut first-keystroke="ctrl y" />
-        <keyboard-shortcut first-keystroke="shift ctrl z" />
-    </action>
-    <action id="Editor Undo">
-        <keyboard-shortcut first-keystroke="ctrl z" />
-    </action>
-    <action id="EditorCloneCaretAbove">
-        <keyboard-shortcut first-keystroke="ctrl alt up" />
-    </action>
-    <action id="EditorCloneCaretBelow">
-        <keyboard-shortcut first-keystroke="ctrl alt down" />
-    </action>
-    <action id="EditorDecreaseFontSizeGlobal">
-        <keyboard-shortcut first-keystroke="ctrl minus" />
-    </action>
-    <action id="EditorDeleteLine" />
-    <action id="EditorIncreaseFontSizeGlobal">
-        <keyboard-shortcut first-keystroke="ctrl equals" />
-    </action>
-    <action id="EditorMoveToPageBottom" />
-    <action id="EditorMoveToPageTop" />
-    <action id="EditorResetFontSizeGlobal">
-        <keyboard-shortcut first-keystroke="ctrl 0" />
-    </action>
-    <action id="EditorSelectWord" />
-    <action id="EditorUnSelectWord" />
-    <action id="ExpandAll">
-        <keyboard-shortcut first-keystroke="ctrl add" />
-    </action>
-    <action id="ExpandExpandableComponent">
-        <keyboard-shortcut first-keystroke="shift enter" />
-        <keyboard-shortcut first-keystroke="ctrl add" />
-    </action>
-    <action id="ExpandRegion">
-        <keyboard-shortcut first-keystroke="ctrl add" />
-        <keyboard-shortcut first-keystroke="ctrl alt equals" />
-    </action>
-    <action id="ExpandRegionRecursively">
-        <keyboard-shortcut first-keystroke="ctrl alt add" />
-    </action>
-    <action id="ExternalSystem.CollapseAll">
-        <keyboard-shortcut first-keystroke="ctrl subtract" />
-    </action>
-    <action id="ExternalSystem.ExpandAll">
-        <keyboard-shortcut first-keystroke="ctrl add" />
-    </action>
-    <action id="Find">
-        <keyboard-shortcut first-keystroke="ctrl f" />
-    </action>
-    <action id="FindNext">
-        <keyboard-shortcut first-keystroke="f3" />
-    </action>
-    <action id="FindSelectionInPath">
-        <keyboard-shortcut first-keystroke="shift" second-keystroke="shift" />
-    </action>
-    <action id="GotoBookmark0" />
-    <action id="GotoLine">
-        <keyboard-shortcut first-keystroke="ctrl alt f" />
-    </action>
-    <action id="GotoSymbol">
-        <keyboard-shortcut first-keystroke="alt" second-keystroke="alt" />
-    </action>
-    <action id="GotoTest" />
-    <action id="GuiDesigner.ShrinkSelection" />
-    <action id="Images.Editor.ZoomIn">
-        <keyboard-shortcut first-keystroke="ctrl add" />
-    </action>
-    <action id="Images.Editor.ZoomOut">
-        <keyboard-shortcut first-keystroke="ctrl subtract" />
-    </action>
-    <action id="IntroduceField" />
-    <action id="IntroduceProperty" />
-    <action id="Maven.CollapseAll">
-        <keyboard-shortcut first-keystroke="ctrl subtract" />
-    </action>
-    <action id="Maven.ExpandAll">
-        <keyboard-shortcut first-keystroke="ctrl add" />
-    </action>
-    <action id="NewFile">
-        <keyboard-shortcut first-keystroke="ctrl t" />
-    </action>
-    <action id="NextTab">
-        <keyboard-shortcut first-keystroke="alt right" />
-        <keyboard-shortcut first-keystroke="ctrl page_down" />
-    </action>
-    <action id="PreviousTab">
-        <keyboard-shortcut first-keystroke="alt left" />
-        <keyboard-shortcut first-keystroke="ctrl page_up" />
-    </action>
-    <action id="QuickChangeScheme" />
-    <action id="ReformatCode">
-        <keyboard-shortcut first-keystroke="ctrl alt l" />
-        <keyboard-shortcut first-keystroke="ctrl l" />
-    </action>
-    <action id="ReopenClosedTab">
-        <keyboard-shortcut first-keystroke="shift ctrl t" />
-    </action>
-    <action id="RunAnything" />
-    <action id="ServiceView.GroupByContributor" />
-    <action id="ServiceView.ShowServices" />
-    <action id="ShowFilterPopup" />
-    <action id="SmartSelect" />
-    <action id="SurroundWith" />
-    <action id="TableResult.GrowSelection" />
-    <action id="TableResult.SelectColumn" />
-    <action id="TableResult.ShrinkSelection" />
-    <action id="Terminal.DeletePreviousWord" />
-    <action id="Terminal.NewTab" />
-    <action id="ToggleDistractionFreeMode">
-        <keyboard-shortcut first-keystroke="f1" />
-    </action>
-    <action id="UsageFiltering.WriteAccess" />
-    <action id="UsageGrouping.DirectoryStructure" />
-    <action id="UsageGrouping.FileStructure" />
-    <action id="UsageGrouping.UsageType" />
-    <action id="Vcs.Log.FocusTextFilter" />
-    <action id="Vcs.UpdateProject" />
-    <action id="XPathView.Actions.FindByExpression" />
+<keymap version="1" name="gerelef" parent="Default for GNOME">
+  <action id="$Redo">
+    <keyboard-shortcut first-keystroke="ctrl y" />
+    <keyboard-shortcut first-keystroke="shift ctrl z" />
+  </action>
+  <action id="$Undo">
+    <keyboard-shortcut first-keystroke="ctrl z" />
+  </action>
+  <action id="ActivateTerminalToolWindow">
+    <keyboard-shortcut first-keystroke="ctrl back_quote" />
+  </action>
+  <action id="CloseActiveTab">
+    <keyboard-shortcut first-keystroke="ctrl w" />
+  </action>
+  <action id="CloseAllEditors">
+    <keyboard-shortcut first-keystroke="shift ctrl w" />
+  </action>
+  <action id="CloseContent">
+    <keyboard-shortcut first-keystroke="ctrl w" />
+  </action>
+  <action id="CollapseExpandableComponent">
+    <keyboard-shortcut first-keystroke="ctrl alt subtract" />
+  </action>
+  <action id="DSM.ZoomIn">
+    <keyboard-shortcut first-keystroke="ctrl add" />
+  </action>
+  <action id="Diff.ShowDiff">
+    <keyboard-shortcut first-keystroke="ctrl alt d" />
+  </action>
+  <action id="Editor Redo">
+    <keyboard-shortcut first-keystroke="ctrl y" />
+    <keyboard-shortcut first-keystroke="shift ctrl z" />
+  </action>
+  <action id="Editor Undo">
+    <keyboard-shortcut first-keystroke="ctrl z" />
+  </action>
+  <action id="EditorCloneCaretAbove">
+    <keyboard-shortcut first-keystroke="ctrl alt up" />
+  </action>
+  <action id="EditorCloneCaretBelow">
+    <keyboard-shortcut first-keystroke="ctrl alt down" />
+  </action>
+  <action id="EditorDecreaseFontSizeGlobal">
+    <keyboard-shortcut first-keystroke="ctrl minus" />
+  </action>
+  <action id="EditorIncreaseFontSizeGlobal">
+    <keyboard-shortcut first-keystroke="ctrl equals" />
+  </action>
+  <action id="EditorResetFontSizeGlobal">
+    <keyboard-shortcut first-keystroke="ctrl 0" />
+  </action>
+  <action id="ExpandExpandableComponent">
+    <keyboard-shortcut first-keystroke="ctrl alt equals" />
+  </action>
+  <action id="Find">
+    <keyboard-shortcut first-keystroke="ctrl f" />
+  </action>
+  <action id="FindNext">
+    <keyboard-shortcut first-keystroke="f3" />
+  </action>
+  <action id="FindSelectionInPath">
+    <keyboard-shortcut first-keystroke="shift" second-keystroke="shift" />
+  </action>
+  <action id="GotoLine">
+    <keyboard-shortcut first-keystroke="ctrl alt f" />
+  </action>
+  <action id="GotoSymbol">
+    <keyboard-shortcut first-keystroke="alt" second-keystroke="alt" />
+  </action>
+  <action id="Images.Editor.ZoomIn">
+    <keyboard-shortcut first-keystroke="ctrl add" />
+  </action>
+  <action id="Images.Editor.ZoomOut">
+    <keyboard-shortcut first-keystroke="ctrl subtract" />
+  </action>
+  <action id="Maven.CollapseAll">
+    <keyboard-shortcut first-keystroke="ctrl subtract" />
+  </action>
+  <action id="Maven.ExpandAll">
+    <keyboard-shortcut first-keystroke="ctrl add" />
+  </action>
+  <action id="NewFile">
+    <keyboard-shortcut first-keystroke="ctrl t" />
+  </action>
+  <action id="NextTab">
+    <keyboard-shortcut first-keystroke="ctrl page_down" />
+  </action>
+  <action id="PreviousTab">
+    <keyboard-shortcut first-keystroke="ctrl page_up" />
+  </action>
+  <action id="ReformatCode">
+    <keyboard-shortcut first-keystroke="ctrl alt l" />
+    <keyboard-shortcut first-keystroke="ctrl l" />
+  </action>
+  <action id="ReopenClosedTab">
+    <keyboard-shortcut first-keystroke="shift ctrl t" />
+  </action>
+  <action id="ToggleDistractionFreeMode">
+    <keyboard-shortcut first-keystroke="f1" />
+  </action>
+  <action id="CollapseAll" />
+  <action id="CollapseRegion" />
+  <action id="CollapseRegionRecursively" />
+  <action id="ExpandAll"/>
+  <action id="ExpandRegion"/>
+  <action id="ExpandRegionRecursively"/>
+  <action id="ExternalSystem.CollapseAll"/>
+  <action id="ExternalSystem.ExpandAll"/>
+  <action id="Console.TableResult.DeleteRows" />
+  <action id="Console.TableResult.NextPage" />
+  <action id="Console.TableResult.PreviousPage" />
+  <action id="Console.TableResult.SetDefault" />
+  <action id="ContextHelp" />
+  <action id="EditorDeleteLine" />
+  <action id="EditorMoveToPageBottom" />
+  <action id="EditorMoveToPageTop" />
+  <action id="EditorSelectWord" />
+  <action id="EditorUnSelectWord" />
+  <action id="GotoBookmark0" />
+  <action id="GotoTest" />
+  <action id="GuiDesigner.ShrinkSelection" />
+  <action id="IntroduceField" />
+  <action id="IntroduceProperty" />
+  <action id="QuickChangeScheme" />
+  <action id="RunAnything" />
+  <action id="ServiceView.GroupByContributor" />
+  <action id="ServiceView.ShowServices" />
+  <action id="ShowFilterPopup" />
+  <action id="SmartSelect" />
+  <action id="SurroundWith" />
+  <action id="TableResult.GrowSelection" />
+  <action id="TableResult.SelectColumn" />
+  <action id="TableResult.ShrinkSelection" />
+  <action id="Terminal.DeletePreviousWord" />
+  <action id="Terminal.NewTab" />
+  <action id="UsageFiltering.WriteAccess" />
+  <action id="UsageGrouping.DirectoryStructure" />
+  <action id="UsageGrouping.FileStructure" />
+  <action id="UsageGrouping.UsageType" />
+  <action id="Vcs.Log.FocusTextFilter" />
+  <action id="Vcs.UpdateProject" />
+  <action id="XPathView.Actions.FindByExpression" />
 </keymap>
