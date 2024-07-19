@@ -76,6 +76,7 @@ scripts/.gitconfig-gitdelta ::: .
 .config/alacritty.toml ::: .config/alacritty/
 .config/pipewire.conf ::: .config/pipewire/
 .config/config.yaml ::: .config/lsd/
+.config/jetbrains-keymap.xml ::: .config/JetBrains/*/keymaps/
 
 // create subdirectories on the fly, don't nest unecessarily
 .config/sublime-text/* ::: .config/sublime-text/Packages/User/
