@@ -4,8 +4,10 @@
             // MISSING ctrl + scrollup/down increase/decrease buffer_font
             // ---------------- EDITOR TOGGLES ----------------
             "f1": "workspace::ToggleLeftDock",
-            "ctrl-+": "zed::IncreaseBufferFontSize",
-            "ctrl-_": "zed::DecreaseBufferFontSize",
+            "ctrl-=": "zed::IncreaseBufferFontSize",
+            "ctrl--": "zed::DecreaseBufferFontSize",
+            "ctrl-alt-=": "editor::UnfoldLines",
+            "ctrl-alt--": "editor::Fold",
             "ctrl-`": "terminal_panel::ToggleFocus",
             "shift shift": "file_finder::Toggle",
             "ctrl ctrl": "command_palette::Toggle",
