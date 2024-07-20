@@ -89,7 +89,7 @@ function require-pip
 end
 
 function __venv_activate_fish
-    set activate_fish "$(find . -name "activate.fish" | head -n 1)"
+    set activate_fish "$(find . -maxdepth 3 -name "activate.fish" | head -n 1)"
     if test -e "$activate_fish"; echo "fish --init-command \"source $activate_fish\""; return 0; end
     return 1
 end

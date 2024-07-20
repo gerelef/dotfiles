@@ -160,7 +160,7 @@ require-pip () {
 }
 
 vpip () {
-    readonly activate_bash="$(find . -name "activate" | head -n 1)"
+    activate_bash="$(find . -maxdepth 3 -name "activate" | head -n 1)"
     if [[ -f "$activate_bash" ]]; then
         bash --init-file <(echo "source \"$HOME/.bashrc\"; source $activate_bash")
         return
