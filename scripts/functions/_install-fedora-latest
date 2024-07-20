@@ -891,7 +891,7 @@ if is-gnome-session; then
     gsettings set org.gnome.settings-daemon.plugins.media-keys custom-keybindings '[]'
     add-gsettings-shortcut "resource-monitor" "gnome-system-monitor" "<Shift><Control>Escape"
     add-gsettings-shortcut "flameshot" "/usr/local/bin/flameshot-gui-workaround" "Print"
-    add-gsettings-shortcut "alacritty" "alacritty" "<Shift><Control>KP_Add"
+    add-gsettings-shortcut "alacritty" "alacritty" "<Super>t"
 
     # extension settings
     gsettings set org.gnome.shell enabled-extensions "['places-menu@gnome-shell-extensions.gcampax.github.com', 'appindicatorsupport@rgcjonas.gmail.com', 'forge@jmmaranan.com']"
