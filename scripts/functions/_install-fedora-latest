@@ -808,6 +808,7 @@ ask-user 'Do you want to install Zed Text Editor?' && INSTALL_ZED="yes"
 ask-user 'Do you want to install Visual Studio Code?' && INSTALL_VSC="yes"
 ask-user 'Do you want to install Sublime Text Editor?' && INSTALL_SUBLIME="yes"
 ask-user 'Do you want to install zeno/scrcpy?' && INSTALL_SCRCPY="yes"
+ask-user 'Do you want to install zeno/scrcpy?' && INSTALL_SCRCPY="yes"
 
 #######################################################################################################
 
@@ -841,7 +842,8 @@ configure-ssh-defaults
 if [[ -n "$INSTALL_SCRCPY" ]]; then
     _echo-status "Installing zeno/scrcpy ..."
     sudo dnf copr enable -y zeno/scrcpy
-    sudo dnf install -y --best --allowerasing scrcpy
+    sudo dnf install -y --best --allowerasing scrcpy adb
+    sudo systemctl enable adb
 fi
 
 #######################################################################################################
