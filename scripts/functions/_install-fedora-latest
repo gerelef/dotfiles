@@ -698,6 +698,7 @@ qemu-audio-pipewire \
 
 readonly INSTALLABLE_DEV_PKGS="\
 git \
+git-delta \
 gcc \
 clang \
 vulkan \
@@ -708,7 +709,6 @@ ninja-build \
 java-latest-openjdk \
 java-latest-openjdk-devel \
 tldr \
-info \
 "
 
 # NOTE: these are global and should be treated as desktop agnostic
