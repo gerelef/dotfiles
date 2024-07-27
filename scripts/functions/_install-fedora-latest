@@ -511,6 +511,7 @@ alacritty \
 nautilus \
 gnome-disk-utility \
 gnome-text-editor \
+gnome-system-monitor \
 "
 
 readonly INSTALLABLE_ADWAITA_PACKAGES="\
@@ -539,43 +540,6 @@ gnome-extensions-app \
 gnome-shell-extension-places-menu \
 gnome-shell-extension-forge \
 gnome-shell-extension-appindicator \
-"
-
-#######################################################################################################
-
-readonly INSTALLABLE_CINNAMON_ESSENTIAL_PACKAGES="\
-lightdm-settings \
-slick-greeter \
-slick-greeter-cinnamon \
-cinnamon \
-cinnamon-desktop \
-cinnamon-screensaver \
-cinnamon-session \
-cinnamon-settings-daemon \
-cinnamon-control-center \
-NetworkManager-adsl \
-NetworkManager-bluetooth \
-NetworkManager-iodine-gnome \
-NetworkManager-l2tp-gnome \
-NetworkManager-libreswan-gnome \
-NetworkManager-openconnect-gnome \
-NetworkManager-openvpn-gnome \
-NetworkManager-ppp \
-NetworkManager-pptp-gnome \
-NetworkManager-vpnc-gnome \
-NetworkManager-wifi \
-NetworkManager-wwan \
-"
-
-readonly INSTALLABLE_CINNAMON_APPLICATION_PACKAGES="\
-alacritty \
-eom \
-nemo \
-gnome-text-editor \
-qbittorrent \
-cinnamon-calendar-server \
-cinnamon-control-center-filesystem \
-gnome-disk-utility \
 "
 
 #######################################################################################################
