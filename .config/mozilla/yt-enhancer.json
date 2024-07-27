@@ -27,6 +27,7 @@
         },
         "controls": [
             "cards-end-screens",
+            "speed",
             "options"
         ],
         "controlsvisible": true,
