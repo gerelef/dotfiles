@@ -1,12 +1,20 @@
-# name: Default
-# author: Lily Ballard
+# set the TRANSIENT variable & execute
+#  inspired by https://github.com/fish-shell/fish-shell/pull/8142
+function transient-execute --description 'Set TRANSIENT & execute' #--on-event fish_preexec
+    set -g TRANSIENT
+    commandline -f repaint
+    commandline -f execute
+end
+
+# after executing, delete the TRANSIENT variable
+function reset-transient --description 'Reset TRANSIENT' --on-event fish_postexec
+    set -e TRANSIENT
+end
 
 function fish_prompt --description 'Write out the prompt'
+    # pipestatus MUST be first
     set -l last_pipestatus $pipestatus
     set -lx __fish_last_status $status # Export for __fish_print_pipestatus.
-    set -l normal (set_color normal)
-    set -q fish_color_status
-    or set -g fish_color_status red
 
     # Color the prompt differently when we're root
     set -l color_cwd $fish_color_cwd
@@ -17,6 +25,16 @@ function fish_prompt --description 'Write out the prompt'
         end
         set suffix '#'
     end
+
+    if set -q TRANSIENT
+        echo -n -s "$suffix "
+        return
+    else
+        bind \r transient-execute
+    end
+
+    set -l normal (set_color normal)
+    set -q fish_color_status; or set -g fish_color_status red
 
     # Write pipestatus
     # If the status was carried over (if no command is issued or if `set` leaves the status untouched), don't bold it.
