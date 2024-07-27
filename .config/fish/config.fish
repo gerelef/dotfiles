@@ -50,7 +50,7 @@ function prepare-pip
             end
 
             # if venv dir doesn't exist for our version create it
-            set pv_dir \"$venv_dir/dvpip$pv_num\"
+            set pv_dir \"$venv_dir/v$pv_num\"
             if not test -d \"\$pv_dir\"
                 echo \"Global \$pv_dir doesn't exist; creating venv for it!\"
                 # the $pv expansion will execute, since it's expanded while making

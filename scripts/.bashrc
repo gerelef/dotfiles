@@ -125,7 +125,7 @@ prepare-pip () (
         virtual_group_subshell="vpip$python_version_number () {
             [[ \"\$EUID\" -eq 0 ]] && echo \"Do NOT run as root.\" && return 2;
             [[ ! -d \"$venv_dir\" ]] && mkdir -p \"$venv_dir\" # create root dir if doesn't exist
-            local venv_dir=\"$venv_dir/dvpip$python_version_number\"
+            local venv_dir=\"$venv_dir/v$python_version_number\"
 
             # if venv dir doesn't exist for our version create it
             if [[ ! -d \"\$venv_dir\" ]]; then
