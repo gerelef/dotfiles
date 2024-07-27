@@ -60,6 +60,12 @@ scripts/
     !!.config/config
 [end]
 
+// cosmic-desktop specific; link only if it is installed
+.config/cosmic
+[if-pkg:::cosmic-session]
+    !!.config/cosmic
+[end]
+
 [redirect]
 // redirect to home (move up)
 scripts/.bashrc ::: .
@@ -84,3 +90,5 @@ scripts/.gitconfig-gitdelta ::: .
 
 // find already created profile subdirectories on the fly, we can't nest here anyways
 .config/mozilla/* ::: .mozilla/firefox/*.default-release*/
+
+// cosmic
