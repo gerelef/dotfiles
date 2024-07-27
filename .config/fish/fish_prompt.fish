@@ -1,8 +1,10 @@
 # set the TRANSIENT variable & execute
 #  inspired by https://github.com/fish-shell/fish-shell/pull/8142
 function transient-execute --description 'Set TRANSIENT & execute' #--on-event fish_preexec
-    set -g TRANSIENT
-    commandline -f repaint
+    if commandline --is-valid
+        set -g TRANSIENT
+        commandline -f repaint
+    end
     commandline -f execute
 end
 
