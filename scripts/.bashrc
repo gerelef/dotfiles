@@ -194,16 +194,23 @@ alias ....='cd ../../..'
 alias .....='cd ../../../..'
 
 # convenience alias
-alias wget="\wget -c --read-timeout=5 --tries=0"
 alias grep="\grep -i"
 alias rm="rm -v"
 alias reverse="tac"
 alias palindrome="rev"
-
 alias fuck='sudo $(history -p \!\!)'
 
-if [[ -n "$(command -v lsd)" ]]; then
-    alias lss="lsd --almost-all --icon never --icon-theme unicode --group-directories-first"
+# there's a chance wget doesn't exist on the system, but whatever lmao
+if [[ -n "$(command -v wget)" ]]; then
+    alias wget="\wget -c --read-timeout=5 --tries=0"
+fi
+
+# chromium depot_tools, add to PATH only if they actually exist
+#  https://chromium.googlesource.com/chromium/tools/depot_tools.git
+if [[ -n "$(command -v locate)" && $(locate --limit 1 depot_tools) ]]; then
+    # add shell functions (executables) to $PATH
+    PATH=$PATH:"$(locate --limit 1 depot_tools)"
+    alias fetch="fetch --no-history"
 fi
 
 if [[ -n "$(command -v zoxide)" ]]; then
@@ -211,4 +218,8 @@ if [[ -n "$(command -v zoxide)" ]]; then
         z "$@"
     }
     eval "$(zoxide init bash)"
+fi
+
+if [[ -n "$(command -v lsd)" ]]; then
+    alias lss="lsd --almost-all --icon never --icon-theme unicode --group-directories-first"
 fi

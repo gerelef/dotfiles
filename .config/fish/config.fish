@@ -107,7 +107,6 @@ set -g fish_greeting ""
 
 #############################################################
 # ABBREVIATIONS & ALIAS
-abbr --position command --add wget "wget -c --read-timeout=5 --tries=0"
 abbr --position command --add grep "grep -i"
 abbr --position command --add rm "rm -v"
 abbr --position command --add reverse "tac"
@@ -116,6 +115,17 @@ abbr --position command --add palindrome "rev"
 function __sudo_last_command; echo "sudo $history[1]"; end
 abbr --position command --add fuck --function __sudo_last_command
 abbr --position command --add vpip --function __venv_activate_fish
+
+if type -q wget
+    abbr --position command --add wget "wget -c --read-timeout=5 --tries=0"
+end
+
+# chromium depot_tools, add to PATH only if they actually exist
+#  https://chromium.googlesource.com/chromium/tools/depot_tools.git
+if type -q locate and (locate --limit 1 depot_tools)
+    fish_add_path -g (locate --limit 1 depot_tools)
+    abbr --position command --add fetch "fetch --no-history"
+end
 
 if type -q zoxide
     zoxide init fish | source
