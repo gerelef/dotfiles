@@ -205,6 +205,10 @@ if [[ -n "$(command -v wget)" ]]; then
     alias wget="\wget -c --read-timeout=5 --tries=0"
 fi
 
+if [[ -n "$(command -v npm)" ]]; then
+    alias npm="\npm --loglevel silly"
+fi
+
 # chromium depot_tools, add to PATH only if they actually exist
 #  https://chromium.googlesource.com/chromium/tools/depot_tools.git
 if [[ -n "$(command -v locate)" && $(locate --limit 1 depot_tools) ]]; then

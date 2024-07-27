@@ -120,6 +120,10 @@ if type -q wget
     abbr --position command --add wget "wget -c --read-timeout=5 --tries=0"
 end
 
+if type -q npm
+    abbr --position command --add npm "npm --loglevel silly"
+end
+
 # chromium depot_tools, add to PATH only if they actually exist
 #  https://chromium.googlesource.com/chromium/tools/depot_tools.git
 if type -q locate and (locate --limit 1 depot_tools)
