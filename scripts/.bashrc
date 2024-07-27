@@ -173,9 +173,11 @@ vpip () {
 
 # add shell functions (executables) to $PATH
 PATH=$PATH:$DOTFILES_DIR/scripts/functions
-
-# install required login shell packages
-require-login-shell-packages
+# add login shell requirements if they're part of the regular install,
+#  aka found at the $PATH above
+if [[ -n "$(command -v require-login-shell-packages)" ]]; then
+    require-login-shell-packages && clear
+fi
 # source global virtual python install(s)
 require-pip
 # source cargo environment if it exists

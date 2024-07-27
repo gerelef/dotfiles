@@ -98,8 +98,11 @@ end
 # SOURCES & CONFIG
 # add executable script (lambdas) dir
 fish_add_path -g ~/dotfiles/scripts/functions/
-# add login shell requirements
-require-login-shell-packages
+# add login shell requirements if they're part of the regular install,
+#  aka found at the $PATH above
+if type -q require-login-shell-packages
+    require-login-shell-packages && clear
+end
 # add virtual pip functions
 require-pip
 # supress greeting
