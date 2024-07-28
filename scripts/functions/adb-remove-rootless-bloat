@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+# HELP 'uninstall' known bloatware/spyware applications w/o root via adb
+
 if [[ -z "$(command -v adb)" ]]; then
     echo "Cannot run $(basename $0) without adb! Exiting..."
     exit 1

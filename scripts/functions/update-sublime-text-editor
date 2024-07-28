@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+# HELP install sublime-txt, via external repo
+
 install-sublime-text-editor () (
     if [[ -z "$(command -v sublime-text)" ]]; then
         echo "Installing sublime-text ..."

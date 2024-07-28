@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+# HELP install jetbrains-toolbox
+
 install-jetbrains-toolbox () (
     # dependencies, described here
     #  https://github.com/nagygergo/jetbrains-toolbox-install

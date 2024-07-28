@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+# HELP install ollama, the LLM CLI
+
 install-ollama () (
     echo "Installing ollama..."
     sudo curl -L "https://ollama.com/download/ollama-linux-amd64" -o "/usr/local/bin/ollama"

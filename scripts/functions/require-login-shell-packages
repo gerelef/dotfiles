@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+# HELP install required login shell packages; also ask whether to install optional packages (will be reprompted on next login)
+
 readonly SHELL_REQUIREMENTS="$HOME/dotfiles/.shell-requirements"
 readonly HAS_RUN_DIR="/opt"
 readonly HAS_RUN_FILE="$HAS_RUN_DIR/.has-run"

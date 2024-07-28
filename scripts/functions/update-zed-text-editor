@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+# HELP update zed, the snappy text editor
+
 if [[ -z "$(command -v curl)" ]]; then
     echo "Cannot run $(basename $0) without curl! Exiting..."
     exit 1

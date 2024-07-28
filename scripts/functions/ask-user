@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+# HELP ask-user <question>; ask the user a yes or no question; returns 0 on 'yes'
+
 # do NOT use this for anything else other than echoing from a call whose stdout is meant to be caught!
 # use _echo-debug for debug information, and _echo-important and friends for everything else
 # https://stackoverflow.com/questions/2990414/echo-that-outputs-to-stderr
