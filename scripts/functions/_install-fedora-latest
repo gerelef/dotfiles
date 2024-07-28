@@ -450,7 +450,6 @@ gnome-logs \
 "
 
 readonly INSTALLABLE_GNOME_APPLICATION_PACKAGES="\
-alacritty \
 nautilus \
 gnome-disk-utility \
 gnome-text-editor \
@@ -662,10 +661,14 @@ if [[ -z $XDG_CURRENT_DESKTOP ]]; then
     sudo systemctl reboot
 fi
 
-sudo dnf install -y --best --allowerasing "$INSTALLABLE_GNOME_APPLICATION_PACKAGES"
-sudo dnf install -y --best --allowerasing "$INSTALLABLE_ADWAITA_PACKAGES" "$INSTALLABLE_GNOME_EXTENSIONS"
-flatpak install --system --noninteractive -y "$INSTALLABLE_ADWAITA_FLATPAKS"
-flatpak install --system --noninteractive -y "$INSTALLABLE_GNOME_FLATPAKS"
+
+sudo dnf install -y --best --allowerasing "alacritty"
+if is-gnome-session; then
+    sudo dnf install -y --best --allowerasing "$INSTALLABLE_GNOME_APPLICATION_PACKAGES"
+    sudo dnf install -y --best --allowerasing "$INSTALLABLE_ADWAITA_PACKAGES" "$INSTALLABLE_GNOME_EXTENSIONS"
+    flatpak install --system --noninteractive -y "$INSTALLABLE_ADWAITA_FLATPAKS"
+    flatpak install --system --noninteractive -y "$INSTALLABLE_GNOME_FLATPAKS"
+fi
 
 # this needs to be up-to-date for some commands
 sudo updatedb 2> /dev/null
