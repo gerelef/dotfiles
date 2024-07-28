@@ -1,5 +1,4 @@
 git
-lsd
 curl
 yt-dlp
 ffmpeg
@@ -7,5 +6,3 @@ findutils
 adb
 ruby
 python3.12
-zoxide
---exclude=fzf

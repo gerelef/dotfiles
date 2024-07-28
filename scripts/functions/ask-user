@@ -1,0 +1,21 @@
+#!/usr/bin/env bash
+
+# do NOT use this for anything else other than echoing from a call whose stdout is meant to be caught!
+# use _echo-debug for debug information, and _echo-important and friends for everything else
+# https://stackoverflow.com/questions/2990414/echo-that-outputs-to-stderr
+_echo-stderr () (
+    echo "$@" 1>&2
+)
+
+ask-user () (
+    while : ; do
+        read -p "$* [Y/n]: " -r
+        [[ $REPLY =~ ^[Yy]$ ]] && return 0
+        [[ $REPLY =~ ^[Nn]$ ]] && return 1
+        _echo-stderr ""
+        _echo-stderr "Invalid reply \"$REPLY\", please answer with Y/y for Yes, or N/n for No."
+    done
+)
+
+# run only if this file is not sourced
+[[ "${BASH_SOURCE[0]}" == "${0}" ]] && ask-user "$@"

@@ -3,30 +3,36 @@
 readonly SHELL_REQUIREMENTS="$HOME/dotfiles/.shell-requirements"
 readonly HAS_RUN_DIR="$HOME/.config"
 readonly HAS_RUN_FILE="$HAS_RUN_DIR/.has-run"
+readonly HAS_RUN_OPTS_FILE="$HAS_RUN_DIR/.has-run-opts"
 
 has-run () (
-    [[ -f "$HAS_RUN_FILE" ]] && exit 0
-    exit 1
+    [[ -f "$HAS_RUN_FILE" ]] && [[ -f "$HAS_RUN_OPTS_FILE" ]] && return 0
+    return 1
 )
 
 mk-run-file () (
-    [[ ! -d "$HAS_RUN_DIR" ]] && mkdir "$HAS_RUN_DIR"
+    [[ ! -d "$HAS_RUN_DIR" ]] && mkdir -p "$HAS_RUN_DIR"
     touch $HAS_RUN_FILE
+)
+
+mk-run-opts-file () (
+    [[ ! -d "$HAS_RUN_DIR" ]] && mkdir -p "$HAS_RUN_DIR"
+    touch $HAS_RUN_OPTS_FILE
 )
 
 install-system-pkg () (
     while :; do
         if [[ -n "$(command -v dnf)" ]]; then
-            sudo dnf install -y "$@" || exit 
+            sudo dnf install -y "$@" || exit
             break
         fi
         if [[ -n "$(command -v yum)" ]]; then
-            sudo yum install -y "$@" || exit 
+            sudo yum install -y "$@" || exit
             break
         fi
         if [[ -n "$(command -v apt)" ]]; then
             sudo apt install -y "$@" || exit
-        fi 
+        fi
         break
     done
 )
@@ -35,16 +41,24 @@ require-login-shell-packages () (
     has-run && return 0
 
     mapfile -t required_dependencies < $SHELL_REQUIREMENTS
-    
-    if [[ -n "$required_dependencies" ]]; then 
+    if [[ -n "$required_dependencies" ]]; then
         echo -e "Installing essential shell packages: \033[38;5;39m"
         echo -n "${required_dependencies[*]}"
         echo -e "\033[0m"
 
         install-system-pkg "${required_dependencies[@]}" || return
         mk-run-file
-        clear
     fi
+
+    if ask-user 'Do you want to install optional packages?'; then
+        echo -e "Installing optional shell packages: \033[38;5;39m"
+        echo -n "micro lsd zoxide --exclude=fzf"
+        echo -e "\033[0m"
+        install-system-pkg "micro" "lsd" "zoxide" "--exclude=fzf"
+        mk-run-opts-file
+    fi
+
+    clear
 )
 
 # run only if this file is not sourced
