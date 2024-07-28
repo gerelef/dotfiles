@@ -697,7 +697,7 @@ ask-user 'Do you want to install zeno/scrcpy?' && INSTALL_SCRCPY="yes"
 #######################################################################################################
 
 
-sudo dnf remove -y "$UNINSTALLABLE_BLOAT"
+sudo dnf remove -y --skip-unavailable $UNINSTALLABLE_BLOAT
 
 install-universal-necessities
 install-media-codecs
@@ -719,9 +719,9 @@ configure-ssh-defaults
 [[ -n "$INSTALL_VSC" ]] && update-visual-studio-code
 [[ -n "$INSTALL_ZED" ]] && update-zed-text-editor
 [[ -n "$INSTALL_SUBLIME" ]] && update-sublime-text-editor
-[[ -n "$INSTALL_ZED" ]] && sudo dnf remove -y "gnome-text-editor" "gedit"
-[[ -n "$INSTALL_VSC" ]] && sudo dnf remove -y "gnome-text-editor" "gedit"
-[[ -n "$INSTALL_SUBLIME" ]] && sudo dnf remove -y "gnome-text-editor" "gedit"
+[[ -n "$INSTALL_ZED" ]] && sudo dnf remove -y --skip-unavailable "gnome-text-editor" "gedit"
+[[ -n "$INSTALL_VSC" ]] && sudo dnf remove -y --skip-unavailable "gnome-text-editor" "gedit"
+[[ -n "$INSTALL_SUBLIME" ]] && sudo dnf remove -y --skip-unavailable "gnome-text-editor" "gedit"
 
 if [[ -n "$INSTALL_SCRCPY" ]]; then
     _echo-status "Installing zeno/scrcpy ..."
