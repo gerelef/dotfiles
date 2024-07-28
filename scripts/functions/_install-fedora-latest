@@ -394,7 +394,7 @@ shopt -s globstar
 shopt -s dotglob
 shopt -s nullglob
 
-readonly PATH="$PATH:$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )/scripts/functions"
+readonly PATH="$PATH:$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
 readonly DEBUG_SETUP_ON="yes"
 readonly DIR=$(dirname -- "$BASH_SOURCE")
 readonly REAL_USER="${SUDO_USER:-$(whoami)}"
@@ -447,6 +447,7 @@ gnome-bluetooth-libs \
 gnome-settings-daemon \
 gnome-browser-connector \
 gnome-logs \
+systemd-container \
 "
 
 readonly INSTALLABLE_GNOME_APPLICATION_PACKAGES="\
