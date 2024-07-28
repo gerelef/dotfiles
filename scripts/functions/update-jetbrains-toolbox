@@ -6,7 +6,7 @@ install-jetbrains-toolbox () (
     echo "-------------------INSTALLING JETBRAINS TOOLBOX----------------"
     sudo dnf install -y --best --allowerasing "fuse" "libXtst" "libXrender" "glx-utils" "fontconfig-devel" "gtk3" "tar"
     mkdir "/tmp/jetbrains-toolbox"  # tmp dir
-    mkdir "/opt/jetbrains-toolbox"  # install dir
+    sudo mkdir "/opt/jetbrains-toolbox"  # install dir
 
     readonly ARCHIVE_URL=$(curl -s 'https://data.services.jetbrains.com/products/releases?code=TBA&latest=true&type=release' | grep -Po '"linux":.*?[^\\]",' | awk -F ':' '{print $3,":"$4}'| sed 's/[", ]//g')
     wget -cO "/tmp/jetbrains-toolbox/jetbrains-toolbox.tar.gz" "$ARCHIVE_URL"

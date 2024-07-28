@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 readonly SHELL_REQUIREMENTS="$HOME/dotfiles/.shell-requirements"
-readonly HAS_RUN_DIR="$HOME/.config"
+readonly HAS_RUN_DIR="/opt"
 readonly HAS_RUN_FILE="$HAS_RUN_DIR/.has-run"
 readonly HAS_RUN_OPTS_FILE="$HAS_RUN_DIR/.has-run-opts"
 
@@ -11,13 +11,13 @@ has-run () (
 )
 
 mk-run-file () (
-    [[ ! -d "$HAS_RUN_DIR" ]] && mkdir -p "$HAS_RUN_DIR"
-    touch $HAS_RUN_FILE
+    [[ ! -d "$HAS_RUN_DIR" ]] && sudo mkdir -p "$HAS_RUN_DIR"
+    sudo touch $HAS_RUN_FILE
 )
 
 mk-run-opts-file () (
-    [[ ! -d "$HAS_RUN_DIR" ]] && mkdir -p "$HAS_RUN_DIR"
-    touch $HAS_RUN_OPTS_FILE
+    [[ ! -d "$HAS_RUN_DIR" ]] && sudo mkdir -p "$HAS_RUN_DIR"
+    sudo touch $HAS_RUN_OPTS_FILE
 )
 
 install-system-pkg () (

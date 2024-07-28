@@ -663,7 +663,7 @@ if [[ -z $XDG_CURRENT_DESKTOP ]]; then
     sudo systemctl reboot
 fi
 
-if is-gnome-session; then
+if _is-gnome-session; then
     sudo dnf install -y --best --allowerasing --skip-unavailable $INSTALLABLE_GNOME_APPLICATION_PACKAGES
     sudo dnf install -y --best --allowerasing --skip-unavailable $INSTALLABLE_ADWAITA_PACKAGES $INSTALLABLE_GNOME_EXTENSIONS
     flatpak install --system --noninteractive -y $INSTALLABLE_ADWAITA_FLATPAKS
@@ -761,7 +761,7 @@ for part in "${parts[@]}"; do
 done
 
 
-if is-gnome-session; then
+if _is-gnome-session; then
     _echo-important "Personalizing GNOME session..."
     _echo-important "Make sure to get the legacy GTK3 Theme Auto Switcher"
     _echo-important "https://extensions.gnome.org/extension/4998/legacy-gtk3-theme-scheme-auto-switcher/"
