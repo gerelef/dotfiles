@@ -3,8 +3,8 @@
 # HELP check if the type of the pc running is a desktop
 
 is-desktop-type () (
-    _echo-debug "is-desktop-type $(dmidecode --string chassis-type)"
-    [[ "$(dmidecode --string chassis-type)" == "Desktop" ]] && return 0
+    _echo-debug "is-desktop-type $(sudo dmidecode --string chassis-type)"
+    [[ "$(sudo dmidecode --string chassis-type)" == "Desktop" ]] && return 0
     return 1
 )
 
