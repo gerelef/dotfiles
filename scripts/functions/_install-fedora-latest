@@ -187,18 +187,18 @@ optimize-hardware () (
 
     if _is-uefi; then
         _echo-status "Updating UEFI with fwupdmgr..."
-        fwupdmgr refresh --force -y
-        fwupdmgr get-updates -y
-        fwupdmgr update -y
+        sudo fwupdmgr refresh --force -y
+        sudo fwupdmgr get-updates -y
+        sudo fwupdmgr update -y
     fi
 
     # s2 sleep
     if _is-mobile-type; then
         sudo grubby --update-kernel=ALL --args="mem_sleep_default=s2idle"
-        if !is_service_running power-profiles-daemon; then
+        if ! _is-service-running power-profiles-daemon; then
             sudo systemctl mask power-profiles-daemon
             sudo dnf install -y --best --allowerasing --skip-unavailable tlp tlp-rdw powertop
-            powertop --auto-tune
+            sudo powertop --auto-tune
         fi
     fi
 
