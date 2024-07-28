@@ -110,6 +110,13 @@ set -g fish_greeting ""
 
 #############################################################
 # ABBREVIATIONS & ALIAS
+
+# dir up
+alias .. "cd .."
+alias ... "cd ../.."
+alias .... "cd ../../.."
+alias ..... "cd ../../../.."
+
 abbr --position command --add grep "grep -i"
 abbr --position command --add rm "rm -v"
 abbr --position command --add reverse "tac"
@@ -143,7 +150,7 @@ if type -q lsd
     abbr --position command --add lss "lsd --almost-all --icon never --group-directories-first"
 end
 
-alias .. "cd .."
-alias ... "cd ../.."
-alias .... "cd ../../.."
-alias ..... "cd ../../../.."
+if type -q micro
+    set EDITOR "micro"
+    abbr --position command --add nano "micro"
+end
