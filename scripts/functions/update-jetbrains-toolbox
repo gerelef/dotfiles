@@ -4,22 +4,24 @@ install-jetbrains-toolbox () (
     # dependencies, described here
     #  https://github.com/nagygergo/jetbrains-toolbox-install
     echo "-------------------INSTALLING JETBRAINS TOOLBOX----------------"
-    dnf-install "fuse" "libXtst" "libXrender" "glx-utils" "fontconfig-devel" "gtk3" "tar"
+    sudo dnf install -y --best --allowerasing "fuse" "libXtst" "libXrender" "glx-utils" "fontconfig-devel" "gtk3" "tar"
+    mkdir "/tmp/jetbrains-toolbox"  # tmp dir
+    mkdir "/opt/jetbrains-toolbox"  # install dir
 
     readonly ARCHIVE_URL=$(curl -s 'https://data.services.jetbrains.com/products/releases?code=TBA&latest=true&type=release' | grep -Po '"linux":.*?[^\\]",' | awk -F ':' '{print $3,":"$4}'| sed 's/[", ]//g')
-    mkdir "/tmp/jetbrains-install"
-    wget -cO "/tmp/jetbrains-install/jetbrains-toolbox.tar.gz" "$ARCHIVE_URL"
+    wget -cO "/tmp/jetbrains-toolbox/jetbrains-toolbox.tar.gz" "$ARCHIVE_URL"
 
-    echo "Extracting jetbrains-toolbox to /tmp/jetbrains-install ..."
-    tar -xzf "/tmp/jetbrains-install/jetbrains-toolbox.tar.gz" -C "/opt/jetbrains-toolbox" --strip-components=1
-    rm -f "/tmp/jetbrains-install/jetbrains-toolbox.tar.gz"
+    echo "Extracting jetbrains-toolbox to /tmp/jetbrains-toolbox ..."
+    sudo tar -xzf "/tmp/jetbrains-toolbox/jetbrains-toolbox.tar.gz" -C "/opt/jetbrains-toolbox" --strip-components=1
+    rm -f "/tmp/jetbrains-toolbox/jetbrains-toolbox.tar.gz"
 
-    echo "Linking /opt/jetbrains-toolbox to /usr/local/bin ..."
-    chmod 755 "/opt/jetbrains-toolbox"
-    chown root:root "/opt/jetbrains-toolbox"
-    ln -sf "/opt/jetbrains-toolbox" "/usr/local/bin/jetbrains-toolbox"
-    rm "/tmp/jetbrains-install"  # remove tmp dir, not needed anymore
+    echo "Linking /opt/jetbrains-toolbox/jetbrains-toolbox to /usr/local/bin ..."
+    sudo chmod 755 "/opt/jetbrains-toolbox/jetbrains-toolbox"
+    sudo chown -R root:root "/opt/jetbrains-toolbox"
+    sudo ln -sf "/opt/jetbrains-toolbox/jetbrains-toolbox" "/usr/local/bin/jetbrains-toolbox"
+    rm -rf "/tmp/jetbrains-install"  # remove tmp dir, not needed anymore
     echo "Done."
+    jetbrains-toolbox &
 )
 
 [[ "${BASH_SOURCE[0]}" == "${0}" ]] && install-jetbrains-toolbox "$@"

@@ -145,7 +145,7 @@ raise-memory-map-counts () (
 cap-nproc-count () (
     [[ -z "$REAL_USER" ]] && return 1;
 
-    sudo sh -c "echo $REAL_USER 'hard nproc 10000' > '/etc/security/limits.d/90-nproc.conf'"
+    sudo sh -c "echo \"$REAL_USER 'hard nproc 10000'\" > '/etc/security/limits.d/90-nproc.conf'"
 )
 
 cap-max-logins-system () (
@@ -331,6 +331,13 @@ install-media-codecs () (
     sudo dnf install -y --best --allowerasing "gstreamer1-plugin-openh264" "gstreamer1-libav"
     sudo dnf group install -y --best --allowerasing --with-optional "multimedia"
 
+    # extra by me
+    sudo dnf install -y --best --allowerasing "obs-studio" \
+    "obs-studio-plugin-vkcapture" \
+    "obs-studio-plugin-vlc-video" \
+    "obs-studio-plugin-webkitgtk" \
+    "obs-studio-plugin-x264"
+
     sudo dnf install -y --best --allowerasing "ffmpeg" "gstreamer-ffmpeg" "ffmpeg-libs" "libva" "libva-utils"
     sudo dnf reinstall -y "/etc/yum.repos.d/fedora-cisco-openh264.repo"
     sudo dnf install -y --best --allowerasing "openh264" "gstreamer1-plugin-openh264" "mozilla-openh264"
@@ -338,8 +345,12 @@ install-media-codecs () (
 
 install-gaming-packages () (
     _echo-status "-------------------INSTALLING GAMING PACKAGES----------------"
-    sudo dnf install -y --best --allowerasing "$INSTALLABLE_EXTRAS" "$INSTALLABLE_WINE_GE_CUSTOM_PKGS" "$INSTALLABLE_OBS_STUDIO"
-    flatpak install --system --noninteractive -y "$INSTALLABLE_EXTRAS_FLATPAK"
+    sudo dnf install -y --best --allowerasing "steam" "gamescope"
+    flatpak install --system --noninteractive -y "com.discordapp.Discord"
+    # vulkan drivers are required for proton-ge to work
+    sudo dnf install -y --best --allowerasing "protontricks" "vulkan" "vulkan-loader" "vulkan-loader.i686"
+    update-compat-layers --steam --golden-egg
+
     # FIX FOR INPUT LAG / KEYBOARD KEYS GETTING STUCK:
     #  https://discussion.fedoraproject.org/t/ibus-daemon-introduces-delays-and-even-locks-keyboard-up-in-some-steam-games/118095/4
     #  https://github.com/ibus/ibus/issues/2618
@@ -593,25 +604,6 @@ powertop \
 readonly INSTALLABLE_EXTRAS="\
 steam \
 gamescope \
-"
-
-readonly INSTALLABLE_WINE_GE_CUSTOM_PKGS="\
-vulkan \
-protontricks \
-vulkan-loader \
-vulkan-loader.i686 \
-"
-
-readonly INSTALLABLE_OBS_STUDIO="\
-obs-studio \
-obs-studio-plugin-vkcapture \
-obs-studio-plugin-vlc-video \
-obs-studio-plugin-webkitgtk \
-obs-studio-plugin-x264 \
-"
-
-readonly INSTALLABLE_EXTRAS_FLATPAK="\
-com.discordapp.Discord \
 "
 
 readonly INSTALLABLE_VIRTUALIZATION_PACKAGES="\

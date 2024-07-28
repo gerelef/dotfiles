@@ -4,6 +4,7 @@ install-ollama () (
     echo "Installing ollama..."
     sudo curl -L "https://ollama.com/download/ollama-linux-amd64" -o "/usr/local/bin/ollama"
     sudo chmod 755 "/usr/local/bin/ollama"
+    sudo chown root:root "/usr/local/bin/ollama"
     echo "Done."
 )
 
