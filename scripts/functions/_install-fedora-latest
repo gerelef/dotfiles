@@ -36,7 +36,7 @@ add-gsettings-shortcut () (
 configure-residual-permissions () (
     _echo-status "-------------------CHANGING ROOT OWNERSHIP AND GROUPS IN HOME----------------"
     sudo chown "$REAL_USER" "$REAL_USER_HOME"
-    chgrp "$REAL_USER" "$REAL_USER_HOME"
+    sudo chgrp "$REAL_USER" "$REAL_USER_HOME"
 
     # everything in home should be owned by the user and in the user's group
     # this filter finds which f
@@ -44,7 +44,7 @@ configure-residual-permissions () (
         _echo-debug "sudo chown chgrp $file"
 
         sudo chown "$REAL_USER" "$file"
-        chgrp "$REAL_USER" "$file"
+        sudo chgrp "$REAL_USER" "$file"
     done
 
     _echo-success "Done."
@@ -124,22 +124,22 @@ install-gnome-essentials () (
     try-enabling-power-profiles-daemon
 
     sudo systemctl enable gdm
-    login-as-service-user gdm "gsettings set org.gnome.desktop.interface clock-format '24h'"
-    login-as-service-user gdm "gsettings set org.gnome.desktop.interface clock-show-date true"
-    login-as-service-user gdm "gsettings set org.gnome.desktop.interface clock-show-seconds true"
-    login-as-service-user gdm "gsettings set org.gnome.desktop.interface clock-show-weekday true"
-    login-as-service-user gdm "gsettings set org.gnome.desktop.interface font-antialiasing 'rgba'"
-    login-as-service-user gdm "gsettings set org.gnome.desktop.interface font-hinting 'full'"
-    login-as-service-user gdm "gsettings set org.gnome.desktop.peripherals.keyboard numlock-state false"
-    login-as-service-user gdm "gsettings set org.gnome.desktop.peripherals.keyboard remember-numlock-state false"
-    login-as-service-user gdm "gsettings set org.gnome.desktop.peripherals.keyboard repeat true"
-    login-as-service-user gdm "gsettings set org.gnome.desktop.peripherals.keyboard repeat-interval 25"
-    login-as-service-user gdm "gsettings set org.gnome.desktop.peripherals.mouse double-click 250"
-    login-as-service-user gdm "gsettings set org.gnome.desktop.peripherals.mouse middle-click-emulation false"
-    login-as-service-user gdm "gsettings set org.gnome.desktop.peripherals.mouse natural-scroll false"
-    login-as-service-user gdm "gsettings set org.gnome.desktop.peripherals.mouse speed -0.2"
-    login-as-service-user gdm "gsettings set org.gnome.desktop.peripherals.mouse accel-profile 'flat'"
-    login-as-service-user gdm "gsettings set org.gnome.desktop.peripherals.touchpad disable-while-typing false"
+    _as-service-user gdm "gsettings set org.gnome.desktop.interface clock-format '24h'"
+    _as-service-user gdm "gsettings set org.gnome.desktop.interface clock-show-date true"
+    _as-service-user gdm "gsettings set org.gnome.desktop.interface clock-show-seconds true"
+    _as-service-user gdm "gsettings set org.gnome.desktop.interface clock-show-weekday true"
+    _as-service-user gdm "gsettings set org.gnome.desktop.interface font-antialiasing 'rgba'"
+    _as-service-user gdm "gsettings set org.gnome.desktop.interface font-hinting 'full'"
+    _as-service-user gdm "gsettings set org.gnome.desktop.peripherals.keyboard numlock-state false"
+    _as-service-user gdm "gsettings set org.gnome.desktop.peripherals.keyboard remember-numlock-state false"
+    _as-service-user gdm "gsettings set org.gnome.desktop.peripherals.keyboard repeat true"
+    _as-service-user gdm "gsettings set org.gnome.desktop.peripherals.keyboard repeat-interval 25"
+    _as-service-user gdm "gsettings set org.gnome.desktop.peripherals.mouse double-click 250"
+    _as-service-user gdm "gsettings set org.gnome.desktop.peripherals.mouse middle-click-emulation false"
+    _as-service-user gdm "gsettings set org.gnome.desktop.peripherals.mouse natural-scroll false"
+    _as-service-user gdm "gsettings set org.gnome.desktop.peripherals.mouse speed -0.2"
+    _as-service-user gdm "gsettings set org.gnome.desktop.peripherals.mouse accel-profile 'flat'"
+    _as-service-user gdm "gsettings set org.gnome.desktop.peripherals.touchpad disable-while-typing false"
 
     _echo-success "Done."
 )
