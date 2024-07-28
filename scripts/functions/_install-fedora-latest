@@ -48,28 +48,6 @@ ask-user-multiple-choice () (
     done
 )
 
-dnf-group-install () (
-    _echo-status "-------------------DNF-GROUP-INSTALL----------------"
-    for g in "$@"; do
-        while :; do
-            sudo dnf group install -y --best --allowerasing "$g" && break
-        done
-    done
-    _echo-success "Finished group-installing."
-)
-
-dnf-group-install-with-optional () (
-    [[ $# -eq 0 ]] && return 2
-
-    _echo-status "-------------------DNF-GROUP-INSTALL-WITH-OPTIONAL----------------"
-    for g in "$@"; do
-        while :; do
-            sudo dnf group install -y --best --allowerasing --with-optional "$g" && break
-        done
-    done
-    _echo-success "Finished group-installing."
-)
-
 add-gsettings-shortcut () (
     [[ $# -ne 3 ]] && return 2
     # $1 is the name
@@ -215,7 +193,7 @@ install-universal-necessities () (
     sudo dnf install -y --best --allowerasing "$INSTALLABLE_ESSENTIAL_PACKAGES"
     sudo dnf install -y --best --allowerasing "$INSTALLABLE_PIPEWIRE_PACKAGES"
 
-    dnf-group-install-with-optional "hardware-support" "networkmanager-submodules" "printing"
+    sudo dnf group install -y --best --allowerasing "hardware-support" "networkmanager-submodules" "printing"
 
     sudo dnf install -y --best --allowerasing "$INSTALLABLE_APPLICATION_PACKAGES"
     flatpak install --system --noninteractive -y "$INSTALLABLE_FLATPAKS"
@@ -297,7 +275,28 @@ install-proprietary-nvidia-drivers () (
     readonly NVIDIA_GPU="$(_nvidia-gpu-model)"
 
     _echo-status "-------------------INSTALLING NVIDIA DRIVERS----------------"
-    _echo-status "Found $NVIDIA_GPU running with nouveau drivers!"
+    _echo-status "Found $NVIDIA_GPU!"
+
+    sudo dnf install -y --best --allowerasing "$INSTALLABLE_NVIDIA_DRIVERS"
+    sudo dnf install -y --best --allowerasing "$INSTALLABLE_NVIDIA_UTILS"
+
+    # check arch wiki, these enable DRM
+    sudo grubby --update-kernel=ALL --args="nvidia-drm.modeset=1"
+    sudo grubby --update-kernel=ALL --args="nvidia-drm.fbdev=1"
+    _echo-debug "Added modeset & fbdev."
+
+    _echo-debug "Regenerating akmod build..."
+    sudo akmods --force && dracut --force --regenerate-all
+    _echo-debug "Regenerated akmod build."
+
+    _echo-important "Script will hang while NVIDIA Drivers are being built."
+    _echo-important "Please note this can take upwards of five (5) minutes to finish."
+    while ! modinfo -F version nvidia; do
+        echo "Beep boop."
+        sleep 10
+        _echo-status "Waiting..."
+    done
+    _echo-success "NVIDIA drivers built."
 
     if _is-uefi && [[ $(mokutil --sb-state 2> /dev/null) ]]; then
         # https://blog.monosoul.dev/2022/05/17/automatically-sign-nvidia-kernel-module-in-fedora-36/
@@ -308,6 +307,7 @@ install-proprietary-nvidia-drivers () (
         # since they'll be compiling in the background!
         # Their recommendations talk about kmod, not akmod, but the process should be the same
         # FIXME needs checking that this actually works.
+        echo-important "You only have to do this once. Do NOT re-enroll MOK a second time."
         if ask-user 'Do you want to enroll MOK and restart afterwards?'; then
             _echo-important "Make sure you enroll MOK when you restart."
 
@@ -321,30 +321,6 @@ install-proprietary-nvidia-drivers () (
     else
         _echo-unexpected "UEFI not found; please restart & use UEFI in order to sign drivers..."
     fi
-
-    sudo dnf install -y --best --allowerasing "$INSTALLABLE_NVIDIA_DRIVERS"
-    sudo dnf install -y --best --allowerasing "$INSTALLABLE_NVIDIA_UTILS"
-    sudo dnf install -y --best --allowerasing cowsay fortune
-
-    # check arch wiki, these enable DRM
-    sudo grubby --update-kernel=ALL --args="nvidia-drm.modeset=1"
-    sudo grubby --update-kernel=ALL --args="nvidia-drm.fbdev=1"
-    _echo-debug "Added modeset & fbdev."
-
-    _echo-debug "Regenerating akmod build..."
-    sudo akmods --force && dracut --force --regenerate-all
-    _echo-debug "Regenerated akmod build."
-
-    _echo-important "Script will hang while NVIDIA Drivers are being built."
-    _echo-important "Please note this can take upwards of five (5) minutes to finish."
-    while !modinfo -F version nvidia; do
-        cowsay "$(fortune)"
-        sleep 10
-        _echo-status "Waiting..."
-    done
-    _echo-success "NVIDIA drivers built."
-
-    sudo dnf remove -y cowsay fortune
 )
 
 install-media-codecs () (
@@ -354,7 +330,7 @@ install-media-codecs () (
     sudo dnf install -y --best --allowerasing gstreamer1-plugins-{bad-\*,good-\*,base}
     sudo dnf install -y --best --allowerasing lame\*
     sudo dnf install -y --best --allowerasing "gstreamer1-plugin-openh264" "gstreamer1-libav"
-    dnf-group-install-with-optional "multimedia"
+    sudo dnf group install -y --best --allowerasing --with-optional "multimedia"
 
     sudo dnf install -y --best --allowerasing "ffmpeg" "gstreamer-ffmpeg" "ffmpeg-libs" "libva" "libva-utils"
     sudo dnf reinstall -y "/etc/yum.repos.d/fedora-cisco-openh264.repo"
@@ -390,7 +366,7 @@ install-virtualization-packages () (
 install-dev-tools () (
     _echo-status "-------------------INSTALLING DEV TOOLS----------------"
 
-    dnf-group-install-with-optional "c-development" "development-tools"
+    sudo dnf group install -y --best --allowerasing  "c-development" "development-tools"
     sudo dnf install -y --best --allowerasing "$INSTALLABLE_DEV_PKGS"
     flatpak install --system --noninteractive -y "net.werwolv.ImHex"
 
