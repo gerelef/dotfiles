@@ -54,7 +54,7 @@ require-login-shell-packages () (
         echo -e "Installing optional shell packages: \033[38;5;39m"
         echo -n "micro lsd zoxide --exclude=fzf"
         echo -e "\033[0m"
-        install-system-pkg "micro" "lsd" "zoxide" "--exclude=fzf"
+        install-system-pkg "fish" "micro" "lsd" "zoxide" "--exclude=fzf"
         mk-run-opts-file
     fi
 
