@@ -118,8 +118,8 @@ create-convenience-sudoers () (
 install-gnome-essentials () (
     _echo-status "-------------------INSTALLING GNOME----------------"
 
-    sudo dnf install -y --best --allowerasing --skip-unavailable "$INSTALLABLE_ESSENTIAL_DESKTOP_PACKAGES"
-    sudo dnf install -y --best --allowerasing --skip-unavailable "$INSTALLABLE_GNOME_ESSENTIAL_PACKAGES"
+    sudo dnf install -y --best --allowerasing --skip-unavailable $INSTALLABLE_ESSENTIAL_DESKTOP_PACKAGES
+    sudo dnf install -y --best --allowerasing --skip-unavailable $INSTALLABLE_GNOME_ESSENTIAL_PACKAGES
 
     try-enabling-power-profiles-daemon
 
@@ -147,17 +147,17 @@ install-gnome-essentials () (
 
 install-universal-necessities () (
     _echo-status "-------------------INSTALLING ESSENTIAL PACKAGES----------------"
-    sudo dnf install -y --best --allowerasing --skip-unavailable "$INSTALLABLE_ESSENTIAL_PACKAGES"
-    sudo dnf install -y --best --allowerasing --skip-unavailable "$INSTALLABLE_PIPEWIRE_PACKAGES"
+    sudo dnf install -y --best --allowerasing --skip-unavailable $INSTALLABLE_ESSENTIAL_PACKAGES
+    sudo dnf install -y --best --allowerasing --skip-unavailable $INSTALLABLE_PIPEWIRE_PACKAGES
 
     sudo dnf group install -y --best --allowerasing "hardware-support" "networkmanager-submodules" "printing"
 
-    sudo dnf install -y --best --allowerasing --skip-unavailable "$INSTALLABLE_APPLICATION_PACKAGES"
-    flatpak install --system --noninteractive -y "$INSTALLABLE_FLATPAKS"
+    sudo dnf install -y --best --allowerasing --skip-unavailable $INSTALLABLE_APPLICATION_PACKAGES
+    flatpak install --system --noninteractive -y $INSTALLABLE_FLATPAKS
 
     if _is-btrfs-rootfs || _is-btrfs-homefs; then
         _echo-status "Found BTRFS, installing tools..."
-        sudo dnf install -y --best --allowerasing --skip-unavailable "$INSTALLABLE_BTRFS_TOOLS"
+        sudo dnf install -y --best --allowerasing --skip-unavailable $INSTALLABLE_BTRFS_TOOLS
     fi
 
     # https://github.com/flameshot-org/flameshot/issues/3326#issuecomment-1855332738
@@ -219,7 +219,7 @@ optimize-laptop-battery () (
     _echo-status "Found mobile device type"
     # s3 sleep
     sudo grubby --update-kernel=ALL --args="mem_sleep_default=s2idle"
-    sudo dnf install -y --best --allowerasing --skip-unavailable "$INSTALLABLE_PWR_MGMNT"
+    sudo dnf install -y --best --allowerasing --skip-unavailable $INSTALLABLE_PWR_MGMNT
     sudo powertop --auto-tune
 
     _echo-success "Done."
@@ -234,7 +234,7 @@ install-proprietary-nvidia-drivers () (
     _echo-status "-------------------INSTALLING NVIDIA DRIVERS----------------"
     _echo-status "Found $NVIDIA_GPU!"
 
-    sudo dnf install -y --best --allowerasing --skip-unavailable "$INSTALLABLE_NVIDIA_DRIVERS"
+    sudo dnf install -y --best --allowerasing --skip-unavailable $INSTALLABLE_NVIDIA_DRIVERS
 
     # check arch wiki, these enable DRM
     sudo grubby --update-kernel=ALL --args="nvidia-drm.modeset=1"
@@ -322,7 +322,7 @@ install-gaming-packages () (
 
 install-virtualization-packages () (
     _echo-status "-------------------INSTALLING VIRTUALIZATION PACKAGES----------------"
-    sudo dnf install -y --best --allowerasing --skip-unavailable "$INSTALLABLE_VIRTUALIZATION_PACKAGES"
+    sudo dnf install -y --best --allowerasing --skip-unavailable $INSTALLABLE_VIRTUALIZATION_PACKAGES
     if _is-virtual-machine; then
         sudo dnf install -y --best --allowerasing --skip-unavailable "virtualbox-guest-additions"
     fi
@@ -334,7 +334,7 @@ install-dev-tools () (
     _echo-status "-------------------INSTALLING DEV TOOLS----------------"
 
     sudo dnf group install -y --best --allowerasing  "c-development" "development-tools"
-    sudo dnf install -y --best --allowerasing --skip-unavailable "$INSTALLABLE_DEV_PKGS"
+    sudo dnf install -y --best --allowerasing --skip-unavailable $INSTALLABLE_DEV_PKGS
     flatpak install --system --noninteractive -y "net.werwolv.ImHex"
 
     _echo-success "Done."
@@ -664,10 +664,10 @@ fi
 
 sudo dnf install -y --best --allowerasing --skip-unavailable "alacritty"
 if is-gnome-session; then
-    sudo dnf install -y --best --allowerasing --skip-unavailable "$INSTALLABLE_GNOME_APPLICATION_PACKAGES"
-    sudo dnf install -y --best --allowerasing --skip-unavailable "$INSTALLABLE_ADWAITA_PACKAGES" "$INSTALLABLE_GNOME_EXTENSIONS"
-    flatpak install --system --noninteractive -y "$INSTALLABLE_ADWAITA_FLATPAKS"
-    flatpak install --system --noninteractive -y "$INSTALLABLE_GNOME_FLATPAKS"
+    sudo dnf install -y --best --allowerasing --skip-unavailable $INSTALLABLE_GNOME_APPLICATION_PACKAGES
+    sudo dnf install -y --best --allowerasing --skip-unavailable $INSTALLABLE_ADWAITA_PACKAGES $INSTALLABLE_GNOME_EXTENSIONS
+    flatpak install --system --noninteractive -y $INSTALLABLE_ADWAITA_FLATPAKS
+    flatpak install --system --noninteractive -y $INSTALLABLE_GNOME_FLATPAKS
 fi
 
 # this needs to be up-to-date for some commands
