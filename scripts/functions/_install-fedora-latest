@@ -621,12 +621,11 @@ gnome-shell-extension-background-logo \
 
 [[ "${BASH_SOURCE[0]}" != "${0}" ]] && return
 
-# DEPENDENCIES FOR THE CURRENT SCRIPT
-sudo dnf install -y --best --allowerasing --skip-unavailable flatpak curl plocate pciutils udisks2 dnf5
-
 # change dnf4 to dnf5 (preview/unstable: is supposed to be shipped with fedora-41)
 sudo update-alternatives --install /usr/bin/dnf dnf /usr/bin/dnf5 1
 sudo dnf install -y --best --allowerasing --skip-unavailable "dnf5-command(config-manager)"
+# dependencies
+sudo dnf install -y --best --allowerasing --skip-unavailable flatpak curl plocate pciutils udisks2 dnf5
 
 if ! ping -q -c 1 -W 1 google.com > /dev/null; then
     _echo-unexpected "Network connection was not detected."
