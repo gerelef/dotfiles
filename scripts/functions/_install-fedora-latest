@@ -118,8 +118,8 @@ create-convenience-sudoers () (
 install-gnome-essentials () (
     _echo-status "-------------------INSTALLING GNOME----------------"
 
-    sudo dnf install -y --best --allowerasing "$INSTALLABLE_ESSENTIAL_DESKTOP_PACKAGES"
-    sudo dnf install -y --best --allowerasing "$INSTALLABLE_GNOME_ESSENTIAL_PACKAGES"
+    sudo dnf install -y --best --allowerasing --skip-unavailable "$INSTALLABLE_ESSENTIAL_DESKTOP_PACKAGES"
+    sudo dnf install -y --best --allowerasing --skip-unavailable "$INSTALLABLE_GNOME_ESSENTIAL_PACKAGES"
 
     try-enabling-power-profiles-daemon
 
@@ -147,17 +147,17 @@ install-gnome-essentials () (
 
 install-universal-necessities () (
     _echo-status "-------------------INSTALLING ESSENTIAL PACKAGES----------------"
-    sudo dnf install -y --best --allowerasing "$INSTALLABLE_ESSENTIAL_PACKAGES"
-    sudo dnf install -y --best --allowerasing "$INSTALLABLE_PIPEWIRE_PACKAGES"
+    sudo dnf install -y --best --allowerasing --skip-unavailable "$INSTALLABLE_ESSENTIAL_PACKAGES"
+    sudo dnf install -y --best --allowerasing --skip-unavailable "$INSTALLABLE_PIPEWIRE_PACKAGES"
 
     sudo dnf group install -y --best --allowerasing "hardware-support" "networkmanager-submodules" "printing"
 
-    sudo dnf install -y --best --allowerasing "$INSTALLABLE_APPLICATION_PACKAGES"
+    sudo dnf install -y --best --allowerasing --skip-unavailable "$INSTALLABLE_APPLICATION_PACKAGES"
     flatpak install --system --noninteractive -y "$INSTALLABLE_FLATPAKS"
 
     if _is-btrfs-rootfs || _is-btrfs-homefs; then
         _echo-status "Found BTRFS, installing tools..."
-        sudo dnf install -y --best --allowerasing "$INSTALLABLE_BTRFS_TOOLS"
+        sudo dnf install -y --best --allowerasing --skip-unavailable "$INSTALLABLE_BTRFS_TOOLS"
     fi
 
     # https://github.com/flameshot-org/flameshot/issues/3326#issuecomment-1855332738
@@ -197,7 +197,7 @@ optimize-hardware () (
         sudo grubby --update-kernel=ALL --args="mem_sleep_default=s2idle"
         if !is_service_running power-profiles-daemon; then
             sudo systemctl mask power-profiles-daemon
-            sudo dnf install -y --best --allowerasing tlp tlp-rdw powertop
+            sudo dnf install -y --best --allowerasing --skip-unavailable tlp tlp-rdw powertop
             powertop --auto-tune
         fi
     fi
@@ -219,7 +219,7 @@ optimize-laptop-battery () (
     _echo-status "Found mobile device type"
     # s3 sleep
     sudo grubby --update-kernel=ALL --args="mem_sleep_default=s2idle"
-    sudo dnf install -y --best --allowerasing "$INSTALLABLE_PWR_MGMNT"
+    sudo dnf install -y --best --allowerasing --skip-unavailable "$INSTALLABLE_PWR_MGMNT"
     sudo powertop --auto-tune
 
     _echo-success "Done."
@@ -234,7 +234,7 @@ install-proprietary-nvidia-drivers () (
     _echo-status "-------------------INSTALLING NVIDIA DRIVERS----------------"
     _echo-status "Found $NVIDIA_GPU!"
 
-    sudo dnf install -y --best --allowerasing "$INSTALLABLE_NVIDIA_DRIVERS"
+    sudo dnf install -y --best --allowerasing --skip-unavailable "$INSTALLABLE_NVIDIA_DRIVERS"
 
     # check arch wiki, these enable DRM
     sudo grubby --update-kernel=ALL --args="nvidia-drm.modeset=1"
@@ -283,29 +283,29 @@ install-media-codecs () (
     _echo-status "-------------------INSTALLING CODECS / H/W VIDEO ACCELERATION----------------"
 
     # based on https://github.com/devangshekhawat/Fedora-39-Post-Install-Guide
-    sudo dnf install -y --best --allowerasing gstreamer1-plugins-{bad-\*,good-\*,base}
-    sudo dnf install -y --best --allowerasing lame\*
-    sudo dnf install -y --best --allowerasing "gstreamer1-plugin-openh264" "gstreamer1-libav"
+    sudo dnf install -y --best --allowerasing --skip-unavailable gstreamer1-plugins-{bad-\*,good-\*,base}
+    sudo dnf install -y --best --allowerasing --skip-unavailable lame\*
+    sudo dnf install -y --best --allowerasing --skip-unavailable "gstreamer1-plugin-openh264" "gstreamer1-libav"
     sudo dnf group install -y --best --allowerasing --with-optional "multimedia"
 
     # extra by me
-    sudo dnf install -y --best --allowerasing "obs-studio" \
+    sudo dnf install -y --best --allowerasing --skip-unavailable "obs-studio" \
     "obs-studio-plugin-vkcapture" \
     "obs-studio-plugin-vlc-video" \
     "obs-studio-plugin-webkitgtk" \
     "obs-studio-plugin-x264"
 
-    sudo dnf install -y --best --allowerasing "ffmpeg" "gstreamer-ffmpeg" "ffmpeg-libs" "libva" "libva-utils"
+    sudo dnf install -y --best --allowerasing --skip-unavailable "ffmpeg" "gstreamer-ffmpeg" "ffmpeg-libs" "libva" "libva-utils"
     sudo dnf reinstall -y "/etc/yum.repos.d/fedora-cisco-openh264.repo"
-    sudo dnf install -y --best --allowerasing "openh264" "gstreamer1-plugin-openh264" "mozilla-openh264"
+    sudo dnf install -y --best --allowerasing --skip-unavailable "openh264" "gstreamer1-plugin-openh264" "mozilla-openh264"
 )
 
 install-gaming-packages () (
     _echo-status "-------------------INSTALLING GAMING PACKAGES----------------"
-    sudo dnf install -y --best --allowerasing "steam" "gamescope"
+    sudo dnf install -y --best --allowerasing --skip-unavailable "steam" "gamescope"
     flatpak install --system --noninteractive -y "com.discordapp.Discord"
     # vulkan drivers are required for proton-ge to work
-    sudo dnf install -y --best --allowerasing "protontricks" "vulkan" "vulkan-loader" "vulkan-loader.i686"
+    sudo dnf install -y --best --allowerasing --skip-unavailable "protontricks" "vulkan" "vulkan-loader" "vulkan-loader.i686"
     update-compat-layers --steam --golden-egg
 
     # FIX FOR INPUT LAG / KEYBOARD KEYS GETTING STUCK:
@@ -322,9 +322,9 @@ install-gaming-packages () (
 
 install-virtualization-packages () (
     _echo-status "-------------------INSTALLING VIRTUALIZATION PACKAGES----------------"
-    sudo dnf install -y --best --allowerasing "$INSTALLABLE_VIRTUALIZATION_PACKAGES"
+    sudo dnf install -y --best --allowerasing --skip-unavailable "$INSTALLABLE_VIRTUALIZATION_PACKAGES"
     if _is-virtual-machine; then
-        sudo dnf install -y --best --allowerasing "virtualbox-guest-additions"
+        sudo dnf install -y --best --allowerasing --skip-unavailable "virtualbox-guest-additions"
     fi
     usermod -a -G libvirt $REAL_USER
     _echo-success "Done."
@@ -334,7 +334,7 @@ install-dev-tools () (
     _echo-status "-------------------INSTALLING DEV TOOLS----------------"
 
     sudo dnf group install -y --best --allowerasing  "c-development" "development-tools"
-    sudo dnf install -y --best --allowerasing "$INSTALLABLE_DEV_PKGS"
+    sudo dnf install -y --best --allowerasing --skip-unavailable "$INSTALLABLE_DEV_PKGS"
     flatpak install --system --noninteractive -y "net.werwolv.ImHex"
 
     _echo-success "Done."
@@ -621,11 +621,11 @@ gnome-shell-extension-background-logo \
 [[ "${BASH_SOURCE[0]}" != "${0}" ]] && return
 
 # DEPENDENCIES FOR THE CURRENT SCRIPT
-sudo dnf install -y --best --allowerasing flatpak curl plocate pciutils udisks2 dnf5
+sudo dnf install -y --best --allowerasing --skip-unavailable flatpak curl plocate pciutils udisks2 dnf5
 
 # change dnf4 to dnf5 (preview/unstable: is supposed to be shipped with fedora-41)
 sudo update-alternatives --install /usr/bin/dnf dnf /usr/bin/dnf5 1
-sudo dnf install -y --best --allowerasing "dnf5-command(config-manager)"
+sudo dnf install -y --best --allowerasing --skip-unavailable "dnf5-command(config-manager)"
 
 if ! ping -q -c 1 -W 1 google.com > /dev/null; then
     _echo-unexpected "Network connection was not detected."
@@ -637,9 +637,9 @@ fi
 copy-dnf
 
 # for some reason this repository is added on every new install, it's NOT needed since we use toolbox
-sudo dnf copr remove -y --skip-broken phracek/PyCharm 2> /dev/null
-sudo dnf install -y --best --allowerasing "https://download1.rpmfusion.org/free/fedora/rpmfusion-free-release-$(rpm -E %fedora).noarch.rpm" # free rpmfusion
-sudo dnf install -y --best --allowerasing "https://download1.rpmfusion.org/nonfree/fedora/rpmfusion-nonfree-release-$(rpm -E %fedora).noarch.rpm" # nonfree rpmfusion
+sudo dnf copr remove -y --skip-unavailable phracek/PyCharm 2> /dev/null
+sudo dnf install -y --best --allowerasing --skip-unavailable "https://download1.rpmfusion.org/free/fedora/rpmfusion-free-release-$(rpm -E %fedora).noarch.rpm" # free rpmfusion
+sudo dnf install -y --best --allowerasing --skip-unavailable "https://download1.rpmfusion.org/nonfree/fedora/rpmfusion-nonfree-release-$(rpm -E %fedora).noarch.rpm" # nonfree rpmfusion
 
 # no requirement to add flathub ourselves anymore in f38; it should be enabled by default. however, it may not be, most likely by accident, so this is a failsafe
 sudo flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo 2> /dev/null
@@ -662,10 +662,10 @@ if [[ -z $XDG_CURRENT_DESKTOP ]]; then
 fi
 
 
-sudo dnf install -y --best --allowerasing "alacritty"
+sudo dnf install -y --best --allowerasing --skip-unavailable "alacritty"
 if is-gnome-session; then
-    sudo dnf install -y --best --allowerasing "$INSTALLABLE_GNOME_APPLICATION_PACKAGES"
-    sudo dnf install -y --best --allowerasing "$INSTALLABLE_ADWAITA_PACKAGES" "$INSTALLABLE_GNOME_EXTENSIONS"
+    sudo dnf install -y --best --allowerasing --skip-unavailable "$INSTALLABLE_GNOME_APPLICATION_PACKAGES"
+    sudo dnf install -y --best --allowerasing --skip-unavailable "$INSTALLABLE_ADWAITA_PACKAGES" "$INSTALLABLE_GNOME_EXTENSIONS"
     flatpak install --system --noninteractive -y "$INSTALLABLE_ADWAITA_FLATPAKS"
     flatpak install --system --noninteractive -y "$INSTALLABLE_GNOME_FLATPAKS"
 fi
@@ -727,7 +727,7 @@ configure-ssh-defaults
 if [[ -n "$INSTALL_SCRCPY" ]]; then
     _echo-status "Installing zeno/scrcpy ..."
     sudo dnf copr enable -y zeno/scrcpy
-    sudo dnf install -y --best --allowerasing scrcpy adb
+    sudo dnf install -y --best --allowerasing --skip-unavailable scrcpy adb
     sudo systemctl enable adb
 fi
 
