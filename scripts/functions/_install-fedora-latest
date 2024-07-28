@@ -651,6 +651,7 @@ sudo dnf upgrade -y --refresh
 
 #######################################################################################################
 
+sudo dnf install -y --best --allowerasing "alacritty"
 # if there's no desktop environment running...
 if [[ -z $XDG_CURRENT_DESKTOP ]]; then
     # run installer ...
@@ -661,8 +662,6 @@ if [[ -z $XDG_CURRENT_DESKTOP ]]; then
     sudo systemctl reboot
 fi
 
-
-sudo dnf install -y --best --allowerasing --skip-unavailable "alacritty"
 if is-gnome-session; then
     sudo dnf install -y --best --allowerasing --skip-unavailable $INSTALLABLE_GNOME_APPLICATION_PACKAGES
     sudo dnf install -y --best --allowerasing --skip-unavailable $INSTALLABLE_ADWAITA_PACKAGES $INSTALLABLE_GNOME_EXTENSIONS
