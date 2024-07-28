@@ -263,7 +263,7 @@ optimize-laptop-battery () (
     # s3 sleep
     sudo grubby --update-kernel=ALL --args="mem_sleep_default=s2idle"
     sudo dnf install -y --best --allowerasing "$INSTALLABLE_PWR_MGMNT"
-    powertop --auto-tune
+    sudo powertop --auto-tune
 
     _echo-success "Done."
 )
@@ -278,7 +278,6 @@ install-proprietary-nvidia-drivers () (
     _echo-status "Found $NVIDIA_GPU!"
 
     sudo dnf install -y --best --allowerasing "$INSTALLABLE_NVIDIA_DRIVERS"
-    sudo dnf install -y --best --allowerasing "$INSTALLABLE_NVIDIA_UTILS"
 
     # check arch wiki, these enable DRM
     sudo grubby --update-kernel=ALL --args="nvidia-drm.modeset=1"
@@ -585,10 +584,6 @@ nvidia-gpu-firmware \
 nvidia-modprobe \
 "
 
-readonly INSTALLABLE_NVIDIA_UTILS="\
-nvidia-settings \
-"
-
 readonly INSTALLABLE_PWR_MGMNT="\
 tlp \
 tlp-rdw \
@@ -601,9 +596,7 @@ gamescope \
 "
 
 readonly INSTALLABLE_WINE_GE_CUSTOM_PKGS="\
-wine \
 vulkan \
-winetricks \
 protontricks \
 vulkan-loader \
 vulkan-loader.i686 \
