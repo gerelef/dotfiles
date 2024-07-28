@@ -693,7 +693,6 @@ ask-user 'Do you want to install Zed Text Editor?' && INSTALL_ZED="yes"
 ask-user 'Do you want to install Visual Studio Code?' && INSTALL_VSC="yes"
 ask-user 'Do you want to install Sublime Text Editor?' && INSTALL_SUBLIME="yes"
 ask-user 'Do you want to install zeno/scrcpy?' && INSTALL_SCRCPY="yes"
-ask-user 'Do you want to install zeno/scrcpy?' && INSTALL_SCRCPY="yes"
 
 #######################################################################################################
 
