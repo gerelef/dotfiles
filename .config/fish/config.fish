@@ -151,6 +151,6 @@ if type -q lsd
 end
 
 if type -q micro
-    set EDITOR "micro"
+    set -gx EDITOR "micro"
     abbr --position command --add nano "micro"
 end
