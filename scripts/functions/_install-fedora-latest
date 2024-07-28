@@ -124,12 +124,6 @@ install-gnome-essentials () (
     try-enabling-power-profiles-daemon
 
     sudo systemctl enable gdm
-    _as-service-user gdm "gsettings set org.gnome.desktop.interface clock-format '24h'"
-    _as-service-user gdm "gsettings set org.gnome.desktop.interface clock-show-date true"
-    _as-service-user gdm "gsettings set org.gnome.desktop.interface clock-show-seconds true"
-    _as-service-user gdm "gsettings set org.gnome.desktop.interface clock-show-weekday true"
-    _as-service-user gdm "gsettings set org.gnome.desktop.interface font-antialiasing 'rgba'"
-    _as-service-user gdm "gsettings set org.gnome.desktop.interface font-hinting 'full'"
     _as-service-user gdm "gsettings set org.gnome.desktop.peripherals.keyboard numlock-state false"
     _as-service-user gdm "gsettings set org.gnome.desktop.peripherals.keyboard remember-numlock-state false"
     _as-service-user gdm "gsettings set org.gnome.desktop.peripherals.keyboard repeat true"
@@ -139,7 +133,20 @@ install-gnome-essentials () (
     _as-service-user gdm "gsettings set org.gnome.desktop.peripherals.mouse natural-scroll false"
     _as-service-user gdm "gsettings set org.gnome.desktop.peripherals.mouse speed -0.2"
     _as-service-user gdm "gsettings set org.gnome.desktop.peripherals.mouse accel-profile 'flat'"
+    _as-service-user gdm "gsettings set org.gnome.desktop.peripherals.touchpad accel-profile 'flat'"
+    _as-service-user gdm "gsettings set org.gnome.desktop.peripherals.touchpad click-method 'none'"
     _as-service-user gdm "gsettings set org.gnome.desktop.peripherals.touchpad disable-while-typing false"
+    _as-service-user gdm "gsettings set org.gnome.desktop.peripherals.touchpad edge-scrolling-enabled false"
+    _as-service-user gdm "gsettings set org.gnome.desktop.peripherals.touchpad left-handed 'mouse'"
+    _as-service-user gdm "gsettings set org.gnome.desktop.peripherals.touchpad middle-click-emulation false"
+    _as-service-user gdm "gsettings set org.gnome.desktop.peripherals.touchpad natural-scroll true"
+    _as-service-user gdm "gsettings set org.gnome.desktop.peripherals.touchpad send-events 'enabled'"
+    _as-service-user gdm "gsettings set org.gnome.desktop.peripherals.touchpad speed 0.10000000000000001"
+    _as-service-user gdm "gsettings set org.gnome.desktop.peripherals.touchpad tap-and-drag false"
+    _as-service-user gdm "gsettings set org.gnome.desktop.peripherals.touchpad tap-and-drag-lock false"
+    _as-service-user gdm "gsettings set org.gnome.desktop.peripherals.touchpad tap-button-map 'default'"
+    _as-service-user gdm "gsettings set org.gnome.desktop.peripherals.touchpad tap-to-click false"
+    _as-service-user gdm "gsettings set org.gnome.desktop.peripherals.touchpad two-finger-scrolling-enabled true"
 
     _echo-success "Done."
 )
