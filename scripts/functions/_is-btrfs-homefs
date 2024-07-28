@@ -4,7 +4,7 @@
 
 is-btrfs-homefs () (
     home_fs=$(stat -f --format=%T "$(eval echo "~${SUDO_USER:-$(whoami)}")")
-    echo-debug "is-btrfs-homefs $home_fs"
+    _echo-debug "is-btrfs-homefs $home_fs"
     [[ "btrfs" == $home_fs ]] && return 0
     return 1
 )

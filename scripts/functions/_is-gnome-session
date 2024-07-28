@@ -3,7 +3,7 @@
 # HELP check if running under gnome
 
 is-gnome-session () (
-    echo-debug "is-gnome-session $XDG_CURRENT_DESKTOP"
+    _echo-debug "is-gnome-session $XDG_CURRENT_DESKTOP"
     [[ $XDG_CURRENT_DESKTOP == "GNOME" ]] && return 0
     return 1
 )

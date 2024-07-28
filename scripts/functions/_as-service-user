@@ -4,7 +4,7 @@
 
 as-service-user () (
     # username and command must be given
-    echo "as-systemd-service-user $1 $2"
+    _echo-debug "as-systemd-service-user $1 $2"
     [[ $# != 2 ]] && exit 1
     sudo machinectl shell "$1@" $(whereis bash | awk '{ printf $2 }') -c "$2"
 )

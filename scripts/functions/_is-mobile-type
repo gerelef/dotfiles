@@ -3,7 +3,7 @@
 # HELP check if the computer running the script is a mobile type (e.g. laptop)
 
 is-mobile-type () (
-    echo-debug "is-mobile-type $(dmidecode --string chassis-type)"
+    _echo-debug "is-mobile-type $(dmidecode --string chassis-type)"
     readonly CHASSIS_TYPE="$(dmidecode --string chassis-type)"
     [[ $CHASSIS_TYPE == "Notebook" || $CHASSIS_TYPE == "Tablet" || $CHASSIS_TYPE == "Convertible" ]] && return 0
     return 1

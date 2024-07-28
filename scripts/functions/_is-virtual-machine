@@ -3,7 +3,7 @@
 # HELP check if running under vm
 
 is-virtual-machine () (
-    echo-debug "is-virtual-machine $(systemd-detect-virt)"
+    _echo-debug "is-virtual-machine $(systemd-detect-virt)"
     [[ $(systemd-detect-virt) != "none" ]] && return 0
     return 1
 )
