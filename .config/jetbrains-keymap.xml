@@ -84,6 +84,10 @@
   </action>
   <action id="GotoTest" />
   <action id="GuiDesigner.ShrinkSelection" />
+  <action id="HideAllWindows">
+    <keyboard-shortcut first-keystroke="shift ctrl f12" />
+    <keyboard-shortcut first-keystroke="f1" />
+  </action>
   <action id="Images.Editor.ZoomIn">
     <keyboard-shortcut first-keystroke="ctrl add" />
   </action>
@@ -126,9 +130,6 @@
   <action id="TableResult.ShrinkSelection" />
   <action id="Terminal.DeletePreviousWord" />
   <action id="Terminal.NewTab" />
-  <action id="ToggleDistractionFreeMode">
-    <keyboard-shortcut first-keystroke="f1" />
-  </action>
   <action id="UsageFiltering.WriteAccess" />
   <action id="UsageGrouping.DirectoryStructure" />
   <action id="UsageGrouping.FileStructure" />
