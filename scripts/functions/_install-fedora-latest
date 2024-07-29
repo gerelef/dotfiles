@@ -41,7 +41,7 @@ configure-residual-permissions () (
     # everything in home should be owned by the user and in the user's group
     # this filter finds which f
     find "$REAL_USER_HOME" -user root -print0 2> /dev/null | while read -d $'\0' file; do
-        _echo-debug "sudo chown chgrp $file"
+        _echo-debug "sudo chown chgrp $REAL_USER $file"
 
         sudo chown "$REAL_USER" "$file"
         sudo chgrp "$REAL_USER" "$file"
@@ -51,6 +51,7 @@ configure-residual-permissions () (
 )
 
 copy-dnf () (
+    _echo-debug "Copying /etc/dnf/dnf.conf"
     sudo tee "/etc/dnf/dnf.conf" <<-DNF_EOF
 [main]
 gpgcheck=1
@@ -65,17 +66,6 @@ keepcache=true
 DNF_EOF
 )
 
-try-enabling-power-profiles-daemon () (
-    sudo systemctl enable power-profiles-daemon.service
-    sudo systemctl start power-profiles-daemon.service
-    sleep 10  # sleep in order for the service to spin up
-    readonly PLACEHOLDER_COUNT=$(powerprofilesctl list | grep placeholder | wc -l)
-    if [[ $PLACEHOLDER_COUNT -gt 1 ]]; then
-        sudo systemctl stop power-profiles-daemon.service
-        sudo systemctl mask power-profiles-daemon.service
-    fi
-)
-
 # man 5 sysctl.d
 #    CONFIGURATION DIRECTORIES AND PRECEDENCE
 #    ...
@@ -84,14 +74,17 @@ try-enabling-power-profiles-daemon () (
 #    It is recommended to prefix all filenames with a two-digit number and a dash, to simplify the ordering of the files.
 
 lower-swappiness () (
+    _echo-debug "Lowering swappiness"
     sudo sh -c 'echo "vm.swappiness = 10" > "/etc/sysctl.d/90-swappiness.conf"'
 )
 
 raise-user-watches () (
+    _echo-debug "Raising user-watches"
     sudo sh -c 'echo "fs.inotify.max_user_watches = 600000" > "/etc/sysctl.d/90-max_user_watches.conf"'
 )
 
 raise-memory-map-counts () (
+    _echo-debug "Raising memory map counts to the maximum integer limit"
     # Increase the number of memory map areas a process may have. No need for it in fedora 39 or higher. Relevant links:
     # https://fedoraproject.org/wiki/Changes/IncreaseVmMaxMapCount
     # https://wiki.archlinux.org/title/gaming
@@ -102,14 +95,17 @@ raise-memory-map-counts () (
 cap-nproc-count () (
     [[ -z "$REAL_USER" ]] && return 1;
 
+    _echo-debug "Capping nproc-count to prevent fork-bombs (hard nproc 10_000)"
     sudo sh -c "echo \"$REAL_USER 'hard nproc 10000'\" > '/etc/security/limits.d/90-nproc.conf'"
 )
 
 cap-max-logins-system () (
+    _echo-debug "Capping max logins to 20"
     sudo sh -c 'echo "* - maxsyslogins 20" > "/etc/security/limits.d/90-maxsyslogins.conf"'
 )
 
 create-convenience-sudoers () (
+    _echo-debug "Creating convenience for sudoers.d/convenience-defaults"
     # 440 is the default rights of /etc/sudoers file, so we're copying the rights just in case (even though visudo -f /etc/sudoers.d/test creates the file with 640)
     sudo sh -c 'echo "Defaults timestamp_timeout=120, pwfeedback" > "/etc/sudoers.d/convenience-defaults"'
     sudo chmod 440 "/etc/sudoers.d/convenience-defaults"
@@ -120,8 +116,6 @@ install-gnome-essentials () (
 
     sudo dnf install -y --best --allowerasing --skip-unavailable $INSTALLABLE_ESSENTIAL_DESKTOP_PACKAGES
     sudo dnf install -y --best --allowerasing --skip-unavailable $INSTALLABLE_GNOME_ESSENTIAL_PACKAGES
-
-    try-enabling-power-profiles-daemon
 
     sudo systemctl enable gdm
     _as-service-user gdm "gsettings set org.gnome.desktop.peripherals.keyboard numlock-state false"
@@ -162,6 +156,7 @@ install-universal-necessities () (
     sudo dnf install -y --best --allowerasing --skip-unavailable $INSTALLABLE_APPLICATION_PACKAGES
     flatpak install --system --noninteractive -y $INSTALLABLE_FLATPAKS
 
+    _echo-debug "Checking whether btrfs is in rootfs or homefs (sometimes are different partitions)"
     if _is-btrfs-rootfs || _is-btrfs-homefs; then
         _echo-status "Found BTRFS, installing tools..."
         sudo dnf install -y --best --allowerasing --skip-unavailable $INSTALLABLE_BTRFS_TOOLS
@@ -193,23 +188,71 @@ optimize-hardware () (
     _echo-status "-------------------OPTIMIZING HARDWARE----------------"
 
     if _is-uefi; then
-        _echo-status "Updating UEFI with fwupdmgr..."
-        sudo fwupdmgr refresh --force -y
-        sudo fwupdmgr get-updates -y
-        sudo fwupdmgr update -y
+        # the reason for disabling this, is the fact that it carries too much risk
+        #  to do it in userspace / while running.
+        _echo-important "Disabling UEFI updates via fwupd / fwupdmgr. Do it manually instead."
+        sudo systemctl stop fwupd
+        sudo systemctl disable fwupd
+        sudo systemctl mask fwupd
     fi
 
-    # s2 sleep
+    _echo-debug "Enabling power profiles daemon..."
+    sudo systemctl enable power-profiles-daemon.service
+    sudo systemctl start power-profiles-daemon.service
+    _echo-debug "Waiting for power profiles daemon to spin up..."
+    sleep 10  # sleep in order for the service to spin up
+    readonly PLACEHOLDER_COUNT=$(powerprofilesctl list | grep placeholder | wc -l)
+    _echo-debug "Got placeholder count $PLACEHOLDER_COUNT (-gt 1 will disable it)"
+    if [[ $PLACEHOLDER_COUNT -gt 1 ]]; then
+        _echo-debug "Disabling power profiles daemon..."
+        sudo systemctl stop power-profiles-daemon.service
+        sudo systemctl disable power-profiles-daemon.service
+    fi
+
     if _is-mobile-type; then
-        sudo grubby --update-kernel=ALL --args="mem_sleep_default=s2idle"
+        _echo-status "Enabling power-efficient (but less secure) suspend to ram for mobile-type."
+        _echo-important "This will fail HSI-2 tests."
+        sudo grubby --update-kernel=ALL --args="mem_sleep_default=deep"  # deep sleep
+        _echo-debug "Enabling deep /sys/power/mem_sleep"
+        sudo sh -c 'echo deep > /sys/power/mem_sleep'
+        _echo-debug "Updated grub."
+        sudo update-grub
         if ! _is-service-running power-profiles-daemon; then
+            _echo-status "Since power-profiles-daemon is not running, we're going to mask it and use \`tlp\`"
+            # tlp requires these daemons to be dead
+            _echo-debug "masking power-profiles-daemon"
             sudo systemctl mask power-profiles-daemon
-            sudo dnf install -y --best --allowerasing --skip-unavailable tlp tlp-rdw powertop
-            sudo powertop --auto-tune
+            _echo-debug "masking rfkill.socket"
+            sudo systemctl mask systemd-rfkill.socket
+            _echo-debug "disabling rfkill.service"
+            sudo systemctl disable systemd-rfkill.service
+            sudo dnf install -y --best --allowerasing --skip-unavailable tlp tlp-rdw
+            # tlp-rdw requires NetworkManager-dispatcher.service
+            _echo-debug "enabling NetworkManager-dispatcher.service"
+            sudo systemctl enable NetworkManager-dispatcher.service
+            sudo systemctl start NetworkManager-dispatcher.service
+
+            _echo-debug "enabling tlp"
+            sudo systemctl enable tlp
+            sudo systemctl start tlp
+            sudo tee "/etc/tlp.conf" <<TLP_END
+# Do not suspend USB devices
+USB_AUTOSUSPEND=0
+# Operation mode when no power supply can be detected: AC, BAT.
+TLP_DEFAULT_MODE=BAT
+# Operation mode select: 0=depend on power source, 1=always use TLP_DEFAULT_MODE
+TLP_PERSISTENT_DEFAULT=0
+TLP_END
+            _echo-debug "Configured tlp. Settings will probably apply on next reboot."
         fi
     fi
 
     if _is-desktop-type; then
+        _echo-status "Enabling non-power efficient (but more secure) suspend to idle (s2idle) for desktop-type..."
+        _echo-important "This will pass HSI-2 tests."
+        sudo grubby --update-kernel=ALL --args="mem_sleep_default=s2idle"
+        sudo sh -c 'echo s2idle > /sys/power/mem_sleep'
+        sudo update-grub
         _echo-status "Disabling mobile-gpu specific service (https://forums.developer.nvidia.com/t/no-matching-gpu-found-with-510-47-03/202315/5)"
         sudo systemctl disable nvidia-powerd.service
         return
@@ -218,19 +261,40 @@ optimize-hardware () (
     _echo-success "Done."
 )
 
-optimize-laptop-battery () (
-    # if we're on anything but a mobile device, gtfo
-    ! _is-mobile-type && return 0
+create-swapfile () (
+    # if we haven't created /swapfile, go ahead, otherwise get out
+    [[ -n $(cat /etc/fstab | grep "/swapfile swap swap defaults 0 0") ]] && return
+    [[ -n $(cat /etc/fstab | grep "/swapfile none swap defaults 0 0") ]] && return
 
-    _echo-status "-------------------OPTIMIZING LAPTOP BATTERY----------------"
-    _echo-status "Found mobile device type"
-    # s3 sleep
-    sudo grubby --update-kernel=ALL --args="mem_sleep_default=s2idle"
-    sudo dnf install -y --best --allowerasing --skip-unavailable $INSTALLABLE_PWR_MGMNT
-    sudo powertop --auto-tune
+    echo-status "-------------------CREATING /swapfile----------------"
+    # btrfs specific no copy-on-write
+    # https://unix.stackexchange.com/questions/599949/swapfile-swapon-invalid-argument
+    if is-btrfs-rootfs; then
+        _echo-debug "running btrfs truncate/chattr"
+        sudo truncate -s 0 /swapfile
+        sudo chattr +C /swapfile
+    fi
 
-    _echo-success "Done."
+    kbs=$(cat /proc/meminfo | grep MemTotal | grep -E -o "[0-9]+")
+    sudo dd if=/dev/zero of=/swapfile bs=1KB count=$kbs
+    _echo-debug "created /swapfile"
+    sudo chmod 600 /swapfile
+    sudo chown root /swapfile
+    _echo-debug "set /swapfile permissions"
+    sudo mkswap /swapfile
+    sudo swapon /swapfile
+    _echo-debug "mkswap/swapon done"
+
+    # btrfs specific fstab entry
+    if is-btrfs-rootfs; then
+        sudo sh -c '"/swapfile none swap defaults 0 0" >> /etc/fstab'
+        echo-success "Done."
+        return
+    fi
+    sudo sh -c '"/swapfile swap swap defaults 0 0" >> /etc/fstab'
+    echo-success "Done."
 )
+
 
 install-proprietary-nvidia-drivers () (
     # install nvidia drivers if we have an NVIDIA card
@@ -247,6 +311,8 @@ install-proprietary-nvidia-drivers () (
     sudo grubby --update-kernel=ALL --args="nvidia-drm.modeset=1"
     sudo grubby --update-kernel=ALL --args="nvidia-drm.fbdev=1"
     _echo-debug "Added modeset & fbdev."
+    sudo update-grub
+    _echo-debug "Updated grub."
 
     _echo-debug "Regenerating akmod build..."
     sudo akmods --force && dracut --force --regenerate-all
@@ -313,7 +379,9 @@ install-gaming-packages () (
     flatpak install --system --noninteractive -y "com.discordapp.Discord" "com.leinardi.gst"
     # vulkan drivers are required for proton-ge to work
     sudo dnf install -y --best --allowerasing --skip-unavailable "protontricks" "vulkan" "vulkan-loader" "vulkan-loader.i686"
+    _echo-debug "installed proton-ge prerequisites"
     update-compat-layers --steam --golden-egg
+    _echo-debug "updated compatibility layers"
 
     # FIX FOR INPUT LAG / KEYBOARD KEYS GETTING STUCK:
     #  https://discussion.fedoraproject.org/t/ibus-daemon-introduces-delays-and-even-locks-keyboard-up-in-some-steam-games/118095/4
@@ -324,6 +392,7 @@ install-gaming-packages () (
     #  https://github.com/chrislo27/PolyrhythmMania/issues/24
     sudo sh -c 'echo "XMODIFIERS=@im=null" >> /etc/environment'
     sudo chmod 644 "/etc/environment"
+    _echo-debug "Configured input lag ibus issue via /etc/environment."
     _echo-success "Done."
 )
 
@@ -332,8 +401,10 @@ install-virtualization-packages () (
     sudo dnf install -y --best --allowerasing --skip-unavailable $INSTALLABLE_VIRTUALIZATION_PACKAGES
     if _is-virtual-machine; then
         sudo dnf install -y --best --allowerasing --skip-unavailable "virtualbox-guest-additions"
+        _echo-debug "Installed virtualbox-guest-additions."
     fi
     usermod -a -G libvirt $REAL_USER
+    _echo-debug "Added $REAL_USER to libvirt group."
     _echo-success "Done."
 )
 
@@ -559,12 +630,6 @@ nvidia-gpu-firmware \
 nvidia-modprobe \
 "
 
-readonly INSTALLABLE_PWR_MGMNT="\
-tlp \
-tlp-rdw \
-powertop \
-"
-
 readonly INSTALLABLE_EXTRAS="\
 steam \
 gamescope \
@@ -659,17 +724,23 @@ sudo dnf upgrade -y --refresh
 #######################################################################################################
 
 sudo dnf install -y --best --allowerasing "alacritty"
+_echo-debug "Installed terminal of choice for GUI-land."
 # if there's no desktop environment running...
 if [[ -z $XDG_CURRENT_DESKTOP ]]; then
+    _echo-debug "No \$XDG_CURRENT_DESKTOP detected: $XDG_CURRENT_DESKTOP"
     # run installer ...
     install-gnome-essentials
 
     _echo-important "Making sure we're booting into a DE next time we boot..."
     sudo systemctl set-default graphical.target
+    _echo-debug "Set-default graphical.target"
+    _echo-debug "Rebooting in 5''..."
+    sleep 5  # sleep so user can actually read message just in case
     sudo systemctl reboot
 fi
 
 if _is-gnome-session; then
+    _echo-debug "GNOME session detected. Installing GNOME/libadwaita-specific packages."
     sudo dnf install -y --best --allowerasing --skip-unavailable $INSTALLABLE_GNOME_APPLICATION_PACKAGES
     sudo dnf install -y --best --allowerasing --skip-unavailable $INSTALLABLE_ADWAITA_PACKAGES $INSTALLABLE_GNOME_EXTENSIONS
     flatpak install --system --noninteractive -y $INSTALLABLE_ADWAITA_FLATPAKS
@@ -677,6 +748,7 @@ if _is-gnome-session; then
 fi
 
 # this needs to be up-to-date for some commands
+_echo-debug "running updatedb..."
 sudo updatedb 2> /dev/null
 if [[ ! $? -eq 0 ]]; then
     _echo-unexpected "updatedb errored, retrying with absolute path"
@@ -691,25 +763,32 @@ _echo-important "Note that NVIDIA drivers require manual confirmation for MOK en
 _echo-important " due to its intrusive nature."
 
 ask-user 'Do you want to install virtualization packages?' && INSTALL_VIRTUALIZATION="yes"
+_echo-debug "Will install virtualization: $INSTALL_VIRTUALIZATION"
 ask-user 'Do you want to install gaming packages?' && INSTALL_GAMING="yes"
-
+_echo-debug "Will install gaming: $INSTALL_GAMING"
 ask-user 'Do you want to install development tools?' && INSTALL_DEV_TOOLS="yes"
+_echo-debug "Will install dev-tools: $INSTALL_DEV_TOOLS"
 ask-user 'Do you want to install JetBrains Toolbox?' && INSTALL_JETBRAINS="yes"
+_echo-debug "Will install jetbrains: $INSTALL_JETBRAINS"
 ask-user 'Do you want to install Zed Text Editor?' && INSTALL_ZED="yes"
+_echo-debug "Will install zed: $INSTALL_ZED"
 ask-user 'Do you want to install Visual Studio Code?' && INSTALL_VSC="yes"
+_echo-debug "Will install vsc: $INSTALL_VSC"
 ask-user 'Do you want to install Sublime Text Editor?' && INSTALL_SUBLIME="yes"
+_echo-debug "Will install SUBLIME: $INSTALL_SUBLIME"
 ask-user 'Do you want to install zeno/scrcpy?' && INSTALL_SCRCPY="yes"
+_echo-debug "Will install scrcpy: $INSTALL_SCRCPY"
 
 #######################################################################################################
 
-
+_echo-debug "uninstalling bloat"
 sudo dnf remove -y $UNINSTALLABLE_BLOAT
 
 install-universal-necessities
 install-media-codecs
 install-proprietary-nvidia-drivers
 optimize-hardware
-optimize-laptop-battery
+create-swapfile
 
 configure-system-defaults
 tweak-minor-details

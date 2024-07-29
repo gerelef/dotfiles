@@ -62,3 +62,8 @@ fi
 ```bash
 readarray -d '' array < <(find . -name "$input" -print0)
 ```
+
+## history
+Large revisions were performed in the following commits, ordered by recency:
+- `6231460` -> removed `./scripts/setup` and migrated them to `./scripts/functions`; also revisioned script to be ran as user rather than indescriminate `sudo`.
+- `6d1a96c` -> changed gsettings integration format, effectively deprecating nobara-36 and upwards installation scripts
