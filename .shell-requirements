@@ -6,3 +6,5 @@ findutils
 adb
 ruby
 python3.12
+ImageMagick
+fish

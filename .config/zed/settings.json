@@ -44,6 +44,7 @@
     },
     "tabs": {
         "close_position": "right",
+        "file_icons": false,
         "git_status": true
     },
     "toolbar": {
@@ -71,7 +72,7 @@
         "enabled": true,
         "line_width": 1,
         "active_line_width": 2,
-        "coloring": "indent_aware",
+        "coloring": "fixed",
         "background_coloring": "disabled"
     },
     "preferred_line_length": 80,
@@ -84,6 +85,7 @@
     // ---------------- EDITOR SETTINGS ----------------
     "git_status": true,
     "git": {
+        "git_gutter": "tracked_files",
         "inline_blame": {
             "enabled": true
         }

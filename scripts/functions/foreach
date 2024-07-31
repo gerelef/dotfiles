@@ -1,0 +1,18 @@
+#!/usr/bin/env fish
+
+# HELP foreach 'echo' ./*; run a command for each element provided
+
+function foreach --description 'run anything ($1) in a for-each loop (for each argument)'
+    if [ (count $argv) -lt 2 ]
+        echo "Incorrect parameters. \$1 must be a command, and \$2+ must be any argument to pass."
+        return 2
+    end
+
+    for ARG in $argv[2..]
+        $argv[1] "$ARG"
+    end
+end
+
+if [ "$_" != source ]
+    foreach $argv
+end

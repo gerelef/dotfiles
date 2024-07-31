@@ -8,7 +8,12 @@ readonly HAS_RUN_FILE="$HAS_RUN_DIR/.has-run"
 readonly HAS_RUN_OPTS_FILE="$HAS_RUN_DIR/.has-run-opts"
 
 has-run () (
-    [[ -f "$HAS_RUN_FILE" ]] && [[ -f "$HAS_RUN_OPTS_FILE" ]] && return 0
+    [[ -f "$HAS_RUN_FILE" ]] && return 0
+    return 1
+)
+
+has-run-opts () (
+    [[ -f "$HAS_RUN_OPTS_FILE" ]] && return 0
     return 1
 )
 
@@ -40,25 +45,38 @@ install-system-pkg () (
 )
 
 require-login-shell-packages () (
-    has-run && return 0
-
     mapfile -t required_dependencies < $SHELL_REQUIREMENTS
-    if [[ -n "$required_dependencies" ]]; then
+    if [[ -z "$required_dependencies" ]]; then
+        echo "Couldn't load required dependencies from $SHELL_REQUIREMENTS ?!"
+        echo "Bailing..."
+        exit 1
+    fi
+    # the loops that break in 1 line are used for
+    while :; do
+        has-run && break
         echo -e "Installing essential shell packages: \033[38;5;39m"
         echo -n "${required_dependencies[*]}"
         echo -e "\033[0m"
 
         install-system-pkg "${required_dependencies[@]}" || return
         mk-run-file
-    fi
+    done
 
-    if ask-user 'Do you want to install optional packages?'; then
-        echo -e "Installing optional shell packages: \033[38;5;39m"
-        echo -n "micro lsd zoxide --exclude=fzf"
-        echo -e "\033[0m"
-        install-system-pkg "fish" "micro" "lsd" "zoxide" "--exclude=fzf"
-        mk-run-opts-file
-    fi
+    while :; do
+        # exit early if opts have already run
+        has-run-opts && break
+
+        if ask-user 'Do you want to install optional packages?'; then
+            echo -e "Installing optional shell packages: \033[38;5;39m"
+            echo -n "micro lsd zoxide --exclude=fzf"
+            echo -e "\033[0m"
+            install-system-pkg "micro" "lsd" "zoxide" "--exclude=fzf"
+            # cache user's choice via mk-run-opts-file
+            mk-run-opts-file
+        fi
+        # exit regardless of user option
+        break
+    done
 
     clear
 )

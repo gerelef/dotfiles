@@ -1,0 +1,22 @@
+#!/usr/bin/env fish
+
+# HELP orientation <path/to/image.ext>; Check the orientation of an image. Echoes 'vertical' or 'horizontal'.
+
+function orientation --description "Returns stdout 'vertical' or 'horizontal'."
+    if [ (count $argv) -ne 1 ]
+        echo "Incorrect parameters. Arg \$1 must be the path of an image."
+        return 2
+    end
+    set dims (string split ' ' -- (identify -ping -format '%w %h' "$argv[1]"))
+    # vertical & box images should be considered vertical (unfit for desktops)
+    if [ "$dims[1]" -lt "$dims[2]" -o "$dims[1]" -eq "$dims[2]" ]
+        echo "vertical $argv[1]"
+        return
+    end
+
+    echo "horizontal $argv[1]"
+end
+
+if [ "$_" != source ]
+    orientation $argv
+end
