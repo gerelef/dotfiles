@@ -191,9 +191,9 @@ optimize-hardware () (
         # the reason for disabling this, is the fact that it carries too much risk
         #  to do it in userspace / while running.
         _echo-important "Disabling UEFI updates via fwupd / fwupdmgr. Do it manually instead."
-        sudo systemctl stop fwupd
-        sudo systemctl disable fwupd
-        sudo systemctl mask fwupd
+        sudo systemctl stop fwupd 2> /dev/null
+        sudo systemctl disable fwupd 2> /dev/null
+        sudo systemctl mask fwupd 2> /dev/null
     fi
 
     _echo-debug "Enabling power profiles daemon..."
@@ -205,8 +205,8 @@ optimize-hardware () (
     _echo-debug "Got placeholder count $PLACEHOLDER_COUNT (-gt 1 will disable it)"
     if [[ $PLACEHOLDER_COUNT -gt 1 ]]; then
         _echo-debug "Disabling power profiles daemon..."
-        sudo systemctl stop power-profiles-daemon.service
-        sudo systemctl disable power-profiles-daemon.service
+        sudo systemctl stop power-profiles-daemon.service 2> /dev/null
+        sudo systemctl disable power-profiles-daemon.service 2> /dev/null
     fi
 
     if _is-mobile-type; then
@@ -266,10 +266,10 @@ create-swapfile () (
     [[ -n $(cat /etc/fstab | grep "/swapfile swap swap defaults 0 0") ]] && return
     [[ -n $(cat /etc/fstab | grep "/swapfile none swap defaults 0 0") ]] && return
 
-    echo-status "-------------------CREATING /swapfile----------------"
+    _echo-status "-------------------CREATING /swapfile----------------"
     # btrfs specific no copy-on-write
     # https://unix.stackexchange.com/questions/599949/swapfile-swapon-invalid-argument
-    if is-btrfs-rootfs; then
+    if _is-btrfs-rootfs; then
         _echo-debug "running btrfs truncate/chattr"
         sudo truncate -s 0 /swapfile
         sudo chattr +C /swapfile
@@ -286,13 +286,13 @@ create-swapfile () (
     _echo-debug "mkswap/swapon done"
 
     # btrfs specific fstab entry
-    if is-btrfs-rootfs; then
+    if _is-btrfs-rootfs; then
         sudo sh -c '"/swapfile none swap defaults 0 0" >> /etc/fstab'
-        echo-success "Done."
+        _echo-success "Done."
         return
     fi
     sudo sh -c '"/swapfile swap swap defaults 0 0" >> /etc/fstab'
-    echo-success "Done."
+    _echo-success "Done."
 )
 
 
@@ -472,8 +472,8 @@ shopt -s globstar
 shopt -s dotglob
 shopt -s nullglob
 
+export DEBUG_SETUP_ON="yes"
 readonly PATH="$PATH:$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
-readonly DEBUG_SETUP_ON="yes"
 readonly DIR=$(dirname -- "$BASH_SOURCE")
 readonly REAL_USER="${SUDO_USER:-$(whoami)}"
 # https://unix.stackexchange.com/questions/247576/how-to-get-home-given-user
