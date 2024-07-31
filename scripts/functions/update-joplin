@@ -12,6 +12,11 @@
 #  MY 'VOUCH' DOES NOT HOLD ANY SORT OF GUARANTEE -- USE AT YOUR OWN RISK!
 #  I MAKE NO CLAIMS OF LEGITIMACY, VIABILITY, SECURITY, FITNESS FOR A SPECIFIC PURPOSE OR OTHERWISE!
 
+# if fusermount3 exists but fusermount doesn't, ln -s it
+if [[ -z "$(command -v fusermount)" && -n "$(command -v fusermount3)" ]]; then
+    sudo ln -s /bin/fusermount /bin/fusermount3
+fi
+
 set -e
 
 trap 'handleError' ERR
