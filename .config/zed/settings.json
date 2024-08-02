@@ -60,6 +60,10 @@
         "scroll_debounce_ms": 50
     },
     // ---------------- BEHAVIOURAL ----------------
+    "restore_on_startup": "last_workspace",
+    "session": {
+        "restore_unsaved_buffers": true
+    },
     "autosave": {
         "after_delay": {
             "milliseconds": 15000
@@ -83,6 +87,16 @@
     "hard_tabs": false,
     "tab_size": 4,
     // ---------------- EDITOR SETTINGS ----------------
+    "assistant": {
+        "enabled": true,
+        "button": true,
+        "version": "2",
+        "dock": "right",
+        "default_model": {
+            "provider": "ollama",
+            "model": "gemma2:2b"
+        }
+    },
     "git_status": true,
     "git": {
         "git_gutter": "tracked_files",
