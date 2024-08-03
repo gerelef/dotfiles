@@ -68,9 +68,9 @@ require-login-shell-packages () (
 
         if ask-user 'Do you want to install optional packages?'; then
             echo -e "Installing optional shell packages: \033[38;5;39m"
-            echo -n "micro lsd zoxide --exclude=fzf"
+            echo -n "lsd zoxide --exclude=fzf"
             echo -e "\033[0m"
-            install-system-pkg "micro" "lsd" "zoxide" "--exclude=fzf"
+            install-system-pkg "lsd" "zoxide" "--exclude=fzf"
             # cache user's choice via mk-run-opts-file
             mk-run-opts-file
         fi

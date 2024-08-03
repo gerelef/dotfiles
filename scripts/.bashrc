@@ -229,8 +229,3 @@ fi
 if [[ -n "$(command -v lsd)" ]]; then
     alias lss="lsd --almost-all --icon never --icon-theme unicode --group-directories-first"
 fi
-
-if [[ -n "$(command -v micro)" ]]; then
-    export EDITOR="micro"
-    alias nano="micro"
-fi

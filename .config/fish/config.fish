@@ -149,8 +149,3 @@ end
 if type -q lsd
     abbr --position command --add lss "lsd --almost-all --icon never --group-directories-first"
 end
-
-if type -q micro
-    set -gx EDITOR "micro"
-    abbr --position command --add nano "micro"
-end
