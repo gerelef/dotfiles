@@ -87,11 +87,24 @@
     "hard_tabs": false,
     "tab_size": 4,
     // ---------------- EDITOR SETTINGS ----------------
+    "notification_panel": {
+        "dock": "right"
+    },
+    "chat_panel": {
+        "dock": "right"
+    },
+    "collaboration_panel": {
+        "dock": "right"
+    },
+    "outline_panel": {
+        "dock": "right"
+    },
     "assistant": {
         "enabled": true,
         "button": true,
         "version": "2",
         "dock": "right",
+        "provider": null,
         "default_model": {
             "provider": "ollama",
             "model": "gemma2:2b"
