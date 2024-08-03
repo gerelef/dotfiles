@@ -2,11 +2,34 @@
 
 # HELP install ollama, the LLM CLI
 
+create-ollama-systemd-unit () (
+    mkdir -p ~/.config/systemd/user/
+
+    cat > ~/.config/systemd/user/ollama.service <<EOF
+[Unit]
+Description=User-local ollama service
+After=network.target
+
+[Service]
+Type=simple
+StandardOutput=journal
+ExecStart=ollama serve
+
+[Install]
+WantedBy=default.target
+EOF
+    systemctl --user enable ollama.service
+    systemctl --user start ollama.service
+)
+
 install-ollama () (
     echo "Installing ollama..."
     sudo curl -L "https://ollama.com/download/ollama-linux-amd64" -o "/usr/local/bin/ollama"
     sudo chmod 755 "/usr/local/bin/ollama"
     sudo chown root:root "/usr/local/bin/ollama"
+
+    create-ollama-systemd-unit
+
     echo "Done."
 )
 
