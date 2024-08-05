@@ -3,6 +3,10 @@ user_pref("toolkit.legacyUserProfileCustomizations.stylesheets", true);
 user_pref("svg.context-properties.content.enabled", true);
 user_pref("gnomeTheme.hideSingleTab", true);
 user_pref("media.ffmpeg.allow-openh264", true);
+user_pref("devtools.debugger.prompt-connection", true);
+user_pref("devtools.debugger.remote-enabled", true);
+user_pref("devtools.debugger.force-local", true);
+user_pref("devtools.chrome.enabled", true);
 
 // devtools
 user_pref("devtools.toolbox.alwaysOnTop", true)
@@ -85,9 +89,6 @@ user_pref("browser.newtabpage.activity-stream.asrouter.userprefs.cfr", false);
 user_pref("devtools.webide.enabled", false);
 user_pref("devtools.webide.autoinstallADBHelper", false);
 user_pref("devtools.webide.autoinstallFxdtAdapters", false);
-user_pref("devtools.debugger.remote-enabled", false);
-user_pref("devtools.chrome.enabled", false);
-user_pref("devtools.debugger.force-local", true);
 user_pref("toolkit.telemetry.enabled", false);
 user_pref("toolkit.telemetry.unified", false);
 user_pref("toolkit.telemetry.archive.enabled", false);

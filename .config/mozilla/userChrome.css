@@ -15,19 +15,40 @@
     visibility: collapse !important;
 }
 
-@media (max-width: 1000px) {
+@media (min-width:750px) and (max-width: 1080px) {
     #sidebar-box {
-        max-width: 102px !important;
-        min-width: 102px !important;
+        max-width: 100px !important;
+        min-width: 100px !important;
     }
 }
 
 @media (max-width: 750px) {
     #sidebar-box {
-        visibility: collapse;
+        max-width: 32px !important;
+        min-width: 32px !important;
     }
-    
+
+    #firefox-view-button {
+        display: none !important;
+    }
+
     #TabsToolbar {
         visibility: visible;
+    }
+
+    #TabsToolbar .tabbrowser-tab[pinned] {
+        display: none !important;
+    }
+
+    #TabsToolbar #new-tab-button {
+        display: none !important;
+    }
+
+    #TabsToolbar #alltabs-button {
+        display: none !important;
+    }
+
+    #TabsToolbar .tabbrowser-tab .tab-close-button {
+        visibility: collapse !important;
     }
 }

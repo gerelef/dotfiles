@@ -1,5 +1,61 @@
 {
     "containers": {
+        "firefox-container-1": {
+            "id": "firefox-container-1",
+            "cookieStoreId": "firefox-container-1",
+            "name": "Personal",
+            "icon": "fingerprint",
+            "color": "blue",
+            "colorCode": "#37adff",
+            "proxified": false,
+            "proxy": null,
+            "reopenRulesActive": false,
+            "reopenRules": [],
+            "userAgentActive": false,
+            "userAgent": ""
+        },
+        "firefox-container-2": {
+            "id": "firefox-container-2",
+            "cookieStoreId": "firefox-container-2",
+            "name": "Work",
+            "icon": "briefcase",
+            "color": "orange",
+            "colorCode": "#37adff",
+            "proxified": false,
+            "proxy": null,
+            "reopenRulesActive": false,
+            "reopenRules": [],
+            "userAgentActive": false,
+            "userAgent": ""
+        },
+        "firefox-container-3": {
+            "id": "firefox-container-3",
+            "cookieStoreId": "firefox-container-3",
+            "name": "Banking",
+            "icon": "dollar",
+            "color": "green",
+            "colorCode": "#37adff",
+            "proxified": false,
+            "proxy": null,
+            "reopenRulesActive": false,
+            "reopenRules": [],
+            "userAgentActive": false,
+            "userAgent": ""
+        },
+        "firefox-container-4": {
+            "id": "firefox-container-4",
+            "cookieStoreId": "firefox-container-4",
+            "name": "Shopping",
+            "icon": "cart",
+            "color": "pink",
+            "colorCode": "#37adff",
+            "proxified": false,
+            "proxy": null,
+            "reopenRulesActive": false,
+            "reopenRules": [],
+            "userAgentActive": false,
+            "userAgent": ""
+        },
         "firefox-container-6": {
             "id": "firefox-container-6",
             "cookieStoreId": "firefox-container-6",
@@ -10,14 +66,7 @@
             "proxified": false,
             "proxy": null,
             "reopenRulesActive": true,
-            "reopenRules": [
-                {
-                    "id": "OnzQD93ruX1u",
-                    "active": true,
-                    "type": 1,
-                    "url": "musixmatch.com/"
-                }
-            ],
+            "reopenRules": [],
             "userAgentActive": false,
             "userAgent": ""
         },
@@ -148,9 +197,9 @@
         "ctxMenuRenderInact": true,
         "ctxMenuRenderIcons": true,
         "ctxMenuIgnoreContainers": "",
-        "navBarLayout": "horizontal",
+        "navBarLayout": "vertical",
         "navBarInline": false,
-        "navBarSide": "right",
+        "navBarSide": "left",
         "hideAddBtn": false,
         "hideSettingsBtn": false,
         "navBtnCount": true,
@@ -161,9 +210,9 @@
         "navTabsPanelMidClickAction": "discard",
         "navBookmarksPanelMidClickAction": "none",
         "navSwitchPanelsWheel": false,
-        "subPanelRecentlyClosedBar": true,
-        "subPanelBookmarks": true,
-        "subPanelHistory": true,
+        "subPanelRecentlyClosedBar": false,
+        "subPanelBookmarks": false,
+        "subPanelHistory": false,
         "groupLayout": "grid",
         "containersSortByName": true,
         "skipEmptyPanels": true,
@@ -186,7 +235,7 @@
         "activateLastTabOnPanelSwitching": true,
         "activateLastTabOnPanelSwitchingLoadedOnly": true,
         "switchPanelAfterSwitchingTab": "always",
-        "tabRmBtn": "hover",
+        "tabRmBtn": "none",
         "activateAfterClosing": "next",
         "activateAfterClosingStayInPanel": false,
         "activateAfterClosingGlobal": false,
@@ -344,8 +393,8 @@
     "sidebar": {
         "nav": [
             "firefox-default",
-            "sd-3D4qWSKXS5NA",
-            "sp-0",
+            "sd-tuBywyGeeywJ",
+            "sp-5n7xxnR4fhwJ",
             "add_tp",
             "settings"
         ],
@@ -368,6 +417,33 @@
                 "bookmarksFolderId": -1,
                 "newTabBtns": [],
                 "srcPanelConfig": null
+            },
+            "pUuWf5Y9PpwJ": {
+                "type": 1,
+                "id": "pUuWf5Y9PpwJ",
+                "name": "Bookmarks",
+                "iconSVG": "icon_bookmarks",
+                "iconIMGSrc": "",
+                "iconIMG": "",
+                "color": "toolbar",
+                "lockedPanel": false,
+                "tempMode": false,
+                "skipOnSwitching": false,
+                "rootId": "root________",
+                "viewMode": "tree",
+                "autoConvert": false,
+                "srcPanelConfig": null
+            },
+            "history": {
+                "type": 4,
+                "id": "history",
+                "name": "History",
+                "color": "toolbar",
+                "iconSVG": "icon_clock",
+                "tempMode": false,
+                "lockedPanel": false,
+                "skipOnSwitching": false,
+                "viewMode": "history"
             }
         }
     },
