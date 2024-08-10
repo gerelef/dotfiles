@@ -1,5 +1,5 @@
 {
-    "version": "2.0.125.1",
+    "version": "2.0.126",
     "settings": {
         "blur": 0,
         "brightness": 100,
@@ -48,7 +48,7 @@
         "customcssrules": "",
         "customscript": "",
         "customtheme": false,
-        "darktheme": true,
+        "darktheme": false,
         "date": 1714079762218,
         "defaultvolume": false,
         "disableautoplay": false,
@@ -89,6 +89,7 @@
         "stopvideos": false,
         "theatermode": false,
         "theme": "default-dark",
+        "themevariant": "youtube-deep-dark.css",
         "update": 1718903514151,
         "volume": 50,
         "volumemultiplier": 3,
