@@ -9,9 +9,9 @@ fi
 
 adb-remove-bloat () (
     # remove AppCloud, malware piece of backdoor shit
-    sudo adb uninstall --user 0 com.aura.oobe.samsung.gl
-    sudo adb uninstall --user 0 com.aura.oobe.samsung
-    sudo adb uninstall --user 0 com.ironsource.appcloud.oobe.hutchison
+    adb uninstall --user 0 com.aura.oobe.samsung.gl
+    adb uninstall --user 0 com.aura.oobe.samsung
+    adb uninstall --user 0 com.ironsource.appcloud.oobe.hutchison
 )
 
 [[ "${BASH_SOURCE[0]}" == "${0}" ]] && adb-remove-bloat "$@"
