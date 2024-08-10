@@ -22,8 +22,8 @@
     "buffer_font_size": 16,
     "theme": {
         "mode": "system",
-        "light": "One Light",
-        "dark": "JetBrains New Dark"
+        "light": "Atelier Cave Light",
+        "dark": "Atelier Cave Dark"
     },
     "project_panel": {
         "button": true,
