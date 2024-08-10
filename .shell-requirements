@@ -1,7 +1,9 @@
 git
+tee
+wget
 curl
-yt-dlp
 ffmpeg
+yt-dlp
 findutils
 adb
 ruby
