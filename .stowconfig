@@ -21,6 +21,12 @@ scripts/
 !!scripts/.nanorc
 !!scripts/.gitconfig
 
+// symlink joplin keymap only if joplin is installed
+// .config/keymap-desktop.json
+// [if-pkg:::joplin]
+//     !!.config/keymap-desktop.json
+// [end]
+
 [if-pkg:::delta]
     !!scripts/.gitconfig-gitdelta
 [end]
@@ -91,4 +97,4 @@ scripts/.gitconfig-gitdelta ::: .
 // find already created profile subdirectories on the fly, we can't nest here anyways
 .config/mozilla/* ::: .mozilla/firefox/*.default-release*/
 
-// cosmic
+.config/keymap-desktop.json ::: .config/joplin/
