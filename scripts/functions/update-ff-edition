@@ -1,0 +1,180 @@
+#!/usr/bin/env bash
+
+# HELP update-ff-edition <beta | developer | nightly>
+
+if [[ -z "$(command -v wget)" ]]; then
+    echo "Cannot run $(basename $0) without wget! Exiting..."
+    exit 1
+fi
+
+if [[ -z "$(command -v tar)" ]]; then
+    echo "Cannot run $(basename $0) without tar! Exiting..."
+    exit 1
+fi
+
+if [[ -z "$(command -v tee)" ]]; then
+    echo "Cannot run $(basename $0) without tee! Exiting..."
+    exit 1
+fi
+
+install-ff-beta () (
+    echo "Installing firefox-beta..."
+    echo "downloading firefox-beta to /tmp/ff-install-beta/firefox-beta-latest"
+
+    mkdir "/tmp/ff-install-beta"
+    wget -c --read-timeout=5 --tries=0 --content-disposition \
+        'https://download.mozilla.org/?product=firefox-beta-latest-ssl&os=linux64&lang=en-US' \
+        -O '/tmp/ff-install-beta/firefox-beta-latest' || exit
+    cd "/tmp/ff-install-beta" && bunzip2 "/tmp/ff-install-beta/firefox-beta-latest"
+    sudo tar -xf "/tmp/ff-install-beta/firefox-beta-latest.out" --directory=/opt || exit
+    sudo mv "/opt/firefox" "/opt/firefox-beta"
+    sudo chown -R "root:root" "/opt/firefox-beta" || exit
+    sudo chmod -R 755 "/opt/firefox-beta" || exit
+    sudo ln -sf "/opt/firefox-beta/firefox-bin" "/usr/local/bin/firefox-beta" || exit
+    rm -rf "/tmp/ff-install-beta"
+
+    sudo tee "/usr/share/applications/firefox-beta.desktop" <<TEE_END
+[Desktop Entry]
+Version=1.0
+Name=Firefox Beta
+GenericName=Web Browser
+Comment=Browse the Web
+Exec=firefox-beta %U
+TryExec=firefox-beta
+Icon=/opt/firefox-beta/browser/chrome/icons/default/default128.png
+Terminal=false
+Type=Application
+StartupNotify=true
+Categories=Network;WebBrowser;
+Keywords=web;browser;internet;
+Actions=new-window;new-private-window;profile-manager;
+
+[Desktop Action new-window]
+Name=New Window
+Exec=firefox-beta --new-window %U
+
+[Desktop Action new-private-window]
+Name=New Private Window
+Exec=firefox-beta --private-window %U
+
+[Desktop Action profile-manager]
+Name=Profile Manager
+Exec=firefox-beta -P %U
+TEE_END
+
+    echo "Done."
+)
+
+install-ff-developer () (
+    echo "Installing firefox-developer..."
+    echo "downloading firefox-developer to /tmp/ff-install-developer/firefox-developer-latest"
+
+    mkdir "/tmp/ff-install-developer"
+    wget -c --read-timeout=5 --tries=0 --content-disposition \
+        'https://download.mozilla.org/?product=firefox-devedition-latest-ssl&os=linux64&lang=en-US' \
+        -O '/tmp/ff-install-developer/firefox-developer-latest' || exit
+    cd "/tmp/ff-install-developer" && bunzip2 "/tmp/ff-install-developer/firefox-developer-latest"
+    sudo tar -xf "/tmp/ff-install-developer/firefox-developer-latest.out" --directory=/opt || exit
+    sudo mv "/opt/firefox" "/opt/firefox-developer"
+    sudo chown -R "root:root" "/opt/firefox-developer" || exit
+    sudo chmod -R 755 "/opt/firefox-developer" || exit
+    sudo ln -sf "/opt/firefox-developer/firefox-bin" "/usr/local/bin/firefox-developer" || exit
+    rm -rf "/tmp/ff-install-developer"
+
+    sudo tee "/usr/share/applications/firefox-developer.desktop" <<TEE_END
+[Desktop Entry]
+Version=1.0
+Name=Firefox Developer
+GenericName=Web Browser
+Comment=Browse the Web
+Exec=firefox-developer %U
+TryExec=firefox-developer
+Icon=/opt/firefox-developer/browser/chrome/icons/default/default128.png
+Terminal=false
+Type=Application
+StartupNotify=true
+Categories=Network;WebBrowser;
+Keywords=web;browser;internet;
+Actions=new-window;new-private-window;profile-manager;
+
+[Desktop Action new-window]
+Name=New Window
+Exec=firefox-developer --new-window %U
+
+[Desktop Action new-private-window]
+Name=New Private Window
+Exec=firefox-developer --private-window %U
+
+[Desktop Action profile-manager]
+Name=Profile Manager
+Exec=firefox-developer -P %U
+TEE_END
+
+    echo "Done."
+)
+
+install-ff-nightly () (
+    echo "Installing firefox-nightly..."
+    echo "downloading firefox-nightly to /tmp/ff-install-nightly/firefox-nightly-latest"
+
+    mkdir "/tmp/ff-install-nightly"
+    wget -c --read-timeout=5 --tries=0 --content-disposition \
+        'https://download.mozilla.org/?product=firefox-nightly-latest-ssl&os=linux64&lang=en-US' \
+        -O '/tmp/ff-install-nightly/firefox-nightly-latest' || exit
+    cd "/tmp/ff-install-nightly" && bunzip2 "/tmp/ff-install-nightly/firefox-nightly-latest"
+    sudo tar -xf "/tmp/ff-install-nightly/firefox-nightly-latest.out" --directory=/opt || exit
+    sudo mv "/opt/firefox" "/opt/firefox-nightly"
+    sudo chown -R "root:root" "/opt/firefox-nightly" || exit
+    sudo chmod -R 755 "/opt/firefox-nightly" || exit
+    sudo ln -sf "/opt/firefox-nightly/firefox-bin" "/usr/local/bin/firefox-nightly" || exit
+    rm -rf "/tmp/ff-install-nightly"
+
+    sudo tee "/usr/share/applications/firefox-nightly.desktop" <<TEE_END
+[Desktop Entry]
+Version=1.0
+Name=Firefox Nightly
+GenericName=Web Browser
+Comment=Browse the Web
+Exec=firefox-nightly %U
+TryExec=firefox-nightly
+Icon=/opt/firefox-nightly/browser/chrome/icons/default/default128.png
+Terminal=false
+Type=Application
+StartupNotify=true
+Categories=Network;WebBrowser;
+Keywords=web;browser;internet;
+Actions=new-window;new-private-window;profile-manager;
+
+[Desktop Action new-window]
+Name=New Window
+Exec=firefox-nightly --new-window %U
+
+[Desktop Action new-private-window]
+Name=New Private Window
+Exec=firefox-nightly --private-window %U
+
+[Desktop Action profile-manager]
+Name=Profile Manager
+Exec=firefox-nightly -P %U
+TEE_END
+
+    echo "Done."
+)
+
+if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then
+    if [[ $# -ne 1 ]]; then
+        echo "Usage: update-ff-edition <beta | developer | nightly>"
+    fi
+
+    if [[ "$1" == "beta" ]]; then
+        install-ff-beta
+    fi
+
+    if [[ "$1" == "developer" ]]; then
+        install-ff-developer
+    fi
+
+    if [[ "$1" == "nightly" ]]; then
+        install-ff-nightly
+    fi
+fi
