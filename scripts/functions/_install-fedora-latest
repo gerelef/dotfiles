@@ -111,48 +111,23 @@ create-convenience-sudoers () (
     sudo chmod 440 "/etc/sudoers.d/convenience-defaults"
 )
 
-install-gnome-essentials () (
+install-gnome-de () (
     _echo-status "-------------------INSTALLING GNOME----------------"
 
-    sudo dnf install -y --best --allowerasing --skip-unavailable $INSTALLABLE_ESSENTIAL_DESKTOP_PACKAGES
-    sudo dnf install -y --best --allowerasing --skip-unavailable $INSTALLABLE_GNOME_ESSENTIAL_PACKAGES
-
+    sudo dnf group install -y "gnome-desktop"
+    sudo dnf install -y "systemd-container"
     sudo systemctl enable gdm
-    _as-service-user gdm "gsettings set org.gnome.desktop.peripherals.keyboard numlock-state false"
-    _as-service-user gdm "gsettings set org.gnome.desktop.peripherals.keyboard remember-numlock-state false"
-    _as-service-user gdm "gsettings set org.gnome.desktop.peripherals.keyboard repeat true"
-    _as-service-user gdm "gsettings set org.gnome.desktop.peripherals.keyboard repeat-interval 25"
-    _as-service-user gdm "gsettings set org.gnome.desktop.peripherals.mouse double-click 250"
-    _as-service-user gdm "gsettings set org.gnome.desktop.peripherals.mouse middle-click-emulation false"
-    _as-service-user gdm "gsettings set org.gnome.desktop.peripherals.mouse natural-scroll false"
-    _as-service-user gdm "gsettings set org.gnome.desktop.peripherals.mouse speed -0.2"
-    _as-service-user gdm "gsettings set org.gnome.desktop.peripherals.mouse accel-profile 'flat'"
-    _as-service-user gdm "gsettings set org.gnome.desktop.peripherals.touchpad accel-profile 'flat'"
-    _as-service-user gdm "gsettings set org.gnome.desktop.peripherals.touchpad click-method 'none'"
-    _as-service-user gdm "gsettings set org.gnome.desktop.peripherals.touchpad disable-while-typing false"
-    _as-service-user gdm "gsettings set org.gnome.desktop.peripherals.touchpad edge-scrolling-enabled false"
-    _as-service-user gdm "gsettings set org.gnome.desktop.peripherals.touchpad left-handed 'mouse'"
-    _as-service-user gdm "gsettings set org.gnome.desktop.peripherals.touchpad middle-click-emulation false"
-    _as-service-user gdm "gsettings set org.gnome.desktop.peripherals.touchpad natural-scroll true"
-    _as-service-user gdm "gsettings set org.gnome.desktop.peripherals.touchpad send-events 'enabled'"
-    _as-service-user gdm "gsettings set org.gnome.desktop.peripherals.touchpad speed 0.10000000000000001"
-    _as-service-user gdm "gsettings set org.gnome.desktop.peripherals.touchpad tap-and-drag false"
-    _as-service-user gdm "gsettings set org.gnome.desktop.peripherals.touchpad tap-and-drag-lock false"
-    _as-service-user gdm "gsettings set org.gnome.desktop.peripherals.touchpad tap-button-map 'default'"
-    _as-service-user gdm "gsettings set org.gnome.desktop.peripherals.touchpad tap-to-click false"
-    _as-service-user gdm "gsettings set org.gnome.desktop.peripherals.touchpad two-finger-scrolling-enabled true"
 
     _echo-success "Done."
 )
 
-
 install-universal-necessities () (
     _echo-status "-------------------INSTALLING ESSENTIAL PACKAGES----------------"
     sudo dnf install -y --best --allowerasing --skip-unavailable $INSTALLABLE_ESSENTIAL_PACKAGES
-    sudo dnf install -y --best --allowerasing --skip-unavailable $INSTALLABLE_PIPEWIRE_PACKAGES
 
-    sudo dnf group install -y --best --allowerasing "hardware-support" "networkmanager-submodules" "printing"
+    sudo dnf group install -y --best --allowerasing "hardware-support" "networkmanager-submodules" "printing" "input-methods"
 
+    sudo dnf group install -y --best --allowerasing "firefox" "libreoffice"
     sudo dnf install -y --best --allowerasing --skip-unavailable $INSTALLABLE_APPLICATION_PACKAGES
     flatpak install --system --noninteractive -y $INSTALLABLE_FLATPAKS
 
@@ -195,6 +170,9 @@ optimize-hardware () (
         sudo systemctl disable fwupd 2> /dev/null
         sudo systemctl mask fwupd 2> /dev/null
     fi
+
+    sudo systemctl enable systemd-bsod
+    sudo systemctl start systemd-bsod
 
     _echo-debug "Enabling power profiles daemon..."
     sudo systemctl enable power-profiles-daemon.service
@@ -356,7 +334,6 @@ install-media-codecs () (
     _echo-status "-------------------INSTALLING CODECS / H/W VIDEO ACCELERATION----------------"
 
     # based on https://github.com/devangshekhawat/Fedora-39-Post-Install-Guide
-    sudo dnf install -y --best --allowerasing --skip-unavailable gstreamer1-plugins-{bad-\*,good-\*,base}
     sudo dnf install -y --best --allowerasing --skip-unavailable lame\*
     sudo dnf install -y --best --allowerasing --skip-unavailable "gstreamer1-plugin-openh264" "gstreamer1-libav"
     sudo dnf group install -y --best --allowerasing --with-optional "multimedia"
@@ -400,8 +377,8 @@ install-virtualization-packages () (
     _echo-status "-------------------INSTALLING VIRTUALIZATION PACKAGES----------------"
     sudo dnf install -y --best --allowerasing --skip-unavailable $INSTALLABLE_VIRTUALIZATION_PACKAGES
     if _is-virtual-machine; then
-        sudo dnf install -y --best --allowerasing --skip-unavailable "virtualbox-guest-additions"
-        _echo-debug "Installed virtualbox-guest-additions."
+        sudo dnf group install -y "guest-agents" "guest-desktop-agents"
+        _echo-debug "Installed guest-agents & guest-desktop-agents."
     fi
     usermod -a -G libvirt $REAL_USER
     _echo-debug "Added $REAL_USER to libvirt group."
@@ -458,6 +435,7 @@ configure-ssh-defaults () (
     # if the directory already exists, abandon
     [[ -d "$REAL_USER_HOME/.ssh" ]] && return
 
+    sudo dnf install -y "ssh"
     _echo-status "-------------------GENERATING SSH KEY----------------"
     mkdir -p "$REAL_USER_HOME/.ssh"
     ssh-keygen -q -t ed25519 -N '' -C "$REAL_USER@$DISTRIBUTION_NAME" -f "$REAL_USER_HOME/.ssh/id_ed25519" -P "" <<< $'\ny' >/dev/null 2>&1
@@ -482,19 +460,6 @@ readonly REAL_USER_HOME=$(eval echo "~$REAL_USER")
 #######################################################################################################
 
 readonly DISTRIBUTION_NAME="fedora$(rpm -E %fedora)"
-
-#######################################################################################################
-
-readonly INSTALLABLE_ESSENTIAL_DESKTOP_PACKAGES="\
-ssh \
-glx-utils \
-mesa-dri-drivers \
-mesa-vulkan-drivers \
-plymouth \
-plymouth-system-theme \
-power-profiles-daemon \
-power-profiles-daemon-docs \
-"
 
 #######################################################################################################
 
@@ -570,7 +535,6 @@ gnome-shell-extension-appindicator \
 #  apparently, this is the way going forward with unified kernel image
 #  https://fedoraproject.org/wiki/Changes/Unified_Kernel_Support_Phase_2
 #  so we eon't replace it manually, it'll be replaced be Red Hat themselves
-# TODO add systemd-bsod when it becomes available on fedora
 readonly INSTALLABLE_ESSENTIAL_PACKAGES="\
 setroubleshoot \
 setroubleshoot-plugins \
@@ -579,30 +543,16 @@ openssl \
 python3-cairo \
 "
 
-readonly INSTALLABLE_PIPEWIRE_PACKAGES="\
-pipewire \
-pipewire-alsa \
-pipewire-codec-aptx \
-pipewire-gstreamer \
-pipewire-libs \
-pipewire-pulseaudio \
-pipewire-utils \
-wireplumber \
-wireplumber-libs \
-"
-
 readonly INSTALLABLE_APPLICATION_PACKAGES="\
-firefox \
 chromium \
 fedora-chromium-config \
 flameshot \
 gimp \
 krita \
 evince \
-libreoffice \
-sqlitebrowser \
 piper \
 pulseeffects \
+tldr \
 "
 
 readonly INSTALLABLE_FLATPAKS="\
@@ -662,7 +612,7 @@ cmake \
 ninja-build \
 java-latest-openjdk \
 java-latest-openjdk-devel \
-tldr \
+sqlitebrowser \
 "
 
 # NOTE: these are global and should be treated as desktop agnostic
@@ -692,18 +642,24 @@ gnome-shell-extension-background-logo \
 
 [[ "${BASH_SOURCE[0]}" != "${0}" ]] && return
 
+if ! ping -q -c 1 -W 1 google.com > /dev/null; then
+    _echo-unexpected "Network connection was not detected."
+    _echo-unexpected "This script needs network connectivity to continue."
+    exit 1
+fi
+
+if _is-root; then
+    _echo-unexpected "The script must not be run as super-user."
+    _echo-unexpected "Please re-run the script as a regular user."
+    exit 2
+fi
+
 # change dnf4 to dnf5 (preview/unstable: is supposed to be shipped with fedora-41)
 sudo dnf install -y --best --allowerasing dnf5
 sudo update-alternatives --install /usr/bin/dnf dnf /usr/bin/dnf5 1
 sudo dnf install -y --best --allowerasing --skip-unavailable "dnf5-command(config-manager)"
 # dependencies
 sudo dnf install -y --best --allowerasing --skip-unavailable flatpak curl plocate pciutils udisks2
-
-if ! ping -q -c 1 -W 1 google.com > /dev/null; then
-    _echo-unexpected "Network connection was not detected."
-    _echo-unexpected "This script needs network connectivity to continue."
-    exit 1
-fi
 
 # improve sudo dnf performance
 copy-dnf
@@ -723,13 +679,20 @@ sudo dnf upgrade -y --refresh
 
 #######################################################################################################
 
-sudo dnf install -y --best --allowerasing "alacritty"
-_echo-debug "Installed terminal of choice for GUI-land."
+# requirements across all desktops
+readonly TERMINAL_OF_CHOICE="${INSTALLABLE_TERMINAL:-alacritty}"
+sudo dnf install -y --best --allowerasing "$TERMINAL_OF_CHOICE" \
+"glx-utils" "mesa-dri-drivers" "mesa-vulkan-drivers" \
+"plymouth" "plymouth-system-theme" \
+"power-profiles-daemon" "power-profiles-daemon-docs"
+sudo dnf group install -y "standard"
+
+_echo-debug "Installed terminal of choice ($TERMINAL_OF_CHOICE) for GUI-land."
 # if there's no desktop environment running...
 if [[ -z $XDG_CURRENT_DESKTOP ]]; then
     _echo-debug "No \$XDG_CURRENT_DESKTOP detected: $XDG_CURRENT_DESKTOP"
     # run installer ...
-    install-gnome-essentials
+    install-gnome-de
 
     _echo-important "Making sure we're booting into a DE next time we boot..."
     sudo systemctl set-default graphical.target
@@ -850,6 +813,9 @@ if _is-gnome-session; then
     _echo-important "Personalizing GNOME session..."
     _echo-important "Make sure to get the legacy GTK3 Theme Auto Switcher"
     _echo-important "https://extensions.gnome.org/extension/4998/legacy-gtk3-theme-scheme-auto-switcher/"
+
+    _as-service-user gdm "gsettings set org.gnome.desktop.peripherals.mouse speed -0.2"
+    _as-service-user gdm "gsettings set org.gnome.desktop.peripherals.mouse accel-profile 'flat'"
 
     _echo-status "Configuring all gsettings for $REAL_USER . . ."
     # theme settings
