@@ -110,6 +110,11 @@
             "model": "gemma2:2b"
         }
     },
+    "language_models": {
+        "ollama": {
+            "low_speed_timeout_in_seconds": 120
+        }
+    },
     "git_status": true,
     "git": {
         "git_gutter": "tracked_files",
