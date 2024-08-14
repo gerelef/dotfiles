@@ -664,7 +664,7 @@ fi
 
 if _is-gnome-session; then
     _echo-debug "GNOME session detected. Installing GNOME/libadwaita-specific packages."
-    sudo dnf install -y --best --allowerasing "evolution"
+    sudo dnf install -y --best --allowerasing "gnome-calendar"
     sudo dnf install -y --best --allowerasing $INSTALLABLE_ADWAITA_PACKAGES $INSTALLABLE_GNOME_EXTENSIONS
     flatpak install --system --noninteractive -y $INSTALLABLE_ADWAITA_FLATPAKS
     flatpak install --system --noninteractive -y $INSTALLABLE_GNOME_FLATPAKS
