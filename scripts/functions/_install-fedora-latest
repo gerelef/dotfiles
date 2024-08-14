@@ -456,49 +456,9 @@ readonly DIR=$(dirname -- "$BASH_SOURCE")
 readonly REAL_USER="${SUDO_USER:-$(whoami)}"
 # https://unix.stackexchange.com/questions/247576/how-to-get-home-given-user
 readonly REAL_USER_HOME=$(eval echo "~$REAL_USER")
-
-#######################################################################################################
-
 readonly DISTRIBUTION_NAME="fedora$(rpm -E %fedora)"
 
 #######################################################################################################
-
-readonly INSTALLABLE_GNOME_ESSENTIAL_PACKAGES="\
-gdm \
-gnome-shell \
-gnome-session \
-gnome-session-wayland-session \
-gnome-keyring \
-gnome-keyring-pam \
-gnome-power-manager \
-xdg-desktop-portal-gnome \
-NetworkManager-ssh-gnome \
-NetworkManager-adsl \
-NetworkManager-bluetooth \
-NetworkManager-iodine-gnome \
-NetworkManager-l2tp-gnome \
-NetworkManager-libreswan-gnome \
-NetworkManager-openconnect-gnome \
-NetworkManager-openvpn-gnome \
-NetworkManager-ppp \
-NetworkManager-pptp-gnome \
-NetworkManager-vpnc-gnome \
-NetworkManager-wifi \
-NetworkManager-wwan \
-gnome-bluetooth \
-gnome-bluetooth-libs \
-gnome-settings-daemon \
-gnome-browser-connector \
-gnome-logs \
-systemd-container \
-"
-
-readonly INSTALLABLE_GNOME_APPLICATION_PACKAGES="\
-nautilus \
-gnome-disk-utility \
-gnome-text-editor \
-gnome-system-monitor \
-"
 
 readonly INSTALLABLE_ADWAITA_PACKAGES="\
 adwaita-icon-theme \
@@ -704,8 +664,8 @@ fi
 
 if _is-gnome-session; then
     _echo-debug "GNOME session detected. Installing GNOME/libadwaita-specific packages."
-    sudo dnf install -y --best --allowerasing --skip-unavailable $INSTALLABLE_GNOME_APPLICATION_PACKAGES
-    sudo dnf install -y --best --allowerasing --skip-unavailable $INSTALLABLE_ADWAITA_PACKAGES $INSTALLABLE_GNOME_EXTENSIONS
+    sudo dnf install -y --best --allowerasing "evolution"
+    sudo dnf install -y --best --allowerasing $INSTALLABLE_ADWAITA_PACKAGES $INSTALLABLE_GNOME_EXTENSIONS
     flatpak install --system --noninteractive -y $INSTALLABLE_ADWAITA_FLATPAKS
     flatpak install --system --noninteractive -y $INSTALLABLE_GNOME_FLATPAKS
 fi
