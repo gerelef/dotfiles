@@ -418,8 +418,6 @@ tweak-minor-details () (
     _echo-debug "Enabled fs trim timer."
     sudo timedatectl set-local-rtc '0' # for fixing dual boot time inconsistencies
     _echo-debug "Set local rtc to 0."
-    sudo hostnamectl hostname "$DISTRIBUTION_NAME"
-    _echo-debug "Updated hostname."
     # if the statement below doesnt work, check this out
     #  https://old.reddit.com/r/linuxhardware/comments/ng166t/s3_deep_sleep_not_working/
     # stop network manager from waiting until online, improves boot times
@@ -438,7 +436,7 @@ configure-ssh-defaults () (
     sudo dnf install -y "ssh"
     _echo-status "-------------------GENERATING SSH KEY----------------"
     mkdir -p "$REAL_USER_HOME/.ssh"
-    ssh-keygen -q -t ed25519 -N '' -C "$REAL_USER@$DISTRIBUTION_NAME" -f "$REAL_USER_HOME/.ssh/id_ed25519" -P "" <<< $'\ny' >/dev/null 2>&1
+    ssh-keygen -q -t ed25519 -N '' -C "$REAL_USER@$(hostname)" -f "$REAL_USER_HOME/.ssh/id_ed25519" -P "" <<< $'\ny' >/dev/null 2>&1
     cat "$REAL_USER_HOME/.ssh/id_ed25519.pub"
     # this is REQUIRED for ssh related thingies; key must NOT be readable by anyone else but this user
     sudo chown "$REAL_USER" "$REAL_USER_HOME/.ssh/id_ed25519"
@@ -451,12 +449,11 @@ shopt -s dotglob
 shopt -s nullglob
 
 export DEBUG_SETUP_ON="yes"
-readonly PATH="$PATH:$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
-readonly DIR=$(dirname -- "$BASH_SOURCE")
+export PATH="$PATH:$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
 readonly REAL_USER="${SUDO_USER:-$(whoami)}"
 # https://unix.stackexchange.com/questions/247576/how-to-get-home-given-user
-readonly REAL_USER_HOME=$(eval echo "~$REAL_USER")
-readonly DISTRIBUTION_NAME="fedora$(rpm -E %fedora)"
+readonly REAL_USER_HOME="$(eval 'echo ~$REAL_USER')"
+readonly HAS_CHANGED_HOSTNAME_FILE="/opt/has-changed-hostname"
 
 #######################################################################################################
 
@@ -648,6 +645,13 @@ sudo dnf install -y --best --allowerasing "$TERMINAL_OF_CHOICE" \
 sudo dnf group install -y "standard"
 
 _echo-debug "Installed terminal of choice ($TERMINAL_OF_CHOICE) for GUI-land."
+
+if [[ ! -f "$HAS_CHANGED_HOSTNAME_FILE" && ask-user "Do you want to change the current hostname (current is: $(hostname))?" ]]; then
+    sudo hostnamectl hostname "$(ask-user-input 'Please provide a suitable hostname')"
+    sudo touch "$HAS_CHANGED_HOSTNAME_FILE"
+    _echo-debug "Updated hostname."
+fi
+
 # if there's no desktop environment running...
 if [[ -z $XDG_CURRENT_DESKTOP ]]; then
     _echo-debug "No \$XDG_CURRENT_DESKTOP detected: $XDG_CURRENT_DESKTOP"
