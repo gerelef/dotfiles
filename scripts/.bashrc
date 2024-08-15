@@ -176,7 +176,7 @@ PATH=$PATH:$DOTFILES_DIR/scripts/functions
 # add login shell requirements if they're part of the regular install,
 #  aka found at the $PATH above
 if [[ -n "$(command -v require-login-shell-packages)" ]]; then
-    require-login-shell-packages && clear
+    require-login-shell-packages
 fi
 # source global virtual python install(s)
 require-pip

@@ -60,6 +60,7 @@ require-login-shell-packages () (
 
         install-system-pkg "${required_dependencies[@]}" || return
         mk-run-file
+        clear
     done
 
     while :; do
@@ -74,11 +75,11 @@ require-login-shell-packages () (
             # cache user's choice via mk-run-opts-file
             mk-run-opts-file
         fi
+
+        clear
         # exit regardless of user option
         break
     done
-
-    clear
 )
 
 # run only if this file is not sourced
