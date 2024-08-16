@@ -14,6 +14,7 @@ After=network.target
 Type=simple
 StandardOutput=journal
 ExecStart=ollama serve
+Restart=on-failure
 
 [Install]
 WantedBy=default.target
