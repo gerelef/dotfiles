@@ -621,6 +621,13 @@ fi
 sudo dnf install -y --best --allowerasing dnf5
 sudo update-alternatives --install /usr/bin/dnf dnf /usr/bin/dnf5 1
 sudo dnf install -y --best --allowerasing --skip-unavailable "dnf5-command(config-manager)"
+_echo-debug "Changed /usr/bin/dnf to /usr/bin/dnf5"
+
+# change default sh symlink to dash
+sudo dnf install -y --best --allowerasing dash
+sudo update-alternatives --install /usr/bin/sh sh /usr/bin/dash 1
+_echo-debug "Changed /usr/bin/sh to /usr/bin/dash"
+
 # dependencies
 sudo dnf install -y --best --allowerasing --skip-unavailable flatpak curl plocate pciutils udisks2
 
