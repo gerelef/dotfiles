@@ -66,51 +66,6 @@ keepcache=true
 DNF_EOF
 )
 
-# man 5 sysctl.d
-#    CONFIGURATION DIRECTORIES AND PRECEDENCE
-#    ...
-#    All configuration files are sorted by their filename in lexicographic order, regardless of which of the directories they reside in.
-#    If multiple files specify the same option, the entry in the file with the lexicographically latest name will take precedence.
-#    It is recommended to prefix all filenames with a two-digit number and a dash, to simplify the ordering of the files.
-
-lower-swappiness () (
-    _echo-debug "Lowering swappiness"
-    sudo sh -c 'echo "vm.swappiness = 10" > "/etc/sysctl.d/90-swappiness.conf"'
-)
-
-raise-user-watches () (
-    _echo-debug "Raising user-watches"
-    sudo sh -c 'echo "fs.inotify.max_user_watches = 600000" > "/etc/sysctl.d/90-max_user_watches.conf"'
-)
-
-raise-memory-map-counts () (
-    _echo-debug "Raising memory map counts to the maximum integer limit"
-    # Increase the number of memory map areas a process may have. No need for it in fedora 39 or higher. Relevant links:
-    # https://fedoraproject.org/wiki/Changes/IncreaseVmMaxMapCount
-    # https://wiki.archlinux.org/title/gaming
-    # https://kernel.org/doc/Documentation/sysctl/vm.txt
-    sudo sh -c 'echo "vm.max_map_count=2147483642" > "/etc/sysctl.d/90-max_map_count.conf"'
-)
-
-cap-nproc-count () (
-    [[ -z "$REAL_USER" ]] && return 1;
-
-    _echo-debug "Capping nproc-count to prevent fork-bombs (hard nproc 10_000)"
-    sudo sh -c "echo \"$REAL_USER 'hard nproc 10000'\" > '/etc/security/limits.d/90-nproc.conf'"
-)
-
-cap-max-logins-system () (
-    _echo-debug "Capping max logins to 20"
-    sudo sh -c 'echo "* - maxsyslogins 20" > "/etc/security/limits.d/90-maxsyslogins.conf"'
-)
-
-create-convenience-sudoers () (
-    _echo-debug "Creating convenience for sudoers.d/convenience-defaults"
-    # 440 is the default rights of /etc/sudoers file, so we're copying the rights just in case (even though visudo -f /etc/sudoers.d/test creates the file with 640)
-    sudo sh -c 'echo "Defaults timestamp_timeout=120, pwfeedback" > "/etc/sudoers.d/convenience-defaults"'
-    sudo chmod 440 "/etc/sudoers.d/convenience-defaults"
-)
-
 install-gnome-de () (
     _echo-status "-------------------INSTALLING GNOME----------------"
 
@@ -373,48 +328,28 @@ install-gaming-packages () (
     _echo-success "Done."
 )
 
-install-virtualization-packages () (
-    _echo-status "-------------------INSTALLING VIRTUALIZATION PACKAGES----------------"
-    sudo dnf install -y --best --allowerasing --skip-unavailable $INSTALLABLE_VIRTUALIZATION_PACKAGES
-    if _is-virtual-machine; then
-        sudo dnf group install -y "guest-agents" "guest-desktop-agents"
-        _echo-debug "Installed guest-agents & guest-desktop-agents."
-    fi
-    usermod -a -G libvirt $REAL_USER
-    _echo-debug "Added $REAL_USER to libvirt group."
-    _echo-success "Done."
-)
-
-install-term-tools () (
-    _echo-status "-------------------INSTALLING TERMINAL TOOLS----------------"
-
-    sudo dnf install -y --best --allowerasing --skip-unavailable "tldr" \
-    "fish" "zoxide" "fzf" "wget" "curl" "git-delta"
-
-    _echo-success "Done."
-)
-
-install-dev-tools () (
-    _echo-status "-------------------INSTALLING DEV TOOLS----------------"
-
-    sudo dnf group install -y --best --allowerasing  "c-development" "development-tools"
-    sudo dnf install -y --best --allowerasing --skip-unavailable $INSTALLABLE_DEV_PKGS
-    flatpak install --system --noninteractive -y "net.werwolv.ImHex"
-
-    _echo-success "Done."
-)
+# man 5 sysctl.d
+#    CONFIGURATION DIRECTORIES AND PRECEDENCE
+#    ...
+#    All configuration files are sorted by their filename in lexicographic order, regardless of which of the directories they reside in.
+#    If multiple files specify the same option, the entry in the file with the lexicographically latest name will take precedence.
+#    It is recommended to prefix all filenames with a two-digit number and a dash, to simplify the ordering of the files.
 
 configure-system-defaults () (
     _echo-status "-------------------SETTING UP SYSTEM DEFAULTS----------------"
-    lower-swappiness
+    _echo-debug "Lowering swappiness"
+    sudo sh -c 'echo "vm.swappiness = 10" > "/etc/sysctl.d/90-swappiness.conf"'
     _echo-success "Lowered swappiness."
-    raise-user-watches
+    _echo-debug "Raising user-watches"
+    sudo sh -c 'echo "fs.inotify.max_user_watches = 600000" > "/etc/sysctl.d/90-max_user_watches.conf"'
     _echo-success "Raised user watches."
-    cap-nproc-count
+    _echo-debug "Capping nproc-count to prevent fork-bombs (hard nproc 10_000)"
+    sudo sh -c "echo \"$REAL_USER 'hard nproc 10000'\" > '/etc/security/limits.d/90-nproc.conf'"
     _echo-success "Capped maximum number of processes."
-    cap-max-logins-system
-    _echo-success "Capped max system logins."
-    create-convenience-sudoers
+    _echo-debug "Creating convenience for sudoers.d/convenience-defaults"
+    # 440 is the default rights of /etc/sudoers file, so we're copying the rights just in case (even though visudo -f /etc/sudoers.d/test creates the file with 640)
+    sudo sh -c 'echo "Defaults timestamp_timeout=120, pwfeedback" > "/etc/sudoers.d/convenience-defaults"'
+    sudo chmod 440 "/etc/sudoers.d/convenience-defaults"
     _echo-success "Created sudoers.d convenience defaults."
 
     _echo-success "Done."
@@ -697,14 +632,18 @@ _echo-important "You will be asked a series of questions ahead of time, so you c
 _echo-important "Note that NVIDIA drivers require manual confirmation for MOK enrollment, and this cannot be automated"
 _echo-important " due to its intrusive nature."
 
-ask-user 'Do you want to install virtualization packages?' && INSTALL_VIRTUALIZATION="yes"
-_echo-debug "Will install virtualization? $INSTALL_VIRTUALIZATION"
 ask-user 'Do you want to install gaming packages?' && INSTALL_GAMING="yes"
 _echo-debug "Will install gaming? $INSTALL_GAMING"
 ask-user 'Do you want to install terminal tools?' && INSTALL_TERM_TOOLS="yes"
 _echo-debug "Will install terminal-tools? $INSTALL_TERM_TOOLS"
 ask-user 'Do you want to install development tools?' && INSTALL_DEV_TOOLS="yes"
 _echo-debug "Will install dev-tools? $INSTALL_DEV_TOOLS"
+ask-user 'Do you want to install virtualization packages?' && INSTALL_VIRTUALIZATION="yes"
+_echo-debug "Will install virtualization? $INSTALL_VIRTUALIZATION"
+ask-user 'Do you want to install containerization packages?' && INSTALL_CONTAINERIZATION="yes"
+_echo-debug "Will install containerization? $INSTALL_CONTAINERIZATION"
+ask-user 'Do you want to install zeno/scrcpy?' && INSTALL_SCRCPY="yes"
+_echo-debug "Will install scrcpy? $INSTALL_SCRCPY"
 ask-user 'Do you want to install JetBrains Toolbox?' && INSTALL_JETBRAINS="yes"
 _echo-debug "Will install jetbrains? $INSTALL_JETBRAINS"
 ask-user 'Do you want to install Zed Text Editor?' && INSTALL_ZED="yes"
@@ -713,8 +652,7 @@ ask-user 'Do you want to install Visual Studio Code?' && INSTALL_VSC="yes"
 _echo-debug "Will install vsc? $INSTALL_VSC"
 ask-user 'Do you want to install Sublime Text Editor?' && INSTALL_SUBLIME="yes"
 _echo-debug "Will install sublime? $INSTALL_SUBLIME"
-ask-user 'Do you want to install zeno/scrcpy?' && INSTALL_SCRCPY="yes"
-_echo-debug "Will install scrcpy? $INSTALL_SCRCPY"
+
 
 #######################################################################################################
 
@@ -734,10 +672,52 @@ configure-ssh-defaults
 #######################################################################################################
 # user-submitted opts
 
-[[ -n "$INSTALL_VIRTUALIZATION" ]] && install-virtualization-packages
 [[ -n "$INSTALL_GAMING" ]] && install-gaming-packages
-[[ -n "$INSTALL_TERM_TOOLS" ]] && install-term-tools
-[[ -n "$INSTALL_DEV_TOOLS" ]] && install-dev-tools
+if [[ -n "$INSTALL_TERM_TOOLS" ]]; then
+    _echo-status "-------------------INSTALLING TERMINAL TOOLS----------------"
+
+    sudo dnf install -y --best --allowerasing --skip-unavailable "tldr" \
+    "fish" "zoxide" "fzf" "wget" "curl" "git-delta"
+
+    _echo-success "Done."
+fi
+
+if [[ -n "$INSTALL_DEV_TOOLS" ]]; then
+    _echo-status "-------------------INSTALLING DEV TOOLS----------------"
+
+    sudo dnf group install -y --best --allowerasing  "c-development" "development-tools"
+    sudo dnf install -y --best --allowerasing --skip-unavailable $INSTALLABLE_DEV_PKGS
+    flatpak install --system --noninteractive -y "net.werwolv.ImHex"
+
+    _echo-success "Done."
+fi
+
+if [[ -n "$INSTALL_VIRTUALIZATION" ]]; then
+    _echo-status "-------------------INSTALLING VIRTUALIZATION PACKAGES----------------"
+    sudo dnf install -y --best --allowerasing --skip-unavailable $INSTALLABLE_VIRTUALIZATION_PACKAGES
+    if _is-virtual-machine; then
+        sudo dnf group install -y "guest-agents" "guest-desktop-agents"
+        _echo-debug "Installed guest-agents & guest-desktop-agents."
+    fi
+    sudo usermod -a -G libvirt "$REAL_USER"
+    _echo-debug "Added $REAL_USER to libvirt group."
+    _echo-success "Done."
+fi
+
+if [[ -n "$INSTALL_CONTAINERIZATION" ]]; then
+    _echo-status "-------------------INSTALLING CONTAINERIZATION PACKAGES----------------"
+    sudo dnf group install -y "container-management"
+    _echo-success "Done."
+fi
+
+if [[ -n "$INSTALL_SCRCPY" ]]; then
+    _echo-status "-------------------INSTALLING zeno/scrcpy----------------"
+    sudo dnf copr enable -y zeno/scrcpy
+    sudo dnf install -y --best --allowerasing --skip-unavailable scrcpy adb
+    sudo systemctl enable adb
+    _echo-success "Done."
+fi
+
 [[ -n "$INSTALL_JETBRAINS" ]] && update-jetbrains-toolbox
 [[ -n "$INSTALL_VSC" ]] && update-visual-studio-code
 [[ -n "$INSTALL_ZED" ]] && update-zed-text-editor
@@ -745,13 +725,6 @@ configure-ssh-defaults
 [[ -n "$INSTALL_ZED" ]] && sudo dnf remove -y "gnome-text-editor" "gedit"
 [[ -n "$INSTALL_VSC" ]] && sudo dnf remove -y "gnome-text-editor" "gedit"
 [[ -n "$INSTALL_SUBLIME" ]] && sudo dnf remove -y "gnome-text-editor" "gedit"
-
-if [[ -n "$INSTALL_SCRCPY" ]]; then
-    _echo-status "Installing zeno/scrcpy ..."
-    sudo dnf copr enable -y zeno/scrcpy
-    sudo dnf install -y --best --allowerasing --skip-unavailable scrcpy adb
-    sudo systemctl enable adb
-fi
 
 #######################################################################################################
 
