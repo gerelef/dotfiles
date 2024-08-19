@@ -425,7 +425,6 @@ org.gnome.Snapshot \
 readonly INSTALLABLE_GNOME_EXTENSIONS="\
 gnome-extensions-app \
 gnome-shell-extension-places-menu \
-gnome-shell-extension-forge \
 gnome-shell-extension-appindicator \
 "
 
@@ -777,65 +776,6 @@ if _is-gnome-session; then
     add-gsettings-shortcut "resource-monitor" "gnome-system-monitor" "<Shift><Control>Escape"
     add-gsettings-shortcut "flameshot" "/usr/local/bin/flameshot-gui-workaround" "Print"
     add-gsettings-shortcut "alacritty" "alacritty" "<Super>t"
-
-    # extension settings
-    gsettings set org.gnome.shell enabled-extensions "['places-menu@gnome-shell-extensions.gcampax.github.com', 'appindicatorsupport@rgcjonas.gmail.com', 'forge@jmmaranan.com']"
-
-    gsettings set org.gnome.shell.extensions.forge.keybindings con-split-horizontal "[]"
-    gsettings set org.gnome.shell.extensions.forge.keybindings con-split-layout-toggle "[]"
-    gsettings set org.gnome.shell.extensions.forge.keybindings con-split-vertical "[]"
-    gsettings set org.gnome.shell.extensions.forge.keybindings con-stacked-layout-toggle "[]"
-    gsettings set org.gnome.shell.extensions.forge.keybindings con-tabbed-layout-toggle "[]"
-    gsettings set org.gnome.shell.extensions.forge.keybindings con-tabbed-showtab-decoration-toggle "[]"
-    gsettings set org.gnome.shell.extensions.forge.keybindings focus-border-toggle "[]"
-    gsettings set org.gnome.shell.extensions.forge.keybindings mod-mask-mouse-tile 'None'
-    gsettings set org.gnome.shell.extensions.forge.keybindings prefs-open "[]"
-    gsettings set org.gnome.shell.extensions.forge.keybindings prefs-tiling-toggle "['<Super>y']"
-    gsettings set org.gnome.shell.extensions.forge.keybindings window-focus-down "[]"
-    gsettings set org.gnome.shell.extensions.forge.keybindings window-focus-left "[]"
-    gsettings set org.gnome.shell.extensions.forge.keybindings window-focus-right "[]"
-    gsettings set org.gnome.shell.extensions.forge.keybindings window-focus-up "[]"
-    gsettings set org.gnome.shell.extensions.forge.keybindings window-gap-size-decrease "[]"
-    gsettings set org.gnome.shell.extensions.forge.keybindings window-gap-size-increase "[]"
-    gsettings set org.gnome.shell.extensions.forge.keybindings window-move-down "[]"
-    gsettings set org.gnome.shell.extensions.forge.keybindings window-move-left "[]"
-    gsettings set org.gnome.shell.extensions.forge.keybindings window-move-right "[]"
-    gsettings set org.gnome.shell.extensions.forge.keybindings window-move-up "[]"
-    gsettings set org.gnome.shell.extensions.forge.keybindings window-resize-bottom-decrease "[]"
-    gsettings set org.gnome.shell.extensions.forge.keybindings window-resize-bottom-increase "[]"
-    gsettings set org.gnome.shell.extensions.forge.keybindings window-resize-left-decrease "[]"
-    gsettings set org.gnome.shell.extensions.forge.keybindings window-resize-left-increase "[]"
-    gsettings set org.gnome.shell.extensions.forge.keybindings window-resize-right-decrease "[]"
-    gsettings set org.gnome.shell.extensions.forge.keybindings window-resize-right-increase "[]"
-    gsettings set org.gnome.shell.extensions.forge.keybindings window-resize-top-decrease "[]"
-    gsettings set org.gnome.shell.extensions.forge.keybindings window-resize-top-decrease "[]"
-    gsettings set org.gnome.shell.extensions.forge.keybindings window-resize-top-increase "[]"
-    gsettings set org.gnome.shell.extensions.forge.keybindings window-snap-center "[]"
-    gsettings set org.gnome.shell.extensions.forge.keybindings window-snap-one-third-left "[]"
-    gsettings set org.gnome.shell.extensions.forge.keybindings window-snap-one-third-right "[]"
-    gsettings set org.gnome.shell.extensions.forge.keybindings window-snap-two-third-left "[]"
-    gsettings set org.gnome.shell.extensions.forge.keybindings window-snap-two-third-right "[]"
-    gsettings set org.gnome.shell.extensions.forge.keybindings window-swap-down "[]"
-    gsettings set org.gnome.shell.extensions.forge.keybindings window-swap-last-active "[]"
-    gsettings set org.gnome.shell.extensions.forge.keybindings window-swap-left "[]"
-    gsettings set org.gnome.shell.extensions.forge.keybindings window-swap-right "[]"
-    gsettings set org.gnome.shell.extensions.forge.keybindings window-swap-up "[]"
-    gsettings set org.gnome.shell.extensions.forge.keybindings window-toggle-always-float "['<Super>c']"
-    gsettings set org.gnome.shell.extensions.forge.keybindings window-toggle-float "[]"
-    gsettings set org.gnome.shell.extensions.forge.keybindings workspace-active-tile-toggle "[]"
-    gsettings set org.gnome.shell.extensions.forge primary-layout-mode 'tiling'
-    gsettings set org.gnome.shell.extensions.forge float-always-on-top-enabled true
-    gsettings set org.gnome.shell.extensions.forge preview-hint-enabled false
-    gsettings set org.gnome.shell.extensions.forge auto-split-enabled true
-    gsettings set org.gnome.shell.extensions.forge focus-border-toggle false
-    gsettings set org.gnome.shell.extensions.forge split-border-toggle false
-    gsettings set org.gnome.shell.extensions.forge move-pointer-focus-enabled false
-    gsettings set org.gnome.shell.extensions.forge stacked-tiling-mode-enabled true
-    gsettings set org.gnome.shell.extensions.forge tabbed-tiling-mode-enabled false
-    gsettings set org.gnome.shell.extensions.forge tiling-mode-enabled true
-    gsettings set org.gnome.shell.extensions.forge window-gap-hidden-on-single true
-    gsettings set org.gnome.shell.extensions.forge window-gap-size 1
-    gsettings set org.gnome.shell.extensions.forge window-gap-size-increment 1
 
     # nautilus & gtk3/gtk4 filechooser settings
     gsettings set org.gnome.nautilus.preferences show-create-link true
