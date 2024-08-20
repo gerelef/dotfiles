@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+# HELP flush /swapfile; DANGEROUS, will NOT check if /swapfile contents fit in memory!
+
 # TODO add check if swap_used is more than the Mem: total - used via `free -m`
 
 swap_used=$(free -m | awk '{ print $1 " " $3 }' | grep -i 'swap' | awk '{ print $2 }')

@@ -5,22 +5,11 @@
 create-ollama-systemd-unit () (
     mkdir -p ~/.config/systemd/user/
 
-    cat > ~/.config/systemd/user/ollama.service <<EOF
-[Unit]
-Description=User-local ollama service
-After=network.target
-
-[Service]
-Type=simple
-StandardOutput=journal
-ExecStart=ollama serve
-Restart=on-failure
-
-[Install]
-WantedBy=default.target
-EOF
-    systemctl --user enable ollama.service
-    systemctl --user start ollama.service
+    cwd="$( cd -- "$( dirname -- ${BASH_SOURCE[0]} )" &> /dev/null && pwd )"
+    cwd="${cwd:-$(pwd)}"
+    systemctl --user enable "$cwd/units/ollama.service"
+    systemctl --user daemon-reload
+    systemctl --user start ollama
 )
 
 install-ollama () (
