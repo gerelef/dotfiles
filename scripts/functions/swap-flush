@@ -1,10 +1,16 @@
 #!/usr/bin/env bash
 
+# TODO add check if swap_used is more than the Mem: total - used via `free -m`
 
 swap_used=$(free -m | awk '{ print $1 " " $3 }' | grep -i 'swap' | awk '{ print $2 }')
 
 if [[ -z "$swap_used" ]]; then
-    echo "FATAL ERROR: USAGE VARIABLE IS: $swap_used, CANNOT CONTINUE!"
+    echo "FATAL ERROR: USAGE VARIABLE IS EMPTY: $swap_used, CANNOT CONTINUE!"
+    exit 1
+fi
+
+if ! [ "$var" -eq "$var" ] 2>/dev/null; then
+    echo "FATAL ERROR: USAGE VARIABLE IS NON-NUMERIC: $swap_used, CANNOT CONTINUE!"
     exit 1
 fi
 
