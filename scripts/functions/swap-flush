@@ -11,7 +11,7 @@ if [[ -z "$swap_used" ]]; then
     exit 1
 fi
 
-if ! [ "$var" -eq "$var" ] 2>/dev/null; then
+if ! [ "$swap_used" -eq "$swap_used" ] 2>/dev/null; then
     echo "FATAL ERROR: USAGE VARIABLE IS NON-NUMERIC: $swap_used, CANNOT CONTINUE!"
     exit 1
 fi
