@@ -7,6 +7,7 @@ Type=simple
 StandardOutput=journal
 ExecStart=ollama serve
 Restart=on-failure
+Environment="OLLAMA_HOST=127.0.0.1:11434"
 
 [Install]
 WantedBy=default.target
