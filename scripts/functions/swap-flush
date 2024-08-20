@@ -1,0 +1,27 @@
+#!/usr/bin/env bash
+
+
+swap_used=$(free -m | awk '{ print $1 " " $3 }' | grep -i 'swap' | awk '{ print $2 }')
+
+if [[ -z "$swap_used" ]]; then
+    echo "FATAL ERROR: USAGE VARIABLE IS: $swap_used, CANNOT CONTINUE!"
+    exit 1
+fi
+
+if [[ "$swap_used" -eq 0 ]]; then
+    echo "Current usage @ $swap_used MB, no need to flush, exiting early..."
+    exit 0
+fi
+
+echo "Current usage @ $swap_used MB, turning swap off temporarily to flush contents..."
+sudo swapoff -a
+while [[ $swap_used -ge 1 ]]; do
+    echo "Current usage @ $swap_used MB"
+    sleep .5
+    swap_used=$(free -m | awk '{ print $1 " " $3 }' | grep -i 'swap' | awk '{ print $2 }')
+done
+
+echo "Current usage @ $swap_used MB, turning back on..."
+sudo swapon -a
+
+echo "Done."
