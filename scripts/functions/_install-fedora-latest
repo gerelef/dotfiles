@@ -588,10 +588,12 @@ sudo dnf group install -y "standard"
 
 _echo-debug "Installed terminal of choice ($TERMINAL_OF_CHOICE) for GUI-land."
 
-if [[ ! -f "$HAS_CHANGED_HOSTNAME_FILE" && ask-user "Do you want to change the current hostname (current is: $(hostname))?" ]]; then
-    sudo hostnamectl hostname "$(ask-user-input 'Please provide a suitable hostname')"
-    sudo touch "$HAS_CHANGED_HOSTNAME_FILE"
-    _echo-debug "Updated hostname."
+if [[ ! -f "$HAS_CHANGED_HOSTNAME_FILE" ]]; then
+    if ask-user "Do you want to change the current hostname (current is: $(hostname))?"; then
+        sudo hostnamectl hostname "$(ask-user-input 'Please provide a suitable hostname')"
+        sudo touch "$HAS_CHANGED_HOSTNAME_FILE"
+        _echo-debug "Updated hostname."
+    fi
 fi
 
 # if there's no desktop environment running...
@@ -610,7 +612,7 @@ fi
 
 if _is-gnome-session; then
     _echo-debug "GNOME session detected. Installing GNOME/libadwaita-specific packages."
-    sudo dnf install -y --best --allowerasing "gnome-calendar"
+    sudo dnf install -y --best --allowerasing "gnome-calendar" "loupe"
     sudo dnf install -y --best --allowerasing $INSTALLABLE_ADWAITA_PACKAGES $INSTALLABLE_GNOME_EXTENSIONS
     flatpak install --system --noninteractive -y $INSTALLABLE_ADWAITA_FLATPAKS
     flatpak install --system --noninteractive -y $INSTALLABLE_GNOME_FLATPAKS
