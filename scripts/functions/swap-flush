@@ -22,7 +22,9 @@ if [[ "$swap_used" -eq 0 ]]; then
 fi
 
 echo "Current usage @ $swap_used MB, turning swap off temporarily to flush contents..."
-sudo swapoff -a
+SUPRESSED="$(sudo sudo --help)"
+
+sudo swapoff -a &
 while [[ $swap_used -ge 1 ]]; do
     echo "Current usage @ $swap_used MB"
     sleep .5
@@ -30,6 +32,7 @@ while [[ $swap_used -ge 1 ]]; do
 done
 
 echo "Current usage @ $swap_used MB, turning back on..."
+sleep .5
 sudo swapon -a
 
 echo "Done."
