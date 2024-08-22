@@ -388,6 +388,23 @@ configure-ssh-defaults () (
     _echo-success "Done."
 )
 
+configure-tailscaled () (
+    _echo-status "Installing tailscaled..."
+
+    sudo dnf config-manager --add-repo https://pkgs.tailscale.com/stable/fedora/tailscale.repo
+    sudo dnf install -y tailscale sshd
+
+    sudo systemctl enable tailscaled
+    sudo systemctl start tailscaled
+
+    sudo systemctl unmask sshd
+    sudo systemctl enable sshd
+    sudo systemctl start sshd
+
+    _echo-important "$(tailscale ip -4)"
+    _echo-status "Done."
+)
+
 shopt -s globstar
 shopt -s dotglob
 shopt -s nullglob
@@ -637,6 +654,8 @@ ask-user 'Do you want to install gaming packages?' && INSTALL_GAMING="yes"
 _echo-debug "Will install gaming? $INSTALL_GAMING"
 ask-user 'Do you want to install terminal tools?' && INSTALL_TERM_TOOLS="yes"
 _echo-debug "Will install terminal-tools? $INSTALL_TERM_TOOLS"
+ask-user 'Do you want to install tailscaled?' && INSTALL_TAILSCALED="yes"
+_echo-debug "Will install tailscaled? $INSTALL_TAILSCALED"
 ask-user 'Do you want to install development tools?' && INSTALL_DEV_TOOLS="yes"
 _echo-debug "Will install dev-tools? $INSTALL_DEV_TOOLS"
 ask-user 'Do you want to install virtualization packages?' && INSTALL_VIRTUALIZATION="yes"
@@ -674,6 +693,8 @@ configure-ssh-defaults
 # user-submitted opts
 
 [[ -n "$INSTALL_GAMING" ]] && install-gaming-packages
+[[ -n "$INSTALL_TAILSCALED" ]] && configure-tailscaled
+
 if [[ -n "$INSTALL_TERM_TOOLS" ]]; then
     _echo-status "-------------------INSTALLING TERMINAL TOOLS----------------"
 
@@ -759,12 +780,10 @@ done
 
 
 if _is-gnome-session; then
-    _echo-important "Personalizing GNOME session..."
-    _echo-important "Make sure to get the legacy GTK3 Theme Auto Switcher"
-    _echo-important "https://extensions.gnome.org/extension/4998/legacy-gtk3-theme-scheme-auto-switcher/"
-
-    _as-service-user gdm "gsettings set org.gnome.desktop.peripherals.mouse speed -0.2"
-    _as-service-user gdm "gsettings set org.gnome.desktop.peripherals.mouse accel-profile 'flat'"
+    _echo-status "Personalizing GNOME session..."
+    _echo-status "Recommended GNOME extensions: "
+    _echo-important "- GTK3 Theme Auto Switcher (https://extensions.gnome.org/extension/4998/legacy-gtk3-theme-scheme-auto-switcher/)"
+    _echo-important "- Tailscale Status (https://github.com/maxgallup/tailscale-status)"
 
     _echo-status "Configuring all gsettings for $REAL_USER . . ."
     # theme settings
