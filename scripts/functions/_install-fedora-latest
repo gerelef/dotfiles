@@ -325,6 +325,8 @@ install-gaming-packages () (
     sudo sh -c 'echo "XMODIFIERS=@im=null" >> /etc/environment'
     sudo chmod 644 "/etc/environment"
     _echo-debug "Configured input lag ibus issue via /etc/environment."
+    sudo chattr +T /home
+    _echo-debug "Configured chattr +T for /home"
     _echo-success "Done."
 )
 
