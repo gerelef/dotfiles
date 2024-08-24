@@ -7,6 +7,7 @@
 def dir_contents(dir)
     files = Dir.entries(File.dirname(dir)).sort().select{ |fn| ! fn.include? "."}
     for fn in files do
+        next unless File.file?("%s/%s" % [File.dirname(dir), fn])
         found = false
         File.open("%s/%s" % [File.dirname(dir), fn]) do |file|
             regexr_match = file.find { |line| line =~ /#\sHELP\s(.+)/ }
