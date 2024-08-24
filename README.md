@@ -62,6 +62,10 @@ fi
 ```bash
 readarray -d '' array < <(find . -name "$input" -print0)
 ```
+- notifications using `notify-send`
+```bash
+notify-send --transient --action "idiot" --action "moron" --action "doofus" Test 'hello world!'
+```
 
 ## history
 Large revisions were performed in the following commits, ordered by recency:
