@@ -22,7 +22,8 @@ scripts/
 !!scripts/.gitconfig
 
 // symlink joplin keymap only if joplin is installed
-// .config/keymap-desktop.json
+//  NOTE: this doesn't work if joplin is not on $PATH, which it isn't (by default)
+.config/keymap-desktop.json
 // [if-pkg:::joplin]
 //     !!.config/keymap-desktop.json
 // [end]
