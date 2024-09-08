@@ -1,0 +1,10 @@
+#!/usr/bin/env bash
+
+# HELP list all connected ethernet interfaces (except self) ipv4
+
+ip-all-interfaces-ipv4 () (
+    ip --json -brief address | jq '.[]."addr_info".[0].local | select(. != null and . != "127.0.0.1")' | tr -d '"'
+)
+
+# run only if this file is not sourced
+[[ "${BASH_SOURCE[0]}" == "${0}" ]] && ip-all-interfaces-ipv4
