@@ -18,7 +18,7 @@ install-zed-text-editor () (
 
     # step 1 extract & move to /opt/zed.app
     mkdir "/tmp/zed-install"
-    curl -L "https://zed.dev/api/releases/preview/latest/zed-linux-x86_64.tar.gz" --output "/tmp/zed-install/zed-linux-x86_64.tar.gz"
+    curl -L "https://zed.dev/api/releases/stable/latest/zed-linux-x86_64.tar.gz" --output "/tmp/zed-install/zed-linux-x86_64.tar.gz"
     sudo tar xf "/tmp/zed-install/zed-linux-x86_64.tar.gz" --directory=/opt
     rm -rf "/tmp/zed-install"  # remove tmp dir, unneeded
     echo "extracted zed to /opt/zed.app"
