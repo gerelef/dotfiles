@@ -711,6 +711,7 @@ if [[ -n "$INSTALL_DEV_TOOLS" ]]; then
 
     sudo dnf group install -y --best --allowerasing  "c-development" "development-tools"
     sudo dnf install -y --best --allowerasing --skip-unavailable $INSTALLABLE_DEV_PKGS
+    sudo dnf install -y --best --allowerasing nmap net-tools
     flatpak install --system --noninteractive -y "net.werwolv.ImHex"
 
     _echo-success "Done."
@@ -738,6 +739,7 @@ if [[ -n "$INSTALL_SCRCPY" ]]; then
     _echo-status "-------------------INSTALLING zeno/scrcpy----------------"
     sudo dnf copr enable -y zeno/scrcpy
     sudo dnf install -y --best --allowerasing --skip-unavailable scrcpy adb
+    sudo dnf install -y --best --allowerasing nmap net-tools
     sudo systemctl enable adb
     _echo-success "Done."
 fi
