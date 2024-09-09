@@ -463,6 +463,7 @@ python3-cairo \
 "
 
 readonly INSTALLABLE_APPLICATION_PACKAGES="\
+xwaylandvideobridge \
 chromium \
 fedora-chromium-config \
 flameshot \
