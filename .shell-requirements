@@ -9,4 +9,10 @@ adb
 ruby
 python3.12
 ImageMagick
+nmap
+net-tools
+jq
 fish
+lsd
+zoxide
+fzf

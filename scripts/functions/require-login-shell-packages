@@ -62,24 +62,6 @@ require-login-shell-packages () (
         mk-run-file
         clear
     done
-
-    while :; do
-        # exit early if opts have already run
-        has-run-opts && break
-
-        if ask-user 'Do you want to install optional packages?'; then
-            echo -e "Installing optional shell packages: \033[38;5;39m"
-            echo -n "lsd zoxide --exclude=fzf"
-            echo -e "\033[0m"
-            install-system-pkg "lsd" "zoxide" "--exclude=fzf"
-            # cache user's choice via mk-run-opts-file
-            mk-run-opts-file
-        fi
-
-        clear
-        # exit regardless of user option
-        break
-    done
 )
 
 # run only if this file is not sourced
