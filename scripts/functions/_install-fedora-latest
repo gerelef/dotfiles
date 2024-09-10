@@ -801,7 +801,7 @@ if _is-gnome-session; then
     gsettings set org.gnome.settings-daemon.plugins.media-keys custom-keybindings '[]'
     add-gsettings-shortcut "resource-monitor" "gnome-system-monitor" "<Shift><Control>Escape"
     add-gsettings-shortcut "flameshot" "/usr/local/bin/flameshot-gui-workaround" "Print"
-    # add-gsettings-shortcut "alacritty" "alacritty" "<Super>t"
+    add-gsettings-shortcut "alacritty" "alacritty" "<Super>t"
 
     # nautilus & gtk3/gtk4 filechooser settings
     gsettings set org.gnome.nautilus.preferences show-create-link true
