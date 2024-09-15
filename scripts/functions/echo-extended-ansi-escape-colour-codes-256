@@ -1,0 +1,12 @@
+#!/usr/bin/env bash
+
+# HELP show all extended ansi escape colour codes
+
+echo-extended-ansi-escape-colour-codes-256 () (
+    # https://betterprogramming.pub/25-awesome-linux-command-one-liners-9495f26f07fb
+    for code in {0..255}; do
+        echo -e "\e[38;05;${code}mHello from: 'ESC[38;05;${code}m'"
+    done
+)
+
+[[ "${BASH_SOURCE[0]}" == "${0}" ]] && echo-extended-ansi-escape-colour-codes-256 "$@"
