@@ -2,6 +2,21 @@
 
 # HELP list all connected ethernet interfaces (except self) ipv4
 
+if [[ -z "$(command -v ip)" ]]; then
+    echo "Cannot run $(basename $0) without ip! Exiting..."
+    exit 1
+fi
+
+if [[ -z "$(command -v jq)" ]]; then
+    echo "Cannot run $(basename $0) without jq! Exiting..."
+    exit 1
+fi
+
+if [[ -z "$(command -v tr)" ]]; then
+    echo "Cannot run $(basename $0) without tr! Exiting..."
+    exit 1
+fi
+
 ip-all-interfaces-ipv4 () (
     ip --json -brief address | jq '.[]."addr_info".[0].local | select(. != null and . != "127.0.0.1")' | tr -d '"'
 )

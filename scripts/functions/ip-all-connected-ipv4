@@ -2,6 +2,16 @@
 
 # HELP list all connected devices (except self) ipv4
 
+if [[ -z "$(command -v nmap)" ]]; then
+    echo "Cannot run $(basename $0) without tr! Exiting..."
+    exit 1
+fi
+
+if [[ -z "$(command -v awk)" ]]; then
+    echo "Cannot run $(basename $0) without awk! Exiting..."
+    exit 1
+fi
+
 ip-all-devices-ipv4 () (
     if [[ $# != 1 ]]; then echo "interface ip argument must be given!"; exit 1; fi
     nmap -n -sn "$1/24" -oG - | awk '/Up$/{print $2}' | grep --invert-match "$1"

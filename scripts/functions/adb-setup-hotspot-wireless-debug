@@ -2,6 +2,11 @@
 
 # HELP setup adb to work with usb debugging (over hotspot)
 
+if [[ -z "$(command -v adb)" ]]; then
+    echo "Cannot run $(basename $0) without adb! Exiting..."
+    exit 1
+fi
+
 adb-setup-hotspot-wireless-debug () (
     if [[ $# != 1 ]]; then echo "device ip must be given!"; exit 1; fi
     adb tcpip 5555 | exit
