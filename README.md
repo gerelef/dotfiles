@@ -66,6 +66,11 @@ readarray -d '' array < <(find . -name "$input" -print0)
 ```bash
 notify-send --transient --action "idiot" --action "moron" --action "doofus" Test 'hello world!'
 ```
+- initramfs blew up, regenerate:
+```bash
+sudo dracut --force --regenerate-all --verbose && sudo grub2-mkconfig -o /boot/grub2/grub.cfg
+```
+
 
 ## history
 Large revisions were performed in the following commits, ordered by recency:
