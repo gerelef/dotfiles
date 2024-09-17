@@ -84,6 +84,7 @@ install-universal-necessities () (
 
     sudo dnf group install -y --best --allowerasing "firefox" "libreoffice"
     sudo dnf install -y --best --allowerasing --skip-unavailable $INSTALLABLE_APPLICATION_PACKAGES
+    sudo dnf swap gimp gimp3 -y --no-best --allowerasing
     flatpak install --system --noninteractive -y $INSTALLABLE_FLATPAKS
 
     _echo-debug "Checking whether btrfs is in rootfs or homefs (sometimes are different partitions)"
@@ -445,6 +446,7 @@ readonly INSTALLABLE_GNOME_EXTENSIONS="\
 gnome-extensions-app \
 gnome-shell-extension-places-menu \
 gnome-shell-extension-appindicator \
+gnome-shell-extension-freon \
 "
 
 #######################################################################################################
@@ -453,7 +455,7 @@ gnome-shell-extension-appindicator \
 #  regarding proprietary NVIDIA Drivers, and signing them for UEFI
 #  apparently, this is the way going forward with unified kernel image
 #  https://fedoraproject.org/wiki/Changes/Unified_Kernel_Support_Phase_2
-#  so we eon't replace it manually, it'll be replaced be Red Hat themselves
+#  so we won't replace it manually, it'll be replaced be Red Hat themselves
 readonly INSTALLABLE_ESSENTIAL_PACKAGES="\
 setroubleshoot \
 setroubleshoot-plugins \
