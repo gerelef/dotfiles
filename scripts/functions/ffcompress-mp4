@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-# HELP ffcompress-mp4 <file> <crf x265 log value>; compress an mp4 using x265
+# HELP ffcompress-mp4 <file> <crf x265 log value>; compress an mp4 using x265; good crf values are 27 to 30
 
 if [[ -z "$(command -v ffmpeg)" ]]; then
     echo "Cannot run $(basename $0) without dependency! Exiting..."
