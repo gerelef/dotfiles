@@ -42,19 +42,19 @@ render_timer = false
 size = 12
 
 [font.bold]
-family = "mono"
-style = "Bold"
+family = "Source Code Pro Semibold"
+style = "Semibold"
 
 [font.bold_italic]
-family = "mono"
-style = "Bold Italic"
+family = "Source Code Pro Medium"
+style = "Medium Italic"
 
 [font.italic]
-family = "mono"
+family = "Source Code Pro Medium"
 style = "Italic"
 
 [font.normal]
-family = "mono"
+family = "Source Code Pro Medium"
 style = "Regular"
 
 [[keyboard.bindings]]
