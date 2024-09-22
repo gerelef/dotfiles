@@ -179,6 +179,15 @@ TLP_PERSISTENT_DEFAULT=0
 TLP_END
             _echo-debug "Configured tlp. Settings will probably apply on next reboot."
         fi
+
+        if _is-gnome-session; then
+            _echo-debug "Installing s76-scheduler-plugin..."
+            git clone https://github.com/mjakeman/s76-scheduler-plugin ~/.local/share/gnome-shell/extensions/s76-scheduler@mattjakeman.com
+            _echo-status "Installing / enabling system76-scheduler..."
+            sudo dnf copr enable -y kylegospo/system76-scheduler
+            sudo dnf install -y --best --allowerasing --skip-unavailable system76-scheduler
+            sudo systemctl enable --now com.system76.Scheduler.service
+        fi
     fi
 
     if _is-desktop-type; then
@@ -192,6 +201,7 @@ TLP_END
         return
     fi
 
+    _echo-status "Adding preempt=full kernel parameter..."
     sudo grubby --args="preempt=full" --update-kernel=ALL
     sudo update-grub
     _echo-success "Done."
