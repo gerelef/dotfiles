@@ -192,6 +192,8 @@ TLP_END
         return
     fi
 
+    sudo grubby --args="preempt=full" --update-kernel=ALL
+    sudo update-grub
     _echo-success "Done."
 )
 
