@@ -182,7 +182,7 @@ TLP_END
 
         if _is-gnome-session; then
             _echo-debug "Installing s76-scheduler-plugin..."
-            git clone https://github.com/mjakeman/s76-scheduler-plugin ~/.local/share/gnome-shell/extensions/s76-scheduler@mattjakeman.com
+            git clone git@github.com:KyleGospo/s76-scheduler-plugin.git ~/.local/share/gnome-shell/extensions/s76-scheduler@mattjakeman.com
             _echo-status "Installing / enabling system76-scheduler..."
             sudo dnf copr enable -y kylegospo/system76-scheduler
             sudo dnf install -y --best --allowerasing --skip-unavailable system76-scheduler
