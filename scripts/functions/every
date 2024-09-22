@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env -S python3 -S -OO
 
 import os
 import sys
@@ -22,12 +22,12 @@ def every(interval_seconds, incantation: str | list[str]):
         except KeyboardInterrupt:
             print("Exiting via keyboard interrupt (Ctrl+C)...", file=sys.stderr)
             exit(130)
-    
+
 
 if __name__ == "__main__":
     if len(sys.argv) < 3:
         exit(2)
-        
+
     try:
         every(int(sys.argv[1]), sys.argv[2:])
     except ValueError:
