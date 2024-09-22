@@ -34,7 +34,7 @@ def partial(fn: str) -> None:
             os.remove(fname)
         sys.exit(1)
 
-    os.chmod(fname, 0o100)
+    os.chmod(fname, 0o500)
     print(fname, file=sys.stdout)
 
 if __name__ == "__main__":
