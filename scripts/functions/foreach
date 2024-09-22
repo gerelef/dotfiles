@@ -1,6 +1,6 @@
 #!/usr/bin/env fish
 
-# HELP foreach 'echo' ./*; run a command for each element provided
+# HELP foreach 'echo' ./*; run a command for each element provided, in parallel
 
 function foreach --description 'run anything ($1) in a for-each loop (for each argument)'
     if [ (count $argv) -lt 2 ]
@@ -9,8 +9,9 @@ function foreach --description 'run anything ($1) in a for-each loop (for each a
     end
 
     for ARG in $argv[2..]
-        $argv[1] "$ARG"
+        $argv[1] "$ARG" &
     end
+    wait
 end
 
 if [ "$_" != source ]
