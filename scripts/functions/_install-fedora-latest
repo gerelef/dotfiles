@@ -706,6 +706,8 @@ configure-system-defaults
 tweak-minor-details
 configure-ssh-defaults
 
+sudo dnf remove -y cups-browsed
+
 #######################################################################################################
 # user-submitted opts
 
