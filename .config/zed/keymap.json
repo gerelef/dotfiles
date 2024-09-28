@@ -25,7 +25,9 @@
                 "workspace::SendKeystrokes",
                 "ctrl-h"
             ],
+            "ctrl-shift-x": "workspace::ToggleZoom",
             // ---------------- LINE MANIP ----------------
+            "ctrl-x": "editor::Cut",
             "ctrl-z": "editor::Undo",
             "ctrl-shift-z": "editor::Redo",
             "ctrl-y": "editor::Redo",
