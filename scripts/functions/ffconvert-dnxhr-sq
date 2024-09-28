@@ -1,0 +1,21 @@
+#!/usr/bin/env bash
+
+# HELP ffconvert-dnxhr-sq <file1> <file2> <...>; convert N video files to dnxhr sq
+
+if [[ -z "$(command -v ffmpeg)" ]]; then
+    echo "Cannot run $(basename $0) without dependency! Exiting..."
+    exit 1
+fi
+
+# ffmpeg convert video file to dnxhr
+ffconvert-dnxhr () (
+    [[ -z "$*" ]] && return 2
+    for arg in "$@"; do
+        local output=$(basename -- "${arg%.*}")
+        ffmpeg -i "$arg" -c:v dnxhd  -profile:v dnxhr_sq -pix_fmt yuv422p -c:a pcm_s16le "$PWD/$output-converted.sq.mxf" 1> /dev/null
+        echo "Done $output-converted"
+    done
+)
+
+# run only if this file is not sourced
+[[ "${BASH_SOURCE[0]}" == "${0}" ]] && ffconvert-dnxhr "$@"
