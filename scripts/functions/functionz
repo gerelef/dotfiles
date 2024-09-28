@@ -1,6 +1,16 @@
 #!/usr/bin/env ruby
 
-# HELP list all available utility functions
+# HELP functionz [<name>]; list all available utility functions, optionally list only a specific doc
+
+def echo_help_text(dir, fn)
+    found = false
+    File.open("%s/%s" % [File.dirname(dir), fn]) do |file|
+        regexr_match = file.find { |line| line =~ /#\sHELP\s(.+)/ }
+        found = !regexr_match.to_s.strip.empty?
+        found ? puts("\033[0;31m%s\033[0m -> %s" % [fn, $1]) : nil
+    end
+    found ? nil : puts("\033[0;31m%s\033[0m" % fn)
+end
 
 # ruby is an unholy language
 #  im torn, i do not know if this is disgusting or really cool
@@ -8,16 +18,24 @@ def dir_contents(dir)
     files = Dir.entries(File.dirname(dir)).sort().select{ |fn| ! fn.include? "."}
     for fn in files do
         next unless File.file?("%s/%s" % [File.dirname(dir), fn])
-        found = false
-        File.open("%s/%s" % [File.dirname(dir), fn]) do |file|
-            regexr_match = file.find { |line| line =~ /#\sHELP\s(.+)/ }
-            found = !regexr_match.to_s.strip.empty?
-            found ? puts("\033[0;31m%s\033[0m -> %s" % [fn, $1]) : nil
-        end
-        found ? nil : puts("\033[0;31m%s\033[0m" % fn)
+        echo_help_text(dir, fn)
     end
 end
 
 if __FILE__ == $0
+    if ARGV.length > 1
+      puts "functionz [<name>]; list all available utility functions, optionally list only a specific doc"
+      exit(2)
+    end
+
+    if ARGV.length == 1
+        path = "%s/%s" % [File.dirname(__FILE__), ARGV[0]]
+        if !File.file?(path)
+            abort("Function '%s' does not exist!" % [ path ])
+        end
+
+        echo_help_text(__FILE__, ARGV[0])
+        exit()
+    end
     dir_contents(__FILE__)
 end
