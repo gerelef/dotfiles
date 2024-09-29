@@ -12,7 +12,7 @@ ffconvert-dnxhr () (
     [[ -z "$*" ]] && return 2
     for arg in "$@"; do
         local output=$(basename -- "${arg%.*}")
-        ffmpeg -i "$arg" -c:v dnxhd  -profile:v dnxhr_sq -pix_fmt yuv422p -c:a pcm_s16le "$PWD/$output-converted.sq.mxf" 1> /dev/null
+        ffmpeg -i "$arg" -strict 'unofficial' -c:v dnxhd  -profile:v dnxhr_sq -pix_fmt yuv422p -c:a pcm_s16le "$PWD/$output-converted.sq.mxf" 1> /dev/null
         echo "Done $output-converted"
     done
 )
