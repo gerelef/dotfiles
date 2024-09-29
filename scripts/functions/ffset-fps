@@ -13,7 +13,7 @@ ffset-fps () (
     [[ "$#" -ne 2 ]] && return 2
     readonly input_fps_division=$(ffprobe -v error -select_streams v:0 -show_entries stream=avg_frame_rate -of default=nw=1:nk=1 "$1")
     readonly input_fps=$(python3 -c "print('{:.2f}'.format($input_fps_division))")  # convert to xx.xx format
-    readonly scalar=$(python3 -c "print('{:.2f}'.format($output_fps / $input_fps))")
+    readonly scalar=$(python3 -c "print('{:.2f}'.format($2 / $input_fps))")
     # $1 input mp4
     # $2 output fps
     local output=$(basename -- "${1%.*}")
