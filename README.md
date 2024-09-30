@@ -62,13 +62,36 @@ fi
 ```bash
 readarray -d '' array < <(find . -name "$input" -print0)
 ```
-- notifications using `notify-send`
+- read from stdin
 ```bash
-notify-send --transient --action "idiot" --action "moron" --action "doofus" Test 'hello world!'
+str=$(cat -)
+```
+- heredocs
+```bash
+cat << EOF
+Today's date is $TODAY
+Current user is $(whoami)
+EOF
+```
+- multiline comments with heredocs
+```bash
+<< COMMENT
+This is a comment line 1
+This is another comment line
+COMMENT
+```
+- herestrings
+```bash
+tr a-z A-Z <<< 'one two three'
+# Output: ONE TWO THREE
 ```
 - initramfs blew up, regenerate:
 ```bash
 sudo dracut --force --regenerate-all --verbose && sudo grub2-mkconfig -o /boot/grub2/grub.cfg
+```
+- notifications using `notify-send`
+```bash
+notify-send --transient --action "idiot" --action "moron" --action "doofus" Test 'hello world!'
 ```
 
 
