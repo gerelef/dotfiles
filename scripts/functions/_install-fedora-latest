@@ -261,7 +261,8 @@ install-proprietary-nvidia-drivers () (
     _echo-debug "Updated grub."
 
     _echo-debug "Regenerating akmod build..."
-    sudo akmods --force && dracut --force --regenerate-all
+    sudo akmods --force || exit 1
+    sudo dracut --force --regenerate-all || exit 1
     _echo-debug "Regenerated akmod build."
 
     _echo-important "Script will hang while NVIDIA Drivers are being built."

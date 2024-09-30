@@ -12,12 +12,12 @@ _echo-stderr () (
 ask-user-input () (
     while : ; do
         read -p "$*: " -r
-        if [[ $REPLY =~ ^[A-Za-z\ ]$ ]];
+        if [[ $REPLY =~ ^([a-zA-Z0-9](-?[a-zA-Z0-9])*)+(\.[a-zA-Z0-9](-?[a-zA-Z0-9])*)*$ ]]; then
             echo "$REPLY"
             return 0
         fi
         _echo-stderr ""
-        _echo-stderr "Invalid reply \"$REPLY\", please answer in the following range: ^[A-Za-z\ ]"
+        _echo-stderr "Invalid reply \"$REPLY\", please answer in the following range: ^([a-zA-Z0-9](-?[a-zA-Z0-9])*)+(\.[a-zA-Z0-9](-?[a-zA-Z0-9])*)*$"
     done
 )
 
