@@ -3,9 +3,15 @@
 # HELP foreach 'echo' ./*; run a command for each element provided, in parallel
 
 function foreach --description 'run anything ($1) in a for-each loop (for each argument)'
-    if [ (count $argv) -lt 2 ]
-        echo "Incorrect parameters. \$1 must be a command, and \$2+ must be any argument to pass."
-        return 2
+    if [ (count $argv) -eq 1 ]
+        set stdinargs $(cat -)
+
+        for ARG in $stdinargs[1..]
+            $argv[1] "$ARG" &
+        end
+        wait
+
+        return
     end
 
     for ARG in $argv[2..]
