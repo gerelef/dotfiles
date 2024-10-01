@@ -1,10 +1,37 @@
 #!/usr/bin/env bash
 
-# HELP download & extract latest version of numerous game compatibility layers.
+# HELP update-compat-layers [<tag_name>]; download & extract latest version of proton-ge
 
-update-compat-layers () (
-    "$HOME/dotfiles/scripts/utils/update-compat-layers.py" "$@"
-)
+update-compat-layers () {
+    if [[ $# -lt 1 ]]; then
+        response=$(curl -sL 'https://api.github.com/repos/GloriousEggroll/proton-ge-custom/releases' | jq ".[0]")
+    else
+        response=$(curl -sL 'https://api.github.com/repos/GloriousEggroll/proton-ge-custom/releases' | jq ".[] | select(.tag_name | contains(\"$1\"))")
+    fi
+    if [[ -z "$response" ]]; then
+        echo "Couldn't pick any available candidate after filtering ($response)"
+        exit 1
+    fi
+    dname=$(jq '.tag_name' <<< "$response" | tr -d '"')
+    tarball_url=$(jq ".assets.[] | select(.browser_download_url | contains(\"$dname.tar.gz\")) | .browser_download_url" <<< "$response" | tr -d '"')
+    if [[ -z "$tarball_url" ]]; then
+        echo "Couldn't pick any available asset after filtering ($response)"
+        exit 1
+    fi
+
+    tmp=$(mktemp -d)
+    echo "Downloading @ $tmp: $tarball_url"
+
+    [[ -z "$HOME" ]] && exit 1
+
+    curl "$tarball_url" -Lo "$tmp/GEproton" || exit 1
+    mkdir -p "$HOME/.local/share/Steam/compatibilitytools.d/$dname"
+    tar -xzvf "$tmp/GEproton" -C "$HOME/.local/share/Steam/compatibilitytools.d/$dname" --strip-components=1
+    echo "Extracted to $HOME/.local/share/Steam/compatibilitytools.d/$dname"
+    [[ -n "$tmp" ]] && rm -rfv "$tmp"
+}
+
+
 
 # run only if this file is not sourced
 [[ "${BASH_SOURCE[0]}" == "${0}" ]] && update-compat-layers "$@"
