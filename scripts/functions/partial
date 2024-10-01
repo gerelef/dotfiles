@@ -1,5 +1,13 @@
 #!/usr/bin/env -S python3 -S -OO
 
+import sys
+
+
+if sys.version_info.minor < 12:
+    print(">= python3.12 required!", file=sys.stderr)
+    sys.exit(1)
+
+
 # HELP partial "fn {1} --arg {2}"; create a partial bash function
 
 import re

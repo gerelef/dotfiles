@@ -7,7 +7,7 @@ yt-dlp
 findutils
 adb
 ruby
-python3.12
+python3
 ImageMagick
 nmap
 net-tools
