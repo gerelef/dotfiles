@@ -1,9 +1,0 @@
-(
-    rules: "",
-    model: "pc105",
-    layout: "us,gr",
-    variant: ",",
-    options: Some("grp:alt_shift_toggle"),
-    repeat_delay: 450,
-    repeat_rate: 35,
-)
