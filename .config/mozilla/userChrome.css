@@ -51,4 +51,8 @@
     #TabsToolbar .tabbrowser-tab .tab-close-button {
         visibility: collapse !important;
     }
+
+    #TabsToolbar #tabbrowser-tabs {
+        --tab-overflow-pinned-tabs-width: 0px !important;
+    }
 }
