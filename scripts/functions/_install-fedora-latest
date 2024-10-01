@@ -354,7 +354,7 @@ install-gaming-packages () (
 configure-system-defaults () (
     _echo-status "-------------------SETTING UP SYSTEM DEFAULTS----------------"
     _echo-debug "Lowering swappiness"
-    sudo sh -c 'echo "vm.swappiness = 10" > "/etc/sysctl.d/90-swappiness.conf"'
+    sudo sh -c 'echo "vm.swappiness = 3" > "/etc/sysctl.d/90-swappiness.conf"'
     _echo-success "Lowered swappiness."
     _echo-debug "Raising user-watches"
     sudo sh -c 'echo "fs.inotify.max_user_watches = 600000" > "/etc/sysctl.d/90-max_user_watches.conf"'
