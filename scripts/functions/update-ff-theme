@@ -3,8 +3,41 @@
 # HELP download & extract latest version of any firefox theme
 
 update-ff-theme () (
-    # for future reference: curl -fsSL https:// | bash -s -- - "$HOME/dotfiles/.config/mozilla/userChrome.css" "$@"
-    "$HOME/dotfiles/scripts/utils/update-ff-theme.py" --resource "$HOME/dotfiles/.config/mozilla/userChrome.css" "$@"
+    response=$(curl -sL 'https://api.github.com/repos/rafaelmardojai/firefox-gnome-theme/releases' | jq ".[0]")
+    if [[ -z "$response" ]]; then
+        echo "Couldn't pick any available candidate after filtering ($response)"
+        exit 1
+    fi
+    zip_url=$(jq ".zipball_url" <<< "$response" | tr -d '"')
+    if [[ -z "$zip_url" ]]; then
+        echo "Couldn't pick any available asset after filtering ($response)"
+        exit 1
+    fi
+
+    tmp=$(mktemp -d)
+    echo "Downloading @ $tmp: $zip_url"
+
+    [[ -z "$HOME" ]] && exit 1
+    curl "$zip_url" -Lo "$tmp/theme" || exit 1
+    IFS=""
+
+    for tdir in $HOME/.mozilla/firefox/*.default*/; do
+        mkdir -p "$tdir/chrome"
+    done
+
+    mkdir -p $HOME/.mozilla/firefox/*/chrome/
+    first=""
+    for tdir in $HOME/.mozilla/firefox/*/chrome/; do
+        [[ -z "$first" ]] && first="$tdir"
+        rm -rf $tdir/*
+        unzip -o "$tmp/theme" -d "$tdir" || exit 1
+        mv $tdir/$(ls $tdir | head -n 1)/* "$tdir"
+    done
+    cat "$tdir/userChrome.css" "$HOME/dotfiles/.config/mozilla/userChrome.css" | tee $HOME/.mozilla/firefox/*/chrome/userChrome.css
+    echo Extracted to $HOME/.mozilla/firefox/*/chrome/
+    IFS=" "
+
+    [[ -n "$tmp" ]] && rm -rfv "$tmp"
 )
 
 # run only if this file is not sourced

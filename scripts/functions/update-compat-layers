@@ -26,7 +26,7 @@ update-compat-layers () {
 
     curl "$tarball_url" -Lo "$tmp/GEproton" || exit 1
     mkdir -p "$HOME/.local/share/Steam/compatibilitytools.d/$dname"
-    tar -xzvf "$tmp/GEproton" -C "$HOME/.local/share/Steam/compatibilitytools.d/$dname" --strip-components=1
+    tar -xzvf "$tmp/GEproton" -C "$HOME/.local/share/Steam/compatibilitytools.d/$dname" --strip-components=1 || exit 1
     echo "Extracted to $HOME/.local/share/Steam/compatibilitytools.d/$dname"
     [[ -n "$tmp" ]] && rm -rfv "$tmp"
 }
