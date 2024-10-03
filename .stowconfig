@@ -2,18 +2,10 @@
 // common .stowconfigs ignores
 // these are configuration files specifically for the dotfiles directory
 //  and as such, they shouldn't be redirected (stowed) anywhere else
+.git*
+**/README*
 .stowconfig
 .shell-requirements
-.git*
-README*
-.config/README*
-csgorc/
-csgorc/*
-insurc/
-insurc/*
-// these are not meant to be linked anywhere
-.manpages/
-.config/gnome-extensions/
 
 scripts/
 // only link these specific files from the scripts directory
@@ -21,12 +13,8 @@ scripts/
 !!scripts/.nanorc
 !!scripts/.gitconfig
 
-// symlink joplin keymap only if joplin is installed
-//  NOTE: this doesn't work if joplin is not on $PATH, which it isn't (by default)
+// joplin keymap doesn't load dynamically, womp womp
 .config/keymap-desktop.json
-// [if-pkg:::joplin]
-//     !!.config/keymap-desktop.json
-// [end]
 
 [if-pkg:::delta]
     !!scripts/.gitconfig-gitdelta
@@ -50,11 +38,6 @@ scripts/
     !!.config/zed/*
 [end]
 
-.config/sublime-text/
-[if-pkg:::sublime-text]
-    !!.config/sublime-text/*
-[end]
-
 .config/config
 .config/pipewire.conf
 .config/mozilla/
@@ -65,12 +48,6 @@ scripts/
 
     // ssh config
     !!.config/config
-[end]
-
-// cosmic-desktop specific; link only if it is installed
-.config/cosmic
-[if-pkg:::cosmic-session]
-    !!.config/cosmic
 [end]
 
 [redirect]
@@ -97,5 +74,3 @@ scripts/.gitconfig-gitdelta ::: .
 
 // find already created profile subdirectories on the fly, we can't nest here anyways
 .config/mozilla/* ::: .mozilla/firefox/*.default-release*/
-
-.config/keymap-desktop.json ::: .config/joplin/
