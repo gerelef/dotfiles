@@ -287,7 +287,6 @@ install-proprietary-nvidia-drivers () (
         # since we shouldn't reboot/shutdown for a few minutes after installing akmod drivers
         # since they'll be compiling in the background!
         # Their recommendations talk about kmod, not akmod, but the process should be the same
-        # FIXME needs checking that this actually works.
         _echo-important "You only have to do this once. Do NOT re-enroll MOK a second time."
         if ask-user 'Do you want to enroll MOK and restart afterwards?'; then
             _echo-important "Make sure you enroll MOK when you restart."
@@ -405,8 +404,6 @@ tweak-minor-details () (
     _echo-success "Done."
 )
 
-# FIXME
-#  .ssh gets created at the current directory
 configure-ssh-defaults () (
     # if the directory already exists, abandon
     [[ -d "$REAL_USER_HOME/.ssh" ]] && return
@@ -445,7 +442,7 @@ export DEBUG_SETUP_ON="yes"
 export PATH="$PATH:$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
 readonly REAL_USER="${SUDO_USER:-$(whoami)}"
 # https://unix.stackexchange.com/questions/247576/how-to-get-home-given-user
-readonly REAL_USER_HOME="$(eval 'echo ~$REAL_USER')"
+readonly REAL_USER_HOME="/home/$REAL_USER"
 readonly HAS_CHANGED_HOSTNAME_FILE="/opt/has-changed-hostname"
 
 #######################################################################################################
