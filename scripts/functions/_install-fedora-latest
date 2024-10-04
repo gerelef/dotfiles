@@ -95,13 +95,13 @@ install-universal-necessities () (
     fi
 
     # https://github.com/flameshot-org/flameshot/issues/3326#issuecomment-1855332738
-    sudo tee "/usr/local/bin/flameshot-gui-workaround" <<GDM_END
-#!/bin/bash
-flameshot gui
-GDM_END
-    sudo chmod a+x "/usr/local/bin/flameshot-gui-workaround"
-    flameshot config -m white
-    _echo-debug "Configured flameshot."
+    #     sudo tee "/usr/local/bin/flameshot-gui-workaround" <<GDM_END
+    # #!/bin/bash
+    # flameshot gui
+    # GDM_END
+    #     sudo chmod a+x "/usr/local/bin/flameshot-gui-workaround"
+    #     flameshot config -m white
+    #     _echo-debug "Configured flameshot."
 
     sudo tee "/usr/sbin/update-grub" <<GR_END
 #!/bin/sh
@@ -491,11 +491,11 @@ openssl \
 python3-cairo \
 "
 
+# flameshot \
 readonly INSTALLABLE_APPLICATION_PACKAGES="\
 xwaylandvideobridge \
 chromium \
 fedora-chromium-config \
-flameshot \
 gimp \
 krita \
 evince \
@@ -830,8 +830,8 @@ if _is-gnome-session; then
 
     # custom keybinds/shortcuts
     gsettings set org.gnome.settings-daemon.plugins.media-keys custom-keybindings '[]'
-    add-gsettings-shortcut "resource-monitor" "gnome-system-monitor" "<Shift><Control>Escape"
-    add-gsettings-shortcut "flameshot" "/usr/local/bin/flameshot-gui-workaround" "Print"
+    add-gsettings-shortcut "gnome-system-monitor" "gnome-system-monitor" "<Shift><Control>Escape"
+    # add-gsettings-shortcut "flameshot" "/usr/local/bin/flameshot-gui-workaround" "Print"
     add-gsettings-shortcut "$TERMINAL_OF_CHOICE" "$TERMINAL_OF_CHOICE" "<Super>t"
 
     # nautilus & gtk3/gtk4 filechooser settings
@@ -943,7 +943,7 @@ if _is-gnome-session; then
     gsettings set org.gnome.settings-daemon.plugins.media-keys mic-mute "[]"
     gsettings set org.gnome.shell.keybindings screenshot "[]"
     gsettings set org.gnome.shell.keybindings screenshot-window "[]"
-    gsettings set org.gnome.shell.keybindings show-screenshot-ui "[]"
+    gsettings set org.gnome.shell.keybindings show-screenshot-ui "['Print']"
     gsettings set org.gnome.desktop.wm.keybindings activate-window-menu "['Menu']"
     gsettings set org.gnome.desktop.wm.keybindings always-on-top  "[]"
     gsettings set org.gnome.desktop.wm.keybindings begin-move  "[]"
