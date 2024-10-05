@@ -409,6 +409,7 @@ configure-ssh-defaults () (
     [[ -d "$REAL_USER_HOME/.ssh" ]] && return
 
     sudo dnf install -y "ssh"
+    sudo systemctl disable --now sshd
     _echo-status "-------------------GENERATING SSH KEY----------------"
     mkdir -p "$REAL_USER_HOME/.ssh"
     ssh-keygen -q -t ed25519 -N '' -C "$REAL_USER@$(hostname)" -f "$REAL_USER_HOME/.ssh/id_ed25519" -P "" <<< $'\ny' >/dev/null 2>&1
@@ -420,15 +421,28 @@ configure-ssh-defaults () (
 )
 
 configure-tailscaled () (
-    _echo-status "Installing tailscaled..."
+    _echo-status "Installing tailscaled, openssh-server (sshd) & fail2ban"
 
     sudo dnf config-manager --add-repo https://pkgs.tailscale.com/stable/fedora/tailscale.repo
-    sudo dnf install -y tailscale sshd
+    sudo dnf install -y tailscale openssh-server fail2ban
 
     sudo systemctl enable --now tailscaled
+    sudo systemctl enable --now fail2ban
 
     sudo systemctl unmask sshd
     sudo systemctl enable --now sshd
+
+    sudo tee "/etc/fail2ban/jail.local" <<EOF
+[sshd]
+enabled = true
+port = ssh
+filter = sshd
+logpath = /var/log/auth.log
+maxretry = 5
+findtime = 600
+bantime = 3600
+ignoreip = 127.0.0.1
+EOF
 
     _echo-important "$(tailscale ip -4)"
     _echo-status "Done."
