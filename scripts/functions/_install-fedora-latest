@@ -421,6 +421,7 @@ configure-ssh-defaults () (
 )
 
 configure-tailscaled () (
+    # TODO eventually add crowdsec here, along with a 'remediation component'
     _echo-status "Installing tailscaled, openssh-server (sshd) & fail2ban"
 
     sudo dnf config-manager --add-repo https://pkgs.tailscale.com/stable/fedora/tailscale.repo
@@ -428,6 +429,8 @@ configure-tailscaled () (
 
     sudo systemctl enable --now tailscaled
     sudo systemctl enable --now fail2ban
+
+    # TODO make sshd listen only on the tailscaled interface
 
     sudo systemctl unmask sshd
     sudo systemctl enable --now sshd
