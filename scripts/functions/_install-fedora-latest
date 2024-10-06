@@ -805,12 +805,6 @@ fi
 
 configure-residual-permissions
 
-_echo-important "HSI Report failures (through fwupdtool):"
-sudo fwupdtool security 2> /dev/null | grep -i --extended-regexp '(Fail)|(Disabled)|(Not Supported)|(Unknown)'
-
-_echo-important "Make sure to restart your PC after making all the necessary adjustments."
-_echo-important "Remember to add a permanent mount point for internal storage partitions."
-
 mapfile -t parts < <(blkid -o list | grep --invert-match "crypto_" | grep -i "not mounted" | awk '{ print $1 }')
 [[ -n "$parts" ]] && _echo-important "--------------------------- POSSIBLE FSTAB PARTITIONS ---------------------------"
 for part in "${parts[@]}"; do
@@ -834,6 +828,11 @@ for part in "${parts[@]}"; do
     _echo-important "---------------------------"
 done
 
+_echo-important "HSI Report failures (through fwupdtool):"
+sudo fwupdtool security 2> /dev/null | grep -i '✘'
+
+_echo-important "Make sure to restart your PC after making all the necessary adjustments."
+_echo-important "Remember to add a permanent mount point for internal storage partitions."
 
 if _is-gnome-session; then
     _echo-status "Personalizing GNOME session..."
