@@ -203,7 +203,7 @@ TLP_END
     _echo-status "If you want to delve deeper in kernel params, check out the CIS Benchmarks"
     _echo-status 'https://www.cisecurity.org/benchmark/distribution_independent_linux'
     sudo grubby --update-kernel=ALL --args="sysrq_always_enabled=1"
-    sudo grubby --update-kernel=ALL --remove-args="rhgb quiet"
+    sudo grubby --update-kernel=ALL --remove-args="quiet"
 
     sudo update-grub
     _echo-success "Done."
