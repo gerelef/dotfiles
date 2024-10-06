@@ -806,7 +806,7 @@ fi
 configure-residual-permissions
 
 _echo-important "HSI Report failures (through fwupdtool):"
-sudo fwupdtool security | grep -i --extended-regexp '(Fail)|(Disabled)|(Not Supported)|(Unknown)'
+sudo fwupdtool security 2> /dev/null | grep -i --extended-regexp '(Fail)|(Disabled)|(Not Supported)|(Unknown)'
 
 _echo-important "Make sure to restart your PC after making all the necessary adjustments."
 _echo-important "Remember to add a permanent mount point for internal storage partitions."
