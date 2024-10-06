@@ -197,7 +197,14 @@ TLP_END
     fi
 
     _echo-status "Adding preempt=full kernel parameter..."
-    sudo grubby --args="preempt=full" --update-kernel=ALL
+    sudo grubby --update-kernel=ALL --args="preempt=full"
+
+    _echo-status "Removing 'user friendly' kernel params."
+    _echo-status "If you want to delve deeper in kernel params, check out the CIS Benchmarks"
+    _echo-status 'https://www.cisecurity.org/benchmark/distribution_independent_linux'
+    sudo grubby --update-kernel=ALL --args="sysrq_always_enabled=1"
+    sudo grubby --update-kernel=ALL --remove-args="rhgb quiet"
+
     sudo update-grub
     _echo-success "Done."
 )
