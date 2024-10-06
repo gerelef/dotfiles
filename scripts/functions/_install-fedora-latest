@@ -119,13 +119,13 @@ GR_END
 optimize-hardware () (
     _echo-status "-------------------OPTIMIZING HARDWARE----------------"
 
-    if _is-uefi; then
-        # the reason for disabling this, is the fact that it carries too much risk
-        #  to do it in userspace / while running.
-        _echo-important "Disabling UEFI updates via fwupd / fwupdmgr. Do it manually instead."
-        sudo systemctl disable --now fwupd 2> /dev/null
-        sudo systemctl mask fwupd 2> /dev/null
-    fi
+    # if _is-uefi; then
+    #    # the reason for disabling this, is the fact that it carries too much risk
+    #    #  to do it in userspace / while running.
+    #    _echo-important "Disabling UEFI updates via fwupd / fwupdmgr. Do it manually instead."
+    #    sudo systemctl disable --now fwupd 2> /dev/null
+    #    sudo systemctl mask fwupd 2> /dev/null
+    # fi
 
     sudo systemctl enable --now systemd-bsod
 
@@ -804,6 +804,9 @@ fi
 #######################################################################################################
 
 configure-residual-permissions
+
+_echo-important "HSI Report failures (through fwupdtool):"
+sudo fwupdtool security | grep -i --extended-regexp '(Fail)|(Disabled)|(Not Supported)|(Unknown)'
 
 _echo-important "Make sure to restart your PC after making all the necessary adjustments."
 _echo-important "Remember to add a permanent mount point for internal storage partitions."
