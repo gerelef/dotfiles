@@ -2,8 +2,8 @@
 
 # HELP install the latest personal fedora setup
 
-# USEFUL COMMAND: sudo dnf whatprovides COMMAND
-#  e.g. sudo dnf whatprovides nvidia-smi
+# USEFUL COMMAND: dnf whatprovides COMMAND or dnf provides COMMAND
+#  e.g. dnf whatprovides nvidia-smi or dnf provides nvidia-smi
 
 add-gsettings-shortcut () (
     [[ $# -ne 3 ]] && return 2
