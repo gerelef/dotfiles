@@ -204,7 +204,7 @@ alias fuck='sudo $(history -p \!\!)'
 
 # there's a chance wget doesn't exist on the system, but whatever lmao
 if [[ -n "$(command -v wget)" ]]; then
-    alias wget="\wget -c --read-timeout=5 --tries=0"
+    alias wget="\wget -c --read-timeout=5 --tries=0 --cut-file-get-vars --content-disposition"
 fi
 
 if [[ -n "$(command -v npm)" ]]; then

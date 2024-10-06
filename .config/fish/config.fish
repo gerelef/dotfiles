@@ -127,7 +127,7 @@ abbr --position command --add fuck --function __sudo_last_command
 abbr --position command --add vpip --function __venv_activate_fish
 
 if type -q wget
-    abbr --position command --add wget "wget -c --read-timeout=5 --tries=0"
+    abbr --position command --add wget "wget -c --read-timeout=5 --tries=0 --cut-file-get-vars --content-disposition"
 end
 
 if type -q npm
