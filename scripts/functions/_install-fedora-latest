@@ -52,6 +52,7 @@ configure-residual-permissions () (
 
 copy-dnf () (
     _echo-debug "Copying /etc/dnf/dnf.conf"
+    # NOTE: ip_resolve=4 was added to disable ipv6 resolve, because there was an outage lol
     sudo tee "/etc/dnf/dnf.conf" <<-DNF_EOF
 [main]
 gpgcheck=1
@@ -63,6 +64,7 @@ skip_if_unavailable=True
 max_parallel_downloads=10
 metadata_expire=1
 keepcache=true
+ip_resolve=4
 DNF_EOF
 )
 
