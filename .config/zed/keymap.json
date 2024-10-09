@@ -27,7 +27,11 @@
             ],
             "ctrl-shift-x": "workspace::ToggleZoom",
             // ---------------- LINE MANIP ----------------
+            "ctrl-c": "editor::Copy",
+            "ctrl-shift-c": "editor::Copy",
             "ctrl-x": "editor::Cut",
+            "ctrl-v": "editor::Paste",
+            "ctrl-shift-v": "editor::Paste",
             "ctrl-z": "editor::Undo",
             "ctrl-shift-z": "editor::Redo",
             "ctrl-y": "editor::Redo",
