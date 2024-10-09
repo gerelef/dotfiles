@@ -463,16 +463,18 @@ EOF
     _echo-status "Done."
 )
 
-shopt -s globstar
-shopt -s dotglob
-shopt -s nullglob
-
 export DEBUG_SETUP_ON="yes"
 export PATH="$PATH:$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
 readonly REAL_USER="${SUDO_USER:-$(whoami)}"
 # https://unix.stackexchange.com/questions/247576/how-to-get-home-given-user
 readonly REAL_USER_HOME="/home/$REAL_USER"
 readonly HAS_CHANGED_HOSTNAME_FILE="/opt/has-changed-hostname"
+
+[[ -n "$DEBUG_SETUP_ON" ]] && set -x
+
+shopt -s globstar
+shopt -s dotglob
+shopt -s nullglob
 
 #######################################################################################################
 
