@@ -138,8 +138,9 @@ optimize-hardware () (
     readonly PLACEHOLDER_COUNT=$(powerprofilesctl list | grep placeholder | wc -l)
     _echo-debug "Got placeholder count $PLACEHOLDER_COUNT (-gt 1 will disable it)"
     if [[ $PLACEHOLDER_COUNT -gt 1 ]]; then
-        _echo-debug "Disabling power profiles daemon..."
-        sudo systemctl disable --now power-profiles-daemon.service 2> /dev/null
+        _echo-debug "disabling power profiles daemon"
+        sudo systemctl mask power-profiles-daemon
+        sudo systemctl disable --now power-profiles-daemon
     fi
 
     if _is-mobile-type; then
@@ -155,6 +156,8 @@ optimize-hardware () (
             # tlp requires these daemons to be dead
             _echo-debug "masking power-profiles-daemon"
             sudo systemctl mask power-profiles-daemon
+            _echo-debug "disabling power-profiles-daemon"
+            sudo systemctl disable --now power-profiles-daemon
             _echo-debug "masking rfkill.socket"
             sudo systemctl mask systemd-rfkill.socket
             _echo-debug "disabling rfkill.service"
