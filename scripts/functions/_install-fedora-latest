@@ -338,7 +338,7 @@ install-media-codecs () (
 install-gaming-packages () (
     _echo-status "-------------------INSTALLING GAMING PACKAGES----------------"
     sudo dnf install -y --best --allowerasing --skip-unavailable "steam" "gamescope"
-    flatpak install --system --noninteractive -y "com.discordapp.Discord" "com.leinardi.gst"
+    flatpak install --system --noninteractive -y "dev.vencord.Vesktop" "com.leinardi.gst"
     # vulkan drivers are required for proton-ge to work
     sudo dnf install -y --best --allowerasing --skip-unavailable "protontricks" "vulkan" "vulkan-loader" "vulkan-loader.i686"
     _echo-debug "installed proton-ge prerequisites"
