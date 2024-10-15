@@ -196,10 +196,11 @@ alias ....='cd ../../..'
 alias .....='cd ../../../..'
 
 # convenience alias
+alias egrep="\grep -E"
 alias grep="\grep -i"
-alias rm="rm -v"
-alias reverse="tac"
-alias palindrome="rev"
+alias rm="\rm -v"
+alias reverse="\tac"
+alias palindrome="\rev"
 alias fuck='sudo $(history -p \!\!)'
 
 # there's a chance wget doesn't exist on the system, but whatever lmao
