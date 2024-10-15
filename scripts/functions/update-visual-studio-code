@@ -2,6 +2,8 @@
 
 # HELP install or update vsc
 
+_depends-on tee || exit
+
 install-visual-studio-code () (
     if [[ -z "$(command -v code)" ]]; then
         echo "Installing Visual Studio Code..."

@@ -2,10 +2,7 @@
 
 # HELP 'uninstall' known bloatware/spyware applications w/o root via adb
 
-if [[ -z "$(command -v adb)" ]]; then
-    echo "Cannot run $(basename $0) without adb! Exiting..."
-    exit 1
-fi
+_depends-on adb || exit
 
 adb-remove-bloat () (
     # remove AppCloud, malware piece of backdoor shit

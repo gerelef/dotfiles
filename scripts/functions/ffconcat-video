@@ -2,16 +2,13 @@
 
 # HELP ffconcat-video <file1> <file2> <...>; concatenate N number of videos
 
-if [[ -z "$(command -v ffmpeg)" ]]; then
-    echo "Cannot run $(basename $0) without dependency! Exiting..."
-    exit 1
-fi
+_depends-on ffmpeg || exit
 
 # ffmpeg concatenate multiple video files into one
 #  INPUTS: files >= 2
 ffconcat-video () (
     [[ -z "$*" ]] && return 2
-    
+
     local inputs=()
     local audio_video_ftracks=""
     local trimmed_arg=""
@@ -26,7 +23,7 @@ ffconcat-video () (
     done
     local output_name=$(head -c 30 <<< "$output_name")
     local output_name+="-concat$count.mp4"
-    ffmpeg "${inputs[@]}" -filter_complex "$audio_video_ftracks concat=n=$count:v=1:a=1 [v] [a]" -map "[v]" -map "[a]" -vsync cfr -r 60 "$PWD/$output_name" 
+    ffmpeg "${inputs[@]}" -filter_complex "$audio_video_ftracks concat=n=$count:v=1:a=1 [v] [a]" -map "[v]" -map "[a]" -vsync cfr -r 60 "$PWD/$output_name"
 )
 
 # run only if this file is not sourced

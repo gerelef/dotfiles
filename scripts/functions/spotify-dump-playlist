@@ -2,10 +2,7 @@
 
 # HELP dump a spotify playlist to stdout
 
-if [[ -z "$(command -v curl)" ]]; then
-    echo "Cannot run $(basename $0) without dependency! Exiting..."
-    exit 1
-fi
+_depends-on curl jq || exit
 
 curl-bearer-token () (
     echo $(curl -sS --dump-header - -b "" -X GET "https://open.spotify.com/" | grep --only-matching --extended-regexp '"accessToken":".+","accessTokenExpirationTimestampMs' | sed -nr 's/"accessToken":"(.+)","accessTokenExpirationTimestampMs/\1/p' -)

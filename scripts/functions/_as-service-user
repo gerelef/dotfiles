@@ -2,6 +2,8 @@
 
 # HELP as-service-user <service-username> <commands...>; execute commands as a service user
 
+_depends-on machinectl || exit
+
 as-service-user () (
     # username and command must be given
     _echo-debug "as-systemd-service-user $1 $2"

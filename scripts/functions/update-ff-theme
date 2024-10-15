@@ -2,6 +2,8 @@
 
 # HELP download & extract latest version of any firefox theme
 
+_depends-on curl jq || exit
+
 update-ff-theme () (
     response=$(curl -sL 'https://api.github.com/repos/rafaelmardojai/firefox-gnome-theme/releases' | jq ".[0]")
     if [[ -z "$response" ]]; then

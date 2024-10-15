@@ -2,6 +2,8 @@
 
 # HELP install jetbrains-toolbox
 
+_depends-on tar || exit
+
 install-jetbrains-toolbox () (
     # dependencies, described here
     #  https://github.com/nagygergo/jetbrains-toolbox-install

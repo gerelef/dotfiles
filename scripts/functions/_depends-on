@@ -1,0 +1,15 @@
+#!/usr/bin/env bash
+
+# HELP one-liner to check if dependencies exist
+
+depends-on () (
+    for arg in "$@"; do
+        if test -z "$(command -v $arg)"; then
+            _is-tty && echo "WARN: dependency $arg not found!"
+            exit 1
+        fi
+    done
+)
+
+# run only if this file is not sourced
+[[ "${BASH_SOURCE[0]}" == "${0}" ]] && depends-on $@

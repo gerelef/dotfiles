@@ -2,6 +2,8 @@
 
 # HELP update-compat-layers [<tag_name>]; download & extract latest version of proton-ge
 
+_depends-on curl jq tar || exit
+
 update-compat-layers () {
     if [[ $# -lt 1 ]]; then
         response=$(curl -sL 'https://api.github.com/repos/GloriousEggroll/proton-ge-custom/releases' | jq ".[0]")

@@ -2,6 +2,8 @@
 
 # HELP orientation <path/to/image.ext>; Check the orientation of an image. Echoes 'vertical' or 'horizontal'.
 
+_depends-on identify || exit
+
 function orientation --description "Returns stdout 'vertical' or 'horizontal'."
     if [ (count $argv) -ne 1 ]
         echo "Incorrect parameters. Arg \$1 must be the path of an image."

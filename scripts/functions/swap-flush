@@ -6,6 +6,8 @@
 
 swap_used=$(free -m | awk '{ print $1 " " $3 }' | grep -i 'swap' | awk '{ print $2 }')
 
+_depends-on free awk grep swapon swapoff || exit
+
 if [[ -z "$swap_used" ]]; then
     echo "FATAL ERROR: USAGE VARIABLE IS EMPTY: $swap_used, CANNOT CONTINUE!"
     exit 1

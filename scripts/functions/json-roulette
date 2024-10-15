@@ -2,6 +2,8 @@
 
 # HELP a barebones json generator, for testing
 
+_depends-on curl python3 || exit
+
 json-roulette () {
     curl --tlsv1.2 -fsSL "https://raw.githubusercontent.com/gerelef/json-roulette/master/json-roulette.py" | python3 - "$@"
 }

@@ -2,10 +2,7 @@
 
 # HELP adb-list-all-devices "state"; get all devices with "state"
 
-if [[ -z "$(command -v adb)" ]]; then
-    echo "Cannot run $(basename $0) without dependency! Exiting..."
-    exit 1
-fi
+_depends-on adb || exit
 
 adb-list-all-devices () (
     if [[ $# != 1 ]]; then echo "State argument must be given!"; exit 1; fi

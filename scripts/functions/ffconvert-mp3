@@ -2,14 +2,11 @@
 
 # HELP ffconvert-mp3 <file1> <file2> <...>; convert N audio files to mp3
 
-if [[ -z "$(command -v ffmpeg)" ]]; then
-    echo "Cannot run $(basename $0) without dependency! Exiting..."
-    exit 1
-fi
+_depends-on ffmpeg || exit
 
 # ffmpeg convert audio file to mp3
 ffconvert-mp3 () (
-    [[ -z "$*" ]] && return 2 
+    [[ -z "$*" ]] && return 2
     for arg in "$@"; do
         local output=$(basename -- "${arg%.*}")
         ffmpeg -i "$arg" -acodec libmp3lame "$PWD/$output-converted.mp3"  1> /dev/null

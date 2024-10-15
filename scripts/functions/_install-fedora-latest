@@ -5,6 +5,9 @@
 # USEFUL COMMAND: dnf whatprovides COMMAND or dnf provides COMMAND
 #  e.g. dnf whatprovides nvidia-smi or dnf provides nvidia-smi
 
+export DEBUG_SETUP_ON="yes"
+export PATH="$PATH:$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
+
 add-gsettings-shortcut () (
     [[ $# -ne 3 ]] && return 2
     # $1 is the name
@@ -463,8 +466,6 @@ EOF
     _echo-status "Done."
 )
 
-export DEBUG_SETUP_ON="yes"
-export PATH="$PATH:$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
 readonly REAL_USER="${SUDO_USER:-$(whoami)}"
 # https://unix.stackexchange.com/questions/247576/how-to-get-home-given-user
 readonly REAL_USER_HOME="/home/$REAL_USER"

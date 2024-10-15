@@ -2,6 +2,8 @@
 
 # HELP check if homefs is btrfs
 
+_depends-on stat || exit
+
 is-btrfs-homefs () (
     home_fs=$(stat -f --format=%T "$(eval echo "~${SUDO_USER:-$(whoami)}")")
     _echo-debug "is-btrfs-homefs $home_fs"

@@ -2,6 +2,8 @@
 
 # HELP get the nvidia gpu model
 
+_depends-on lspci || exit
+
 get-nvidia-gpu-model () (
     readonly mdl="$(lspci | grep -i vga | grep NVIDIA | grep -E --only-matching "(\[.+\])" | tr -d '[]')"
     echo "$mdl"

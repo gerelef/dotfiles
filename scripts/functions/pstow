@@ -2,6 +2,8 @@
 
 # HELP a spiritual reimplementation of GNU Stow, but simpler, for tinkerers.
 
+_depends-on curl python3 || exit
+
 pstow () {
     curl --tlsv1.2 -fsSL "https://raw.githubusercontent.com/gerelef/pstow/master/pstow.py" | python3 - "$@"
 }

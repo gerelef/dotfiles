@@ -2,10 +2,7 @@
 
 # HELP ffscale-mp4 <file> <width:height>; scale video file to selected resolution
 
-if [[ -z "$(command -v ffmpeg)" ]]; then
-    echo "Cannot run $(basename $0) without dependency! Exiting..."
-    exit 1
-fi
+_depends-on ffmpeg || exit
 
 # convert (X,Y) coords with X delimiter instead of comma to ffmpeg format
 __xy_to_ffilter_coords () (

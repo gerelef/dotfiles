@@ -2,10 +2,7 @@
 
 # HELP adb-uninstall-package "id" "package.name"; uninstall package for phone id
 
-if [[ -z "$(command -v adb)" ]]; then
-    echo "Cannot run $(basename $0) without dependency! Exiting..."
-    exit 1
-fi
+_depends-on adb || exit
 
 adb-uninstall-package () (
     if [[ $# != 2 ]]; then echo "id, package arguments must be given!"; exit 1; fi

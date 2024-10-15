@@ -1,0 +1,10 @@
+#!/usr/bin/env bash
+
+# HELP pause & wait for user input (same as C)
+
+pause () (
+    read -n 1
+)
+
+# run only if this file is not sourced
+[[ "${BASH_SOURCE[0]}" == "${0}" ]] && pause $@

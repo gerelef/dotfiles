@@ -2,6 +2,8 @@
 
 # HELP a json-schema generator
 
+_depends-on curl python3 || exit
+
 jproof () {
     curl --tlsv1.2 -fsSL "https://raw.githubusercontent.com/gerelef/jproof/master/jproof.py" | python3 - "$@"
 }

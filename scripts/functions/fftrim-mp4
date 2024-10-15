@@ -2,10 +2,7 @@
 
 # HELP fftrim-mp4 <file> <sta:rt> <end:ing>; trim mp4 from start to end
 
-if [[ -z "$(command -v ffmpeg)" ]]; then
-    echo "Cannot run $(basename $0) without dependency! Exiting..."
-    exit 1
-fi
+_depends-on ffmpeg || exit
 
 # convert Minutes:Seconds (colon seperated) to seconds
 __hms () (
@@ -13,7 +10,7 @@ __hms () (
 )
 
 fftrim-mp4 () (
-    [[ -z "$*" ]] && return 2 
+    [[ -z "$*" ]] && return 2
     [[ "$#" -ne 3 ]] && return 2
     # $1 input
     # $2 start (seconds)

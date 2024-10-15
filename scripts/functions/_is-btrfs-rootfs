@@ -2,6 +2,8 @@
 
 # HELP check if rootfs is btrfs
 
+_depends-on stat || exit
+
 is-btrfs-rootfs () (
     root_fs="$(stat -f --format=%T /)"
     _echo-debug "is-btrfs-rootfs $root_fs"

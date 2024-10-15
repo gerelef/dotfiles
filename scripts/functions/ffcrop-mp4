@@ -2,10 +2,7 @@
 
 # HELP ffscale-mp4 <path/to/file> <starting width x starting height> <ending width x ending height>; crop an mp4's contents from start to end coordinates
 
-if [[ -z "$(command -v ffmpeg)" ]]; then
-    echo "Cannot run $(basename $0) without dependency! Exiting..."
-    exit 1
-fi
+_depends-on ffmpeg || exit
 
 # convert (X1,Y1) (X2,Y2) coords with X delimiter instead of comma to ffmpeg format (X2-X1,Y2-Y1)
 __xy_rp_to_ffilter_coords () (

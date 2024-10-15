@@ -2,10 +2,7 @@
 
 # HELP toggle screen on-off
 
-if [[ -z "$(command -v adb)" ]]; then
-    echo "Cannot run $(basename $0) without dependency! Exiting..."
-    exit 1
-fi
+_depends-on adb || exit
 
 adb-toggle-screen () (
     adb shell input keyevent KEYCODE_POWER

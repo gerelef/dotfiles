@@ -2,10 +2,7 @@
 
 # HELP ffconvert-dnxhr-lb <file1> <file2> <...>; convert N video files to dnxhr lb
 
-if [[ -z "$(command -v ffmpeg)" ]]; then
-    echo "Cannot run $(basename $0) without dependency! Exiting..."
-    exit 1
-fi
+_depends-on ffmpeg || exit
 
 # ffmpeg convert video file to dnxhr
 ffconvert-dnxhr () (

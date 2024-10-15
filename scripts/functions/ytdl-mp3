@@ -2,16 +2,13 @@
 
 # HELP download an .mp3 file
 
-if [[ -z "$(command -v yt-dlp)" ]]; then
-    echo "Cannot run $(basename $0) without dependency! Exiting..."
-    exit 1
-fi
+_depends-on yt-dlp || exit
 
 # yt-dlp download to mp3
 ytdl-mp3 () (
-    [[ -z "$*" ]] && return 2 
-    
-    yt-dlp --extract-audio --audio-format mp3 --audio-quality 0 "$@" 
+    [[ -z "$*" ]] && return 2
+
+    yt-dlp --extract-audio --audio-format mp3 --audio-quality 0 "$@"
 )
 
 # run only if this file is not sourced

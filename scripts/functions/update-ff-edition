@@ -2,20 +2,7 @@
 
 # HELP update-ff-edition <beta | developer | nightly>
 
-if [[ -z "$(command -v wget)" ]]; then
-    echo "Cannot run $(basename $0) without wget! Exiting..."
-    exit 1
-fi
-
-if [[ -z "$(command -v tar)" ]]; then
-    echo "Cannot run $(basename $0) without tar! Exiting..."
-    exit 1
-fi
-
-if [[ -z "$(command -v tee)" ]]; then
-    echo "Cannot run $(basename $0) without tee! Exiting..."
-    exit 1
-fi
+_depends-on wget tar tee || exit
 
 install-ff-beta () (
     echo "Installing firefox-beta..."

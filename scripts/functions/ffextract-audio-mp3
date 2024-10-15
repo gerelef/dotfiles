@@ -2,10 +2,7 @@
 
 # HELP ffextract-audio-mp3 <file1> <file2> <...>; extract audio from video with audio to mp3
 
-if [[ -z "$(command -v ffmpeg)" ]]; then
-    echo "Cannot run $(basename $0) without dependency! Exiting..."
-    exit 1
-fi
+_depends-on ffmpeg || exit
 
 ffextract-audio-mp3 () (
     [[ -z "$*" ]] && return 2

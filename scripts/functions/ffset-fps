@@ -2,10 +2,7 @@
 
 # HELP ffset-fps <file> <fps>; convert a video from whatever framerate to <fps>
 
-if [[ -z "$(command -v ffmpeg)" ]]; then
-    echo "Cannot run $(basename $0) without dependency! Exiting..."
-    exit 1
-fi
+_depends-on ffmpeg || exit
 
 # ffmpeg set fps video
 ffset-fps () (

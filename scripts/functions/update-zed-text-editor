@@ -2,15 +2,7 @@
 
 # HELP update zed, the snappy text editor
 
-if [[ -z "$(command -v curl)" ]]; then
-    echo "Cannot run $(basename $0) without curl! Exiting..."
-    exit 1
-fi
-
-if [[ -z "$(command -v tar)" ]]; then
-    echo "Cannot run $(basename $0) without tar! Exiting..."
-    exit 1
-fi
+_depends-on curl tar || exit
 
 install-zed-text-editor () (
     echo "Installing zed..."

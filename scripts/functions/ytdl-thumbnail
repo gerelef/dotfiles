@@ -2,14 +2,11 @@
 
 # HELP download a thumbnail
 
-if [[ -z "$(command -v yt-dlp)" ]]; then
-    echo "Cannot run $(basename $0) without dependency! Exiting..."
-    exit 1
-fi
+_depends-on yt-dlp || exit
 
 ytdl-thumbnail () (
     [[ -z "$*" ]] && return 2
-    
+
     yt-dlp --write-thumbnail --skip-download "$@"
 )
 

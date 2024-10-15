@@ -3,10 +3,7 @@
 # https://videoconverter.wondershare.com/sync-audio/ffmpeg-sync-audio-and-video.html
 # HELP ffshift <right | left> <file.mp4> <milliseconds>; shift mp4's audio to the right or left
 
-if test -z "$(command -v ffmpeg)"
-    echo "Cannot run $(basename $0) without dependency! Exiting..."
-    exit 1
-end
+_depends-on ffmpeg || exit
 
 function ffrshift
     ffmpeg -i "$argv[1]" -itsoffset "00:00:0$argv[2]" -i "$argv[1]" -vcodec copy -acodec copy -map 0:1 -map 1:0 "$output-shift.mp4"
