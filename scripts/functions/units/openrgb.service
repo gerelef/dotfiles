@@ -1,0 +1,12 @@
+[Unit]
+Description=Open source RGB lighting control that doesn't depend on manufacturer software.
+After=graphical.target
+
+[Service]
+Type=simple
+StandardOutput=journal
+ExecStart=openrgb --server
+Restart=on-failure
+
+[Install]
+WantedBy=default.target

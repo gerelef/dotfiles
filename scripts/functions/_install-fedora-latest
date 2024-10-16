@@ -7,6 +7,7 @@
 
 export DEBUG_SETUP_ON="yes"
 export PATH="$PATH:$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
+export UNITS="$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )/units"
 
 add-gsettings-shortcut () (
     [[ $# -ne 3 ]] && return 2
@@ -123,14 +124,6 @@ GR_END
 
 optimize-hardware () (
     _echo-status "-------------------OPTIMIZING HARDWARE----------------"
-
-    # if _is-uefi; then
-    #    # the reason for disabling this, is the fact that it carries too much risk
-    #    #  to do it in userspace / while running.
-    #    _echo-important "Disabling UEFI updates via fwupd / fwupdmgr. Do it manually instead."
-    #    sudo systemctl disable --now fwupd 2> /dev/null
-    #    sudo systemctl mask fwupd 2> /dev/null
-    # fi
 
     sudo systemctl enable --now systemd-bsod
 
@@ -357,6 +350,8 @@ install-gaming-packages () (
         sudo touch /etc/modules-load.d/i2c.conf
         sudo sh -c 'echo "i2c-dev" >> /etc/modules-load.d/i2c.conf'
         sudo sh -c 'echo "i2c-piix4" >> /etc/modules-load.d/i2c.conf'
+
+        systemctl enable --user --now "$UNITS/openrgb.service"
     fi
 
     # FIX FOR INPUT LAG / KEYBOARD KEYS GETTING STUCK:

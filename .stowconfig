@@ -3,7 +3,7 @@
 // these are configuration files specifically for the dotfiles directory
 //  and as such, they shouldn't be redirected (stowed) anywhere else
 .git*
-**/README*
+**/*.md
 .stowconfig
 .shell-requirements
 
