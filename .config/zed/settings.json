@@ -8,6 +8,7 @@
 // from the command palette or from `Zed` application menu.
 {
     // ---------------- TELEMETRY ----------------
+    "auto_update": false,
     "features": {
         "inline_completion_provider": "none"
     },

@@ -760,8 +760,7 @@ sudo dnf remove -y cups-browsed
 if [[ -n "$INSTALL_TERM_TOOLS" ]]; then
     _echo-status "-------------------INSTALLING TERMINAL TOOLS----------------"
 
-    sudo dnf install -y --best --allowerasing --skip-unavailable "tldr" \
-    "fish" "zoxide" "fzf" "wget" "curl" "git-delta"
+    sudo dnf install -y --best --allowerasing --skip-unavailable "tldr" "git-delta"
 
     _echo-success "Done."
 fi
