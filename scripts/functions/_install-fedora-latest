@@ -715,7 +715,9 @@ _echo-debug "Will install terminal-tools? $INSTALL_TERM_TOOLS"
 ask-user 'Do you want to install tailscaled?' && INSTALL_TAILSCALED="yes"
 _echo-debug "Will install tailscaled? $INSTALL_TAILSCALED"
 ask-user 'Do you want to install development tools?' && INSTALL_DEV_TOOLS="yes"
-_echo-debug "Will install dev-tools? $INSTALL_DEV_TOOLS"
+_echo-debug "Will install dev tools? $INSTALL_DEV_TOOLS"
+ask-user 'Do you want to install rpm tools?' && INSTALL_RPM_TOOLS="yes"
+_echo-debug "Will install rpm tools? $INSTALL_RPM_TOOLS"
 ask-user 'Do you want to install virtualization packages?' && INSTALL_VIRTUALIZATION="yes"
 _echo-debug "Will install virtualization? $INSTALL_VIRTUALIZATION"
 ask-user 'Do you want to install containerization packages?' && INSTALL_CONTAINERIZATION="yes"
@@ -771,6 +773,27 @@ if [[ -n "$INSTALL_DEV_TOOLS" ]]; then
     sudo dnf install -y --best --allowerasing --skip-unavailable $INSTALLABLE_DEV_PKGS
     sudo dnf install -y --best --allowerasing nmap net-tools
     flatpak install --system --noninteractive -y "net.werwolv.ImHex"
+
+    _echo-success "Done."
+fi
+
+if [[ -n "$INSTALL_RPM_TOOLS" ]]; then
+    _echo-status "-------------------INSTALLING RPM TOOLS----------------"
+
+    sudo dnf group install -y --best --allowerasing 'rpm-development-tools'
+    sudo dnf install -y --best --allowerasing --skip-unavailable rpmspectool fedora-packager fedpkg copr-cl
+
+    # Useful fedpkg commands:
+    #  https://docs.fedoraproject.org/en-US/package-maintainers/Pull_Request_Guide/
+    #   fedpkg clone -a 'rpms/pkgname'
+    #  or
+    #   fedpkg clone -a 'forks/<username>/rpms/pkgname'
+    #   fedpkg sources
+    #   fedpkg new-sources --offline ./filename.tar.gz
+    #   fedpkg build
+    #  if you have no permissions to build, you can alternatively run
+    #   rpmbuild -ba ./pkgname.spec
+    #  however the sources & relevant patches will have to be in `~/rpmbuild/SOURCES`
 
     _echo-success "Done."
 fi
