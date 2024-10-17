@@ -60,6 +60,7 @@
         "scroll_debounce_ms": 50
     },
     // ---------------- BEHAVIOURAL ----------------
+    "vertical_scroll_margin": 0,
     "restore_on_startup": "last_workspace",
     "session": {
         "restore_unsaved_buffers": true
