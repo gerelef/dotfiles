@@ -5,7 +5,7 @@ After=graphical.target
 [Service]
 Type=simple
 StandardOutput=journal
-ExecStart=openrgb --server
+ExecStart=openrgb --server --loglevel 2
 Restart=on-failure
 
 [Install]
