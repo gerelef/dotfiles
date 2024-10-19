@@ -350,6 +350,46 @@ install-gaming-packages () (
         sudo sh -c 'echo "i2c-dev" >> /etc/modules-load.d/i2c.conf'
         sudo sh -c 'echo "i2c-piix4" >> /etc/modules-load.d/i2c.conf'
 
+        sudo tee "/usr/local/bin/openrgb-load-profile" <<EOF
+#!/usr/bin/env bash
+
+user="\$USER"
+if [[ \$(id -u) = 0 ]]; then
+    user="\${SUDO_USER:-\$(logname)}"
+fi
+
+if [[ -z "\$user" ]]; then
+    echo 'Could not locate calling user for openrgb-load-profile.'
+    echo 'This is a fatal condition, because no profiles will be found.'
+    exit 1
+fi
+
+openrgb_dir="/home/\$user/.config/OpenRGB"
+
+if [[ ! -d "\$openrgb_dir" ]]; then
+    echo "Could not locate openrgb directory \$openrgb_dir."
+    echo "Have you saved/created any profile there?"
+    echo "If you believe the directory exists, or should have been found elsewhere, open an issue in github."
+    exit 1
+fi
+
+profile="\$openrgb_dir/\$(ls -v "\$openrgb_dir" | grep '.orp' | head -n 1)"
+
+if [[ ! -f "\$profile" ]]; then
+    echo "Could not locate any profile."
+    echo "... aka, the following didn't match anything: \$profile"
+    echo "If you believe the file exists, or should have been found elsewhere, open an issue on github."
+    exit 1
+fi
+
+echo "Loading '\$profile'"
+
+openrgb --profile "\$profile"
+EOF
+
+        sudo chown root:root "/usr/local/bin/openrgb-load-profile"
+        sudo chmod 755 "/usr/local/bin/openrgb-load-profile"
+
         systemctl enable --user --now "$UNITS/openrgb.service"
     fi
 

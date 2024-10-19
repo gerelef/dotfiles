@@ -3,10 +3,10 @@ Description=Open source RGB lighting control that doesn't depend on manufacturer
 After=graphical.target
 
 [Service]
-Type=simple
+Type=oneshot
 StandardOutput=journal
-ExecStart=openrgb --server --loglevel 2
-Restart=on-failure
+ExecStart=openrgb-load-profile
+RemainAfterExit=yes
 
 [Install]
 WantedBy=default.target
