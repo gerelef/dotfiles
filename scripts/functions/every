@@ -29,15 +29,15 @@ def every(interval_seconds, incantation: str | list[str]):
             time.sleep(interval_seconds)
         except KeyboardInterrupt:
             print("Exiting via keyboard interrupt (Ctrl+C)...", file=sys.stderr)
-            exit(130)
+            sys.exit(130)
 
 
 if __name__ == "__main__":
     if len(sys.argv) < 3:
-        exit(2)
+        sys.exit(2)
 
     try:
         every(int(sys.argv[1]), sys.argv[2:])
     except ValueError:
         print("First argument must be an integer >= 0!", file=sys.stderr)
-        exit(2)
+        sys.exit(2)

@@ -47,10 +47,10 @@ def partial(fn: str) -> None:
 
 if __name__ == "__main__":
     if len(sys.argv) < 1:
-        exit(2)
+        sys.exit(2)
 
     try:
         partial(sys.argv[1])
     except ValueError:
         print("Function to partialize must be given!", file=sys.stderr)
-        exit(2)
+        sys.exit(2)
