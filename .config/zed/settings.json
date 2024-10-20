@@ -129,7 +129,7 @@
     "format_on_save": "off",
     "formatter": "language_server",
     "use_autoclose": true,
-    "soft_wrap": "prefer_line",
+    "soft_wrap": "none",
     "always_treat_brackets_as_autoclosed": true,
     "show_completions_on_input": true,
     "show_completion_documentation": true,
@@ -143,6 +143,7 @@
     "terminal": {
         "working_directory": "current_project_directory",
         "copy_on_select": false,
+        "cursor_shape": "bar",
         "font_size": 16,
         "button": true,
         "shell": {
