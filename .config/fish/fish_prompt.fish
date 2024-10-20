@@ -1,5 +1,19 @@
 # set the TRANSIENT variable & execute
 #  inspired by https://github.com/fish-shell/fish-shell/pull/8142
+set -g __fish_git_prompt_showcolorhints true
+set -g __fish_git_prompt_color_branch yellow
+set -g __fish_git_prompt_color_branch_staged yellow
+set -g __fish_git_prompt_color_branch_detached magenta
+set -g __fish_git_prompt_color_merging red
+set -g __fish_git_prompt_color_prefix normal
+set -g __fish_git_prompt_color_suffix normal
+set -g __fish_git_prompt_color_bare yellow
+
+set -g __fish_git_prompt_showdirtystate true
+set -g __fish_git_prompt_showuntrackedfiles true
+set -g __fish_git_prompt_describe_style contains
+set -g __fish_git_prompt_shorten_branch_len 14
+
 function transient-execute --description 'Set TRANSIENT & execute' #--on-event fish_preexec
     if commandline --is-valid
         set -g TRANSIENT
@@ -50,5 +64,20 @@ function fish_prompt --description 'Write out the prompt'
     set -l statusb_color (set_color $bold_flag $fish_color_status)
     set -l prompt_status (__fish_print_pipestatus "[" "]" "|" "$status_color" "$statusb_color" $last_pipestatus)
 
-    echo -n -s (set_color $color_cwd) (prompt_pwd) $normal (fish_vcs_prompt) $normal " "$prompt_status $suffix " "
+    echo -n -s (set_color $color_cwd) (prompt_pwd) $prompt_status $normal $suffix " "
+end
+
+function fish_right_prompt -d "Write out the right prompt"
+    set TIME_CALLED (date +%s%3N)
+    if set -q TRANSIENT
+        echo -n ""
+        set -g LAST_COMMAND_STARTTIME $TIME_CALLED
+        return
+    end
+
+    if set -q LAST_COMMAND_STARTTIME
+        set -g TIME_TAKEN "$(math "$TIME_CALLED - $LAST_COMMAND_STARTTIME")ms"
+    end
+
+    echo -n -s (set_color blue) $TIME_TAKEN (fish_vcs_prompt)
 end
