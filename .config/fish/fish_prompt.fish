@@ -64,7 +64,7 @@ function fish_prompt --description 'Write out the prompt'
     set -l statusb_color (set_color $bold_flag $fish_color_status)
     set -l prompt_status (__fish_print_pipestatus "[" "]" "|" "$status_color" "$statusb_color" $last_pipestatus)
 
-    echo -n -s (set_color $color_cwd) (prompt_pwd) $prompt_status $normal $suffix " "
+    echo -n -s (set_color $color_cwd) (prompt_pwd) $normal (fish_vcs_prompt) $normal " " $prompt_status $suffix " "
 end
 
 function fish_right_prompt -d "Write out the right prompt"
@@ -79,5 +79,5 @@ function fish_right_prompt -d "Write out the right prompt"
         set -g TIME_TAKEN "$(math "$TIME_CALLED - $LAST_COMMAND_STARTTIME")ms"
     end
 
-    echo -n -s (set_color blue) $TIME_TAKEN (fish_vcs_prompt)
+    echo -n -s (set_color blue) $TIME_TAKEN
 end
