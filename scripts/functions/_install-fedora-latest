@@ -820,7 +820,11 @@ if [[ -n "$INSTALL_RPM_TOOLS" ]]; then
     _echo-status "-------------------INSTALLING RPM TOOLS----------------"
 
     sudo dnf group install -y --best --allowerasing 'rpm-development-tools'
-    sudo dnf install -y --best --allowerasing --skip-unavailable rpmspectool fedora-packager fedpkg copr-cl
+    sudo dnf install -y --best --allowerasing --skip-unavailable \
+    rpmspectool \
+    fedora-packager \
+    fedpkg copr-cl \
+    rust2rpm
 
     # Useful fedpkg commands:
     #  https://docs.fedoraproject.org/en-US/package-maintainers/Pull_Request_Guide/
@@ -833,6 +837,7 @@ if [[ -n "$INSTALL_RPM_TOOLS" ]]; then
     #  if you have no permissions to build, you can alternatively run
     #   rpmbuild -ba ./pkgname.spec
     #  however the sources & relevant patches will have to be in `~/rpmbuild/SOURCES`
+    # rust2rpm generates .spec files from rust builds
 
     _echo-success "Done."
 fi
