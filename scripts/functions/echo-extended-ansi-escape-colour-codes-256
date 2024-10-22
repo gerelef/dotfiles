@@ -5,7 +5,14 @@
 echo-extended-ansi-escape-colour-codes-256 () (
     # https://betterprogramming.pub/25-awesome-linux-command-one-liners-9495f26f07fb
     for code in {0..255}; do
-        echo -e "\e[38;05;${code}mHello from: 'ESC[38;05;${code}m'"
+        echo -en "\e[1;38;05;${code}mHello: 'ESC[1;38;05;${code}m'\e[0m ";
+        echo -en "\e[38;05;${code}mHello: 'ESC[38;05;${code}m'\e[0m ";
+        echo -e "\e[2;38;05;${code}mHello: 'ESC[2;38;05;${code}m'\e[0m ";
+        echo -en "\e[4;38;05;${code}mHello: 'ESC[4;38;05;${code}m'\e[0m ";
+        # alacritty doesn't support blinking text lmaooooo
+        #  https://github.com/alacritty/alacritty/issues/2365
+        echo -en "\e[5;38;05;${code}mHello: 'ESC[5;38;05;${code}m'\e[0m ";
+        echo -e "\e[7;38;05;${code}mHello: 'ESC[7;38;05;${code}m'\e[0m";
     done
 )
 
