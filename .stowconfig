@@ -20,16 +20,19 @@ scripts/
     !!scripts/.gitconfig-gitdelta
 [end]
 
+.config/lsd/
 [if-pkg:::lsd]
-    !!.config/config.yaml
+    !!.config/lsd/
 [end]
 
 // if fish is not installed, DO NOT link fish-based alacritty configuration
 //  if fish doesn't exist, it'll cause alacritty to never boot
-.config/alacritty.toml
+.config/alacritty/
+.config/rio/
 .config/fish/
 [if-pkg:::fish]
-    !!.config/alacritty.toml
+    !!.config/alacritty/
+    !!.config/rio/
     !!.config/fish/
 [end]
 
@@ -39,12 +42,12 @@ scripts/
 [end]
 
 .config/config
-.config/pipewire.conf
+.config/pipewire/
 .config/mozilla/
 // link only in default profile
 [if-profile:::default]
     !!.config/mozilla/user.js
-    !!.config/pipewire.conf
+    !!.config/pipewire/
 
     // ssh config
     !!.config/config
@@ -63,9 +66,6 @@ scripts/.gitconfig-gitdelta ::: .
 .config/templates/* ::: Templates/
 
 // redirect to nested (not created necessarily) directory
-.config/alacritty.toml ::: .config/alacritty/
-.config/pipewire.conf ::: .config/pipewire/
-.config/config.yaml ::: .config/lsd/
 .config/jetbrains-keymap.xml ::: .config/JetBrains/*/keymaps/
 
 // create subdirectories on the fly, don't nest unecessarily
