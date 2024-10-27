@@ -109,7 +109,7 @@
         "provider": null,
         "default_model": {
             "provider": "ollama",
-            "model": "gemma2:2b"
+            "model": "llama3.2:3b"
         }
     },
     "language_models": {
