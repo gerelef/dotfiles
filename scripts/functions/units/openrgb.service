@@ -1,6 +1,6 @@
 [Unit]
 Description=Open source RGB lighting control that doesn't depend on manufacturer software.
-After=graphical.target
+After=graphical-session.target
 
 [Service]
 Type=oneshot
