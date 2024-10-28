@@ -124,7 +124,9 @@ abbr --position command --add reverse "tac"
 abbr --position command --add palindrome "rev"
 
 function __sudo_last_command; echo "sudo $history[1]"; end
+function __last_command; echo "$history[1]"; end
 abbr --position command --add fuck --function __sudo_last_command
+abbr --position command --add !! --function __last_command
 abbr --position command --add vpip --function __venv_activate_fish
 
 if type -q wget
