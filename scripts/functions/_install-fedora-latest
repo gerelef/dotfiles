@@ -917,6 +917,18 @@ if _is-gnome-session; then
     _echo-important "- GTK3 Theme Auto Switcher (https://extensions.gnome.org/extension/4998/legacy-gtk3-theme-scheme-auto-switcher/)"
     _echo-important "- Tailscale Status (https://github.com/maxgallup/tailscale-status)"
 
+    # this while loop is used as control flow (in case of errors), it won't loop
+    while :; do
+        (
+            git clone https://github.com/somepaulo/MoreWaita.git || break
+            cd MoreWaita || break
+            sudo ./install.sh
+            gsettings set org.gnome.desktop.interface icon-theme 'MoreWaita'
+            sudo gtk-update-icon-cache -f -t /usr/share/icons/MoreWaita && xdg-desktop-menu forceupdate
+        )
+        rm -rf ./MoreWaita
+    done
+
     _echo-status "Configuring all gsettings for $REAL_USER . . ."
     # theme settings
     gsettings set org.gnome.desktop.interface cursor-theme 'Adwaita'
