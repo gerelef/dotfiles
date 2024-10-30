@@ -3,12 +3,14 @@
 # HELP one-liner to check if dependencies exist
 
 depends-on () (
+    hasErrors=""
     for arg in "$@"; do
         if test -z "$(command -v $arg)"; then
-            _is-tty && echo "WARN: dependency $arg not found!"
-            exit 1
+            _is-tty && >&2 echo "$(tput setaf 3)WARN: dependency $(tput bold)$arg$(tput sgr0)$(tput setaf 3) not found!$(tput sgr0)"
+            hasErrors="yes"
         fi
     done
+    exit $(test -z $hasErrors)
 )
 
 # run only if this file is not sourced
