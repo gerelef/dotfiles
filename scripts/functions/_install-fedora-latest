@@ -121,59 +121,19 @@ optimize-hardware () (
 
     sudo systemctl enable --now systemd-bsod
 
-    _echo-debug "Enabling power profiles daemon..."
-    sudo systemctl enable --now power-profiles-daemon.service
-    _echo-debug "Waiting for power profiles daemon to spin up..."
-    sleep 10  # sleep in order for the service to spin up
-    readonly PLACEHOLDER_COUNT=$(powerprofilesctl list | grep placeholder | wc -l)
-    _echo-debug "Got placeholder count $PLACEHOLDER_COUNT (-gt 1 will disable it)"
-    if [[ $PLACEHOLDER_COUNT -gt 1 ]]; then
-        _echo-debug "disabling power profiles daemon"
-        sudo systemctl mask power-profiles-daemon
-        sudo systemctl disable --now power-profiles-daemon
-    fi
-
     if _is-mobile-type; then
         _echo-status "Enabling power-efficient (but less secure) suspend to ram for mobile-type."
-        _echo-important "This will fail HSI-2 tests."
+        _echo-important "This will FAIL HSI-2 tests."
         sudo grubby --update-kernel=ALL --args="mem_sleep_default=deep"  # deep sleep
         _echo-debug "Enabling deep /sys/power/mem_sleep"
         sudo sh -c 'echo deep > /sys/power/mem_sleep'
         _echo-debug "Updated grub."
         sudo update-grub
-        if ! _is-service-running power-profiles-daemon; then
-            _echo-status "Since power-profiles-daemon is not running, we're going to mask it and use \`tlp\`"
-            # tlp requires these daemons to be dead
-            _echo-debug "masking power-profiles-daemon"
-            sudo systemctl mask power-profiles-daemon
-            _echo-debug "disabling power-profiles-daemon"
-            sudo systemctl disable --now power-profiles-daemon
-            _echo-debug "masking rfkill.socket"
-            sudo systemctl mask systemd-rfkill.socket
-            _echo-debug "disabling rfkill.service"
-            sudo systemctl disable --now systemd-rfkill.service
-            sudo dnf install -y --best --allowerasing --skip-unavailable tlp tlp-rdw
-            # tlp-rdw requires NetworkManager-dispatcher.service
-            _echo-debug "enabling NetworkManager-dispatcher.service"
-            sudo systemctl enable --now NetworkManager-dispatcher.service
-
-            _echo-debug "enabling tlp"
-            sudo systemctl enable --now tlp
-            sudo tee "/etc/tlp.conf" <<TLP_END
-# Do not suspend USB devices
-USB_AUTOSUSPEND=0
-# Operation mode when no power supply can be detected: AC, BAT.
-TLP_DEFAULT_MODE=BAT
-# Operation mode select: 0=depend on power source, 1=always use TLP_DEFAULT_MODE
-TLP_PERSISTENT_DEFAULT=0
-TLP_END
-            _echo-debug "Configured tlp. Settings will probably apply on next reboot."
-        fi
 
         if _is-gnome-session; then
             _echo-debug "Installing s76-scheduler-plugin..."
             git clone git@github.com:KyleGospo/s76-scheduler-plugin.git ~/.local/share/gnome-shell/extensions/s76-scheduler@mattjakeman.com
-            _echo-status "Installing / enabling system76-scheduler..."
+            _echo-status "Enabling system76-scheduler..."
             sudo dnf copr enable -y kylegospo/system76-scheduler
             sudo dnf install -y --best --allowerasing --skip-unavailable system76-scheduler
             sudo systemctl enable --now com.system76.Scheduler.service
@@ -182,18 +142,13 @@ TLP_END
 
     if _is-desktop-type; then
         _echo-status "Enabling non-power efficient (but more secure) suspend to idle (s2idle) for desktop-type..."
-        _echo-important "This will pass HSI-2 tests."
+        _echo-important "This will PASS HSI-2 tests."
         sudo grubby --update-kernel=ALL --args="mem_sleep_default=s2idle"
         sudo sh -c 'echo s2idle > /sys/power/mem_sleep'
         sudo update-grub
         _echo-status "Disabling mobile-gpu specific service (https://forums.developer.nvidia.com/t/no-matching-gpu-found-with-510-47-03/202315/5)"
         sudo systemctl disable --now nvidia-powerd.service
         return
-    fi
-
-    if _is-service-running power-profiles-daemon; then
-        sudo ausearch -c 'power-profiles-' --raw | audit2allow -M my-powerprofiles
-        sudo semodule -X 300 -i my-powerprofiles.pp
     fi
 
     _echo-status "Adding preempt=full kernel parameter..."
@@ -747,11 +702,21 @@ copy-dnf
 
 # for some reason this repository is added on every new install, it's NOT needed since we use toolbox
 sudo dnf copr remove -y --skip-unavailable phracek/PyCharm 2> /dev/null
-sudo dnf install -y --best --allowerasing --skip-unavailable "https://download1.rpmfusion.org/free/fedora/rpmfusion-free-release-$(rpm -E %fedora).noarch.rpm" # free rpmfusion
-sudo dnf install -y --best --allowerasing --skip-unavailable "https://download1.rpmfusion.org/nonfree/fedora/rpmfusion-nonfree-release-$(rpm -E %fedora).noarch.rpm" # nonfree rpmfusion
+# rpmfusion-free
+if [[ -z $(dnf repolist | grep 'rpmfusion-free') ]]; then
+    sudo dnf install -y --best --allowerasing "https://download1.rpmfusion.org/free/fedora/rpmfusion-free-release-$(rpm -E %fedora).noarch.rpm" || exit
+fi
+# rpmfusion-nonfree
+if [[ -z $(dnf repolist | grep 'rpmfusion-nonfree') ]]; then
+    sudo dnf install -y --best --allowerasing "https://download1.rpmfusion.org/nonfree/fedora/rpmfusion-nonfree-release-$(rpm -E %fedora).noarch.rpm" || exit
+fi
+# terrapkg https://github.com/terrapkg/packages/tree/frawhide
+if [[ -z $(dnf repolist | grep 'terra') ]]; then
+    sudo dnf install -y --best --allowerasing --repofrompath "terra,https://repos.fyralabs.com/terra$(rpm -E %fedora)" --setopt="terra.gpgkey=https://repos.fyralabs.com/terra$(rpm -E %fedora)/key.asc" terra-release || exit
+fi
 
 # no requirement to add flathub ourselves anymore in f38; it should be enabled by default. however, it may not be, most likely by accident, so this is a failsafe
-sudo flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo 2> /dev/null
+sudo flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo 2> /dev/null || exit
 sudo flatpak remote-delete fedora 2> /dev/null
 sudo flatpak remote-delete fedora-testing 2> /dev/null
 
@@ -764,8 +729,7 @@ sudo dnf upgrade -y --refresh
 readonly TERMINAL_OF_CHOICE="${INSTALLABLE_TERMINAL:-alacritty}"
 sudo dnf install -y --best --allowerasing "$TERMINAL_OF_CHOICE" \
 "glx-utils" "mesa-dri-drivers" "mesa-vulkan-drivers" \
-"plymouth" "plymouth-system-theme" \
-"power-profiles-daemon" "power-profiles-daemon-docs"
+"plymouth" "plymouth-system-theme" "tuned-ppd"
 sudo dnf group install -y "standard"
 
 _echo-debug "Installed terminal of choice ($TERMINAL_OF_CHOICE) for GUI-land."
@@ -815,6 +779,8 @@ _echo-important "You will be asked a series of questions ahead of time, so you c
 _echo-important "Note that NVIDIA drivers require manual confirmation for MOK enrollment, and this cannot be automated"
 _echo-important " due to its intrusive nature."
 
+ask-user 'Do you want to install joplin?' && INSTALL_JOPLIN="yes"
+_echo-debug "Will install joplin? $INSTALL_JOPLIN"
 ask-user 'Do you want to install gaming packages?' && INSTALL_GAMING="yes"
 _echo-debug "Will install gaming? $INSTALL_GAMING"
 ask-user 'Do you want to install terminal tools?' && INSTALL_TERM_TOOLS="yes"
@@ -823,6 +789,8 @@ ask-user 'Do you want to install tailscaled?' && INSTALL_TAILSCALED="yes"
 _echo-debug "Will install tailscaled? $INSTALL_TAILSCALED"
 ask-user 'Do you want to install development tools?' && INSTALL_DEV_TOOLS="yes"
 _echo-debug "Will install dev tools? $INSTALL_DEV_TOOLS"
+ask-user 'Do you want to install ollama?' && INSTALL_OLLAMA="yes"
+_echo-debug "Will install ollama? $INSTALL_OLLAMA"
 ask-user 'Do you want to install rpm tools?' && INSTALL_RPM_TOOLS="yes"
 _echo-debug "Will install rpm tools? $INSTALL_RPM_TOOLS"
 ask-user 'Do you want to install virtualization packages?' && INSTALL_VIRTUALIZATION="yes"
@@ -861,6 +829,8 @@ sudo dnf remove -y cups-browsed
 #######################################################################################################
 # user-submitted opts
 
+# this is bad but it's the official 'packaging' format jesus christ
+[[ -n "$INSTALL_JOPLIN" ]] && curl --proto '=https' --tlsv1.2 -sSf 'https://raw.githubusercontent.com/laurent22/joplin/dev/Joplin_install_and_update.sh' | bash
 [[ -n "$INSTALL_GAMING" ]] && install-gaming-packages
 [[ -n "$INSTALL_TAILSCALED" ]] && configure-tailscaled
 
@@ -883,6 +853,8 @@ if [[ -n "$INSTALL_DEV_TOOLS" ]]; then
 
     _echo-success "Done."
 fi
+
+[[ -n "$INSTALL_OLLAMA" ]] && curl -fsSL https://ollama.com/install.sh | bash
 
 if [[ -n "$INSTALL_RPM_TOOLS" ]]; then
     _echo-status "-------------------INSTALLING RPM TOOLS----------------"
@@ -939,7 +911,7 @@ fi
 
 [[ -n "$INSTALL_JETBRAINS" ]] && install-jetbrains-toolbox
 [[ -n "$INSTALL_VSC" ]] && install-visual-studio-code
-[[ -n "$INSTALL_ZED" ]] && update-zed-text-editor
+[[ -n "$INSTALL_ZED" ]] && sudo dnf install -y --best --allowerasing "zed"
 [[ -n "$INSTALL_SUBLIME" ]] && install-sublime-text-editor
 [[ -n "$INSTALL_ZED" ]] && sudo dnf remove -y "gnome-text-editor" "gedit"
 [[ -n "$INSTALL_VSC" ]] && sudo dnf remove -y "gnome-text-editor" "gedit"
@@ -984,19 +956,7 @@ if _is-gnome-session; then
     _echo-important "- GTK3 Theme Auto Switcher (https://extensions.gnome.org/extension/4998/legacy-gtk3-theme-scheme-auto-switcher/)"
     _echo-important "- Tailscale Status (https://github.com/maxgallup/tailscale-status)"
 
-    # this while loop is used as control flow (in case of errors), it won't loop
-    while :; do
-        (
-            git clone https://github.com/somepaulo/MoreWaita.git || break
-            cd MoreWaita || break
-            sudo ./install.sh
-            gsettings set org.gnome.desktop.interface icon-theme 'MoreWaita'
-            sudo gtk-update-icon-cache -f -t /usr/share/icons/MoreWaita && xdg-desktop-menu forceupdate
-        )
-        rm -rf ./MoreWaita
-    done
-
-    _echo-status "Configuring all gsettings for $REAL_USER . . ."
+    _echo-status "Configuring all gsettings for $REAL_USER..."
     # theme settings
     gsettings set org.gnome.desktop.interface cursor-theme 'Adwaita'
     gsettings set org.gnome.desktop.interface icon-theme 'Adwaita'

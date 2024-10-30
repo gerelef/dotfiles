@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-# HELP update package manager; update flatpak; update snap; update selenium-manager; update npm; updatedb; update-grub
+# HELP update package manager; update flatpak; update snap; update selenium-manager; update npm
 
 update-everything () (
     echo "$(tput bold)$(tput setaf 6)──── Updating w/ package manager ────$(tput sgr0)"
@@ -9,7 +9,6 @@ update-everything () (
     while :; do
         if [[ -n "$(command -v dnf)" ]]; then
             sudo dnf upgrade -y --refresh || exit
-            sudo dnf autoremove -y || exit
             break
         fi
         if [[ -n "$(command -v pacman)" ]]; then
@@ -53,7 +52,10 @@ update-everything () (
         sudo npm install -g npm@latest || exit
     fi
 
-    [[ -n "$(command -v updatedb)" ]] && sudo updatedb
+    # this is bad but it's the official 'packaging' format jesus christ
+    if [[ -f "$HOME/.joplin/Joplin.AppImage" ]]; then
+        curl --proto '=https' --tlsv1.2 -sSf 'https://raw.githubusercontent.com/laurent22/joplin/dev/Joplin_install_and_update.sh' | bash
+    fi
     return 0
 )
 
