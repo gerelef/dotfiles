@@ -5,8 +5,6 @@
             // ---------------- EDITOR TOGGLES ----------------
             "f1": "workspace::ToggleLeftDock",
             "shift-f1": "workspace::ToggleRightDock",
-            "alt-1": "project_panel::ToggleFocus",
-            "alt-2": "outline_panel::ToggleFocus",
             "ctrl-0": "zed::ResetBufferFontSize",
             "ctrl-=": "zed::IncreaseBufferFontSize",
             "ctrl--": "zed::DecreaseBufferFontSize",
@@ -15,7 +13,6 @@
             "ctrl-`": "terminal_panel::ToggleFocus",
             "shift shift": "file_finder::Toggle",
             "ctrl ctrl": "command_palette::Toggle",
-            "alt alt": "project_symbols::Toggle",
             "ctrl-w": "pane::CloseActiveItem",
             "ctrl-shift-w": "pane::CloseAllItems",
             "ctrl-alt-f": "go_to_line::Toggle",
@@ -46,13 +43,29 @@
             "ctrl-alt-down": "editor::AddSelectionBelow",
             "ctrl-alt-left": null,
             "ctrl-alt-right": null,
+            // disable newline below & replace with prev match selection;
+            //  even if we add this on the 'search' or 'buffersearch' context
+            //  this won't work, unless we set this here
+            "shift-enter": "search::SelectPrevMatch",
+            "ctrl-alt-enter": null, // disable newline above
             // ---------------- JETBRAINS ----------------
             "shift-f6": "project_panel::Rename",
             "ctrl-l": "editor::Format",
             // ---------------- BROWSER BINDS ----------------
             "ctrl-t": "workspace::NewFile",
-            "ctrl-shift-t": "pane::ReopenClosedItem",
-            "ctrl-alt-t": "workspace::NewTerminal"
+            "ctrl-shift-t": "pane::ReopenClosedItem"
+        }
+    },
+    {
+        "context": "Terminal",
+        "bindings": {
+            "ctrl-t": "workspace::NewTerminal"
+        }
+    },
+    {
+        "context": "Search",
+        "bindings": {
+            "enter": "search::SelectNextMatch"
         }
     }
 ]

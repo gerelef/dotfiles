@@ -1,7 +1,4 @@
-// Zed settings
-//
-// For information on how to configure Zed, see the Zed
-// documentation: https://zed.dev/docs/configuring-zed
+// https://zed.dev/docs/configuring-zed
 //
 // To see all of Zed's default settings without changing your
 // custom settings, run the `open default settings` command
@@ -61,6 +58,8 @@
         "scroll_debounce_ms": 50
     },
     // ---------------- BEHAVIOURAL ----------------
+    "seed_search_query_from_cursor": "selection",
+    "middle_click_paste": false,
     "vertical_scroll_margin": 0,
     "restore_on_startup": "last_workspace",
     "session": {
