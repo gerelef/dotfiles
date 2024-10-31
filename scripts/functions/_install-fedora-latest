@@ -55,6 +55,8 @@ configure-residual-permissions () (
 )
 
 copy-dnf () (
+    _depends-on tee || sudo dnf install -y tee
+
     _echo-debug "Copying /etc/dnf/dnf.conf"
     # NOTE: ip_resolve=4 was added to disable ipv6 resolve, because there was an outage lol
     sudo tee "/etc/dnf/dnf.conf" <<-DNF_EOF
@@ -688,11 +690,8 @@ if _is-root; then
     exit 2
 fi
 
-# change dnf4 to dnf5 (preview/unstable: is supposed to be shipped with fedora-41)
-sudo dnf install -y --best --allowerasing dnf5
-sudo update-alternatives --install /usr/bin/dnf dnf /usr/bin/dnf5 1
+# add dnf plugin
 sudo dnf install -y --best --allowerasing --skip-unavailable "dnf5-command(config-manager)"
-_echo-debug "Changed /usr/bin/dnf to /usr/bin/dnf5"
 
 # dependencies
 sudo dnf install -y --best --allowerasing --skip-unavailable flatpak curl plocate pciutils udisks2
