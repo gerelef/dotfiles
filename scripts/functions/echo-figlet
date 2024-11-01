@@ -1,0 +1,25 @@
+#!/usr/bin/env bash
+
+_display_figlet_fonts() {
+
+  local fontsArray=("big" "block" "ivrit" "lean" "mini" "script" "shadow" "smscript" "smshadow" "slant" "small" "smslant" "standard")
+
+  local orange="\e[38;05;172m"
+  local purple="\e[38;05;171m"
+  local reset="\e[0m"
+
+  for font in ${fontsArray[@]}; do
+    echo -e "Font name ${orange}${font}${reset} -> (figlet -f ${font} \"...\")"
+    if [[ $# -ge 1 ]]; then
+      figlet -t -f ${font} $1
+    else
+      figlet -t -f ${font} "Hello World!"
+    fi
+  done;
+
+  echo -e "${purple}[Tip #1] -t -> for full terminal width${reset}"
+  echo -e "${purple}[Tip #2] -w <integer> -> columns, except is 1 which means each char in each line${reset}"
+}
+
+# run only if this file is not sourced
+[[ "${BASH_SOURCE[0]}" == "${0}" ]] && _display_figlet_fonts
