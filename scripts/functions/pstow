@@ -2,7 +2,11 @@
 
 # HELP a spiritual reimplementation of GNU Stow, but simpler, for tinkerers.
 
-_depends-on curl python3 || exit
+# this is essentially an entry point to our dotfile setup;
+#  this should be checked conditionally
+if [[ -n $(command -v "_depends-on" ) ]]; then
+    _depends-on curl python3 || exit
+fi
 
 pstow () {
     curl --tlsv1.2 -fsSL "https://raw.githubusercontent.com/gerelef/pstow/master/pstow.py" | python3 - "$@"

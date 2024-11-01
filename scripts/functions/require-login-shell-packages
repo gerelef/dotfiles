@@ -39,21 +39,37 @@ install-system-pkg () (
         fi
         if [[ -n "$(command -v apt)" ]]; then
             sudo apt install -y "$@" || exit
+            break
+        fi
+        if [[ -n "$(command -v brew)" ]]; then
+            NONINTERACTIVE=1 brew install "$@" || exit
+            break
         fi
         break
     done
 )
 
 require-login-shell-packages () (
+    has-run && return
+
+    MINIMUM_BASH_MAJOR_VERSION='5'
+    if [[ "${BASH_VERSINFO[0]}" -lt $MINIMUM_BASH_MAJOR_VERSION ]]; then
+        echo "Couldn't read file due to current BASH version being under $MINIMUM_BASH_MAJOR_VERSION"
+        echo "Please prepend a bash shell that's over > $MINIMUM_BASH_MAJOR_VERSION in \$PATH."
+        read -n 1
+        return
+    fi
+
+    # `mapfile` will not work with bash under 5.
     mapfile -t required_dependencies < $SHELL_REQUIREMENTS
     if [[ -z "$required_dependencies" ]]; then
         echo "Couldn't load required dependencies from $SHELL_REQUIREMENTS ?!"
-        echo "Bailing..."
-        exit 1
+        echo "Will not install dependencies."
+        return
     fi
+
     # the loops that break in 1 line are used for
     while :; do
-        has-run && break
         echo -e "Installing essential shell packages: \033[38;5;39m"
         echo -n "${required_dependencies[*]}"
         echo -e "\033[0m"

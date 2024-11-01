@@ -68,7 +68,8 @@ function fish_prompt --description 'Write out the prompt'
 end
 
 function fish_right_prompt -d "Write out the right prompt"
-    set TIME_CALLED (date +%s%3N)
+    # for macos, this might return the time with an N postfix, lol.
+    set TIME_CALLED (date +%s%3N | tr -d 'N')
     if set -q TRANSIENT
         echo -n ""
         set -g LAST_COMMAND_STARTTIME $TIME_CALLED

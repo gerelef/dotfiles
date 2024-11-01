@@ -214,7 +214,8 @@ fi
 
 # chromium depot_tools, add to PATH only if they actually exist
 #  https://chromium.googlesource.com/chromium/tools/depot_tools.git
-if [[ -n "$(command -v locate)" && $(locate --limit 1 depot_tools) ]]; then
+# `locate --version` checks if this is a 'mac' style locate or not
+if [[ -n "$(command -v locate)" && $(locate --version) && $(locate --limit 1 depot_tools) ]]; then
     # add shell functions (executables) to $PATH
     PATH=$PATH:"$(locate --limit 1 depot_tools)"
     alias fetch="fetch --no-history"
