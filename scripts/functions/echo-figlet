@@ -1,5 +1,9 @@
 #!/usr/bin/env bash
 
+# HELP echo-figlet; echo figlet fonts
+
+_depends-on figlet || exit
+
 _display_figlet_fonts() {
 
   local fontsArray=("big" "block" "ivrit" "lean" "mini" "script" "shadow" "smscript" "smshadow" "slant" "small" "smslant" "standard")
@@ -22,4 +26,4 @@ _display_figlet_fonts() {
 }
 
 # run only if this file is not sourced
-[[ "${BASH_SOURCE[0]}" == "${0}" ]] && _display_figlet_fonts
+[[ "${BASH_SOURCE[0]}" == "${0}" ]] && _display_figlet_fonts "$@"
