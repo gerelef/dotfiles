@@ -712,6 +712,7 @@ fi
 # terrapkg https://github.com/terrapkg/packages/tree/frawhide
 if [[ -z $(dnf repolist | grep 'terra') ]]; then
     sudo dnf install -y --best --allowerasing --repofrompath "terra,https://repos.fyralabs.com/terra$(rpm -E %fedora)" --setopt="terra.gpgkey=https://repos.fyralabs.com/terra$(rpm -E %fedora)/key.asc" terra-release || exit
+    sudo dnf config-manager setopt terra.enabled=0
 fi
 
 # no requirement to add flathub ourselves anymore in f38; it should be enabled by default. however, it may not be, most likely by accident, so this is a failsafe
@@ -910,7 +911,7 @@ fi
 
 [[ -n "$INSTALL_JETBRAINS" ]] && install-jetbrains-toolbox
 [[ -n "$INSTALL_VSC" ]] && install-visual-studio-code
-[[ -n "$INSTALL_ZED" ]] && sudo dnf install -y --best --allowerasing "zed"
+[[ -n "$INSTALL_ZED" ]] && sudo dnf install -y --best --allowerasing --enablerepo=terra "zed"
 [[ -n "$INSTALL_SUBLIME" ]] && install-sublime-text-editor
 [[ -n "$INSTALL_ZED" ]] && sudo dnf remove -y "gnome-text-editor" "gedit"
 [[ -n "$INSTALL_VSC" ]] && sudo dnf remove -y "gnome-text-editor" "gedit"

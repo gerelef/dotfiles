@@ -1,0 +1,16 @@
+#!/usr/bin/env fish
+
+# HELP _join 'sep' strs...; join a bunch of strings together, with separator
+
+function _join
+    if [ (count $argv) -lt 2 ]
+        echo "usage: _join 'sep' strs...; join a bunch of strings together, with separator" 1>&2
+        return 1
+    end
+
+    echo "$(string join -- "$argv[1]" $argv[2..])"
+end
+
+if [ "$_" != source ]
+    _join $argv
+end
