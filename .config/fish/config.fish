@@ -152,3 +152,9 @@ end
 if type -q lsd
     abbr --position command --add lss "lsd --almost-all --icon never --group-directories-first"
 end
+
+if type -q hx
+    abbr --position command --add helix "hx"
+    set -gx VISUAL hx
+    set -gx EDITOR hx
+end

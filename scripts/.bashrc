@@ -231,3 +231,9 @@ fi
 if [[ -n "$(command -v lsd)" ]]; then
     alias lss="lsd --almost-all --icon never --icon-theme unicode --group-directories-first"
 fi
+
+if [[ -n "$(command -v hx)" ]]; then
+    alias helix="hx"
+    export VISUAL="hx"
+    export EDITOR="hx"
+fi
