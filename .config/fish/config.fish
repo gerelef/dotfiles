@@ -139,7 +139,7 @@ end
 
 # chromium depot_tools, add to PATH only if they actually exist
 #  https://chromium.googlesource.com/chromium/tools/depot_tools.git
-if type -q locate and (locate --version) and (locate --limit 1 depot_tools)
+if locate --version 2> /dev/null 1>&2 && locate --limit 1 'depot_tools' 2> /dev/null 1>&2
     fish_add_path -g (locate --limit 1 depot_tools)
     abbr --position command --add fetch "fetch --no-history"
 end
