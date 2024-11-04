@@ -1,0 +1,48 @@
+theme = "jetbrains_dark"
+
+[editor]
+mouse = true
+bufferline = "always"
+cursorline = true
+cursorcolumn = true
+rulers = [80, 120]
+true-color = true
+
+[editor.cursor-shape]
+insert = "bar"
+normal = "block"
+select = "underline"
+
+# https://docs.helix-editor.com/master/configuration.html#editorsoft-wrap-section
+[editor.soft-wrap]
+enable = true
+wrap-indicator = "↩ "
+
+[editor.lsp]
+auto-signature-help = true
+display-inlay-hints = true
+display-messages = true
+
+[editor.indent-guides]
+render = true
+character = "▏"
+skip-levels = 1
+
+[editor.statusline]
+left = [ "mode", "spinner", "diagnostics" ]
+center = [ "version-control", "file-name"]
+right = [ "position", "position-percentage", "total-line-numbers" ]
+separator = "│"
+
+[editor.file-picker]
+hidden = false
+
+[keys.normal]
+"C-pageup" = "goto_previous_buffer"
+"C-pagedown" = "goto_next_buffer"
+"C-w" = ":buffer-close"
+"C-o" = "file_picker"
+"C-/" = "toggle_comments"
+"C-c" = "yank_to_clipboard"
+"C-y" = "redo"
+"C-z" = "undo"
