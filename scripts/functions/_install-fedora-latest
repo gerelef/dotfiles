@@ -789,6 +789,13 @@ ask-user 'Do you want to install tailscaled?' && INSTALL_TAILSCALED="yes"
 _echo-debug "Will install tailscaled? $INSTALL_TAILSCALED"
 ask-user 'Do you want to install development tools?' && INSTALL_DEV_TOOLS="yes"
 _echo-debug "Will install dev tools? $INSTALL_DEV_TOOLS"
+if [[ -n "$INSTALL_DEV_TOOLS" ]]; then
+    ask-user 'Do you want to install helix?' && INSTALL_HELIX_EDITOR="yes"
+    _echo-debug "Will install helix? $INSTALL_HELIX_EDITOR"
+
+    ask-user 'Do you want to install neovim?' && INSTALL_NEOVIM_EDITOR="yes"
+    _echo-debug "Will install neovim? $INSTALL_NEOVIM_EDITOR"
+fi
 ask-user 'Do you want to install ollama?' && INSTALL_OLLAMA="yes"
 _echo-debug "Will install ollama? $INSTALL_OLLAMA"
 ask-user 'Do you want to install rpm tools?' && INSTALL_RPM_TOOLS="yes"
@@ -850,6 +857,9 @@ if [[ -n "$INSTALL_DEV_TOOLS" ]]; then
     sudo dnf install -y --best --allowerasing --skip-unavailable $INSTALLABLE_DEV_PKGS
     sudo dnf install -y --best --allowerasing nmap net-tools
     flatpak install --system --noninteractive -y "net.werwolv.ImHex"
+
+    [[ -n "$INSTALL_HELIX_EDITOR" ]] && sudo dnf install -y --best --allowerasing helix
+    [[ -n "$INSTALL_NEOVIM_EDITOR" ]] && sudo dnf install -y --best --allowerasing neovim
 
     _echo-success "Done."
 fi
