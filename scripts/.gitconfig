@@ -2,9 +2,10 @@
     ls = log --pretty=format:"%C(yellow)%h\\ %ad%Cred%d\\ %Creset%s%Cblue\\ [%cn]" --decorate --date=short
     st = status -sb
     stv = diff --staged
-    list-changed = diff-tree --no-commit-id --name-status -r
     bl = blame -w -C -C -C -L
     when = "!__git_when () ( git log -S $1 -p ); __git_when"
+    list-changed = diff-tree --no-commit-id --name-status -r
+    restore-untracked = clean -d -f
     alias = "!git config -l | grep alias | cut -c 7-"
 [rerere]
     enabled = true  # REuse REcorded REsolution
