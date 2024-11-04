@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-# HELP a barebones json generator, for testing
+# HELP usage: json-roulette --pretty --size 5 --word-sample-size 15 --composites-size-low 3 --composites-size-high 7; a barebones json generator, for testing
 
 _depends-on curl python3 || exit
 

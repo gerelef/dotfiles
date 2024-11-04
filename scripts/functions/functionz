@@ -2,14 +2,15 @@
 
 # HELP functionz [<name>]; list all available utility functions, optionally list only a specific doc
 
-def echo_help_text(dir, fn)
+def echo_help_text(path)
+    tail = File.basename(path)
     found = false
-    File.open("%s/%s" % [File.dirname(dir), fn]) do |file|
+    File.open(path, "r") do |file|
         regexr_match = file.find { |line| line =~ /#\sHELP\s(.+)/ }
         found = !regexr_match.to_s.strip.empty?
-        found ? puts("\033[0;31m%s\033[0m -> %s" % [fn, $1]) : nil
+        found ? puts("\033[0;31m%s\033[0m -> %s" % [tail, $1]) : nil
     end
-    found ? nil : puts("\033[0;31m%s\033[0m" % fn)
+    found ? nil : puts("\033[0;31m%s\033[0m" % tail)
 end
 
 # ruby is an unholy language
@@ -17,8 +18,9 @@ end
 def dir_contents(dir)
     files = Dir.entries(File.dirname(dir)).sort().select{ |fn| ! fn.include? "."}
     for fn in files do
-        next unless File.file?("%s/%s" % [File.dirname(dir), fn])
-        echo_help_text(dir, fn)
+        path = "%s/%s" % [File.dirname(dir), fn]
+        next unless File.file?(path)
+        echo_help_text(path)
     end
 end
 
@@ -29,12 +31,16 @@ if __FILE__ == $0
     end
 
     if ARGV.length == 1
-        path = "%s/%s" % [File.dirname(__FILE__), ARGV[0]]
-        if !File.file?(path)
-            abort("Function '%s' does not exist!" % [ path ])
+        # glob the argument and return all matches
+        globbed_path = Dir.glob("%s/*%s*" % [File.dirname(__FILE__), ARGV[0]])
+        if globbed_path.empty?
+            abort("Function '%s' does not exist!" % [ ARGV[0] ])
+            exit(1)
         end
 
-        echo_help_text(__FILE__, ARGV[0])
+        globbed_path.each do |fn|
+            echo_help_text(fn)
+        end
         exit()
     end
     dir_contents(__FILE__)
