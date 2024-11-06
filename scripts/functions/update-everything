@@ -7,25 +7,17 @@ update-everything () (
     # the reason this for loop exists is to act as a "block", so we can break control flow
     #  when we're done updating platform packages (since there will be only 1 package manager per sys)
     while :; do
-        if [[ -n "$(command -v dnf)" ]]; then
-            sudo dnf upgrade -y --refresh || exit
-            break
-        fi
-        if [[ -n "$(command -v pacman)" ]]; then
-            sudo pacman -Syu || exit
-            # recursively remove orphans and their configuration files
-            sudo pacman -Qdtq | sudo pacman -Rns - 2> /dev/null
-            break
-        fi
-        if [[ -n "$(command -v apt)" ]]; then
-            # no exit here; we might error, since http or ftp mirrors are apt source_list by default
-            sudo apt update -y || break
-            sudo apt upgrade -y || break
-            sudo apt autoremove -y || break
+        if [[ -n "$(command -v pkcon)" ]]; then
+            # this will error if there are no packages, that's fine
+            pkcon update --noninteractive  
             break
         fi
 
-        echo "No package manager found! Omitting system updates!"
+        echo "No package manager found!"
+        echo "Supported package managers per platform:"
+        echo -e "\e[1;38;05;220mLinux:\e[0m  PackageKit"
+        echo -e "\e[1;38;05;220mmacOS:\e[0m  Unsupported."
+        echo -e "\e[1;38;05;220mCygwin:\e[0m Unsupported."
         break
     done
 

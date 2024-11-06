@@ -5,48 +5,15 @@
 readonly SHELL_REQUIREMENTS="$HOME/dotfiles/.shell-requirements"
 readonly HAS_RUN_DIR="/opt"
 readonly HAS_RUN_FILE="$HAS_RUN_DIR/.has-run"
-readonly HAS_RUN_OPTS_FILE="$HAS_RUN_DIR/.has-run-opts"
 
 has-run () (
     [[ -f "$HAS_RUN_FILE" ]] && return 0
     return 1
 )
 
-has-run-opts () (
-    [[ -f "$HAS_RUN_OPTS_FILE" ]] && return 0
-    return 1
-)
-
 mk-run-file () (
     [[ ! -d "$HAS_RUN_DIR" ]] && sudo mkdir -p "$HAS_RUN_DIR"
     sudo touch $HAS_RUN_FILE
-)
-
-mk-run-opts-file () (
-    [[ ! -d "$HAS_RUN_DIR" ]] && sudo mkdir -p "$HAS_RUN_DIR"
-    sudo touch $HAS_RUN_OPTS_FILE
-)
-
-install-system-pkg () (
-    while :; do
-        if [[ -n "$(command -v dnf)" ]]; then
-            sudo dnf install -y "$@" || exit
-            break
-        fi
-        if [[ -n "$(command -v yum)" ]]; then
-            sudo yum install -y "$@" || exit
-            break
-        fi
-        if [[ -n "$(command -v apt)" ]]; then
-            sudo apt install -y "$@" || exit
-            break
-        fi
-        if [[ -n "$(command -v brew)" ]]; then
-            NONINTERACTIVE=1 brew install "$@" || exit
-            break
-        fi
-        break
-    done
 )
 
 require-login-shell-packages () (
@@ -61,20 +28,25 @@ require-login-shell-packages () (
     fi
 
     # `mapfile` will not work with bash under 5.
-    mapfile -t required_dependencies < $SHELL_REQUIREMENTS
-    if [[ -z "$required_dependencies" ]]; then
+    mapfile -t required_dependencies < "$SHELL_REQUIREMENTS"
+    if [[ -z "${required_dependencies[*]}" ]]; then
         echo "Couldn't load required dependencies from $SHELL_REQUIREMENTS ?!"
         echo "Will not install dependencies."
         return
     fi
 
+    if [[ -z "$(command -v pkcon)" ]]; then
+        1>&2 echo "PackageKit is required in order to install login shell packages. Exiting."
+        return
+    fi
+    
     # the loops that break in 1 line are used for
     while :; do
         echo -e "Installing essential shell packages: \033[38;5;39m"
         echo -n "${required_dependencies[*]}"
         echo -e "\033[0m"
 
-        install-system-pkg "${required_dependencies[@]}" || return
+        pkcon install --noninteractive "${required_dependencies[@]}" || return
         mk-run-file
         clear
     done
