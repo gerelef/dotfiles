@@ -7,6 +7,7 @@ cursorline = true
 cursorcolumn = true
 rulers = [80, 120]
 true-color = true
+auto-pairs = false
 
 [editor.cursor-shape]
 insert = "bar"
@@ -44,10 +45,18 @@ hidden = false
 "C-o" = "file_picker"
 "C-S-o" = "buffer_picker"
 "C-/" = "toggle_comments"
-"p" = ":clipboard-paste-replace"
-"C-c" = "yank_to_clipboard"
+"C-d" = [":primary-clipboard-yank", ":primary-clipboard-paste-after"]
+"C-D" = [":primary-clipboard-yank", ":primary-clipboard-paste-before"]
+"p" = ":clipboard-paste-after"
+"P" = ":clipboard-paste-before"
+"y" = "yank_to_clipboard"
 "C-y" = "redo"
 "C-z" = "undo"
 "tab" = "indent"
 "S-tab" = "unindent"
 "C-t" = ":new"
+"end" = "goto_line_end_newline"
+
+# unbind the following commands
+"a" = ":run-shell-command ''"
+
