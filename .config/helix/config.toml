@@ -44,6 +44,7 @@ hidden = false
 "C-o" = "file_picker"
 "C-S-o" = "buffer_picker"
 "C-/" = "toggle_comments"
+"p" = ":clipboard-paste-replace"
 "C-c" = "yank_to_clipboard"
 "C-y" = "redo"
 "C-z" = "undo"

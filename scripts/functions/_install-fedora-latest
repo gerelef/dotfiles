@@ -108,7 +108,7 @@ install-universal-necessities () (
     sudo tee "/usr/sbin/update-grub" <<GR_END
 #!/bin/sh
 set -e
-exec grub2-mkconfig -o /boot/grub2/grub.cfg "$@"
+exec grub2-mkconfig -o /boot/grub2/grub.cfg \$@
 GR_END
 
     sudo chown root:root "/usr/sbin/update-grub"
@@ -180,8 +180,8 @@ create-swapfile () (
         sudo chattr +C /swapfile
     fi
 
-    kbs=$(cat /proc/meminfo | grep MemTotal | grep -E -o "[0-9]+")
-    sudo dd if=/dev/zero of=/swapfile bs=1KB count=$kbs
+    kbs=$(grep MemTotal < /proc/meminfo | grep -E -o "[0-9]+")
+    sudo dd if=/dev/zero of=/swapfile bs=1KB count="$kbs"
     _echo-debug "created /swapfile"
     sudo chmod 600 /swapfile
     sudo chown root /swapfile
@@ -766,8 +766,7 @@ fi
 
 # this needs to be up-to-date for some commands
 _echo-debug "running updatedb..."
-sudo updatedb 2> /dev/null
-if [[ ! $? -eq 0 ]]; then
+if [[ $(sudo updatedb 2> /dev/null) ]]; then
     _echo-unexpected "updatedb errored, retrying with absolute path"
     sudo /usr/sbin/updatedb
 fi
@@ -858,7 +857,7 @@ if [[ -n "$INSTALL_DEV_TOOLS" ]]; then
     sudo dnf install -y --best --allowerasing nmap net-tools
     flatpak install --system --noninteractive -y "net.werwolv.ImHex"
 
-    [[ -n "$INSTALL_HELIX_EDITOR" ]] && sudo dnf install -y --best --allowerasing helix
+    [[ -n "$INSTALL_HELIX_EDITOR" ]] && sudo dnf install -y --best --allowerasing helix wl-clipboard
     [[ -n "$INSTALL_NEOVIM_EDITOR" ]] && sudo dnf install -y --best --allowerasing neovim
 
     _echo-success "Done."
