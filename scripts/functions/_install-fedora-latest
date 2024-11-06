@@ -618,11 +618,6 @@ nvidia-gpu-firmware \
 nvidia-modprobe \
 "
 
-readonly INSTALLABLE_EXTRAS="\
-steam \
-gamescope \
-"
-
 readonly INSTALLABLE_VIRTUALIZATION_PACKAGES="\
 swtpm \
 swtpm-tools \
@@ -857,6 +852,7 @@ if [[ -n "$INSTALL_DEV_TOOLS" ]]; then
     sudo dnf install -y --best --allowerasing nmap net-tools
     flatpak install --system --noninteractive -y "net.werwolv.ImHex"
 
+    # ruby-devel is required in order to compile some gems
     [[ -n "$INSTALL_HELIX_EDITOR" ]] && sudo dnf install -y --best --allowerasing helix wl-clipboard
     [[ -n "$INSTALL_NEOVIM_EDITOR" ]] && sudo dnf install -y --best --allowerasing neovim
 
