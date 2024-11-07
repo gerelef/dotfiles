@@ -1,0 +1,12 @@
+[Unit]
+Description=The backend — i.e. core services, APIs, and REST endpoints — to Jupyter web applications.
+After=graphical.target
+
+[Service]
+Type=simple
+StandardOutput=journal
+ExecStart=jupyter-server
+Restart=on-failure
+
+[Install]
+WantedBy=default.target

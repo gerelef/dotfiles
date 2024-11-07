@@ -456,16 +456,6 @@
     "ver": "5.2.0",
     "keybindings": {
         "_execute_sidebar_action": "F1",
-        "next_panel": "Alt+Period",
-        "prev_panel": "Alt+Comma",
-        "new_tab_on_panel": "Ctrl+Space",
-        "new_tab_in_group": "Ctrl+Shift+Space",
-        "up": "Alt+Up",
-        "down": "Alt+Down",
-        "up_shift": "Alt+Shift+Up",
-        "down_shift": "Alt+Shift+Down",
-        "activate": "Alt+Space",
-        "reset_selection": "Alt+R",
         "search": "F2"
     }
 }

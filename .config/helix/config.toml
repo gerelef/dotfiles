@@ -33,7 +33,6 @@ skip-levels = 1
 left = [ "mode", "spinner", "diagnostics" ]
 center = [ "version-control", "file-name"]
 right = [ "position", "position-percentage", "total-line-numbers" ]
-separator = "│"
 
 [editor.file-picker]
 hidden = false
@@ -54,6 +53,7 @@ hidden = false
 "C-z" = "undo"
 "tab" = "indent"
 "S-tab" = "unindent"
+"C-l" = ":fmt"
 "C-t" = ":new"
 "end" = "goto_line_end_newline"
 

@@ -25,6 +25,16 @@ scripts/
     !!.config/lsd/
 [end]
 
+.config/helix/
+[if-pkg:::hx]
+    !!.config/helix/
+[end]
+
+.config/.jupyter/
+[if-pkg:::jupyter-server]
+    !!.config/.jupyter/
+[end]
+
 // if fish is not installed, DO NOT link fish-based alacritty configuration
 //  if fish doesn't exist, it'll cause alacritty to never boot
 .config/alacritty/
@@ -64,6 +74,7 @@ scripts/.gitconfig-gitdelta ::: .
 
 // move up & rename directory
 .config/templates/* ::: Templates/
+.config/.jupyter/* ::: .jupyter/
 
 // redirect to nested (not created necessarily) directory
 .config/jetbrains-keymap.xml ::: .config/JetBrains/*/keymaps/
