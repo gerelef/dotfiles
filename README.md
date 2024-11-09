@@ -19,10 +19,10 @@ After running a setup script in `dotfiles/scripts/setup/...` I just need to inst
 
 To automatically deploy the default profile:
 ```bash
-cd ~ && git clone https://github.com/gerelef/dotfiles && ~/dotfiles/scripts/functions/pstow --source ~/dotfiles --target ~ --profile default --force --yes
+cd ~ && git clone https://github.com/gerelef/dotfiles && ~/dotfiles/scripts/functionz/pstow --source ~/dotfiles --target ~ --profile default --force --yes
 ```
 
 ## history
 Large revisions were performed in the following commits, ordered by recency:
-- `6231460` -> removed `./scripts/setup` and migrated them to `./scripts/functions`; also revisioned script to be ran as user rather than indescriminate `sudo`.
+- `6231460` -> removed `./scripts/setup` and migrated them to `./scripts/functionz`; also revisioned script to be ran as user rather than indescriminate `sudo`.
 - `6d1a96c` -> changed gsettings integration format, effectively deprecating nobara-36 and upwards installation scripts

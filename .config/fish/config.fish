@@ -1,4 +1,6 @@
-if not status is-interactive; exit; end;
+if not status is-interactive
+    exit
+end
 # commands to run in interactive sessions go here
 
 #############################################################
@@ -74,7 +76,7 @@ function prepare-pip
         end
         "
         # append to the file
-        echo "$virtual_subshell" >> "$vpip_fname"
+        echo "$virtual_subshell" >>"$vpip_fname"
     end
 
     echo "$vpip_fname"
@@ -90,14 +92,17 @@ end
 
 function __venv_activate_fish
     set activate_fish "$(find . -maxdepth 3 -name "activate.fish" | head -n 1)"
-    if test -e "$activate_fish"; echo "fish --init-command \"source $activate_fish\""; return 0; end
+    if test -e "$activate_fish"
+        echo "fish --init-command \"source $activate_fish\""
+        return 0
+    end
     return 1
 end
 
 #############################################################
 # SOURCES & CONFIG
 # add executable script (lambdas) dir
-fish_add_path -g ~/dotfiles/scripts/functions/
+fish_add_path -g ~/dotfiles/scripts/functionz/
 # add login shell requirements if they're part of the regular install,
 #  aka found at the $PATH above
 if type -q require-login-shell-packages
@@ -120,11 +125,15 @@ alias ..... "cd ../../../.."
 abbr --position command --add egrep "grep -E"
 abbr --position command --add grep "grep -i"
 abbr --position command --add rm "rm -v"
-abbr --position command --add reverse "tac"
-abbr --position command --add palindrome "rev"
+abbr --position command --add reverse tac
+abbr --position command --add palindrome rev
 
-function __sudo_last_command; echo "sudo $history[1]"; end
-function __last_command; echo "$history[1]"; end
+function __sudo_last_command
+    echo "sudo $history[1]"
+end
+function __last_command
+    echo "$history[1]"
+end
 abbr --position command --add fuck --function __sudo_last_command
 abbr --position command --add !! --function __last_command
 abbr --position command --add vpip --function __venv_activate_fish
@@ -139,14 +148,14 @@ end
 
 # chromium depot_tools, add to PATH only if they actually exist
 #  https://chromium.googlesource.com/chromium/tools/depot_tools.git
-if locate --version 2> /dev/null 1>&2 && locate --limit 1 'depot_tools' 2> /dev/null 1>&2
+if locate --version 2>/dev/null 1>&2 && locate --limit 1 depot_tools 2>/dev/null 1>&2
     fish_add_path -g (locate --limit 1 depot_tools)
     abbr --position command --add fetch "fetch --no-history"
 end
 
 if type -q zoxide
     zoxide init fish | source
-    abbr --position command --add cd "z"
+    abbr --position command --add cd z
 end
 
 if type -q lsd
@@ -154,7 +163,7 @@ if type -q lsd
 end
 
 if type -q hx
-    abbr --position command --add helix "hx"
+    abbr --position command --add helix hx
     set -gx VISUAL hx
     set -gx EDITOR hx
 end

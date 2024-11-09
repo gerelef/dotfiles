@@ -172,7 +172,7 @@ vpip () {
 # SOURCES
 
 # add shell functions (executables) to $PATH
-PATH=$PATH:$DOTFILES_DIR/scripts/functions
+PATH=$PATH:$DOTFILES_DIR/scripts/functionz
 # add login shell requirements if they're part of the regular install,
 #  aka found at the $PATH above
 if [[ -n "$(command -v require-login-shell-packages)" ]]; then
