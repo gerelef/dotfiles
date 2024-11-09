@@ -773,8 +773,8 @@ _echo-important "You will be asked a series of questions ahead of time, so you c
 _echo-important "Note that NVIDIA drivers require manual confirmation for MOK enrollment, and this cannot be automated"
 _echo-important " due to its intrusive nature."
 
-ask-user 'Do you want to install joplin?' && INSTALL_JOPLIN="yes"
-_echo-debug "Will install joplin? $INSTALL_JOPLIN"
+ask-user 'Do you want to install snapd?' && INSTALL_SNAPD="yes"
+_echo-debug "Will install snapd? $INSTALL_SNAPD"
 ask-user 'Do you want to install gaming packages?' && INSTALL_GAMING="yes"
 _echo-debug "Will install gaming? $INSTALL_GAMING"
 ask-user 'Do you want to install terminal tools?' && INSTALL_TERM_TOOLS="yes"
@@ -808,7 +808,8 @@ ask-user 'Do you want to install Visual Studio Code?' && INSTALL_VSC="yes"
 _echo-debug "Will install vsc? $INSTALL_VSC"
 ask-user 'Do you want to install Sublime Text Editor?' && INSTALL_SUBLIME="yes"
 _echo-debug "Will install sublime? $INSTALL_SUBLIME"
-
+ask-user 'Do you want to install joplin?' && INSTALL_JOPLIN="yes"
+_echo-debug "Will install joplin? $INSTALL_JOPLIN"
 
 #######################################################################################################
 
@@ -830,8 +831,6 @@ sudo dnf remove -y cups-browsed
 #######################################################################################################
 # user-submitted opts
 
-# this is bad but it's the official 'packaging' format jesus christ
-[[ -n "$INSTALL_JOPLIN" ]] && curl --proto '=https' --tlsv1.2 -sSf 'https://raw.githubusercontent.com/laurent22/joplin/dev/Joplin_install_and_update.sh' | bash
 [[ -n "$INSTALL_GAMING" ]] && install-gaming-packages
 [[ -n "$INSTALL_TAILSCALED" ]] && configure-tailscaled
 
@@ -914,6 +913,20 @@ if [[ -n "$INSTALL_SCRCPY" ]]; then
     _echo-success "Done."
 fi
 
+if [[ -n "$INSTALL_SNAPD" ]]; then
+    _echo-status "-------------------INSTALLING SNAP ----------------"
+    sudo dnf install -y --best --allowerasing snapd
+    sudo systemctl enable --now snapd
+    sudo tee '/etc/polkit-1/localauthority/50-local.d/10-snap-management.pkla' <<EOF
+[Allow wheel group members to manage snaps]
+Identity=unix-group:wheel
+Action=com.canonical.snapd.*
+ResultAny=yes
+ResultInactive=yes
+ResultActive=yes
+EOF
+fi
+
 [[ -n "$INSTALL_JETBRAINS" ]] && install-jetbrains-toolbox
 [[ -n "$INSTALL_VSC" ]] && install-visual-studio-code
 [[ -n "$INSTALL_ZED" ]] && sudo dnf install -y --best --allowerasing --enablerepo=terra "zed"
@@ -922,6 +935,8 @@ fi
 [[ -n "$INSTALL_VSC" ]] && sudo dnf remove -y "gnome-text-editor" "gedit"
 [[ -n "$INSTALL_SUBLIME" ]] && sudo dnf remove -y "gnome-text-editor" "gedit"
 
+# this is bad but it's the official 'packaging' format jesus christ
+[[ -n "$INSTALL_JOPLIN" ]] && curl --proto '=https' --tlsv1.2 -sSf 'https://raw.githubusercontent.com/laurent22/joplin/dev/Joplin_install_and_update.sh' | bash
 #######################################################################################################
 
 configure-residual-permissions

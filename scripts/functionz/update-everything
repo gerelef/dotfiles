@@ -25,12 +25,14 @@ update-everything () (
         echo "$(tput bold)$(tput setaf 6)──── Updating flatpak ────$(tput sgr0)"
         flatpak update -y || exit
         flatpak uninstall --unused -y || exit
-        # sudo flatpak repair || exit  # commented out because it's probably redundant
     fi
 
     if [[ -n "$(command -v snap)" ]]; then
         echo "$(tput bold)$(tput setaf 6)──── Updating snap ────$(tput sgr0)"
-        sudo snap refresh || exit
+        if ! snap refresh; then
+            echo "Snap failed to update w/ sudoless permissions."
+            echo "Please configure policykit to allow this kind of action."
+        fi
     fi
 
     if [[ -n "$(command -v selenium-manager)" ]]; then
