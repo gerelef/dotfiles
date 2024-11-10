@@ -6,6 +6,9 @@
 **/*.md
 .stowconfig
 .shell-requirements
+// this should never be symlinked, and will be copied manually via
+// sudo cp -f ../../../.config/.jupyter/jupyter_lab_config.py /var/lib/jupyter/.jupyter/
+.config/.jupyter/
 
 scripts/
 // only link these specific files from the scripts directory
@@ -28,11 +31,6 @@ scripts/
 .config/helix/
 [if-pkg:::hx]
     !!.config/helix/
-[end]
-
-.config/.jupyter/
-[if-pkg:::jupyter-server]
-    !!.config/.jupyter/
 [end]
 
 // if fish is not installed, DO NOT link fish-based alacritty configuration
@@ -74,7 +72,6 @@ scripts/.gitconfig-gitdelta ::: .
 
 // move up & rename directory
 .config/templates/* ::: Templates/
-.config/.jupyter/* ::: .jupyter/
 
 // redirect to nested (not created necessarily) directory
 .config/jetbrains-keymap.xml ::: .config/JetBrains/*/keymaps/
