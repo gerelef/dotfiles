@@ -917,10 +917,15 @@ if [[ -n "$INSTALL_SNAPD" ]]; then
     _echo-status "-------------------INSTALLING SNAP ----------------"
     sudo dnf install -y --best --allowerasing snapd
     sudo systemctl enable --now snapd
+    # relevant policykit actions were grabbed via `pkaction | grep -i snap`
+    #  for more information on this file, see `man pklocalauthority`
+    #  also check out:
+    #  - https://askubuntu.com/questions/1111883/polkit-pkla-files-seem-to-be-ignored-in-18-04
+    #  - https://unix.stackexchange.com/questions/458478/policy-kit-isnt-working-properly
     sudo tee '/etc/polkit-1/localauthority/50-local.d/10-snap-management.pkla' <<EOF
 [Allow wheel group members to manage snaps]
 Identity=unix-group:wheel
-Action=com.canonical.snapd.*
+Action=io.snapcraft.snapd.*
 ResultAny=yes
 ResultInactive=yes
 ResultActive=yes

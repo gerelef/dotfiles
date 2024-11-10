@@ -29,16 +29,10 @@ update-everything () (
 
     if [[ -n "$(command -v snap)" ]]; then
         echo "$(tput bold)$(tput setaf 6)──── Updating snap ────$(tput sgr0)"
-        if ! snap refresh; then
+        if ! snap refresh --unicode="always"; then
             echo "Snap failed to update w/ sudoless permissions."
             echo "Please configure policykit to allow this kind of action."
         fi
-    fi
-
-    if [[ -n "$(command -v selenium-manager)" ]]; then
-        echo "$(tput bold)$(tput setaf 6)──── Updating chromedriver ────$(tput sgr0)"
-        # no exit here; we might error since this often gets drivers from file-sharing hosts (e.g. google-drive)
-        selenium-manager --debug --browser chrome
     fi
 
     if [[ -n "$(command -v npm)" ]]; then
