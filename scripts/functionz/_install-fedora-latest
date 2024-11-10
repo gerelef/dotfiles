@@ -930,6 +930,7 @@ ResultAny=yes
 ResultInactive=yes
 ResultActive=yes
 EOF
+    sudo snap set system refresh.hold="$(date --iso-8601=seconds -d '+30 years')"
 fi
 
 [[ -n "$INSTALL_JETBRAINS" ]] && install-jetbrains-toolbox
