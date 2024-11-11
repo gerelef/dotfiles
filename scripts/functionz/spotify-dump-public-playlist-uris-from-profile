@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-# HELP dump a spotify playlist to stdout
+# HELP dump all profile spotify playlists to a file; the filename is echoed to stdout.
 
 _depends-on curl jq || exit
 
@@ -10,7 +10,7 @@ curl-bearer-token () (
 
 spotify-dump-public-playlist-uris-from-profile () (
     if [[ $# != 1 ]]; then
-        echo "profile url must be given!"
+        echo "profile URI must be given!"
         exit 1
     fi
     filename_and_queries="$(basename $1))"
