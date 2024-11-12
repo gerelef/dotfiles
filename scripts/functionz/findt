@@ -2,8 +2,8 @@
 import sys
 
 
-if sys.version_info.minor < 12:
-    print(">= python3.12 required!", file=sys.stderr)
+if sys.version_info.minor < 10:
+    print(">= python3.10 required!", file=sys.stderr)
     sys.exit(1)
 
 
@@ -186,9 +186,9 @@ class Aggregate:
         max_lc_padding = len(str(self.__end_lc))
 
         def build(lc: int, line: str) -> str:
-            return f"{format(lc, str(max_lc_padding) + 'd')}: {line.replace("\t", "    ")}"
+            return f"{format(lc, str(max_lc_padding) + 'd')}: {line.replace('	', '    ')}"
 
-        yield True, f"{str(self.__owner)} lines~{self.__padding}: {" ".join(list(map(str, sorted(self.__matched_lines))))}"
+        yield True, f"{str(self.__owner)} lines~{self.__padding}: {' '.join(list(map(str, sorted(self.__matched_lines))))}"
 
         old_k = -1
         first = True
@@ -209,7 +209,7 @@ class Aggregate:
 
         def build(lc: int, line: str) -> str:
             stem = f"{format(lc, str(max_lc_padding) + 'd')}: "
-            return f"{stem}{line.replace("\t", "    ")[:max_width - len(stem)]}"
+            return f"{stem}{line.replace('	', '    ')[:max_width - len(stem)]}"
 
         infix = f" lines~{self.__padding}: "
         header_content = f" ".join(list(map(str, sorted(self.__matched_lines))))
