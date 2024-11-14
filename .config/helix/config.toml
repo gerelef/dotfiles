@@ -19,23 +19,35 @@ select = "underline"
 enable = true
 wrap-indicator = "↩ "
 
-[editor.lsp]
-auto-signature-help = true
-display-inlay-hints = true
-display-messages = true
-
 [editor.indent-guides]
 render = true
 character = "▏"
 skip-levels = 1
 
+[editor.whitespace.render]
+nbsp="all"
+nnbsp="all"
+tab="all"
+
 [editor.statusline]
 left = [ "mode", "spinner", "diagnostics" ]
-center = [ "version-control", "file-name"]
-right = [ "position", "position-percentage", "total-line-numbers" ]
+center = [ "file-modification-indicator", "version-control", "file-name"]
+right = [ "position", "position-percentage", "total-line-numbers", "file-encoding", "file-line-ending" ]
+
+[editor.lsp]
+auto-signature-help = true
+display-inlay-hints = true
+display-messages = true
 
 [editor.file-picker]
 hidden = false
+
+[editor.search]
+smart-case = true
+wrap-around = true
+
+[editor.smart-tab]
+enable = false
 
 [keys.normal]
 "C-pageup" = "goto_previous_buffer"
@@ -44,19 +56,21 @@ hidden = false
 "C-o" = "file_picker"
 "C-S-o" = "buffer_picker"
 "C-/" = "toggle_comments"
-"C-d" = [":primary-clipboard-yank", ":primary-clipboard-paste-after"]
-"C-D" = [":primary-clipboard-yank", ":primary-clipboard-paste-before"]
+"d" = "delete_selection_noyank"
+"C-d" = ["yank_to_clipboard", ":clipboard-paste-after"]
+"C-D" = ["yank_to_clipboard", ":clipboard-paste-before"]
+"C-x" = ["yank_to_clipboard", "delete_selection"]
 "p" = ":clipboard-paste-after"
 "P" = ":clipboard-paste-before"
 "y" = "yank_to_clipboard"
+"C-Z" = "redo"
 "C-y" = "redo"
 "C-z" = "undo"
-"tab" = "indent"
-"S-tab" = "unindent"
 "C-l" = ":fmt"
 "C-t" = ":new"
-"end" = "goto_line_end_newline"
+"tab" = "indent"
+"S-tab" = "unindent"
 
 # unbind the following commands
-"a" = ":run-shell-command ''"
-
+"a" = "no_op"
+"o" = "no_op"
