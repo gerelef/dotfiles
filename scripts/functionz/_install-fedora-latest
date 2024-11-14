@@ -390,6 +390,23 @@ configure-system-defaults () (
     sudo chmod 440 "/etc/sudoers.d/convenience-defaults"
     _echo-success "Created sudoers.d convenience defaults."
 
+    _echo-debug 'Creating polkit policy @ /etc/polkit-1/rules.d/99-custom-units.rules'
+    _echo-debug ' ... in order to allow wheel users restart the NetworkManager.service '
+    _echo-debug ' without further authorization.'
+    sudo tee '/etc/polkit-1/rules.d/99-custom-units.rules' <<EOF
+polkit.addRule(
+  function(action, subject) {
+    if (action.id == "org.freedesktop.systemd1.manage-units" &&
+        action.lookup("unit") == "NetworkManager.service" &&
+        subject.isInGroup("wheel")) {
+
+        return polkit.Result.YES;
+      }
+  }
+)
+EOF
+
+    sudo systemctl restart polkit
     _echo-success "Done."
 )
 
