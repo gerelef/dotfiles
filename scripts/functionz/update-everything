@@ -9,6 +9,7 @@ update-everything () (
     while :; do
         if [[ -n "$(command -v pkcon)" ]]; then
             # this will error if there are no packages, that's fine
+            pkcon refresh force
             pkcon update --noninteractive  
             break
         fi
