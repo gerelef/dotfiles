@@ -1,5 +1,5 @@
 [alias]
-    ls = log --pretty=format:"%C(yellow)%h\\ %C(reset)%C(yellow)%ad%C(auto)%d\\ %s\\ %C(blue)[%cn]" --decorate --date=short 
+    ls = log --pretty=format:"\\ %C(yellow)%h\\ %C(reset)%C(yellow)%ad%C(auto)%d\\ %s\\ %C(blue)[%cn]" --decorate --date=short
     st = status -sb
     stv = diff --staged
     bl = blame -w -C -C -C -L
