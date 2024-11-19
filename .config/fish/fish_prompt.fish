@@ -15,7 +15,7 @@ set -g __fish_git_prompt_describe_style contains
 set -g __fish_git_prompt_shorten_branch_len 14
 
 function transient-execute --description 'Set TRANSIENT & execute' #--on-event fish_preexec
-    if commandline --is-valid || test -z "$(commandline)" && not commandline --paging-mode
+    if commandline --is-valid || test -z "$(commandline)" && not commandline --paging-mode && commandline --is-valid
         set -g TRANSIENT
         commandline -f repaint
     end
