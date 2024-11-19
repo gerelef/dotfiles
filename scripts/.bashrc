@@ -136,8 +136,10 @@ prepare-pip () (
                     $python_version  -m ensurepip --user
                     $python_version -m pip install virtualenv --user
                     $python_version -m virtualenv --python=\"$python_version\" \"\$venv_dir\"
+                    bash --init-file <(echo \"source \\\"$HOME/.bashrc\\\"; source \$venv_dir/bin/activate; pip install --upgrade setuptools wheel pip; exit\")
                 else
                     $python_version -m venv \"\$venv_dir\" # for python >= 3
+                    bash --init-file <(echo \"source \\\"$HOME/.bashrc\\\"; source \$venv_dir/bin/activate; pip install --upgrade setuptools wheel pip; exit\")
                 fi
             fi
 

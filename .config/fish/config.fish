@@ -67,9 +67,11 @@ function prepare-pip
                     command $pv -m ensurepip --user
                     command $pv -m pip install virtualenv --user
                     command $pv -m virtualenv --python=\"$pv\" \"\$pv_dir\"
+                    fish --init-command \"source \$pv_dir/bin/activate.fish; pip install --upgrade setuptools wheel pip; exit\"
                 else
                     # for python >= 3
                     command $pv -m venv \$pv_dir
+                    fish --init-command \"source \$pv_dir/bin/activate.fish; pip install --upgrade setuptools wheel pip; exit\"
                 end
             end
             fish --init-command \"source \$pv_dir/bin/activate.fish\"
