@@ -428,7 +428,7 @@ def strategy_exec(multimatches: dict[str, list[Block]], **kwargs):
             to_exec.append(str(entry.exact_match_lc))
             to_exec.append(entry.exact_match)
 
-        subprocess.run(to_exec)
+        subprocess.Popen(to_exec, shell=False, env=os.environ)
 
 
 def main(options):
