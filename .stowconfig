@@ -78,7 +78,7 @@ scripts/.gitconfig-gitdelta ::: .
 
 // create subdirectories on the fly, don't nest unecessarily
 .config/sublime-text/* ::: .config/sublime-text/Packages/User/
-.config/fish/fish_prompt.fish ::: .config/fish/functionz/
+.config/fish/fish_prompt.fish ::: .config/fish/functions/
 
 // find already created profile subdirectories on the fly, we can't nest here anyways
 .config/mozilla/* ::: .mozilla/firefox/*.default-release*/
