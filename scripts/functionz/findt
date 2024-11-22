@@ -10,9 +10,11 @@ if sys.version_info.minor < 10:
 # HELP "./findt <path> <contents...>; search for text <contents> in <path> (dir or file)
 
 
+import subprocess
 import argparse
 import os
 import shutil
+import shlex
 import sys
 import unicodedata
 from copy import copy
@@ -24,9 +26,11 @@ from typing import Iterator, TextIO
 
 
 def shorten_path(p: Path, max_width: int) -> str:
+    # noinspection PyShadowingNames
     def is_relative_to_home(p: Path):
         return str(p).startswith(str(Path().home()))
 
+    # noinspection PyShadowingNames
     def is_absolute(p: Path):
         """
         this will only work for unix-likes
@@ -169,6 +173,7 @@ class Aggregate:
         self.__start_lc: int = 9999999
         self.__end_lc: int = -1
 
+    # noinspection PyShadowingNames
     def aggregate(self, blocks: list[Block]) -> None:
         blocks = sorted(blocks, key=lambda b: b.rank)
         for b in blocks:
@@ -272,6 +277,7 @@ def match_blocks(file: Path,
         finally:
             f.seek(tell)
 
+    # noinspection PyShadowingNames
     def drive(f: TextIO, padding: int = padding) -> Iterator[Block]:
         lc = 0
         before = []
@@ -353,11 +359,84 @@ def pmap_match(path, options) -> tuple[str, list[Block]] | tuple[None, None]:
     return None, None
 
 
+def strategy_echo_pretty(multimatches: dict[str, list[Block]], **kwargs):
+    """
+    DEFAULT STRATEGY.
+    Print the aggregates to stdout, as an extended ascii table.
+    """
+    # sanity: this should never fail
+    assert isinstance(multimatches, dict)
+
+    for k, v in multimatches.items():
+        aggregate = Aggregate(Path(k), kwargs["padding"])
+        aggregate.aggregate(v)
+
+        table = UTF8Table()
+        ppretty = aggregate.pretty(table.width)
+        _, header = next(ppretty)
+        print(table.header(header))
+        for is_seq, table_entry in ppretty:
+            if not is_seq:
+                print(table.junction())
+            print(table.row(table_entry))
+        print(table.bot())
+
+
+def strategy_echo_minimal(multimatches: dict[str, list[Block]], **kwargs):
+    """
+    DEFAULT STRATEGY WHEN PIPED, OR EXPLICITLY.
+    Print the aggregates to stdout, without decorations.
+    """
+    # sanity: this should never fail
+    assert isinstance(multimatches, dict)
+
+    for k, v in multimatches.items():
+        aggregate = Aggregate(Path(k), kwargs["padding"])
+        aggregate.aggregate(v)
+
+        for _, entry in aggregate.simple():
+            print(entry)
+
+
+def strategy_exec(multimatches: dict[str, list[Block]], **kwargs):
+    """
+    DEFAULT STRATEGY FOR --exec.
+    Shlex split the executable, and afterward, for each match:
+    Argument $1 is the filename.
+    Argument $2 is the first match's line number.
+    Argument $3 is the first match's line contents.
+    Argument $4 is the second match's line number.
+    Argument $5 is the second match's line contents.
+    ... same thing for everything else.
+
+    When we're done with a file, run the script with the aforementioned arguments.
+    """
+    executable = kwargs["exec"]
+    # sanity: these should never fail
+    assert isinstance(multimatches, dict)
+    assert isinstance(executable, str)
+
+    for fn, blocks in multimatches.items():
+        to_exec = shlex.split(executable)
+        # I love the fact that python does NOT follow the builder paradigm
+        #  sarcasm: I do NOT.
+        #  Why is a 'StringBuilder'-like paradigm so hard to grasp,
+        #  in a language where convenience is the norm?
+        to_exec.append(fn)
+
+        for entry in blocks:
+            to_exec.append(str(entry.exact_match_lc))
+            to_exec.append(entry.exact_match)
+
+        subprocess.run(to_exec)
+
+
 def main(options):
     padding = options.padding
     decorated = options.decorated
     multimatches: dict[str, list[Block]] = {}
     paths = preprocess(Path(options.path))
+    exec = options.exec if isinstance(options.exec, str) and shutil.which(options.exec) else None
 
     partial_match = partial(pmap_match, options=options)
     with Pool(os.cpu_count()) as pool:
@@ -367,25 +446,16 @@ def main(options):
     for k, v in results:
         multimatches[k] = v
 
-    for k, v in multimatches.items():
-        aggregate = Aggregate(Path(k), padding)
-        aggregate.aggregate(v)
+    strategy = None
+    is_piped = UTF8Table.is_piped()
+    if strategy is None and exec is not None:
+        strategy = partial(strategy_exec, exec=exec,)
+    if strategy is None and (decorated and not is_piped):
+        strategy = partial(strategy_echo_pretty, padding=padding,)
+    if strategy is None and (not decorated or is_piped):
+        strategy = partial(strategy_echo_minimal, padding=padding,)
 
-        is_piped = UTF8Table.is_piped()
-        if decorated and not is_piped:
-            table = UTF8Table()
-            ppretty = aggregate.pretty(table.width)
-            _, header = next(ppretty)
-            print(table.header(header))
-            for is_seq, table_entry in ppretty:
-                if not is_seq:
-                    print(table.junction())
-                print(table.row(table_entry))
-            print(table.bot())
-
-        if not decorated or is_piped:
-            for _, entry in aggregate.simple():
-                print(entry)
+    strategy(multimatches)
 
 
 @dataclass
@@ -399,6 +469,8 @@ class UserOptions:
     padding: int
     # --no-decorations is the inverse of this value
     decorated: bool
+    # --exec <executable>
+    exec: str | None
 
 
 def _parse_args(args) -> UserOptions:
@@ -408,14 +480,25 @@ def _parse_args(args) -> UserOptions:
     parser.add_argument("-i", "--insensitive", default=False, action="store_true", required=False)
     parser.add_argument("-d", "--no-decorations", default=False, action="store_true", required=False)
     parser.add_argument("--padding", type=int, default=2, required=False)
+    parser.add_argument("-e", "--exec", type=str, default=None, required=False)
+
     options = parser.parse_args(args)
+    if isinstance(options.exec, str) and not shutil.which(options.exec):
+        print(
+            f"""Cannot continue. Argument --exec was given, however it resolved to nothing.
+Does the file actually exist?
+Argument:   `{options.exec}`
+Resolution: `{shutil.which(options.exec)}`""", file=sys.stderr)
+        sys.exit(2)
+
     return UserOptions(
         path=options.path,
         filters=options.filters,
         insensitive=options.insensitive,
         normalized=options.insensitive,
         padding=options.padding,
-        decorated=not options.no_decorations
+        decorated=not options.no_decorations,
+        exec=options.exec
     )
 
 

@@ -3,8 +3,8 @@
 # HELP hello!
 
 hi () (
-    echo "hello!"
+    echo "hello $*!"
 )
 
 # run only if this file is not sourced
-[[ "${BASH_SOURCE[0]}" == "${0}" ]] && hi $@
+[[ "${BASH_SOURCE[0]}" == "${0}" ]] && hi "$@"
