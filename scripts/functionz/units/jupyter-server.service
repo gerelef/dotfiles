@@ -19,7 +19,13 @@ Group=jupyter
 # all of this WOULD make sense if there was another systemd expansion that 
 #  actually expanded to the user's $HOME (if it had one), but there isn't any,
 #  therefore this is dumb as fuck
-ExecStart=jupyter-server --ServerApp.root_dir=/var/lib/jupyter
+# UPDATE: the complaint above concerns the following (now changed) ExecStart
+# ExecStart=jupyter-server --ServerApp.root_dir=/var/lib/jupyter
+#  apparently, a workaround for the behaviour mentioned above,
+#  is to set the 'WorkingDirectory' parameter to '~', and use relative paths
+WorkingDirectory=~
+RequiresMountsFor=~
+ExecStart=jupyter-server --ServerApp.root_dir=.
 Restart=always
 RestartSec=10
 
