@@ -22,10 +22,10 @@ main () (
     if [[ $# -lt 1 ]]; then
         echo "No buffer name provided." 1>&2 2>/dev/null
         echo "You can create a new buffer, or pick one of the following ones:" 1>&2 2>/dev/null
-        for filename in $BUFFERS_HOME; do
-            # https://stackoverflow.com/a/43606356
-            test -e "$filename" || continue
-            echo "$(basename -- "$filename")" 1>&2 2> /dev/null
+        for filename in "$BUFFERS_HOME"/*; do
+            [[ "$(basename -- "$filename")" = "*" ]] && continue
+            
+            echo "- $(basename -- "$filename")" 1>&2 2> /dev/null
         done
         exit 2
     fi
