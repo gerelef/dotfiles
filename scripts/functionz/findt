@@ -410,6 +410,7 @@ def strategy_exec(multimatches: dict[str, list[Block]], **kwargs):
     ... same thing for everything else.
 
     When we're done with a file, run the script with the aforementioned arguments.
+    @throws OSError
     """
     executable = kwargs["exec"]
     # sanity: these should never fail
@@ -432,6 +433,9 @@ def strategy_exec(multimatches: dict[str, list[Block]], **kwargs):
 
 
 def main(options):
+    """
+    @throws Exception on strategies other than printing strategies.
+    """
     padding = options.padding
     decorated = options.decorated
     multimatches: dict[str, list[Block]] = {}
@@ -503,4 +507,8 @@ Resolution: `{shutil.which(options.exec)}`""", file=sys.stderr)
 
 
 if __name__ == "__main__":
-    main(_parse_args(sys.argv[1:]))
+    try:
+        main(_parse_args(sys.argv[1:]))
+    except Exception as err:
+        print(f"FATAL ERROR: {err}", file=sys.stderr)
+        sys.exit(1)
