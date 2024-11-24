@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+
+# HELP no-op; will do nothing. `pass` equivalent statement in python.
+

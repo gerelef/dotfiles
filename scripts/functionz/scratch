@@ -1,0 +1,55 @@
+#!/usr/bin/env bash
+
+# HELP scratch <buffer name>; will open a new (or existing) scratch file.
+
+BUFFERS_HOME="${XDG_CONFIG_HOME:-$HOME/.config}/scratch"
+
+trim () {
+    [[ "$1" =~ [^[:space:]](.*[^[:space:]])? ]]
+    printf "%s" "$BASH_REMATCH"
+}
+
+detect-buffer-executable () {
+    [[ $(trim "$(grep -m 1 . "$1")") == \#!* ]] && return
+}
+
+main () (
+    if [[ -z $EDITOR ]]; then
+        echo '$EDITOR envvar is not defined, therefore no editor can be used.' 1>&2 2>/dev/null
+        echo 'Please reconfigure your environment and retry.' 1>&2 2>/dev/null
+        exit 2
+    fi
+    if [[ $# -lt 1 ]]; then
+        echo "No buffer name provided." 1>&2 2>/dev/null
+        echo "You can create a new buffer, or pick one of the following ones:" 1>&2 2>/dev/null
+        for filename in $BUFFERS_HOME; do
+            # https://stackoverflow.com/a/43606356
+            test -e "$filename" || continue
+            echo "$(basename -- "$filename")" 1>&2 2> /dev/null
+        done
+        exit 2
+    fi
+
+    if ! cd "$BUFFERS_HOME"; then
+        echo "Failed to change CWD to $BUFFERS_HOME. Creating directories..." 1>&2 2>/dev/null
+        mkdir -p "$BUFFERS_HOME"
+        # if this also fails, we need to stop because something's gone sideways
+        cd "$BUFFERS_HOME" || exit 1
+    fi
+
+    echo "Opening scratchpad $BUFFERS_HOME/$1 ..."
+    "$EDITOR" "$BUFFERS_HOME/$1" || exit
+
+    echo "Editor closed."
+    # editor closed w/o saving
+    if [[ ! -f "$BUFFERS_HOME/$1" ]]; then
+        echo "Buffer '$1' was discarded."
+        exit 0
+    fi
+    if detect-buffer-executable "$BUFFERS_HOME/$1"; then
+        echo "Detected executable buffer via shebang. Adding executable permissions." 1>&2 2>/dev/null
+        chmod +x "$BUFFERS_HOME/$1" || exit
+    fi
+)
+
+[[ "${BASH_SOURCE[0]}" == "${0}" ]] && main "$@"
