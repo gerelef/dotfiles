@@ -4,6 +4,21 @@
 
 BUFFERS_HOME="${XDG_CONFIG_HOME:-$HOME/.config}/scratch"
 
+echo-help-text () {
+    echo "scr [<buffer name>] [d <buffer name>] [p <buffer name>]"
+    echo ""
+    echo "scr <buffer name>    - the named buffer will be opened in the default \$EDITOR"
+    echo "scr ls               - all named buffers will be listed"
+    echo "scr p <buffer name>  - the named buffer's path will be echoed"
+    echo "scr d <buffer name>  - the named buffer will be deleted"
+    echo ""
+    echo "You may not begin a buffer's name with a dash ( - )."
+    echo ""
+    echo "No buffer name provided." 1>&2 2>/dev/null
+    echo "You can create a new buffer, or pick one of the following ones:" 1>&2 2>/dev/null
+    echo-available-buffers
+}
+
 trim () {
     [[ "$1" =~ [^[:space:]](.*[^[:space:]])? ]]
     printf "%s" "$BASH_REMATCH"
@@ -13,21 +28,39 @@ detect-buffer-executable () {
     [[ $(trim "$(grep -m 1 . "$1")") == \#!* ]] && return
 }
 
+echo-available-buffers () {
+    for filename in "$BUFFERS_HOME"/*; do
+        [[ "$(basename -- "$filename")" = "*" ]] && continue
+        echo "$(basename -- "$filename")" 1>&2 2> /dev/null
+    done
+}
+
 main () (
     if [[ -z $EDITOR ]]; then
+        # the following line is intentionally single quoted
         echo '$EDITOR envvar is not defined, therefore no editor can be used.' 1>&2 2>/dev/null
         echo 'Please reconfigure your environment and retry.' 1>&2 2>/dev/null
         exit 2
     fi
+
     if [[ $# -lt 1 ]]; then
-        echo "No buffer name provided." 1>&2 2>/dev/null
-        echo "You can create a new buffer, or pick one of the following ones:" 1>&2 2>/dev/null
-        for filename in "$BUFFERS_HOME"/*; do
-            [[ "$(basename -- "$filename")" = "*" ]] && continue
-            
-            echo "- $(basename -- "$filename")" 1>&2 2> /dev/null
-        done
+        echo-help-text
         exit 2
+    fi
+
+    if [[ $# -eq 1 ]] && [[ $1 = "-h" || $1 = "--help" ]]; then
+        echo-help-text
+        exit 2
+    fi
+
+    if [[ $# -eq 1 && $1 = -* ]]; then
+        echo-help-text
+        exit 2
+    fi
+
+    if [[ $# -eq 1 && $1 = "ls" ]]; then
+        echo-available-buffers
+        exit
     fi
 
     if ! cd "$BUFFERS_HOME"; then
@@ -35,6 +68,31 @@ main () (
         mkdir -p "$BUFFERS_HOME"
         # if this also fails, we need to stop because something's gone sideways
         cd "$BUFFERS_HOME" || exit 1
+    fi
+
+    if [[ $1 = "d" ]]; then
+        if [[ $# -lt 2 ]]; then
+            echo "No buffer to be deleted was provided."
+            echo "You may delete one of the following buffers:"
+            echo-available-buffers
+            exit 2
+        fi
+        rm "$BUFFERS_HOME/$2"
+        exit
+    fi
+
+    if [[ $1 = "p" ]]; then
+        if [[ $# -lt 2 ]]; then
+            echo "No buffer to be echoed was provided."
+            echo "You may echo one of the following buffers:"
+            echo-available-buffers
+            exit 2
+        fi
+        [[ -f "$BUFFERS_HOME/$2" ]] && echo "$BUFFERS_HOME/$2"
+        # if the previous call fails, this will die silently, but that's suprisingly
+        #  ok, since the only chance of _not_ echoing out the path would be if
+        #  it never existed.
+        exit
     fi
 
     echo "Opening scratchpad $BUFFERS_HOME/$1 ..."
