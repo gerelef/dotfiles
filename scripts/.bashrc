@@ -64,7 +64,8 @@ _git-status () (
     changed_files=$(git status -s --ignored=no 2> /dev/null)
     [[ -z $changed_files ]] && return
 
-    echo "(changes pending)"
+    return 0
+    # echo "(changes)"
 )
 
 mini-prompt () {
@@ -74,10 +75,10 @@ mini-prompt () {
     VENV_STATUS="${VIRTUAL_ENV:-N/A}"
     if [[ "$VENV_STATUS" != "N/A" ]]; then local PCOLOUR="$_FLMAGENTA"; local PHINT=">>>"; fi
     if [[ "$VENV_STATUS" == "N/A" ]]; then local PCOLOUR="$_FGREEN"; local PHINT="\$"; fi
-    [[ -n "$(_git-branch 2> /dev/null)" ]] && PCOLOUR="$_FORANGE"
+    [[ -n "$(_git-branch "$(pwd)" 2> /dev/null)" ]] && PCOLOUR="$_FORANGE"
 
     PS1=" \[${_FYELLOW}\]\w\[${_NOCOLOUR}\] " # working directory
-    [[ -n "$(_git-status 2> /dev/null)" ]] && PS1+="\[$_FBROWN\](changes)\[${_NOCOLOUR}\] "
+    [[ -n "$(_git-status "$(pwd)" 2> /dev/null)" ]] && PS1+="\[$_FBROWN\](changes)\[${_NOCOLOUR}\] "
 
     # Show error exit code if there is one
     [[ $LAST_COMMAND != 0 ]] && PS1+="\[${_FLRED}\][$LAST_COMMAND]\[${_NOCOLOUR}\] "
