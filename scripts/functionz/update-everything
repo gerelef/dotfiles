@@ -26,7 +26,8 @@ update-everything () (
         echo "$(tput bold)$(tput setaf 6)──── Updating flatpak ────$(tput sgr0)"
         while :; do
             flatpak update -y || break
-            flatpak uninstall --unused -y || break
+            flatpak uninstall --unused -y
+            break
         done
     fi
 
