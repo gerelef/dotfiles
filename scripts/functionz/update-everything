@@ -24,8 +24,10 @@ update-everything () (
 
     if [[ -n "$(command -v flatpak)" ]]; then
         echo "$(tput bold)$(tput setaf 6)──── Updating flatpak ────$(tput sgr0)"
-        flatpak update -y || exit
-        flatpak uninstall --unused -y || exit
+        while :; do
+            flatpak update -y || break
+            flatpak uninstall --unused -y || break
+        done
     fi
 
     if [[ -n "$(command -v snap)" ]]; then
@@ -34,16 +36,6 @@ update-everything () (
             echo "Snap failed to update w/ sudoless permissions."
             echo "Please configure policykit to allow this kind of action."
         fi
-    fi
-
-    if [[ -n "$(command -v npm)" ]]; then
-        echo "$(tput bold)$(tput setaf 6)──── Updating npm ────$(tput sgr0)"
-        sudo npm install -g npm@latest || exit
-    fi
-
-    # this is bad but it's the official 'packaging' format jesus christ
-    if [[ -f "$HOME/.joplin/Joplin.AppImage" ]]; then
-        curl --proto '=https' --tlsv1.2 -sSf 'https://raw.githubusercontent.com/laurent22/joplin/dev/Joplin_install_and_update.sh' | bash
     fi
     return 0
 )
