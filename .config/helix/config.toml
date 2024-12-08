@@ -74,3 +74,6 @@ enable = false
 # unbind the following commands
 "a" = "no_op"
 "o" = "no_op"
+
+[keys.insert]
+C-backspace = "delete_word_backward"
