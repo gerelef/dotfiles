@@ -1,3 +1,4 @@
+# all commands: https://github.com/helix-editor/helix/blob/master/helix-term/src/commands.rs
 theme = "jetbrains_dark"
 
 [editor]
@@ -72,6 +73,9 @@ enable = false
 "S-tab" = "unindent"
 "x" = "select_line_below"
 "X" = "select_line_above"
+# TODO ctrl  + arrow keys jump words w/o selecting
+# TODO shift + arrow keys select words even in insert mode
+# TODO ctrl  + shift + arrow keys select words & jump
 
 # unbind the following commands
 "a" = "no_op"
