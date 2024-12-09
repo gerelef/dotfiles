@@ -70,6 +70,8 @@ enable = false
 "C-t" = ":new"
 "tab" = "indent"
 "S-tab" = "unindent"
+"x" = "select_line_below"
+"X" = "select_line_above"
 
 # unbind the following commands
 "a" = "no_op"
