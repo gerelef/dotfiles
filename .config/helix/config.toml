@@ -57,8 +57,8 @@ enable = false
 #   as a key
 "C-ret" = [ "move_visual_line_up", "goto_first_nonwhitespace" ]
 "ret" = [ "move_visual_line_down", "goto_first_nonwhitespace" ]
-"pageup" = "page_cursor_up"
-"pagedown" = "page_cursor_down"
+"pageup" = [ "page_cursor_up", "align_view_top" ]
+"pagedown" = [ "page_cursor_down", "align_view_bottom" ]
 
 # selection options (or, lack thereof)
 "esc" = "collapse_selection"
