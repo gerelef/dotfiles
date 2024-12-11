@@ -2,13 +2,15 @@
 theme = "jetbrains_dark"
 
 [editor]
+scrolloff = 1
 mouse = true
 bufferline = "always"
 cursorline = true
 cursorcolumn = true
 rulers = [80, 120]
 true-color = true
-auto-pairs = false
+auto-pairs = false  # do not automatically pair 
+auto-completion = false  # do not auto-complete; use 'completions' keymap (C-space) by default
 
 [editor.cursor-shape]
 insert = "bar"
@@ -23,7 +25,6 @@ wrap-indicator = "↩ "
 [editor.indent-guides]
 render = true
 character = "▏"
-skip-levels = 1
 
 [editor.whitespace.render]
 nbsp="all"
@@ -51,35 +52,59 @@ wrap-around = true
 enable = false
 
 [keys.normal]
-"C-pageup" = "goto_previous_buffer"
-"C-pagedown" = "goto_next_buffer"
-"C-w" = "wclose"
-"C-o" = "file_picker"
-"C-S-o" = "buffer_picker"
-"C-/" = "toggle_comments"
+# moving the view around
+#  AUTHOR'S NOTE: this is a 'C-ret' and not "S-ret" because S-ret does not register
+#   as a key
+"C-ret" = [ "move_visual_line_up", "goto_first_nonwhitespace" ]
+"ret" = [ "move_visual_line_down", "goto_first_nonwhitespace" ]
+"pageup" = "page_cursor_up"
+"pagedown" = "page_cursor_down"
+
+# selection options (or, lack thereof)
+"esc" = "collapse_selection"
+"x" = "select_line_below"
+"X" = "select_line_above"
+"C-/" = [ "toggle_comments", "move_visual_line_down", "goto_line_start" ]
+"w" = [ "move_next_word_start", "collapse_selection" ]
+"W" = "move_next_word_start"
+"b" = [ "move_prev_word_start", "collapse_selection" ]
+"B" = "move_prev_word_start"
 "d" = "delete_selection_noyank"
-"C-d" = ["yank_to_clipboard", ":clipboard-paste-after"]
-"C-D" = ["yank_to_clipboard", ":clipboard-paste-before"]
-"C-x" = ["yank_to_clipboard", "delete_selection"]
+
+# clipboard actions
+"C-d" = [ "yank_to_clipboard", ":clipboard-paste-after" ]  # dupe line after
+"C-D" = [ "yank_to_clipboard", ":clipboard-paste-before" ]  # dupe line before
+"C-x" = [ "yank_to_clipboard", "delete_selection" ]  # 'cut'
+"y" = "yank_to_clipboard"
 "p" = ":clipboard-paste-after"
 "P" = ":clipboard-paste-before"
-"y" = "yank_to_clipboard"
 "C-Z" = "redo"
 "C-y" = "redo"
 "C-z" = "undo"
 "C-l" = ":fmt"
-"C-t" = ":new"
+
+# indent / unindent
 "tab" = "indent"
 "S-tab" = "unindent"
-"x" = "select_line_below"
-"X" = "select_line_above"
-# TODO ctrl  + arrow keys jump words w/o selecting
-# TODO shift + arrow keys select words even in insert mode
-# TODO ctrl  + shift + arrow keys select words & jump
+
+# moving around buffers
+"C-pageup" = "goto_previous_buffer"
+"C-pagedown" = "goto_next_buffer"
+"C-t" = ":new"
+"C-w" = "wclose"
+"C-o" = "file_picker"
+"C-O" = "buffer_picker"
 
 # unbind the following commands
 "a" = "no_op"
 "o" = "no_op"
 
 [keys.insert]
-C-backspace = "delete_word_backward"
+"C-space" = "completion"
+"backspace" = "delete_char_backward"
+"C-backspace" = "delete_word_backward"
+"del" = "delete_char_forward"
+"C-del" = "delete_word_forward"
+
+[keys.select]
+"y" = "yank_to_clipboard"
