@@ -70,6 +70,7 @@ enable = false
 "b" = [ "move_prev_word_start", "collapse_selection" ]
 "B" = "move_prev_word_start"
 "d" = "delete_selection_noyank"
+"D" = "delete_char_backward"
 
 # yank actions
 "y" = "yank_to_clipboard"
@@ -94,7 +95,7 @@ enable = false
 "C-pageup" = "goto_previous_buffer"
 "C-pagedown" = "goto_next_buffer"
 "C-t" = ":new"
-"C-w" = "wclose"
+"C-w" = ":buffer-close"
 "C-o" = "file_picker"
 "C-O" = "buffer_picker"
 
