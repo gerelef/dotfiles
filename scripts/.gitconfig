@@ -6,6 +6,7 @@
     when = "!__git_when () ( git log -S $1 -p ); __git_when"
     list-changed = diff-tree --no-commit-id --name-status -r
     restore-untracked = clean -d -f
+    nuke = "!__git_nuke () ( git restore --staged $1; git restore $1; git clean -d -f $1 ); __git_nuke"
     alias = "!git config -l | grep alias | cut -c 7-"
 [rerere]
     enabled = true  # REuse REcorded REsolution
