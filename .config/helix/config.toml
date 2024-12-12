@@ -71,14 +71,17 @@ enable = false
 "B" = "move_prev_word_start"
 "d" = "delete_selection_noyank"
 
-# clipboard actions
+# yank actions
+"y" = "yank_to_clipboard"
+"C-x" = [ "yank_to_clipboard", "delete_selection" ]  # 'cut'
 "C-d" = [ "yank_to_clipboard", ":clipboard-paste-after" ]  # dupe line after
 "C-D" = [ "yank_to_clipboard", ":clipboard-paste-before" ]  # dupe line before
-"C-x" = [ "yank_to_clipboard", "delete_selection" ]  # 'cut'
-"y" = "yank_to_clipboard"
+# paste actions
 "p" = ":clipboard-paste-after"
 "P" = ":clipboard-paste-before"
-"C-Z" = "redo"
+
+# alternative to this is (S-)U, however we might hit these
+#  two shortcuts intuitively as well
 "C-y" = "redo"
 "C-z" = "undo"
 "C-l" = ":fmt"
@@ -96,8 +99,15 @@ enable = false
 "C-O" = "buffer_picker"
 
 # unbind the following commands
+## these are annoying to mistype
 "a" = "no_op"
 "o" = "no_op"
+
+## these could be destructive if hit by accident
+"Y" = "no_op"
+"C-Y" = "no_op"
+"C-Z" = "no_op"
+"C-L" = "no_op"
 
 [keys.insert]
 "C-space" = "completion"
