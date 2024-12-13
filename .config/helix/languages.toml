@@ -1,0 +1,14 @@
+[[language]]
+name = "python"
+scope = "source.python"
+file-types = ["py"]
+formatter = { command = "black", args = ["--stdin", "-q"] }
+auto-format = true
+
+[[language]]
+name = "bash"
+scope = "source.shell"
+file-types = ["sh", "bash"]
+formatter = { command = "shellcheck", args = ["--format=checkstyle", "-f"] }
+auto-format = true
+rulers = [120]
