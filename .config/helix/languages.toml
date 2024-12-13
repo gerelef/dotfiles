@@ -1,3 +1,7 @@
+# this configuration requires these following dependencies:
+#  python formatter ::: black
+#  bash   formatter ::: shellcheck
+
 [[language]]
 name = "python"
 scope = "source.python"
