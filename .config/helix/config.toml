@@ -55,16 +55,17 @@ enable = false
 # moving the view around
 #  AUTHOR'S NOTE: this is a 'C-ret' and not "S-ret" because S-ret does not register
 #   as a key
-"C-ret" = [ "move_visual_line_up", "goto_first_nonwhitespace" ]
-"ret" = [ "move_visual_line_down", "goto_first_nonwhitespace" ]
+"C-ret" = [ "move_line_up", "goto_line_end_newline" ]
+"ret" = [ "move_line_down", "goto_first_nonwhitespace" ]
 "pageup" = [ "page_cursor_up", "align_view_top" ]
 "pagedown" = [ "page_cursor_down", "align_view_bottom" ]
+"home" = "goto_first_nonwhitespace"  # this will help with code stuff.
 
 # selection options (or, lack thereof)
 "esc" = "collapse_selection"
 "x" = "select_line_below"
 "X" = "select_line_above"
-"C-/" = [ "toggle_comments", "move_visual_line_down", "goto_line_start" ]
+"C-/" = [ "toggle_comments", "move_line_down", "goto_line_start" ]
 "w" = [ "move_next_word_start", "collapse_selection" ]
 "W" = "move_next_word_start"
 "b" = [ "move_prev_word_start", "collapse_selection" ]
@@ -75,8 +76,8 @@ enable = false
 # yank actions
 "y" = "yank_to_clipboard"
 "C-x" = [ "yank_to_clipboard", "delete_selection" ]  # 'cut'
-"C-d" = [ "yank_to_clipboard", ":clipboard-paste-after" ]  # dupe line after
-"C-D" = [ "yank_to_clipboard", ":clipboard-paste-before" ]  # dupe line before
+"C-d" = [ "extend_to_line_bounds", "yank_to_clipboard", ":clipboard-paste-after" ]  # dupe line after
+"C-D" = [ "extend_to_line_bounds", "yank_to_clipboard", ":clipboard-paste-before" ]  # dupe line before
 # paste actions
 "p" = ":clipboard-paste-after"
 "P" = ":clipboard-paste-before"
@@ -116,6 +117,7 @@ enable = false
 "C-backspace" = "delete_word_backward"
 "del" = "delete_char_forward"
 "C-del" = "delete_word_forward"
+"home" = "goto_first_nonwhitespace"  # this will help with code stuff.
 
 [keys.select]
 "y" = "yank_to_clipboard"

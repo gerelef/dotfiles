@@ -33,6 +33,12 @@ scripts/
     !!.config/helix/
 [end]
 
+// currently, zellij *needs* fish to work
+.config/zellij/
+[if-pkg:::zellij fish]
+    !!.config/zellij/
+[end]
+
 // if fish is not installed, DO NOT link fish-based alacritty configuration
 //  if fish doesn't exist, it'll cause alacritty to never boot
 .config/alacritty/
