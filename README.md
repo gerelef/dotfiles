@@ -22,6 +22,13 @@ To automatically deploy the default profile:
 cd ~ && git clone https://github.com/gerelef/dotfiles && ~/dotfiles/scripts/functionz/pstow --source ~/dotfiles --target ~ --profile default --force --yes
 ```
 
+### term setup
+shell ::: `fish`
+emulator ::: `alacritty`
+workspace ::: `zellij`
+editor / visual ::: `hx` (w/ `wl-copy`)
+tree / explorer ::: `hxs` (via `ripgrep` && `fzf`)
+
 ## history
 Large revisions were performed in the following commits, ordered by recency:
 - `6231460` -> removed `./scripts/setup` and migrated them to `./scripts/functionz`; also revisioned script to be ran as user rather than indescriminate `sudo`.
