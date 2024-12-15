@@ -15,8 +15,12 @@ _depends-on hx fzf rg
 #  all rights to the original author 
 _hxs () (
     RG_PREFIX="rg -i --files-with-matches"
+    DETACH="&"
     ZELLIJ_PREFIX=""
-    [[ -n "$ZELLIJ_SESSION_NAME" ]] && ZELLIJ_PREFIX="zellij run --close-on-exit -- "
+    if [[ -n "$ZELLIJ_SESSION_NAME" ]]; then
+        ZELLIJ_PREFIX="zellij run --close-on-exit -- "
+        DETACH="&"
+    fi 
     while :; do
         PREVIEW_WINDOW='--preview-window=0%:wrap'
         if [[ $(tput cols) -gt 80 ]]; then
@@ -34,7 +38,7 @@ _hxs () (
         # break only if there was an explicit EOF or keyboard interrupt in fzf
         test "$?" -eq 130 && break
         if [[ -n "$file" ]]; then
-            $ZELLIJ_PREFIX hx "$file" &
+            $ZELLIJ_PREFIX hx "$file" $DETACH
             sleep .1
         fi
     done

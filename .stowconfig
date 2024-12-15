@@ -18,6 +18,7 @@ scripts/
 
 // joplin keymap doesn't load dynamically, womp womp
 .config/keymap-desktop.json
+.config/extensions/
 
 [if-pkg:::delta]
     !!scripts/.gitconfig-gitdelta
@@ -57,10 +58,8 @@ scripts/
 
 .config/config
 .config/pipewire/
-.config/mozilla/
 // link only in default profile
 [if-profile:::default]
-    !!.config/mozilla/user.js
     !!.config/pipewire/
 
     // ssh config
@@ -85,6 +84,3 @@ scripts/.gitconfig-gitdelta ::: .
 // create subdirectories on the fly, don't nest unecessarily
 .config/sublime-text/* ::: .config/sublime-text/Packages/User/
 .config/fish/fish_prompt.fish ::: .config/fish/functions/
-
-// find already created profile subdirectories on the fly, we can't nest here anyways
-.config/mozilla/* ::: .mozilla/firefox/*.default-release*/

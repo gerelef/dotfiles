@@ -91,7 +91,7 @@ install-universal-necessities () (
 
     sudo dnf group install -y --best --allowerasing "hardware-support" "networkmanager-submodules" "printing" "input-methods"
 
-    sudo dnf group install -y --best --allowerasing "firefox" "libreoffice"
+    sudo dnf group install -y --best --allowerasing "libreoffice"
     sudo dnf install -y --best --allowerasing --skip-unavailable $INSTALLABLE_APPLICATION_PACKAGES
     sudo dnf swap gimp gimp3 -y --no-best --allowerasing
     flatpak install --system --noninteractive -y $INSTALLABLE_FLATPAKS
@@ -610,6 +610,7 @@ pulseeffects \
 "
 
 readonly INSTALLABLE_FLATPAKS="\
+com.brave.Browser \
 org.flameshot.Flameshot \
 com.spotify.Client \
 com.github.rafostar.Clapper \

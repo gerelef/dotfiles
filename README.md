@@ -12,7 +12,6 @@ The common `$XDG_CONFIG_HOME` directory setup is semi-emulated, with exceptions 
 ## installation
 After running a setup script in `dotfiles/scripts/setup/...` I just need to install my dotfiles & my themes.
 - To deploy my dotfiles I use [pstow](https://github.com/gerelef/pstow); check the command below.
-- To install my themes I use `update-ff-theme`, which is a utility located under `scripts/utils/`
 - To install my compatibility layers for gaming, I use `update-compat-layers`, which is a utility located under `scripts/utils/`
 
 **Warning! This is a DESTRUCTIVE command, and it WILL overwrite files!**
