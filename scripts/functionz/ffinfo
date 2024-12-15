@@ -1,0 +1,20 @@
+#!/usr/bin/env bash
+
+# HELP ffinfo <file>; get key information about the streams of a given file
+
+_depends-on ffmpeg || exit
+
+# ffmpeg get info about a video via ffprobe
+ffinfo () (
+    [[ -z "$*" ]] && return 2
+    [[ "$#" -ne 1 ]] && return 2
+
+    stream_info_raw="$(ffprobe "$1" -show_streams 2>&1 | sed -n '/STREAM/,$p')"
+    echo "resolution=$(echo "$stream_info_raw" | grep -i 'width=' | head -1 | cut -c7-)x$(echo "$stream_info_raw" | grep -i 'height=' | head -1 | cut -c8-)"
+    echo "$stream_info_raw" | grep -i 'duration=' | head -1
+    echo "$stream_info_raw" | grep -i 'bit_rate=' | head -1
+    echo "$stream_info_raw" | grep -i 'codec_long_name=' | head -1
+)
+
+# run only if this file is not sourced
+[[ "${BASH_SOURCE[0]}" == "${0}" ]] && ffinfo "$@"
