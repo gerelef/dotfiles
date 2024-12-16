@@ -15,7 +15,7 @@ _depends-on hx fzf rg
 #  all rights to the original author 
 _hxs () (
     RG_PREFIX="rg -i --files-with-matches"
-    ZELLIJ_DETACH="&"
+    ZELLIJ_DETACH=""
     ZELLIJ_PREFIX=""
     if [[ -n "$ZELLIJ_SESSION_NAME" ]]; then
         ZELLIJ_PREFIX="zellij run --close-on-exit -- "
