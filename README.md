@@ -44,9 +44,11 @@ cd ~ && git clone https://github.com/gerelef/dotfiles && ~/dotfiles/scripts/func
 
 ### term setup
 shell ::: `fish`
+
 emulator ::: `alacritty`
-workspace ::: `zellij`
+
 editor / visual ::: `hx` (w/ `wl-copy`)
+
 tree / explorer ::: `hxs` (via `ripgrep` && `fzf`)
 
 ## history
