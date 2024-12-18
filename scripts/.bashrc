@@ -224,6 +224,19 @@ if locate --version 2> /dev/null 1>&2 && locate --limit 1 'depot_tools' 2> /dev/
     alias fetch="fetch --no-history"
 fi
 
+# use vim instead of nano, jesus christ
+if [[ -n "$(command -v vim)" ]]; then
+    export VISUAL="vim"
+    export EDITOR="vim"
+fi
+
+# use 
+if [[ -n "$(command -v hx)" ]]; then
+    alias helix="hx"
+    export VISUAL="hx"
+    export EDITOR="hx"
+fi
+
 if [[ -n "$(command -v zoxide)" ]]; then
     cd () {
         z "$@"
@@ -235,8 +248,11 @@ if [[ -n "$(command -v lsd)" ]]; then
     alias lss="lsd --almost-all --icon never --icon-theme unicode --group-directories-first"
 fi
 
-if [[ -n "$(command -v hx)" ]]; then
-    alias helix="hx"
-    export VISUAL="hx"
-    export EDITOR="hx"
+
+if [[ -n "$(command -v fzf)" ]]; then
+    __fzflocate () {
+        locate -i "$1" | fzf
+    }
+    
+    alias locate="__fzflocate"
 fi

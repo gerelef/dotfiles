@@ -155,6 +155,17 @@ if locate --version 2>/dev/null 1>&2 && locate --limit 1 depot_tools 2>/dev/null
     abbr --position command --add fetch "fetch --no-history"
 end
 
+if type -q vim
+    set -gx VISUAL vim
+    set -gx EDITOR vim
+end
+
+if type -q hx
+    abbr --position command --add helix hx
+    set -gx VISUAL hx
+    set -gx EDITOR hx
+end
+
 if type -q zoxide
     zoxide init fish | source
     abbr --position command --add cd z
@@ -164,8 +175,6 @@ if type -q lsd
     abbr --position command --add lss "lsd --almost-all --icon never --group-directories-first"
 end
 
-if type -q hx
-    abbr --position command --add helix hx
-    set -gx VISUAL hx
-    set -gx EDITOR hx
+if type -q fzf
+    abbr --set-cursor=% --add locate "locate -i '%' | fzf"
 end
