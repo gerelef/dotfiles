@@ -175,6 +175,11 @@ if type -q lsd
     abbr --position command --add lss "lsd --almost-all --icon never --group-directories-first"
 end
 
-if type -q fzf
-    abbr --set-cursor=% --add locate "locate -i '%' | fzf"
+if locate --version 2>/dev/null 1>&2 && type -q fzf
+    set WITH_LOCAL_DB ''
+    if test -f ~/.locate.db
+        set WITH_LOCAL_DB "-d ~/.locate.db"
+    end
+    abbr --set-cursor=% --add locate "locate $WITH_LOCAL_DB -i '%' | fzf"
+    abbr --position command --add updatedb 'updatedb --require-visibility 0 -o ~/.locate.db'
 end

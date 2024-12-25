@@ -249,10 +249,20 @@ if [[ -n "$(command -v lsd)" ]]; then
 fi
 
 
-if [[ -n "$(command -v fzf)" ]]; then
+if locate --version 2> /dev/null 1>&2 && test -n "$(command -v fzf)"; then
     __fzflocate () {
-        locate -i "$1" | fzf
+        local WITH_LOCAL_DB=""
+        if test -f ~/.locate.db; then
+            WITH_LOCAL_DB="-d $HOME/.locate.db"
+        fi
+        # we want this to expand to 'locate' parameters
+        locate $WITH_LOCAL_DB -i "$1" | fzf
+    }
+
+    __updatedb_local () {
+        updatedb --require-visibility 0 -o ~/.locate.db
     }
     
     alias locate="__fzflocate"
+    alias updatedb="__updatedb_local"
 fi
