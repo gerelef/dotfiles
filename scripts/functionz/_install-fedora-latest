@@ -252,7 +252,7 @@ install-proprietary-nvidia-drivers () (
         # since they'll be compiling in the background!
         # Their recommendations talk about kmod, not akmod, but the process should be the same
         _echo-important "You only have to do this once. Do NOT re-enroll MOK a second time."
-        if ask-user 'Do you want to enroll MOK and restart afterwards?'; then
+        if ask user question 'Do you want to enroll MOK and restart afterwards?'; then
             _echo-important "Make sure you enroll MOK when you restart."
 
             _echo-status "Signing GPU drivers..."
@@ -754,8 +754,8 @@ sudo dnf group install -y "standard"
 _echo-debug "Installed terminal of choice ($TERMINAL_OF_CHOICE) for GUI-land."
 
 if [[ ! -f "$HAS_CHANGED_HOSTNAME_FILE" ]]; then
-    if ask-user "Do you want to change the current hostname (current is: $(hostname))?"; then
-        sudo hostnamectl hostname "$(ask-user-input 'Please provide a suitable hostname')"
+    if ask user question "Do you want to change the current hostname (current is: $(hostname))?"; then
+        sudo hostnamectl hostname "$(ask system iput 'Please provide a suitable hostname')"
         sudo touch "$HAS_CHANGED_HOSTNAME_FILE"
         _echo-debug "Updated hostname."
     fi
@@ -797,42 +797,42 @@ _echo-important "You will be asked a series of questions ahead of time, so you c
 _echo-important "Note that NVIDIA drivers require manual confirmation for MOK enrollment, and this cannot be automated"
 _echo-important " due to its intrusive nature."
 
-ask-user 'Do you want to install snapd?' && INSTALL_SNAPD="yes"
+ask user question 'Do you want to install snapd?' && INSTALL_SNAPD="yes"
 _echo-debug "Will install snapd? $INSTALL_SNAPD"
-ask-user 'Do you want to install gaming packages?' && INSTALL_GAMING="yes"
+ask user question'Do you want to install gaming packages?' && INSTALL_GAMING="yes"
 _echo-debug "Will install gaming? $INSTALL_GAMING"
-ask-user 'Do you want to install terminal tools?' && INSTALL_TERM_TOOLS="yes"
+ask user question 'Do you want to install terminal tools?' && INSTALL_TERM_TOOLS="yes"
 _echo-debug "Will install terminal-tools? $INSTALL_TERM_TOOLS"
-ask-user 'Do you want to install tailscaled?' && INSTALL_TAILSCALED="yes"
+ask user question 'Do you want to install tailscaled?' && INSTALL_TAILSCALED="yes"
 _echo-debug "Will install tailscaled? $INSTALL_TAILSCALED"
-ask-user 'Do you want to install development tools?' && INSTALL_DEV_TOOLS="yes"
+ask user question 'Do you want to install development tools?' && INSTALL_DEV_TOOLS="yes"
 _echo-debug "Will install dev tools? $INSTALL_DEV_TOOLS"
 if [[ -n "$INSTALL_DEV_TOOLS" ]]; then
-    ask-user 'Do you want to install helix?' && INSTALL_HELIX_EDITOR="yes"
+    ask user question 'Do you want to install helix?' && INSTALL_HELIX_EDITOR="yes"
     _echo-debug "Will install helix? $INSTALL_HELIX_EDITOR"
 
-    ask-user 'Do you want to install neovim?' && INSTALL_NEOVIM_EDITOR="yes"
+    ask user question 'Do you want to install neovim?' && INSTALL_NEOVIM_EDITOR="yes"
     _echo-debug "Will install neovim? $INSTALL_NEOVIM_EDITOR"
 fi
-ask-user 'Do you want to install ollama?' && INSTALL_OLLAMA="yes"
+ask user question 'Do you want to install ollama?' && INSTALL_OLLAMA="yes"
 _echo-debug "Will install ollama? $INSTALL_OLLAMA"
-ask-user 'Do you want to install rpm tools?' && INSTALL_RPM_TOOLS="yes"
+ask user question 'Do you want to install rpm tools?' && INSTALL_RPM_TOOLS="yes"
 _echo-debug "Will install rpm tools? $INSTALL_RPM_TOOLS"
-ask-user 'Do you want to install virtualization packages?' && INSTALL_VIRTUALIZATION="yes"
+ask user question 'Do you want to install virtualization packages?' && INSTALL_VIRTUALIZATION="yes"
 _echo-debug "Will install virtualization? $INSTALL_VIRTUALIZATION"
-ask-user 'Do you want to install containerization packages?' && INSTALL_CONTAINERIZATION="yes"
+ask user question 'Do you want to install containerization packages?' && INSTALL_CONTAINERIZATION="yes"
 _echo-debug "Will install containerization? $INSTALL_CONTAINERIZATION"
-ask-user 'Do you want to install zeno/scrcpy?' && INSTALL_SCRCPY="yes"
+ask user question 'Do you want to install zeno/scrcpy?' && INSTALL_SCRCPY="yes"
 _echo-debug "Will install scrcpy? $INSTALL_SCRCPY"
-ask-user 'Do you want to install JetBrains Toolbox?' && INSTALL_JETBRAINS="yes"
+ask user question 'Do you want to install JetBrains Toolbox?' && INSTALL_JETBRAINS="yes"
 _echo-debug "Will install jetbrains? $INSTALL_JETBRAINS"
-ask-user 'Do you want to install Zed Text Editor?' && INSTALL_ZED="yes"
+ask user question 'Do you want to install Zed Text Editor?' && INSTALL_ZED="yes"
 _echo-debug "Will install zed? $INSTALL_ZED"
-ask-user 'Do you want to install Visual Studio Code?' && INSTALL_VSC="yes"
+ask user question 'Do you want to install Visual Studio Code?' && INSTALL_VSC="yes"
 _echo-debug "Will install vsc? $INSTALL_VSC"
-ask-user 'Do you want to install Sublime Text Editor?' && INSTALL_SUBLIME="yes"
+ask user question 'Do you want to install Sublime Text Editor?' && INSTALL_SUBLIME="yes"
 _echo-debug "Will install sublime? $INSTALL_SUBLIME"
-ask-user 'Do you want to install joplin?' && INSTALL_JOPLIN="yes"
+ask user question 'Do you want to install joplin?' && INSTALL_JOPLIN="yes"
 _echo-debug "Will install joplin? $INSTALL_JOPLIN"
 
 #######################################################################################################
