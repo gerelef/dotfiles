@@ -2,16 +2,20 @@
 
 # HELP one-liner to check if dependencies exist
 
-depends-on () (
-    hasErrors=""
+depends-on () {
+    exit_code="0"
     for arg in "$@"; do
-        if test -z "$(command -v $arg)"; then
-            _is-tty && >&2 echo "$(tput setaf 3)WARN: dependency $(tput bold)$arg$(tput sgr0)$(tput setaf 3) not found!$(tput sgr0)"
-            hasErrors="yes"
+        if test -z "$(command -v "$arg")"; then
+            if _is-tty; then
+                >&2 echo "$(tput setaf 3)WARN: dependency $(tput bold)$arg$(tput sgr0)$(tput setaf 3) not found!$(tput sgr0)"
+            else
+                echo "$arg"
+            fi
+            exit_code="201"
         fi
     done
-    exit $(test -z $hasErrors)
-)
+    exit $exit_code
+}
 
 # run only if this file is not sourced
-[[ "${BASH_SOURCE[0]}" == "${0}" ]] && depends-on $@
+[[ "${BASH_SOURCE[0]}" == "${0}" ]] && depends-on "$@"
