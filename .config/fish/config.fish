@@ -105,15 +105,27 @@ end
 # SOURCES & CONFIG
 # add executable script (lambdas) dir
 fish_add_path -g ~/dotfiles/scripts/functionz/
-# add login shell requirements if they're part of the regular install,
-#  aka found at the $PATH above
-if type -q require-login-shell-packages
-    require-login-shell-packages
-end
 # add virtual pip functions
 require-pip
-# supress greeting
+# source cargo environment if it exists
+test -f "$HOME/.cargo/env.fish" && source "$HOME/.cargo/env.fish"
+
+function _install-optional-shell-requirements --description 'install optional shell requirements'
+    # the current .*rc config will work without them,
+    #  but these are significant QOL upgrades over the regular terminal experience
+    if ! type -q pkcon
+        echo "Cannot invoke 'pkcon' (part of PackageKit), packages CANNOT be installed! " 1>&2
+        return 1
+    end
+    # zoxide is used as a reference point for echoing out a helpful tip on startup, see below
+    pkcon install --allow-reinstall zoxide lsd plocate helix wl-clipboard
+end
+
+# suppress regular greeting
 set -g fish_greeting ""
+
+type -q _install-required-functionz-requirements && set functionz_postfix "\n Invoke '_install-required-functionz-requirements' to install dotfile's functionz dependencies."
+type -q zoxide || echo -e "Welcome to fi/sh! Invoke '_install-optional-shell-requirements' to install QoL enhancements.$functionz_postfix"
 
 #############################################################
 # ABBREVIATIONS & ALIAS

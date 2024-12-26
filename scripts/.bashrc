@@ -176,18 +176,26 @@ vpip () {
 
 # add shell functions (executables) to $PATH
 PATH=$PATH:$DOTFILES_DIR/scripts/functionz
-# add login shell requirements if they're part of the regular install,
-#  aka found at the $PATH above
-if [[ -n "$(command -v require-login-shell-packages)" ]]; then
-    require-login-shell-packages
-fi
 # source global virtual python install(s)
 require-pip
 # source cargo environment if it exists
 [[ -f "$HOME/.cargo/env" ]] && source "$HOME/.cargo/env"
 
+_install-optional-shell-requirements () {
+    # install optional shell requirements; the current .*rc config will work without them,
+    #  but these are significant QOL upgrades over the regular terminal experience
+    if [[ -z "$(command -v pkcon)" ]]; then
+        echo "Cannot invoke 'pkcon' (part of PackageKit), packages CANNOT be installed! " 1>&2
+        return 1
+    fi
+    # zoxide is used as a reference point for echoing out a helpful tip on startup, see below
+    pkcon install --allow-reinstall zoxide lsd plocate helix wl-clipboard
+}
+
 # use custom prompt
 PROMPT_COMMAND='mini-prompt; history -a'
+[[ -n "$(command -v _install-required-functionz-requirements)" ]] && functionz_postfix="\n Invoke '_install-required-functionz-requirements' to install dotfile's functionz dependencies."
+[[ -n "$(command -v zoxide)" ]] || echo -e "Welcome to ba/sh! Invoke '_install-optional-shell-requirements' to install QoL enhancements.$functionz_postfix"
 
 #############################################################
 # ALIAS

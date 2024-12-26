@@ -2,14 +2,22 @@
 
 # HELP one-liner to check if dependencies exist
 
+readonly SHELL_REQUIREMENTS="$HOME/dotfiles/.shell-requirements"
+
 depends-on () {
     exit_code="0"
     for arg in "$@"; do
         if test -z "$(command -v "$arg")"; then
+            # The FIRST column are fedora packages.
+            depends_on_package="$(grep -i "$arg" < "$SHELL_REQUIREMENTS" | head -1 |  awk -F ':' '{ printf $1 }')"
+            
+            depends_on_postfix=' Could NOT resolve any relevant package! Is this a local dependency?'
+            [[ -n "$depends_on_package" ]] && depends_on_postfix=" $(tput setaf 3)Depends on package named $(tput bold)$(tput setaf 4)$depends_on_package$(tput sgr0)"
+            
             if _is-tty; then
-                >&2 echo "$(tput setaf 3)WARN: dependency $(tput bold)$arg$(tput sgr0)$(tput setaf 3) not found!$(tput sgr0)"
+                >&2 echo "$(tput setaf 3)WARN: dependency $(tput bold)$arg$(tput sgr0)$(tput setaf 3) not found!$(tput sgr0).$depends_on_postfix"
             else
-                echo "$arg"
+                echo "${depends_on_package:-$arg}"
             fi
             exit_code="201"
         fi

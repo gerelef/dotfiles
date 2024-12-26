@@ -4,7 +4,7 @@ There is no particular philosophy to these configuration files, it's all persona
 The common `$XDG_CONFIG_HOME` directory setup is semi-emulated, with exceptions for convenience.
 
 ## details
-- `.shell-requirements` is a requirements-style file for dependencies that are required for these dotfiles to work correctly. The appropriate handling should be done by `require-login-shell-packages` when a shell first runs.
+- `.shell-requirements` is a requirements-style file for dependencies that are required for these dotfiles to work correctly.
 - `.stowconfig` is a configuration file for the `pstow.py` utility under `./scripts/utils/`. The file format should be self-explanatory, however documentation should exist somewhere.
 - `scripts/` contain scripts as well as some configuration files. The filenames should be a hint to their usage.
 - `.config` contains generic configuration files. The most common `$XDG_CONFIG_HOME`directory setup is emulated, however with exceptions for convenience.

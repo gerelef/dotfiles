@@ -807,13 +807,6 @@ ask user question 'Do you want to install tailscaled?' && INSTALL_TAILSCALED="ye
 _echo-debug "Will install tailscaled? $INSTALL_TAILSCALED"
 ask user question 'Do you want to install development tools?' && INSTALL_DEV_TOOLS="yes"
 _echo-debug "Will install dev tools? $INSTALL_DEV_TOOLS"
-if [[ -n "$INSTALL_DEV_TOOLS" ]]; then
-    ask user question 'Do you want to install helix?' && INSTALL_HELIX_EDITOR="yes"
-    _echo-debug "Will install helix? $INSTALL_HELIX_EDITOR"
-
-    ask user question 'Do you want to install neovim?' && INSTALL_NEOVIM_EDITOR="yes"
-    _echo-debug "Will install neovim? $INSTALL_NEOVIM_EDITOR"
-fi
 ask user question 'Do you want to install ollama?' && INSTALL_OLLAMA="yes"
 _echo-debug "Will install ollama? $INSTALL_OLLAMA"
 ask user question 'Do you want to install rpm tools?' && INSTALL_RPM_TOOLS="yes"
@@ -874,10 +867,6 @@ if [[ -n "$INSTALL_DEV_TOOLS" ]]; then
     sudo dnf install -y --best --allowerasing --skip-unavailable $INSTALLABLE_DEV_PKGS
     sudo dnf install -y --best --allowerasing nmap net-tools
     flatpak install --system --noninteractive -y "net.werwolv.ImHex"
-
-    # ruby-devel is required in order to compile some gems
-    [[ -n "$INSTALL_HELIX_EDITOR" ]] && sudo dnf install -y --best --allowerasing helix wl-clipboard
-    [[ -n "$INSTALL_NEOVIM_EDITOR" ]] && sudo dnf install -y --best --allowerasing neovim
 
     _echo-success "Done."
 fi

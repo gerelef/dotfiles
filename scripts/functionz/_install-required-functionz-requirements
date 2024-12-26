@@ -1,24 +1,10 @@
 #!/usr/bin/env bash
 
-# HELP install required login shell packages; also ask whether to install optional packages (will be reprompted on next login)
+# HELP install required login shell packages
 
 readonly SHELL_REQUIREMENTS="$HOME/dotfiles/.shell-requirements"
-readonly HAS_RUN_DIR="/opt"
-readonly HAS_RUN_FILE="$HAS_RUN_DIR/.has-run"
-
-has-run () (
-    [[ -f "$HAS_RUN_FILE" ]] && return 0
-    return 1
-)
-
-mk-run-file () (
-    [[ ! -d "$HAS_RUN_DIR" ]] && sudo mkdir -p "$HAS_RUN_DIR"
-    sudo touch $HAS_RUN_FILE
-)
 
 require-login-shell-packages () (
-    has-run && return
-
     MINIMUM_BASH_MAJOR_VERSION='5'
     if [[ "${BASH_VERSINFO[0]}" -lt $MINIMUM_BASH_MAJOR_VERSION ]]; then
         echo "Couldn't read file due to current BASH version being under $MINIMUM_BASH_MAJOR_VERSION"
@@ -28,7 +14,7 @@ require-login-shell-packages () (
     fi
 
     # `mapfile` will not work with bash under 5.
-    mapfile -t required_dependencies < "$SHELL_REQUIREMENTS"
+    mapfile -t required_dependencies < <(awk -F ":" '/^[^#]/ { print $1 }' < "$SHELL_REQUIREMENTS" | sort -n | uniq)
     if [[ -z "${required_dependencies[*]}" ]]; then
         echo "Couldn't load required dependencies from $SHELL_REQUIREMENTS ?!"
         echo "Will not install dependencies."
@@ -40,16 +26,11 @@ require-login-shell-packages () (
         return
     fi
     
-    # the loops that break in 1 line are used for
-    while :; do
-        echo -e "Installing essential shell packages: \033[38;5;39m"
-        echo -n "${required_dependencies[*]}"
-        echo -e "\033[0m"
+    echo -e "Installing essential shell packages: \033[38;5;39m"
+    echo -n "${required_dependencies[*]}"
+    echo -e "\033[0m"
 
-        pkcon install --noninteractive "${required_dependencies[@]}" || return
-        mk-run-file
-        clear
-    done
+    pkcon install --allow-reinstall "${required_dependencies[@]}"
 )
 
 # run only if this file is not sourced
