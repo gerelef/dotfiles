@@ -230,7 +230,12 @@ if [[ -n "$(command -v vim)" ]]; then
     export EDITOR="vim"
 fi
 
-# use 
+if [[ -n "$(command -v nvim)" ]]; then
+    alias vim="nvim"
+    export VISUAL="nvim"
+    export EDITOR="nvim"
+fi
+
 if [[ -n "$(command -v hx)" ]]; then
     alias helix="hx"
     export VISUAL="hx"

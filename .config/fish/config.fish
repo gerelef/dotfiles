@@ -160,6 +160,12 @@ if type -q vim
     set -gx EDITOR vim
 end
 
+if type -q nvim
+    abbr --position command --add vim nvim
+    set -gx VISUAL nvim
+    set -gx EDITOR nvim
+end
+
 if type -q hx
     abbr --position command --add helix hx
     set -gx VISUAL hx

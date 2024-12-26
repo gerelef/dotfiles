@@ -1,8 +1,0 @@
-blocks:
-  - permission
-  - user
-  - group
-  - date
-  - name
-
-date: '+%d/%m %H:%M:%S'
