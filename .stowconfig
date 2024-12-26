@@ -24,11 +24,6 @@ scripts/
     !!scripts/.gitconfig-gitdelta
 [end]
 
-.config/lsd/
-[if-pkg:::lsd]
-    !!.config/lsd/
-[end]
-
 .config/helix/
 [if-pkg:::hx]
     !!.config/helix/
@@ -46,17 +41,9 @@ scripts/
     !!.config/alacritty/
 [end]
 
-.config/zed/
-[if-pkg:::zed]
-    !!.config/zed/*
-[end]
-
 .config/config
-.config/pipewire/
 // link only in default profile
 [if-profile:::default]
-    !!.config/pipewire/
-
     // ssh config
     !!.config/config
 [end]
@@ -77,5 +64,4 @@ scripts/.gitconfig-gitdelta ::: .
 .config/jetbrains-keymap.xml ::: .config/JetBrains/*/keymaps/
 
 // create subdirectories on the fly, don't nest unecessarily
-.config/sublime-text/* ::: .config/sublime-text/Packages/User/
 .config/fish/fish_prompt.fish ::: .config/fish/functions/
