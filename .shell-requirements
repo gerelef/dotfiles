@@ -1,3 +1,7 @@
+# this is a requirements.txt-style file.
+# relevant packages that match a dependant binary are denoted by the ':'
+# comments may be added by starting a line with a hash/pound sign '#'.
+# these comments must be ignored when parsing for relevant packages.
 # ruby-devel is required in order to compile some gems
 android-tools:adb
 coreutils:seq
@@ -8,7 +12,7 @@ ffmpeg:ffmpeg
 figlet:figlet
 gawk:awk
 grep:grep
-identify:ImageMagick
+ImageMagick:identify
 iproute:ip
 jq:jq
 nmap:nmap
