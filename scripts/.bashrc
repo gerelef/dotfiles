@@ -250,7 +250,7 @@ if [[ -n "$(command -v zoxide)" ]]; then
 fi
 
 if [[ -n "$(command -v lsd)" ]]; then
-    alias lss="lsd --almost-all --icon never --icon-theme unicode --group-directories-first"
+    alias lss="lsd -A --icon=never --group-directories-first --blocks=permission,user,group,date,name --date '+%d/%m %H:%M:%S'"
 fi
 
 
