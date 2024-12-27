@@ -34,11 +34,9 @@ scripts/
     !!.config/fish/
 [end]
 
-// if fish is not installed, DO NOT link fish-based alacritty configuration
-//  if fish doesn't exist, it'll cause alacritty to never boot
-.config/alacritty/
-[if-pkg:::fish alacritty]
-    !!.config/alacritty/
+.config/ghostty
+[if-pkg:::ghostty]
+    !!.config/ghostty
 [end]
 
 .config/config

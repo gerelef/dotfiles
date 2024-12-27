@@ -1,0 +1,5 @@
+background = 282828
+foreground = eeeeee
+background-opacity = 0.85
+
+cursor-style = bar
