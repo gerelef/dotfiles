@@ -1,18 +1,36 @@
 # this configuration requires these following dependencies:
 #  python formatter ::: black
-#  bash   formatter ::: shellcheck
+#  bash   formatter ::: shfmt
+#  java   formatter ::: prettier + prettier-plugin-java -- via npm
+#  toml   formatter ::: taplo -- is an lsp as well
 
 [[language]]
 name = "python"
 scope = "source.python"
-file-types = ["py"]
-formatter = { command = "black", args = ["--stdin", "-q"] }
-auto-format = true
+formatter = { command = "black", args = ["-q", "--line-length=80", "-"] }
+shebangs = ["python", "python2.7", "python3"]
+rulers = [80]
 
 [[language]]
 name = "bash"
 scope = "source.shell"
-file-types = ["sh", "bash"]
-formatter = { command = "shellcheck", args = ["--format=checkstyle", "-f"] }
-auto-format = true
+formatter = { command = "shfmt", args = ["-i", "4", "-kp", "-"] }
+shebangs = ["sh", "bash"]
 rulers = [120]
+
+[[language]]
+name = "java"
+scope = "source.java"
+shebangs = ["java"]
+formatter = { command = "npx", args = [
+  "prettier",
+  "--plugin=prettier-plugin-java",
+  "--parser=java",
+] }
+rulers = [80]
+
+[[language]]
+name = "toml"
+scope = "source.toml"
+formatter = { command = "taplo", args = ["format", "-"] }
+rulers = []
