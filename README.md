@@ -13,8 +13,7 @@ The common `$XDG_CONFIG_HOME` directory setup is semi-emulated, with exceptions 
 After running a setup script in `dotfiles/scripts/setup/...` I just need to install my dotfiles & my themes.
 - To deploy my dotfiles I use [pstow](https://github.com/gerelef/pstow); check the command below.
 - To install my compatibility layers for gaming, I use `update-compat-layers`, which is a utility located under `scripts/utils/`
-- To set CTRL+Tab / CTRL+Shift+Tab as a shortcut in chrome, I use the following snippet
-from [superuser](https://superuser.com/questions/104917/chrome-tab-ordering/1326712#1326712)
+- To set CTRL+Tab / CTRL+Shift+Tab as a shortcut in chrome, I use the following snippet from [superuser](https://superuser.com/questions/104917/chrome-tab-ordering/1326712#1326712)
 ```js
 document.body.onclick = function(e) {
   gCT = !window.gCT;
@@ -43,13 +42,11 @@ cd ~ && git clone https://github.com/gerelef/dotfiles && ~/dotfiles/scripts/func
 ```
 
 ### term setup
+```
 shell ::: `fish`
-
 emulator ::: `ghostty`
-
 editor / visual ::: `hx` (w/ `wl-copy`)
-
-tree / explorer ::: `hxs` (via `ripgrep` && `fzf`)
+```
 
 ## history
 Large revisions were performed in the following commits, ordered by recency:
