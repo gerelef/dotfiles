@@ -93,8 +93,8 @@ enable = false
 "S-tab" = "unindent"
 
 # moving around buffers
-"C-pageup" = "goto_previous_buffer"
-"C-pagedown" = "goto_next_buffer"
+"C-home" = "goto_previous_buffer"
+"C-end" = "goto_next_buffer"
 "C-t" = ":new"
 "C-w" = ":buffer-close"
 "C-o" = "file_picker"
