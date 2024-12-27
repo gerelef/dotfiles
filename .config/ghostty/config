@@ -3,3 +3,5 @@ foreground = eeeeee
 background-opacity = 0.85
 
 cursor-style = bar
+
+keybind = unconsumed:ctrl+enter=ignore
