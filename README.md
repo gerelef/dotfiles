@@ -45,7 +45,7 @@ cd ~ && git clone https://github.com/gerelef/dotfiles && ~/dotfiles/scripts/func
 ### term setup
 shell ::: `fish`
 
-emulator ::: `alacritty`
+emulator ::: `ghostty`
 
 editor / visual ::: `hx` (w/ `wl-copy`)
 
