@@ -3,5 +3,37 @@ foreground = eeeeee
 background-opacity = 0.85
 
 cursor-style = bar
+linux-cgroup = always
 
-keybind = unconsumed:ctrl+enter=ignore
+# save current scrollback
+keybind = ctrl+shift+s=write_scrollback_file:paste
+
+# equalize splits
+keybind = ctrl+shift+.=equalize_splits
+
+# create splits
+keybind = ctrl+alt+right=new_split:right
+keybind = ctrl+alt+left=new_split:left
+keybind = ctrl+alt+down=new_split:down
+keybind = ctrl+alt+up=new_split:up
+
+# goto splits
+keybind = ctrl+right=goto_split:right
+keybind = ctrl+left=goto_split:left
+keybind = ctrl+down=goto_split:bottom
+keybind = ctrl+up=goto_split:top
+
+# (un)binds
+keybind = unconsumed:ctrl+,=ignore
+keybind = unconsumed:ctrl+shift+o=ignore
+
+# kill ALL tab management keybinds
+#  we will rely on splits from now on, yay for multiplexers!
+keybind = unconsumed:ctrl+shift+w=ignore
+keybind = unconsumed:ctrl+tab=ignore
+keybind = unconsumed:ctrl+shift+tab=ignore
+keybind = unconsumed:ctrl+shift+t=ignore
+keybind = unconsumed:ctrl+shift+page_up=ignore
+keybind = unconsumed:ctrl+shift+page_down=ignore
+keybind = unconsumed:ctrl+page_up=ignore
+keybind = unconsumed:ctrl+page_down=ignore

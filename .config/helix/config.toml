@@ -102,21 +102,22 @@ enable = false
 "C-y" = "redo"
 "C-z" = "undo"
 "C-l" = ":fmt"
+"C-s" = ":w"
 
 # indent / unindent
 "tab" = "indent"
 "S-tab" = "unindent"
 
 # moving around buffers
-"C-home" = "goto_previous_buffer"
-"C-end" = "goto_next_buffer"
+"C-pageup" = "goto_previous_buffer"
+"C-pagedown" = "goto_next_buffer"
 "C-t" = ":new"
 "C-w" = ":buffer-close"
 "C-o" = "file_picker"
 "C-O" = "buffer_picker"
 
 # unbind the following commands
-## these are annoying to mistype
+#  these are annoying to mistype
 "a" = "no_op"
 "o" = "no_op"
 
