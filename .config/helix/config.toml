@@ -64,8 +64,8 @@ enable = false
 "C-ret" = ["move_line_up", "goto_line_end_newline"]
 "ret" = ["move_line_down", "goto_first_nonwhitespace"]
 "home" = "goto_first_nonwhitespace"  # this will help with code stuff.
-"pageup" = ["page_cursor_up", "align_view_top"]  # duplicate in INS
-"pagedown" = ["page_cursor_down", "align_view_bottom"]  # duplicate in INS
+"pageup" = ["page_cursor_up", "align_view_top"]  # duplicate in NOR, INS, SEL
+"pagedown" = ["page_cursor_down", "align_view_bottom"]  # duplicate in NOR, INS, SEL
 "C-L" = ":toggle-option soft-wrap.enable"
 
 # selection options (or, lack thereof)
@@ -75,6 +75,8 @@ enable = false
 "C-/" = ["toggle_comments", "move_line_down", "goto_line_start"]
 "w" = ["move_next_word_start", "collapse_selection"]
 "W" = "move_next_word_start"
+"e" = ["move_next_word_end", "collapse_selection"]
+"E" = "move_next_word_end"
 "b" = ["move_prev_word_start", "collapse_selection"]
 "B" = "move_prev_word_start"
 "d" = "delete_selection_noyank"
@@ -133,8 +135,11 @@ enable = false
 "del" = "delete_char_forward"
 "C-del" = "delete_word_forward"
 "home" = "goto_first_nonwhitespace"  # this will help with code stuff.
-"pageup" = ["page_cursor_up", "align_view_top"]  # duplicate in INS
-"pagedown" = ["page_cursor_down", "align_view_bottom"]  # duplicate in INS
+"pageup" = ["page_cursor_up", "align_view_top"]  # duplicate in NOR, INS, SEL
+"pagedown" = ["page_cursor_down", "align_view_bottom"]  # duplicate in NOR, INS, SEL
 
 [keys.select]
 "y" = "yank_to_clipboard"
+"home" = "goto_first_nonwhitespace"  # this will help with code stuff.
+"pageup" = ["page_cursor_up", "align_view_top"]  # duplicate in NOR, INS, SEL
+"pagedown" = ["page_cursor_down", "align_view_bottom"]  # duplicate in NOR, INS, SEL
