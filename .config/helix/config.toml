@@ -72,7 +72,6 @@ enable = false
 "esc" = "collapse_selection"
 "x" = "select_line_below"
 "X" = "select_line_above"
-"C-/" = ["toggle_comments", "move_line_down", "goto_line_start"]
 "w" = ["move_next_word_start", "collapse_selection"]
 "W" = "move_next_word_start"
 "e" = ["move_next_word_end", "collapse_selection"]
@@ -83,10 +82,14 @@ enable = false
 "D" = "delete_char_backward"
 "c" = "copy_selection_on_next_line"  # dupe cursor down (formerly 'C')
 "C" = "copy_selection_on_prev_line"  # dupe cursor up (formerly 'Alt-C')
+"C-C" = ["toggle_comments", "move_line_down", "goto_line_start"]
+"C-/" = ["toggle_comments", "move_line_down", "goto_line_start"]
+"/" = "search"
+"?" = "global_search"
 
 # yank actions
 "y" = "yank_to_clipboard"
-"C-x" = ["yank_to_clipboard", "delete_selection"] # 'cut'
+"C-x" = ["yank_to_clipboard", "delete_selection"]  # 'cut'
 # dupe line after
 "C-d" = ["extend_to_line_bounds", "yank_to_clipboard", ":clipboard-paste-after"]
 # dupe line before
@@ -122,11 +125,11 @@ enable = false
 #  these are annoying to mistype
 "a" = "no_op"
 "o" = "no_op"
-
-## these could be destructive if hit by accident
 "Y" = "no_op"
 "C-Y" = "no_op"
 "C-Z" = "no_op"
+"f" = "no_op"
+"C-f" = "no_op"
 
 [keys.insert]
 "C-space" = "completion"
