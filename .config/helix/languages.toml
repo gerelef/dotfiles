@@ -1,9 +1,9 @@
 # this configuration requires these following dependencies:
 #  python formatter ::: black
-#  ruby   formatter ::: rubocop
+#  ruby   formatter ::: rufo
 #  bash   formatter ::: shfmt
-#  java   formatter ::: prettier + prettier-plugin-java -- via npm
-#  toml   formatter ::: taplo -- is an lsp as well
+#  java   formatter ::: prettier + prettier-plugin-java
+#  toml   formatter ::: taplo
 
 [[language]]
 name = "python"
@@ -15,7 +15,7 @@ rulers = [80]
 [[language]]
 name = "ruby"
 scope = "source.ruby"
-formatter = { command = "rubocop", args = ["--fix-layout", "--stdin", "-"] }
+formatter = { command = "rufo" }
 rulers = [80]
 
 [[language]]
