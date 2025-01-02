@@ -190,7 +190,7 @@ if type -q zoxide
 end
 
 if type -q lsd
-    abbr --position command --add lss "lsd -A --icon=never --group-directories-first --blocks=permission,user,group,date,name --date '+%d/%m %H:%M:%S'"
+    abbr --position command --add lss "lsd -A --group-dirs=first --blocks=permission,user,group,date,name --date '+%d/%m %H:%M:%S'"
 end
 
 if locate --version 2>/dev/null 1>&2 && type -q fzf
