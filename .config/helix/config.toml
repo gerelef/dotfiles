@@ -12,6 +12,9 @@ true-color = true
 auto-pairs = false      # do not automatically pair 
 auto-completion = false # do not auto-complete; use 'completions' keymap (C-space) by default
 
+# TODO add inline diagnostics when latest comes out 
+#  https://github.com/helix-editor/helix/blob/b53dafe326d51b7f64a1c52379e3d4150cd2991e/book/src/editor.md#editorinline-diagnostics-section
+
 [editor.cursor-shape]
 insert = "bar"
 normal = "block"
@@ -27,6 +30,8 @@ render = true
 character = "▏"
 
 [editor.whitespace.render]
+# TODO add trailing whitespaces https://github.com/helix-editor/helix/issues/2719
+newline = "all"
 nbsp = "all"
 nnbsp = "all"
 tab = "all"
@@ -120,6 +125,9 @@ enable = false
 "C-w" = ":buffer-close"
 "C-o" = "file_picker"
 "C-O" = "buffer_picker"
+
+# bind a cfg reload, cause why not
+"C-," = ":config-reload"
 
 # unbind the following commands
 #  these are annoying to mistype
