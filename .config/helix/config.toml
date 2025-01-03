@@ -63,18 +63,31 @@ wrap-around = true
 enable = false
 
 [keys.normal]
-# switch to insert / append mode
-"i" = "insert_mode"  # insert before selection
-"I" = "append_mode"  # insert after selection
+# switch to insert mode
+"i" = "insert_mode"                      # insert before selection
+"I" = ["goto_line_start", "insert_mode"] # insert at start of line
+"C-i" = ["goto_line_end", "insert_mode"] # insert at end of line
+"C-I" = ["goto_line_end", "insert_mode"] # insert at end of line
+
+# switch to append mode
+"a" = "append_mode"                      # insert after the selection
+"A" = ["goto_line_start", "append_mode"] # append at start of line
+"C-a" = ["goto_line_end", "append_mode"] # append at end of line
+"C-A" = ["goto_line_end", "append_mode"] # append at end of line
 
 # moving the view around
 #  AUTHOR'S NOTE: this is a 'C-ret' and not "S-ret" because S-ret does not register
 #   as a key
 "C-ret" = ["move_line_up", "goto_line_end_newline"]
 "ret" = ["move_line_down", "goto_first_nonwhitespace"]
-"home" = "goto_first_nonwhitespace"  # this will help with code stuff.
-"pageup" = ["page_cursor_up", "align_view_top"]  # duplicate in NOR, INS, SEL
-"pagedown" = ["page_cursor_down", "align_view_bottom"]  # duplicate in NOR, INS, SEL
+"h" = "move_char_left"
+"H" = "goto_first_nonwhitespace"
+"j" = "move_visual_line_up"
+"J" = ["page_cursor_up", "align_view_top"]
+"k" = "move_visual_line_down"
+"K" = ["page_cursor_down", "align_view_bottom"]
+"l" = "move_char_right"
+"L" = "goto_line_end"
 "C-L" = ":toggle-option soft-wrap.enable"
 
 # selection options (or, lack thereof)
@@ -89,8 +102,8 @@ enable = false
 "B" = "move_prev_word_start"
 "d" = "delete_selection_noyank"
 "D" = "delete_char_backward"
-"c" = "copy_selection_on_next_line"  # dupe cursor down (formerly 'C')
-"C" = "copy_selection_on_prev_line"  # dupe cursor up (formerly 'Alt-C')
+"c" = "copy_selection_on_next_line"                              # dupe cursor down (formerly 'C')
+"C" = "copy_selection_on_prev_line"                              # dupe cursor up (formerly 'Alt-C')
 "C-C" = ["toggle_comments", "move_line_down", "goto_line_start"]
 "C-/" = ["toggle_comments", "move_line_down", "goto_line_start"]
 "/" = "search"
@@ -98,7 +111,7 @@ enable = false
 
 # yank actions
 "y" = "yank_to_clipboard"
-"C-x" = ["yank_to_clipboard", "delete_selection"]  # 'cut'
+"C-x" = ["yank_to_clipboard", "delete_selection"] # 'cut'
 # dupe line after
 "C-d" = ["extend_to_line_bounds", "yank_to_clipboard", ":clipboard-paste-after"]
 # dupe line before
@@ -116,7 +129,6 @@ enable = false
 "C-y" = "redo"
 "C-z" = "undo"
 "C-l" = ":fmt"
-"C-s" = ":w"
 
 # indent / unindent
 "tab" = "indent"
@@ -134,8 +146,14 @@ enable = false
 "C-," = ":config-reload"
 
 # unbind the following commands
-#  these are annoying to mistype
-"a" = "no_op"
+"home" = "no_op"
+"end" = "no_op"
+"pageup" = "no_op"
+"pagedown" = "no_op"
+"up" = "no_op"
+"down" = "no_op"
+"left" = "no_op"
+"right" = "no_op"
 "o" = "no_op"
 "Y" = "no_op"
 "C-Y" = "no_op"
@@ -149,12 +167,30 @@ enable = false
 "C-backspace" = "delete_word_backward"
 "del" = "delete_char_forward"
 "C-del" = "delete_word_forward"
-"home" = "goto_first_nonwhitespace"  # this will help with code stuff.
-"pageup" = ["page_cursor_up", "align_view_top"]  # duplicate in NOR, INS, SEL
-"pagedown" = ["page_cursor_down", "align_view_bottom"]  # duplicate in NOR, INS, SEL
+"home" = "no_op"
+"end" = "no_op"
+"pageup" = "no_op"
+"pagedown" = "no_op"
+"up" = "no_op"
+"down" = "no_op"
+"left" = "no_op"
+"right" = "no_op"
 
 [keys.select]
 "y" = "yank_to_clipboard"
-"home" = "goto_first_nonwhitespace"  # this will help with code stuff.
-"pageup" = ["page_cursor_up", "align_view_top"]  # duplicate in NOR, INS, SEL
-"pagedown" = ["page_cursor_down", "align_view_bottom"]  # duplicate in NOR, INS, SEL
+"h" = "extend_char_left"
+"H" = "extend_to_first_nonwhitespace"
+"j" = "extend_visual_line_up"
+"J" = ["page_cursor_up", "align_view_top"]
+"k" = "extend_visual_line_down"
+"K" = ["page_cursor_down", "align_view_bottom"]
+"l" = "extend_char_right"
+"L" = "extend_to_line_end"
+"home" = "no_op"
+"end" = "no_op"
+"pageup" = "no_op"
+"pagedown" = "no_op"
+"up" = "no_op"
+"down" = "no_op"
+"left" = "no_op"
+"right" = "no_op"
