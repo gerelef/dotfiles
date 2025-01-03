@@ -10,6 +10,12 @@
 #   sudo machinectl shell jupyter@ /bin/bash 'jbang' 'install-kernel@jupyter-java' 'kotlin'
 #   ```
 #
+# - ruby
+#   ```
+#   dnf install ruby ruby-devel rubygem-rake
+#   sudo gem install iruby
+#   ```
+#
 # - julia:
 #   ```
 #   dnf install -y julia  # install lang
