@@ -63,6 +63,10 @@ wrap-around = true
 enable = false
 
 [keys.normal]
+# switch to insert / append mode
+"i" = "insert_mode"  # insert before selection
+"I" = "append_mode"  # insert after selection
+
 # moving the view around
 #  AUTHOR'S NOTE: this is a 'C-ret' and not "S-ret" because S-ret does not register
 #   as a key
