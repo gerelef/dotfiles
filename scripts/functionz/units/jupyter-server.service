@@ -1,6 +1,7 @@
 [Unit]
 Description=The backend — i.e. core services, APIs, and REST endpoints — to Jupyter web applications.
 After=network.target
+RequiresMountsFor=~
 
 [Service]
 Type=simple
@@ -24,7 +25,6 @@ Group=jupyter
 #  apparently, a workaround for the behaviour mentioned above,
 #  is to set the 'WorkingDirectory' parameter to '~', and use relative paths
 WorkingDirectory=~
-RequiresMountsFor=~
 ExecStart=jupyter-server --ServerApp.root_dir=.
 Restart=always
 RestartSec=10

@@ -1,0 +1,27 @@
+[Unit]
+Description=The Cyber Swiss Army Knife - a web app for encryption, encoding, compression and data analysis
+After=network.target
+RequiresMountsFor=~
+
+[Service]
+Type=simple
+StandardOutput=journal
+RemainAfterExit=true
+# this service file requires a dedicated system user as `cyberchef`, with a home directory
+#  `sudo useradd --add-subids-for-system -m -r -d /var/lib/cyberchef cyberchef`
+# this will create a `cyberchef` user with home directory at `/var/lib`
+# and it is the recommended behaviour for systemd service users
+User=cyberchef
+Group=cyberchef
+WorkingDirectory=~
+# https://docs.redhat.com/en/documentation/red_hat_enterprise_linux_atomic_host/7/html/managing_containers/running_containers_as_systemd_services_with_podman#starting_containers_with_systemd
+#  1. Open Selinux permission. If SELinux is enabled on your system, you must turn on the container_manage_cgroup boolean to run containers with systemd as shown here (see the Containers running systemd solution for details):
+#      `setsebool -P container_manage_cgroup 1`
+#  2. `podman run --name cyberchef -it -p 8889:80 ghcr.io/gchq/cyberchef:latest`
+ExecStart=podman start -a cyberchef
+ExecStop=podman stop -t 2 cyberchef
+Environment="XDG_RUNTIME_DIR="  # leave this empty so it falls back to cgroups
+
+[Install]
+WantedBy=multi-user.target
+
