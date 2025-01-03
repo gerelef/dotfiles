@@ -1,3 +1,23 @@
+# kernels:
+# drop to a login shell `sudo machinectl shell jupyter@ /bin/bash`
+#
+# - java / kotlin: (requires jdk >=23)
+#   ```
+#   dnf copr enable @jbangdev/jbang  # install jbang, required
+#   dnf install -y jbang
+#   sudo machinectl shell jupyter@ /bin/bash 'jbang' 'install-kernel@jupyter-java' 'ijava'
+#   sudo machinectl shell jupyter@ /bin/bash 'jbang' 'install-kernel@jupyter-java' 'jjava'
+#   sudo machinectl shell jupyter@ /bin/bash 'jbang' 'install-kernel@jupyter-java' 'kotlin'
+#   ```
+#
+# - julia:
+#   ```
+#   dnf install -y julia  # install lang
+#   julia  # drop down to REPL
+#   >>> using Pkg
+#   >>> Pkg.add("IJulia")
+#   ```
+
 [Unit]
 Description=The backend — i.e. core services, APIs, and REST endpoints — to Jupyter web applications.
 After=network.target
