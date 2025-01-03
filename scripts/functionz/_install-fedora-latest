@@ -755,7 +755,7 @@ _echo-debug "Installed terminal of choice ($TERMINAL_OF_CHOICE) for GUI-land."
 
 if [[ ! -f "$HAS_CHANGED_HOSTNAME_FILE" ]]; then
     if ask user question "Do you want to change the current hostname (current is: $(hostname))?"; then
-        sudo hostnamectl hostname "$(ask system iput 'Please provide a suitable hostname')"
+        sudo hostnamectl hostname "$(ask system input 'Please provide a suitable hostname')"
         sudo touch "$HAS_CHANGED_HOSTNAME_FILE"
         _echo-debug "Updated hostname."
     fi
