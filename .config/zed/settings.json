@@ -1,0 +1,156 @@
+// https://zed.dev/docs/configuring-zed
+//
+// To see all of Zed's default settings without changing your
+// custom settings, run the `open default settings` command
+// from the command palette or from `Zed` application menu.
+{
+    // ---------------- TELEMETRY ----------------
+    "auto_update": false,
+    "features": {
+        "inline_completion_provider": "none"
+    },
+    "telemetry": {
+        "diagnostics": false,
+        "metrics": false
+    },
+    // ---------------- VISUAL ----------------
+    "ui_font_family": "Noto Sans Mono",
+    "buffer_font_family": "Noto Sans Mono",
+    "ui_font_size": 16,
+    "buffer_font_size": 16,
+    "theme": {
+        "mode": "system",
+        "light": "Atelier Cave Light",
+        "dark": "Atelier Cave Dark"
+    },
+    "project_panel": {
+        "button": true,
+        "dock": "left",
+        "git_status": true
+    },
+    "scrollbar": {
+        "show": "system",
+        "cursors": true,
+        "git_diff": true,
+        "search_results": true,
+        "selected_symbol": true,
+        "diagnostics": true
+    },
+    "tab_bar": {
+        "show": true,
+        "show_nav_history_buttons": false
+    },
+    "tabs": {
+        "close_position": "right",
+        "file_icons": false,
+        "git_status": true
+    },
+    "toolbar": {
+        "breadcrumbs": true,
+        "quick_actions": true
+    },
+    "inlay_hints": {
+        "enabled": true,
+        "show_type_hints": true,
+        "show_parameter_hints": true,
+        "show_other_hints": true,
+        "edit_debounce_ms": 700,
+        "scroll_debounce_ms": 50
+    },
+    // ---------------- BEHAVIOURAL ----------------
+    "seed_search_query_from_cursor": "selection",
+    "middle_click_paste": false,
+    "vertical_scroll_margin": 0,
+    "restore_on_startup": "last_workspace",
+    "session": {
+        "restore_unsaved_buffers": true
+    },
+    "autosave": {
+        "after_delay": {
+            "milliseconds": 15000
+        }
+    },
+    "base_keymap": "JetBrains",
+    "confirm_quit": true,
+    // ---------------- INDENTATION ----------------
+    "indent_guides": {
+        "enabled": true,
+        "line_width": 1,
+        "active_line_width": 2,
+        "coloring": "fixed",
+        "background_coloring": "disabled"
+    },
+    "preferred_line_length": 80,
+    "wrap_guides": [
+        80,
+        120
+    ],
+    "hard_tabs": false,
+    "tab_size": 4,
+    // ---------------- EDITOR SETTINGS ----------------
+    "notification_panel": {
+        "dock": "right"
+    },
+    "chat_panel": {
+        "dock": "right"
+    },
+    "collaboration_panel": {
+        "dock": "right"
+    },
+    "outline_panel": {
+        "dock": "right"
+    },
+    "assistant": {
+        "enabled": true,
+        "button": true,
+        "version": "2",
+        "dock": "right",
+        "provider": null,
+        "default_model": {
+            "provider": "ollama",
+            "model": "llama3.2:3b"
+        }
+    },
+    "language_models": {
+        "ollama": {
+            "low_speed_timeout_in_seconds": 120
+        }
+    },
+    "git_status": true,
+    "git": {
+        "git_gutter": "tracked_files",
+        "inline_blame": {
+            "enabled": true
+        }
+    },
+    "enable_language_server": true,
+    "ensure_final_newline_on_save": true,
+    "format_on_save": "off",
+    "formatter": "language_server",
+    "use_autoclose": true,
+    "soft_wrap": "none",
+    "always_treat_brackets_as_autoclosed": true,
+    "show_completions_on_input": true,
+    "show_completion_documentation": true,
+    "show_inline_completions": true,
+    "auto_signature_help": true,
+    "inline_completions": {
+        "disabled_globs": [
+            ".env"
+        ]
+    },
+    // ---------------- TERMINAL ----------------
+    "terminal": {
+        "working_directory": "current_project_directory",
+        "copy_on_select": false,
+        "cursor_shape": "bar",
+        "font_size": 16,
+        "button": true,
+        "shell": {
+            "program": "fish"
+        },
+        "toolbar": {
+            "title": true
+        }
+    }
+}
