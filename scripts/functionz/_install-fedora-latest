@@ -728,6 +728,7 @@ fi
 if [[ -z $(dnf repolist | grep 'rpmfusion-nonfree') ]]; then
     sudo dnf install -y --best --allowerasing "https://download1.rpmfusion.org/nonfree/fedora/rpmfusion-nonfree-release-$(rpm -E %fedora).noarch.rpm" || exit
 fi
+# FIXME this is probably borked
 # terrapkg https://github.com/terrapkg/packages/tree/frawhide
 if [[ -z $(dnf repolist | grep 'terra') ]]; then
     sudo dnf install -y --best --allowerasing --repofrompath "terra,https://repos.fyralabs.com/terra$(rpm -E %fedora)" --setopt="terra.gpgkey=https://repos.fyralabs.com/terra$(rpm -E %fedora)/key.asc" terra-release || exit
