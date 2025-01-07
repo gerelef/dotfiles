@@ -72,12 +72,23 @@ function fish_right_prompt -d "Write out the right prompt"
     set TIME_CALLED (date +%s%3N | tr -d 'N')
     if set -q TRANSIENT
         echo -n ""
-        set -g LAST_COMMAND_STARTTIME $TIME_CALLED
         return
     end
 
-    if set -q LAST_COMMAND_STARTTIME
-        set -g TIME_TAKEN "$(math "$TIME_CALLED - $LAST_COMMAND_STARTTIME")ms"
+    if test $CMD_DURATION -gt 0
+        set -g msec_TAKEN $CMD_DURATION
+        set -g sec_TAKEN (math -s0 "$msec_TAKEN / 1000")
+        set -g min_TAKEN (math -s0 "$sec_TAKEN / 60")
+        if test $min_TAKEN -ge 1
+            # If the time scale is minutes we can omit the msec
+            set -g sec_TAKEN "$(math "$sec_TAKEN - $min_TAKEN * 60")s"
+            set -g TIME_TAKEN "$(echo "$min_TAKEN")m $sec_TAKEN"
+        else if test $sec_TAKEN -ge 1
+            set -g msec_TAKEN "$(math "$msec_TAKEN - $sec_TAKEN * 1000")ms"
+            set -g TIME_TAKEN "$(echo "$sec_TAKEN")s $msec_TAKEN"
+        else
+            set -g TIME_TAKEN "$(echo "$msec_TAKEN")ms"
+        end
     end
 
     echo -n -s (fish_vcs_prompt) $normal " " (set_color blue) $TIME_TAKEN
