@@ -21,7 +21,7 @@
     "theme": {
         "mode": "system",
         "light": "Atelier Cave Light",
-        "dark": "Atelier Cave Dark"
+        "dark": "Catppuccin Macchiato"
     },
     "project_panel": {
         "button": true,
@@ -61,7 +61,7 @@
     "seed_search_query_from_cursor": "selection",
     "middle_click_paste": false,
     "vertical_scroll_margin": 0,
-    "restore_on_startup": "last_workspace",
+    "restore_on_startup": "last_session",
     "session": {
         "restore_unsaved_buffers": true
     },
