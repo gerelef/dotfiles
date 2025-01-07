@@ -176,6 +176,10 @@ vpip () {
 
 # add shell functions (executables) to $PATH
 PATH=$PATH:$DOTFILES_DIR/scripts/functionz
+# add user-local binaries to $PATH. WARNING: this can cause confusion
+#  when installing software if it cannot be found; use `whereis` to clear things up.
+PATH=$PATH:$HOME/bin
+PATH=$PATH:$HOME/.local/bin
 # source global virtual python install(s)
 require-pip
 # source cargo environment if it exists

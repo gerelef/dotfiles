@@ -454,7 +454,7 @@ configure-tailscaled () (
     # TODO eventually add crowdsec here, along with a 'remediation component'
     _echo-status "Installing tailscaled, openssh-server (sshd) & fail2ban"
 
-    sudo dnf config-manager --add-repo https://pkgs.tailscale.com/stable/fedora/tailscale.repo
+    sudo dnf config-manager addrepo --from-repofile="https://pkgs.tailscale.com/stable/fedora/tailscale.repo"
     sudo dnf install -y tailscale openssh-server fail2ban
 
     sudo systemctl enable --now tailscaled
@@ -728,6 +728,7 @@ fi
 if [[ -z $(dnf repolist | grep 'rpmfusion-nonfree') ]]; then
     sudo dnf install -y --best --allowerasing "https://download1.rpmfusion.org/nonfree/fedora/rpmfusion-nonfree-release-$(rpm -E %fedora).noarch.rpm" || exit
 fi
+# FIXME this is probably borked
 # terrapkg https://github.com/terrapkg/packages/tree/frawhide
 if [[ -z $(dnf repolist | grep 'terra') ]]; then
     sudo dnf install -y --best --allowerasing --repofrompath "terra,https://repos.fyralabs.com/terra$(rpm -E %fedora)" --setopt="terra.gpgkey=https://repos.fyralabs.com/terra$(rpm -E %fedora)/key.asc" terra-release || exit

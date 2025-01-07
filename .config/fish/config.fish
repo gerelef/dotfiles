@@ -105,6 +105,8 @@ end
 # SOURCES & CONFIG
 # add executable script (lambdas) dir
 fish_add_path -g ~/dotfiles/scripts/functionz/
+fish_add_path -g ~/bin
+fish_add_path -g ~/.local/bin
 # add virtual pip functions
 require-pip
 # source cargo environment if it exists
