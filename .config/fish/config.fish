@@ -120,7 +120,7 @@ function _install-optional-shell-requirements --description 'install optional sh
         return 1
     end
     # zoxide is used as a reference point for echoing out a helpful tip on startup, see below
-    pkcon install --allow-reinstall zoxide lsd plocate helix wl-clipboard
+    pkcon install --allow-reinstall zoxide lsd plocate
 end
 
 # suppress regular greeting

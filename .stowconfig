@@ -24,11 +24,6 @@ scripts/
     !!scripts/.gitconfig-gitdelta
 [end]
 
-.config/helix/
-[if-pkg:::hx]
-    !!.config/helix/
-[end]
-
 .config/fish/
 [if-pkg:::fish]
     !!.config/fish/

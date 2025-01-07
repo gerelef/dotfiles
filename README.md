@@ -45,7 +45,7 @@ cd ~ && git clone https://github.com/gerelef/dotfiles && ~/dotfiles/scripts/func
 ```
 shell ::: `fish`
 emulator ::: `ghostty`
-editor / visual ::: `hx` (w/ `wl-copy`)
+editor / visual ::: `zed`
 ```
 
 ## history

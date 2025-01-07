@@ -193,7 +193,7 @@ _install-optional-shell-requirements () {
         return 1
     fi
     # zoxide is used as a reference point for echoing out a helpful tip on startup, see below
-    pkcon install --allow-reinstall zoxide lsd plocate helix wl-clipboard
+    pkcon install --allow-reinstall zoxide lsd plocate
 }
 
 # use custom prompt
@@ -279,7 +279,7 @@ if locate --version 2> /dev/null 1>&2 && test -n "$(command -v fzf)"; then
     __updatedb_local () {
         updatedb --require-visibility 0 -o ~/.locate.db
     }
-    
+
     alias locate="__fzflocate"
     alias updatedb="__updatedb_local"
 fi
