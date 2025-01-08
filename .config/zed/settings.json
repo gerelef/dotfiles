@@ -16,8 +16,6 @@
     // ---------------- VISUAL ----------------
     "ui_font_family": "Noto Sans Mono",
     "buffer_font_family": "Noto Sans Mono",
-    "ui_font_size": 16,
-    "buffer_font_size": 16,
     "theme": {
         "mode": "system",
         "light": "Atelier Cave Light",
@@ -34,7 +32,10 @@
         "git_diff": true,
         "search_results": true,
         "selected_symbol": true,
-        "diagnostics": true
+        "diagnostics": true,
+        "axes": {
+            "horizontal": false
+        }
     },
     "tab_bar": {
         "show": true,
@@ -144,13 +145,13 @@
         "working_directory": "current_project_directory",
         "copy_on_select": false,
         "cursor_shape": "bar",
-        "font_size": 16,
         "button": true,
         "shell": {
             "program": "fish"
         },
         "toolbar": {
-            "title": true
+            "title": true,
+            "breadcrumbs": false
         }
     }
 }

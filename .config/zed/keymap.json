@@ -51,6 +51,7 @@
             // ---------------- JETBRAINS ----------------
             "shift-f6": "project_panel::Rename",
             "ctrl-l": "editor::Format",
+            "ctrl-shift-l": "editor::ToggleSoftWrap",
             // ---------------- BROWSER BINDS ----------------
             "ctrl-t": "workspace::NewFile",
             "ctrl-shift-t": "pane::ReopenClosedItem"
@@ -59,7 +60,8 @@
     {
         "context": "Terminal",
         "bindings": {
-            "ctrl-t": "workspace::NewTerminal"
+            "ctrl-t": "workspace::NewTerminal",
+            "ctrl-r": ["terminal::SendKeystroke", "ctrl-r"]
         }
     },
     {
