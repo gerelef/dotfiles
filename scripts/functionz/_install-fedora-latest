@@ -282,7 +282,7 @@ install-media-codecs () (
     "obs-studio-plugin-webkitgtk" \
     "obs-studio-plugin-x264"
 
-    sudo dnf install -y --best --allowerasing --skip-unavailable "ffmpeg" "gstreamer-ffmpeg" "ffmpeg-libs" "libva" "libva-utils" "ffmpegthumbnailer" "libavcodec-freeworld"
+    sudo dnf install -y --best --allowerasing --skip-unavailable "ffmpeg" "gstreamer-ffmpeg" "ffmpeg-libs" "libva" "libva-utils" "ffmpegthumbnailer" "libavcodec-freeworld" "pipewire-codec-aptx"
     if _is-gnome-session; then
         # in order to have nautilus create thumbnails, we need both the ffmpeg thumbnailer & the appropriate codec
         #  afterwards, refresh the current cache
