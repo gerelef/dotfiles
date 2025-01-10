@@ -11,13 +11,19 @@ fftrim-mp3-from-transcription () (
     [[ "$#" -ne 2 ]] && return 2
     [[ -f "$1" ]] || return 1
 
-    mapfile -t transcription_file < <( grep -oE '(\[.+\])' < $2) || exit
+    MASTERFILE_NAME="$1.masterfile"
+
+    mapfile -t transcriptions < $2 || exit
+
+    echo -ne '' > $MASTERFILE_NAME
 
     count=1
-    for line in "${transcription_file[@]}"; do
-        IFS='>' read -r start end <<< $(echo $line | tr -d ' \[\]\-')
-        echo "Cutting from '$start' to '$end', for $1-part$count.mp3 . . ."
-        ffmpeg -y -hide_banner -ss "$start" -to "$end" -i "$1" -acodec copy "$PWD/$1-part$count.mp3" || exit
+    for line in "${transcriptions[@]}"; do
+        IFS='  ' read -r start end text <<< $(echo $line | tr -d '\[\]\-\>')
+        outname="$1-part$count.mp3"
+        echo -e "Cutting from '$start' to '$end', for $outname w/ text . . .\n >>> '$text' "
+        ffmpeg -y -hide_banner -ss "$start" -to "$end" -i "$1" -acodec copy "$PWD/$outname" || exit
+        echo "./$outname|$text" >> $MASTERFILE_NAME
         count=$(( count + 1))
     done
 
