@@ -1,0 +1,26 @@
+#!/usr/bin/env bash
+
+# HELP fftrim-mp3-from-transcription <mp3-file> <trancription-file>; trim an mp3 from start to end using a transcription file
+
+# NOTE: this will only work with the stdout of 'whisper' currently.
+
+_depends-on ffmpeg || exit
+
+fftrim-mp3-from-transcription () (
+    [[ -z "$*" ]] && return 2
+    [[ "$#" -ne 2 ]] && return 2
+    [[ -f "$1" ]] || return 1
+
+    mapfile -t transcription_file < <( grep -oE '(\[.+\])' < $2) || exit
+
+    count=1
+    for line in "${transcription_file[@]}"; do
+        IFS='>' read -r start end <<< $(echo $line | tr -d ' \[\]\-')
+        echo "Cutting from '$start' to '$end', for $1-part$count.mp3 . . ."
+        ffmpeg -y -hide_banner -ss "$start" -to "$end" -i "$1" -acodec copy "$PWD/$1-part$count.mp3" || exit
+        count=$(( count + 1))
+    done
+
+)
+
+[[ "${BASH_SOURCE[0]}" == "${0}" ]] && fftrim-mp3-from-transcription "$@"

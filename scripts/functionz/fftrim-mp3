@@ -16,7 +16,7 @@ fftrim-mp3 () (
     # $2 start (seconds)
     # $3 duration (seconds)
     local output=$(basename -- "${1%.*}")
-    ffmpeg -ss "$(__hms "$2")" -to "$(__hms "$3")" -i "$1" -acodec copy "$PWD/$output-trimmed.mp3"
+    ffmpeg -y -hide_banner -ss "$(__hms "$2")" -to "$(__hms "$3")" -i "$1" -acodec copy "$PWD/$output-trimmed.mp3"
 )
 
 # run only if this file is not sourced
