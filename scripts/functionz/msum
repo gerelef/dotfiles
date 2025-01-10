@@ -1,0 +1,18 @@
+#!/usr/bin/env fish
+
+# HELP msum < ./numbers; sum stdin
+
+function msum
+    set stdinargs $(cat -)
+
+    set sum 0
+    for ARG in $stdinargs[1..]
+        set sum (math $sum + "$ARG")
+    end
+
+    echo "$sum"
+end
+
+if [ "$_" != source ]
+    msum $argv
+end
