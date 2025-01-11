@@ -10,6 +10,7 @@ coreutils:tr
 curl:curl
 ffmpeg:ffmpeg
 figlet:figlet
+fzf:fzf
 gawk:awk
 grep:grep
 ImageMagick:identify
