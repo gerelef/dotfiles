@@ -10,3 +10,7 @@ sudo dracut --force --regenerate-all --verbose && sudo grub2-mkconfig -o /boot/g
 ```bash
 notify-send --transient --action "idiot" --action "moron" --action "doofus" Test 'hello world!'
 ```
+- string (.) split('|') equivalent
+```bash
+IFS='|' read -r var1 var2 var3 <<< $(echo $line)
+```
