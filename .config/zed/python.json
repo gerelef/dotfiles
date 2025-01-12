@@ -1,0 +1,67 @@
+{
+    "shebang": {
+        "prefix": "shebang",
+        "body": [
+            "#!/usr/bin/env -S python3 -S -OO",
+            "$1"
+        ],
+        "description": "#!/usr/bin/env -S python3 -S -OO"
+    },
+    "main": {
+        "prefix" : "main",
+        "body": [
+            "if __name__ == \"__main__\":",
+            "   $1"
+        ],
+        "description": "if __name__ == \"__main__\":"
+    },
+    "sout": {
+        "prefix": "sout",
+        "body": [
+            "print($1, file=sys.stdout)"
+        ],
+        "description": "Print to stdout"
+    },
+    "serr": {
+        "prefix": "serr",
+        "body": [
+            "print($1, file=sys.stderr)"
+        ],
+        "description": "Print to stderr"
+    },
+    "logi": {
+        "prefix": "logi",
+        "body": [
+            "logger.info($1)"
+        ],
+        "description": "Log info"
+    },
+    "logd": {
+        "prefix": "logd",
+        "body": [
+            "logger.debug($1)"
+        ],
+        "description": "Log debug"
+    },
+    "logw": {
+        "prefix": "logd",
+        "body": [
+            "logger.warn($1)"
+        ],
+        "description": "Log warning"
+    },
+    "loge": {
+        "prefix": "loge",
+        "body": [
+            "logger.error($1)"
+        ],
+        "description": "Log error"
+    },
+    "logc": {
+        "prefix": "logc",
+        "body": [
+            "logger.critical($1)"
+        ],
+        "description": "Log critical"
+    }
+}

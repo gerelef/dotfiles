@@ -34,6 +34,11 @@ scripts/
     !!.config/ghostty
 [end]
 
+.config/zed
+[if-pkg:::zed]
+    !!.config/zed
+[end]
+
 .config/config
 // link only in default profile
 [if-profile:::default]
@@ -58,3 +63,8 @@ scripts/.gitconfig-gitdelta ::: .
 
 // create subdirectories on the fly, don't nest unecessarily
 .config/fish/fish_prompt.fish ::: .config/fish/functions/
+
+.config/zed/python.json ::: .config/zed/snippets/
+.config/zed/shellscript.json ::: .config/zed/snippets/
+.config/zed/fish.json ::: .config/zed/snippets/
+.config/zed/java.json ::: .config/zed/snippets/

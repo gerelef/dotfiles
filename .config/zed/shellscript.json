@@ -1,0 +1,49 @@
+{
+    // NOTE: during testing, these don't work. is this an lsp issue?
+    // TODO: fix completions
+    "shebang": {
+        "prefix": "shebang",
+        "body": [
+            "#!/usr/bin/env bash",
+            "$1"
+        ],
+        "description": "#!/usr/bin/env bash"
+    },
+    "main": {
+        "prefix": "main",
+        "body": [
+            "${1.name} () (",
+            "   true",
+            ")",
+            "",
+            "[[ \"${BASH_SOURCE[0]}\" == \"${0}\" ]] && ${1.name} \"$@\""
+        ]
+    },
+    "fori": {
+        "prefix": "fori",
+        "body": [
+            "for VARIABLE in $(seq START END STEP); do",
+            "   $1",
+            "done"
+        ],
+        "description": "fori"
+    },
+    "foreach": {
+        "prefix": "foreach",
+        "body": [
+            "for VARIABLE in \"${$1}\"; do",
+            "   true",
+            "done"
+        ],
+        "description": "foreach"
+    },
+    "forarg": {
+        "main": "forarg",
+        "body": [
+            "for arg in \"$@\"; do",
+            "   $1",
+            "done"
+        ],
+        "description": "foreach arg"
+    }
+}

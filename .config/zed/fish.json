@@ -1,0 +1,52 @@
+{
+    // NOTE: during testing, these don't work. is this an lsp issue?
+    // TODO: fix completions
+    "shebang": {
+        "prefix": "shebang",
+        "body": [
+            "#!/usr/bin/env fish",
+            "$1"
+        ],
+        "description": "#!/usr/bin/env fish"
+    },
+    "main": {
+        "prefix": "main",
+        "body": [
+            "function ${1.name}",
+            "   true",
+            "end",
+            "",
+            "if [ \"$_\" != source ]",
+            "   ${1.name} $argv",
+            "end"
+        ],
+        "description": "main"
+    },
+    "fori": {
+        "prefix": "fori",
+        "body": [
+            "for VARIABLE in (seq START END STEP)",
+            "   $1",
+            "end"
+        ],
+        "description": "fori"
+    },
+    "foreach": {
+        "prefix": "foreach",
+        "body": [
+            "for VARIABLE in \"$1\"",
+            "   true",
+            "end"
+        ],
+        "description": "foreach"
+    },
+    "forarg": {
+        "main": "forarg",
+        "body": [
+            "for arg in $argv[1..]",
+            "    $1",
+            "end"
+        ],
+        "description": "foreach arg"
+    }
+}
