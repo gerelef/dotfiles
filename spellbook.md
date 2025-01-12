@@ -14,3 +14,7 @@ notify-send --transient --action "idiot" --action "moron" --action "doofus" Test
 ```bash
 IFS='|' read -r var1 var2 var3 <<< $(echo $line)
 ```
+- view stacktrace of what a command is actually doing
+```bash
+strace -s 2000 -o unlink.log unlink file1
+```
