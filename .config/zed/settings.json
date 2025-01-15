@@ -152,6 +152,7 @@
         "toolbar": {
             "title": true,
             "breadcrumbs": false
-        }
+        },
+        "detect_venv": "off"
     }
 }
