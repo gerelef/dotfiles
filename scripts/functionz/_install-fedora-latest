@@ -640,6 +640,7 @@ xorg-x11-drv-nvidia-cuda \
 xorg-x11-drv-nvidia-power \
 nvidia-gpu-firmware \
 nvidia-modprobe \
+nvidia-smi \
 "
 
 readonly INSTALLABLE_VIRTUALIZATION_PACKAGES="\
