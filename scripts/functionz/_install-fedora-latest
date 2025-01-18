@@ -800,7 +800,7 @@ _echo-important " due to its intrusive nature."
 
 ask user question 'Do you want to install snapd?' && INSTALL_SNAPD="yes"
 _echo-debug "Will install snapd? $INSTALL_SNAPD"
-ask user question'Do you want to install gaming packages?' && INSTALL_GAMING="yes"
+ask user question 'Do you want to install gaming packages?' && INSTALL_GAMING="yes"
 _echo-debug "Will install gaming? $INSTALL_GAMING"
 ask user question 'Do you want to install terminal tools?' && INSTALL_TERM_TOOLS="yes"
 _echo-debug "Will install terminal-tools? $INSTALL_TERM_TOOLS"
