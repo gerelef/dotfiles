@@ -144,23 +144,15 @@ abbr --position command --add rm "rm -v"
 abbr --position command --add reverse tac
 abbr --position command --add palindrome rev
 
-function __sudo_last_command
-    echo "sudo $history[1]"
-end
-function __last_command
-    echo "$history[1]"
-end
+function __sudo_last_command; echo "sudo $history[1]"; end
 abbr --position command --add fuck --function __sudo_last_command
-abbr --position command --add !! --function __last_command
 abbr --position command --add vpip --function __venv_activate_fish
+# same functionality as !! from bash
+function __last_command; echo "$history[1]"; end
+abbr --position command --add !! --function __last_command
 
-if type -q wget
-    abbr --position command --add wget "wget -c --read-timeout=5 --tries=0 --cut-file-get-vars --content-disposition"
-end
-
-if type -q npm
-    abbr --position command --add npm "npm --loglevel silly"
-end
+type -q wget && abbr --position command --add wget "wget -c --read-timeout=5 --tries=0 --cut-file-get-vars --content-disposition"
+type -q npm && abbr --position command --add npm "npm --loglevel silly"
 
 # chromium depot_tools, add to PATH only if they actually exist
 #  https://chromium.googlesource.com/chromium/tools/depot_tools.git
@@ -169,19 +161,22 @@ if locate --version 2>/dev/null 1>&2 && locate --limit 1 depot_tools 2>/dev/null
     abbr --position command --add fetch "fetch --no-history"
 end
 
+if type -q vi
+    set -gx VISUAL vi
+    set -gx EDITOR vi
+end
+
 if type -q vim
     set -gx VISUAL vim
     set -gx EDITOR vim
 end
 
 if type -q nvim
-    abbr --position command --add vim nvim
     set -gx VISUAL nvim
     set -gx EDITOR nvim
 end
 
 if type -q hx
-    abbr --position command --add helix hx
     set -gx VISUAL hx
     set -gx EDITOR hx
 end
