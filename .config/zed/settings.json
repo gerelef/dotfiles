@@ -5,9 +5,10 @@
 // from the command palette or from `Zed` application menu.
 {
     // ---------------- TELEMETRY ----------------
-    "auto_update": false,
+    // use defaults: "auto_update": true,
     "features": {
-        "inline_completion_provider": "none"
+        "inline_completion_provider": "zed",
+        "copilot": false
     },
     "telemetry": {
         "diagnostics": false,
@@ -32,10 +33,8 @@
         "git_diff": true,
         "search_results": true,
         "selected_symbol": true,
-        "diagnostics": true,
-        "axes": {
-            "horizontal": false
-        }
+        "diagnostics": "all",
+        "axes": { "horizontal": false }
     },
     "tab_bar": {
         "show": true,
@@ -47,8 +46,9 @@
         "git_status": true
     },
     "toolbar": {
-        "breadcrumbs": true,
-        "quick_actions": true
+        "breadcrumbs": false,
+        "quick_actions": false,
+        "selections_menu": false
     },
     "inlay_hints": {
         "enabled": true,
@@ -59,20 +59,14 @@
         "scroll_debounce_ms": 50
     },
     // ---------------- BEHAVIOURAL ----------------
+    "confirm_quit": true,
+    "base_keymap": "JetBrains",
     "seed_search_query_from_cursor": "selection",
     "middle_click_paste": false,
     "vertical_scroll_margin": 0,
     "restore_on_startup": "last_session",
-    "session": {
-        "restore_unsaved_buffers": true
-    },
-    "autosave": {
-        "after_delay": {
-            "milliseconds": 15000
-        }
-    },
-    "base_keymap": "JetBrains",
-    "confirm_quit": true,
+    "session":  { "restore_unsaved_buffers": true },
+    "autosave": { "after_delay": { "milliseconds": 60000 } },
     // ---------------- INDENTATION ----------------
     "indent_guides": {
         "enabled": true,
@@ -81,78 +75,51 @@
         "coloring": "fixed",
         "background_coloring": "disabled"
     },
-    "preferred_line_length": 80,
-    "wrap_guides": [
-        80,
-        120
-    ],
+    "preferred_line_length": 120,
+    "wrap_guides": [ 120 ],
     "hard_tabs": false,
     "tab_size": 4,
     // ---------------- EDITOR SETTINGS ----------------
-    "notification_panel": {
-        "dock": "right"
-    },
-    "chat_panel": {
-        "dock": "right"
-    },
-    "collaboration_panel": {
-        "dock": "right"
-    },
-    "outline_panel": {
-        "dock": "right"
-    },
+    "notification_panel":  { "button": false },
+    "chat_panel":          { "dock": "right" },
+    "collaboration_panel": { "dock": "right" },
+    "outline_panel":       { "dock": "right" },
     "assistant": {
         "enabled": true,
         "button": true,
         "version": "2",
         "dock": "right",
-        "provider": null,
-        "default_model": {
-            "provider": "ollama",
-            "model": "llama3.2:3b"
-        }
+        "enable_experimental_live_diffs": true,
+        "default_model": { "provider": "anthropic", "model": "claude-3-opus-latest" },
+        "inline_alternatives": [ { "provider": "anthropic", "model": "claude-3-5-haiku-latest" } ]
     },
-    "language_models": {
-        "ollama": {
-            "low_speed_timeout_in_seconds": 120
-        }
-    },
+    "language_models": { "ollama": { "low_speed_timeout_in_seconds": 120 } },
     "git_status": true,
     "git": {
         "git_gutter": "tracked_files",
-        "inline_blame": {
-            "enabled": true
-        }
+        "inline_blame": { "enabled": true, "show_commit_summary": true }
     },
     "enable_language_server": true,
-    "ensure_final_newline_on_save": true,
+    "ensure_final_newline_on_save": null, // disabled for edge cases;
     "format_on_save": "off",
-    "formatter": "language_server",
+    "formatter": "prettier",
     "use_autoclose": true,
     "soft_wrap": "none",
     "always_treat_brackets_as_autoclosed": true,
+    "show_whitespaces": "selection",
     "show_completions_on_input": true,
     "show_completion_documentation": true,
     "show_inline_completions": true,
     "auto_signature_help": true,
-    "inline_completions": {
-        "disabled_globs": [
-            ".env"
-        ]
-    },
+    "inline_completions": { "disabled_globs": [ ".env" ] },
     // ---------------- TERMINAL ----------------
     "terminal": {
-        "working_directory": "current_project_directory",
+        "button": true,
         "copy_on_select": false,
         "cursor_shape": "bar",
-        "button": true,
-        "shell": {
-            "program": "fish"
-        },
-        "toolbar": {
-            "title": true,
-            "breadcrumbs": false
-        },
+        "shell": { "program": "fish" },
+        "working_directory": "current_project_directory",
+        "toolbar": { "title": true, "breadcrumbs": false },
         "detect_venv": "off"
     }
 }
