@@ -4,7 +4,7 @@ import sys
 
 
 if sys.version_info.minor < 10:
-    print(">= python3.12 required!", file=sys.stderr)
+    print(">= python3.10 required!", file=sys.stderr)
     sys.exit(1)
 
 

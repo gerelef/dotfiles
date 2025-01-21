@@ -3,8 +3,8 @@
 import sys
 
 
-if sys.version_info.minor < 12:
-    print(">= python3.12 required!", file=sys.stderr)
+if sys.version_info.minor < 10:
+    print(">= python3.10 required!", file=sys.stderr)
     sys.exit(1)
 
 
@@ -41,3 +41,6 @@ if __name__ == "__main__":
     except ValueError:
         print("First argument must be an integer >= 0!", file=sys.stderr)
         sys.exit(2)
+    except FileNotFoundError as err:
+        print(str(err), file=sys.stderr)
+        sys.exit(1)
