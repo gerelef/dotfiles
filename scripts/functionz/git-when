@@ -11,8 +11,11 @@ _depends-on fzf || exit
 #  of this gist.
 
 __git-when() {
-    git log --graph --color=always \
-        --format="%C(auto)%h%d %s %C(black)%C(bold)%cr" |
+    git log --pretty=format:"%C(yellow)%h %C(reset)%C(yellow)%ad%C(auto)%d %s %C(blue)[%cn]" \
+            --decorate \
+            --date=short \
+            --graph \
+            --color=always |
     fzf -q "$*" \
         --ansi \
         --no-sort \
