@@ -1,0 +1,12 @@
+[Unit]
+After=basic.target
+
+[Service]
+Type=simple
+StandardOutput=journal
+Environment="SLEEP_DURATION=900"
+ExecStart=bash -c "while :; do updatedb --require-visibility 0 -o ~/.locate.db && echo 'updated local db'; sleep $SLEEP_DURATION; done"
+Restart=on-failure
+
+[Install]
+WantedBy=default.target
