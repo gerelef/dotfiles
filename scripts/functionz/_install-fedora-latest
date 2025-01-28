@@ -4,6 +4,9 @@
 
 # USEFUL COMMAND: dnf whatprovides COMMAND or dnf provides COMMAND
 #  e.g. dnf whatprovides nvidia-smi or dnf provides nvidia-smi
+# USEFUL COMMAND: adding & disabling repositories
+# sudo dnf install -y --best --allowerasing --repofrompath "terra,https://repos.fyralabs.com/terra$(rpm -E %fedora)" --setopt="terra.gpgkey=https://repos.fyralabs.com/terra$(rpm -E %fedora)/key.asc" terra-release || exit
+# sudo dnf config-manager setopt terra.enabled=0
 
 export DEBUG_SETUP_ON="yes"
 export PATH="$PATH:$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
@@ -204,6 +207,7 @@ create-swapfile () (
 install-proprietary-nvidia-drivers () (
     # install nvidia drivers if we have an NVIDIA card
     if ! _is-nvidia-gpu; then return; fi
+    if ! _is-nvidia-nouveau; then return; fi
 
     readonly NVIDIA_GPU="$(_nvidia-gpu-model)"
 
@@ -224,24 +228,7 @@ install-proprietary-nvidia-drivers () (
     sudo dracut --force --regenerate-all || exit 1
     _echo-debug "Regenerated akmod build."
 
-    _echo-important "Script will hang while NVIDIA Drivers are being built."
-    _echo-important "Please note this can take upwards of five (5) minutes to finish."
-    _echo-important "HOWEVER, the script will only wait till a maximum of three (3) for stability purposes."
-    start_time=$(date +%s)
-    time_limit=$(( 3 * 60 ))
-    while ! modinfo -F version nvidia; do
-        _echo-status "Beep boop."
-
-        elapsed_time=$(( $(date +%s) - $start_time ))
-        if [ $elapsed_time -ge $time_limit ]; then
-            _echo-unexpected "Time limit reached. Won't wait any further."
-            _echo-unexpected "NVIDIA drivers will PROBABLY be built on next boot."
-            break
-        fi
-
-        sleep 10
-    done
-    _echo-success "NVIDIA drivers built."
+    _echo-unexpected "NVIDIA drivers will be built on next boot."
 
     if _is-uefi && [[ $(mokutil --sb-state 2> /dev/null) ]]; then
         # https://blog.monosoul.dev/2022/05/17/automatically-sign-nvidia-kernel-module-in-fedora-36/
@@ -296,11 +283,11 @@ install-media-codecs () (
 install-gaming-packages () (
     _echo-status "-------------------INSTALLING GAMING PACKAGES----------------"
     sudo dnf install -y --best --allowerasing --skip-unavailable "steam" "gamescope"
-    flatpak install --system --noninteractive -y "dev.vencord.Vesktop" "com.leinardi.gst"
+    flatpak install --system --noninteractive -y "com.discordapp.Discord" "com.leinardi.gst"
     # vulkan drivers are required for proton-ge to work
     sudo dnf install -y --best --allowerasing --skip-unavailable "protontricks" "vulkan" "vulkan-loader" "vulkan-loader.i686"
     _echo-debug "installed proton-ge prerequisites"
-    update-compat-layers --steam --golden-egg
+    update-compat-layers
     _echo-debug "updated compatibility layers"
 
     # openrgb utils
@@ -622,6 +609,7 @@ com.spotify.Client \
 com.github.rafostar.Clapper \
 io.gitlab.theevilskeleton.Upscaler \
 com.github.tchx84.Flatseal \
+it.mijorus.gearlever \
 "
 
 readonly INSTALLABLE_BTRFS_TOOLS="\
@@ -728,12 +716,6 @@ fi
 # rpmfusion-nonfree
 if [[ -z $(dnf repolist | grep 'rpmfusion-nonfree') ]]; then
     sudo dnf install -y --best --allowerasing "https://download1.rpmfusion.org/nonfree/fedora/rpmfusion-nonfree-release-$(rpm -E %fedora).noarch.rpm" || exit
-fi
-# FIXME this is probably borked
-# terrapkg https://github.com/terrapkg/packages/tree/frawhide
-if [[ -z $(dnf repolist | grep 'terra') ]]; then
-    sudo dnf install -y --best --allowerasing --repofrompath "terra,https://repos.fyralabs.com/terra$(rpm -E %fedora)" --setopt="terra.gpgkey=https://repos.fyralabs.com/terra$(rpm -E %fedora)/key.asc" terra-release || exit
-    sudo dnf config-manager setopt terra.enabled=0
 fi
 
 # no requirement to add flathub ourselves anymore in f38; it should be enabled by default. however, it may not be, most likely by accident, so this is a failsafe
@@ -950,7 +932,7 @@ fi
 
 [[ -n "$INSTALL_JETBRAINS" ]] && install-jetbrains-toolbox
 [[ -n "$INSTALL_VSC" ]] && install-visual-studio-code
-[[ -n "$INSTALL_ZED" ]] && sudo dnf install -y --best --allowerasing --enablerepo=terra "zed"
+[[ -n "$INSTALL_ZED" ]] && curl -f https://zed.dev/install.sh | sh
 [[ -n "$INSTALL_SUBLIME" ]] && install-sublime-text-editor
 [[ -n "$INSTALL_ZED" ]] && sudo dnf remove -y "gnome-text-editor" "gedit"
 [[ -n "$INSTALL_VSC" ]] && sudo dnf remove -y "gnome-text-editor" "gedit"

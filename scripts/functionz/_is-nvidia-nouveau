@@ -1,0 +1,11 @@
+#!/usr/bin/env bash
+
+# HELP get the nvidia gpu model
+
+_depends-on lsmod || exit
+
+_is-nvidia-nouveau () (
+    grep -e "nouveau" <( lsmod ) 2>/dev/null 1>&2
+)
+
+[[ "${BASH_SOURCE[0]}" == "${0}" ]] && _is-nvidia-nouveau "$@"
