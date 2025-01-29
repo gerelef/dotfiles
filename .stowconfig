@@ -39,11 +39,10 @@ scripts/
     !!.config/zed
 [end]
 
-.config/config
+.config/.ssh
 // link only in default profile
 [if-profile:::default]
-    // ssh config
-    !!.config/config
+    !!.config/.ssh
 [end]
 
 [redirect]
@@ -53,8 +52,6 @@ scripts/.nanorc ::: .
 scripts/.gitconfig ::: .
 scripts/.gitconfig-gitdelta ::: .
 
-.config/config ::: .ssh/
-
 // move up & rename directory
 .config/templates/* ::: Templates/
 
@@ -63,6 +60,9 @@ scripts/.gitconfig-gitdelta ::: .
 
 // create subdirectories on the fly, don't nest unecessarily
 .config/fish/fish_prompt.fish ::: .config/fish/functions/
+
+// redirect the .ssh folder's contents to the ~/.ssh folder
+.config/.ssh/* ::: .ssh/
 
 .config/zed/python.json ::: .config/zed/snippets/
 .config/zed/shellscript.json ::: .config/zed/snippets/
