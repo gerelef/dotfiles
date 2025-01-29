@@ -572,7 +572,6 @@ readonly INSTALLABLE_GNOME_EXTENSIONS="\
 gnome-extensions-app \
 gnome-shell-extension-places-menu \
 gnome-shell-extension-appindicator \
-gnome-shell-extension-freon \
 "
 
 #######################################################################################################
