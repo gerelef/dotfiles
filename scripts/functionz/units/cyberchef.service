@@ -1,27 +1,38 @@
+# https://docs.redhat.com/en/documentation/red_hat_enterprise_linux_atomic_host/7/html/managing_containers/running_containers_as_systemd_services_with_podman#starting_containers_with_systemd
+# prerequisites
+#    setsebool -P container_manage_cgroup on  # SELinux enabled systems only! permit systemd to manage pods
+#
+# this service file requires a dedicated system user as `cyberchef`, with a home directory
+#    sudo useradd --add-subids-for-system -m -r -d /var/lib/cyberchef cyberchef && sudo loginctl enable-linger cyberchef
+# this will create a `cyberchef` user with home directory at `/var/lib`
+# this is the recommended behaviour for systemd service users
+#
+# afterwards, enable the service like this:
+#    sudo mkdir -p /var/lib/cyberchef/.config/systemd/user/ && sudo cp ./cyberchef.service /var/lib/cyberchef/.config/systemd/user/ && sudo chown -R cyberchef:cyberchef /var/lib/cyberchef/.config
+#    sudo machinectl shell cyberchef@ '/bin/systemctl' '--user' 'daemon-reload'
+#    sudo machinectl shell cyberchef@ '/bin/systemctl' '--user' 'enable' '--now' 'cyberchef.service'
+
 [Unit]
+Wants=podman-user-wait-network-online.service
+After=podman-user-wait-network-online.service
 Description=The Cyber Swiss Army Knife - a web app for encryption, encoding, compression and data analysis
-After=network.target
-RequiresMountsFor=~
+After=network.target local-fs.target
+RequiresMountsFor=%t/containers
+
+[X-Container]
+Image=ghcr.io/gchq/cyberchef:latest
 
 [Service]
-Type=simple
-StandardOutput=journal
-RemainAfterExit=true
-# this service file requires a dedicated system user as `cyberchef`, with a home directory
-#  `sudo useradd --add-subids-for-system -m -r -d /var/lib/cyberchef cyberchef`
-# this will create a `cyberchef` user with home directory at `/var/lib`
-# and it is the recommended behaviour for systemd service users
-User=cyberchef
-Group=cyberchef
 WorkingDirectory=~
-# https://docs.redhat.com/en/documentation/red_hat_enterprise_linux_atomic_host/7/html/managing_containers/running_containers_as_systemd_services_with_podman#starting_containers_with_systemd
-#  1. Open Selinux permission. If SELinux is enabled on your system, you must turn on the container_manage_cgroup boolean to run containers with systemd as shown here (see the Containers running systemd solution for details):
-#      `setsebool -P container_manage_cgroup 1`
-#  2. `podman run --name cyberchef -it -p 8889:80 ghcr.io/gchq/cyberchef:latest`
-ExecStart=podman start -a cyberchef
-ExecStop=podman stop -t 2 cyberchef
-Environment="XDG_RUNTIME_DIR="  # leave this empty so it falls back to cgroups
+Environment=PODMAN_SYSTEMD_UNIT=%n
+KillMode=mixed
+ExecStop=/usr/bin/podman rm -v -f -i --cidfile=%t/%N.cid
+ExecStopPost=-/usr/bin/podman rm -v -f -i --cidfile=%t/%N.cid
+Delegate=yes
+Type=notify
+NotifyAccess=all
+SyslogIdentifier=%N
+ExecStart=/usr/bin/podman run --name cyberchef -it -p 8889:80 --cidfile=%t/%N.cid --replace --rm --cgroups=split --sdnotify=conmon -d ghcr.io/gchq/cyberchef:latest
 
 [Install]
-WantedBy=multi-user.target
-
+WantedBy=default.target

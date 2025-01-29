@@ -88,14 +88,14 @@ Additionally to the services in the `scripts/functionz/units/*`, I also sometime
 
 **IMPORTANT:** You should **copy** the service files to the appropriate directory as specified below
 
-system services:
+### system services
 
 ```bash
 # make sure you replace $1 with the file name
-sudo cp ./$1 "/etc/systemd/system/" && sudo chown root:root "/etc/systemd/system/$1"
+sudo cp ./$1 "/etc/systemd/system/"  # this will automatically be owned by root
 ```
 
-user services:
+### user services
 
 ```bash
 # make sure you replace $1 with the file name
