@@ -16,6 +16,8 @@ scripts/
 !!scripts/.nanorc
 !!scripts/.gitconfig
 
+!!.config/templates/*
+
 // joplin keymap doesn't load dynamically, womp womp
 .config/keymap-desktop.json
 .config/extensions/
