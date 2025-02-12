@@ -15,6 +15,7 @@
         "metrics": false
     },
     // ---------------- VISUAL ----------------
+    "buffer_font_size": null,
     "ui_font_family": "Noto Sans Mono",
     "buffer_font_family": "Noto Sans Mono",
     "theme": {
