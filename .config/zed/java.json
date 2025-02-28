@@ -15,28 +15,6 @@
             "//DEPS com.example.org:jar.name:ve.rsi.on"
         ],
         "description": "JBang dependency declaration"
-    },
-    "main": {
-        "prefix": "main",
-        "body": [
-            "public static void main(String... args) {",
-            "   $1;",
-            "}"
-        ],
-        "description": "public static void main..."
-    },
-    "sout": {
-        "prefix": "sout",
-        "body": [
-            "System.out.println($1);"
-        ],
-        "description": "System.out.println($1);"
-    },
-    "serr": {
-        "prefix": "serr",
-        "body": [
-            "System.err.println($1);"
-        ],
-        "description": "System.err.println($1);"
     }
+    // main, sout and serr already exist in default lsp
 }

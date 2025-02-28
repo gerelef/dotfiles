@@ -1,6 +1,4 @@
 {
-    // NOTE: during testing, these don't work. is this an lsp issue?
-    // TODO: fix completions
     "shebang": {
         "prefix": "shebang",
         "body": [
