@@ -32,7 +32,7 @@
             "ctrl-z": "editor::Undo",
             "ctrl-shift-z": "editor::Redo",
             "ctrl-y": "editor::Redo",
-            "ctrl-alt-d": "editor::ToggleHunkDiff",
+            "ctrl-alt-d": "editor::ToggleSelectedDiffHunks",
             "ctrl-d": "editor::DuplicateLineDown",
             "ctrl-shift-d": "editor::DuplicateLineUp",
             "ctrl-pageup": "pane::ActivatePrevItem",
