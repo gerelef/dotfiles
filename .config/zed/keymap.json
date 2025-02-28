@@ -25,7 +25,7 @@
             "ctrl-shift-x": "workspace::ToggleZoom",
             // ---------------- LINE MANIP ----------------
             "ctrl-c": "editor::Copy",
-            "ctrl-shift-c": "editor::Copy",
+            "ctrl-shift-c": "editor::CopyPermalinkToLine",
             "ctrl-x": "editor::Cut",
             "ctrl-v": "editor::Paste",
             "ctrl-shift-v": "editor::Paste",
