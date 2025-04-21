@@ -595,7 +595,6 @@ xwaylandvideobridge \
 chromium \
 fedora-chromium-config \
 gimp \
-krita \
 evince \
 piper \
 pulseeffects \
@@ -606,6 +605,7 @@ com.brave.Browser \
 org.flameshot.Flameshot \
 com.spotify.Client \
 com.github.rafostar.Clapper \
+com.github.PintaProject.Pinta \
 io.gitlab.theevilskeleton.Upscaler \
 com.github.tchx84.Flatseal \
 it.mijorus.gearlever \
