@@ -44,7 +44,7 @@
         "description": "Log debug"
     },
     "logw": {
-        "prefix": "logd",
+        "prefix": "logw",
         "body": [
             "logger.warn($1)"
         ],
