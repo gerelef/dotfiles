@@ -345,16 +345,6 @@ EOF
         systemctl enable --user --now "$UNITS/openrgb.service"
     fi
 
-    # FIX FOR INPUT LAG / KEYBOARD KEYS GETTING STUCK:
-    #  https://discussion.fedoraproject.org/t/ibus-daemon-introduces-delays-and-even-locks-keyboard-up-in-some-steam-games/118095/4
-    #  https://github.com/ibus/ibus/issues/2618
-    #  https://gitlab.gnome.org/GNOME/mutter/-/issues/3369
-    #  https://www.google.com/search?client=firefox-b-d&q=XMODIFIERS%3D%E2%80%9C%40im%3Dnull%E2%80%9D
-    #  https://www.linuxquestions.org/questions/linux-general-1/what-does-xmodifiers%3D-%40im%3Dnull-do-exactly-4175671523/
-    #  https://github.com/chrislo27/PolyrhythmMania/issues/24
-    sudo sh -c 'echo "XMODIFIERS=@im=null" >> /etc/environment'
-    sudo chmod 644 "/etc/environment"
-    _echo-debug "Configured input lag ibus issue via /etc/environment."
     sudo chattr +T /home
     _echo-debug "Configured chattr +T for /home"
     _echo-success "Done."
@@ -592,7 +582,6 @@ python3-cairo \
 "
 
 readonly INSTALLABLE_APPLICATION_PACKAGES="\
-xwaylandvideobridge \
 chromium \
 fedora-chromium-config \
 gimp \
