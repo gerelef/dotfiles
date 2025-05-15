@@ -290,9 +290,6 @@ install-gaming-packages () (
     _echo-debug "installed proton-ge prerequisites"
     update-compat-layers
     _echo-debug "updated compatibility layers"
-    sudo sh -c 'echo "PROTON_ENABLE_WAYLAND=1" >> /etc/environment'
-    sudo chmod 644 "/etc/environment"
-    _echo-debug "configured GE-Proton to use wine-wayland by default. Deactivate per-case basis with PROTON_ENABLE_WAYLAND=0 %command%"
 
     # openrgb utils
     if lscpu | grep -i amd; then
