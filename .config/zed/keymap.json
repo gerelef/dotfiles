@@ -35,7 +35,7 @@
             "ctrl-alt-d": "editor::ToggleSelectedDiffHunks",
             "ctrl-d": "editor::DuplicateLineDown",
             "ctrl-shift-d": "editor::DuplicateLineUp",
-            "ctrl-pageup": "pane::ActivatePrevItem",
+            "ctrl-pageup": "pane::ActivatePreviousItem",
             "ctrl-pagedown": "pane::ActivateNextItem",
             "ctrl-shift-up": "editor::MoveLineUp",
             "ctrl-shift-down": "editor::MoveLineDown",
@@ -46,7 +46,7 @@
             // disable newline below & replace with prev match selection;
             //  even if we add this on the 'search' or 'buffersearch' context
             //  this won't work, unless we set this here
-            "shift-enter": "search::SelectPrevMatch",
+            "shift-enter": "search::SelectPreviousMatch",
             "ctrl-alt-enter": null, // disable newline above
             // ---------------- JETBRAINS ----------------
             "shift-f6": "project_panel::Rename",
