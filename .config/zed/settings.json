@@ -21,7 +21,7 @@
     "buffer_font_family": "Noto Sans Mono",
     "theme": {
         "mode": "system",
-        "light": "Atelier Cave Light",
+        "light": "Catppuccin Latte",
         "dark": "Catppuccin Macchiato"
     },
     "project_panel": {
