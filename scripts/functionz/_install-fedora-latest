@@ -98,6 +98,9 @@ install-universal-necessities () (
     sudo dnf install -y --best --allowerasing --skip-unavailable $INSTALLABLE_APPLICATION_PACKAGES
     sudo dnf swap gimp gimp3 -y --no-best --allowerasing
     flatpak install --system --noninteractive -y $INSTALLABLE_FLATPAKS
+    # install brave from the official repo, do NOT use the flatpak!!!
+    sudo dnf config-manager addrepo -y --from-repofile=https://brave-browser-rpm-release.s3.brave.com/brave-browser.repo
+    sudo dnf install -y --best brave-browser
 
     _echo-debug "Checking whether btrfs is in rootfs or homefs (sometimes are different partitions)"
     if _is-btrfs-rootfs || _is-btrfs-homefs; then
@@ -591,7 +594,6 @@ pulseeffects \
 "
 
 readonly INSTALLABLE_FLATPAKS="\
-com.brave.Browser \
 org.flameshot.Flameshot \
 com.spotify.Client \
 com.github.rafostar.Clapper \
