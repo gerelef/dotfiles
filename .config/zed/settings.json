@@ -7,7 +7,7 @@
     // ---------------- TELEMETRY ----------------
     // use defaults: "auto_update": true,
     "features": {
-        "inline_completion_provider": "zed",
+        "edit_prediction_provider": "zed",
         "copilot": false
     },
     "telemetry": {
@@ -86,14 +86,13 @@
     "chat_panel":          { "dock": "right" },
     "collaboration_panel": { "dock": "right" },
     "outline_panel":       { "dock": "right" },
-    "assistant": {
+    "agent": {
         "enabled": true,
         "button": true,
         "version": "2",
         "dock": "right",
-        "enable_experimental_live_diffs": true,
-        "default_model": { "provider": "anthropic", "model": "claude-3-opus-latest" },
-        "inline_alternatives": [ { "provider": "anthropic", "model": "claude-3-5-haiku-latest" } ]
+        "default_model": { "provider": "anthropic", "model": "claude-opus-4-thinking-latest" },
+        "inline_alternatives": [ { "provider": "anthropic", "model": "claude-sonnet-4-latest" } ]
     },
     "language_models": { "ollama": { "low_speed_timeout_in_seconds": 120 } },
     "git_status": true,
@@ -111,9 +110,9 @@
     "show_whitespaces": "selection",
     "show_completions_on_input": true,
     "show_completion_documentation": true,
-    "show_inline_completions": true,
+    "show_edit_predictions": true,
     "auto_signature_help": true,
-    "inline_completions": { "disabled_globs": [ ".env" ] },
+    "edit_predictions": { "disabled_globs": [ ".env" ] },
     // ---------------- TERMINAL ----------------
     "terminal": {
         "button": true,
