@@ -2,12 +2,19 @@
 #   sudo dnf install -y jupyterlab
 #
 # this service file requires a dedicated system user as `jupyter`, with a home directory
-#  sudo useradd -m -r -d /var/lib/jupyter -s /sbin/nologin jupyter
+#   sudo useradd -m -r -d /var/lib/jupyter -s /sbin/nologin jupyter
 # this will create a `jupyter` user with home directory at `/var/lib`
 # and it is the recommended behaviour for systemd service users
 #
 # you will probably want to run the following command, to apply our config:
 #   sudo mkdir -p /var/lib/jupyter/.jupyter/ && sudo cp -f ~/dotfiles/.config/.jupyter/jupyter_lab_config.py /var/lib/jupyter/.jupyter/ && sudo chown jupyter:jupyter -R /var/lib/jupyter/
+#you should add all local site packages to the $PATH so jupyter can work with those when installing stuff with pip etc. via !
+#sudo tee -a /var/lib/jupyter/.bashrc <<-PATHEOF
+#for SITEPACKAGE_DIR in \$HOME/.local/lib/python3.*; do
+#    SITE_PACKAGE_DIR_ABSOLUTE="\$SITEPACKAGE_DIR/site-packages"
+#    [[ -d \$SITE_PACKAGE_DIR_ABSOLUTE ]] && PATH="\$PATH:\$SITE_PACKAGE_DIR_ABSOLUTE"
+#done
+#PATHEOF
 
 # kernels:
 #
