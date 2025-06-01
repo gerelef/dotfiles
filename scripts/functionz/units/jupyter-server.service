@@ -10,6 +10,7 @@
 #   sudo mkdir -p /var/lib/jupyter/.jupyter/ && sudo cp -f ~/dotfiles/.config/.jupyter/jupyter_lab_config.py /var/lib/jupyter/.jupyter/ && sudo chown jupyter:jupyter -R /var/lib/jupyter/
 #you should add all local site packages to the $PATH so jupyter can work with those when installing stuff with pip etc. via !
 #sudo tee -a /var/lib/jupyter/.bashrc <<-PATHEOF
+#PATH="\$PATH:\$HOME/.local/bin"
 #for SITEPACKAGE_DIR in \$HOME/.local/lib/python3.*; do
 #    SITE_PACKAGE_DIR_ABSOLUTE="\$SITEPACKAGE_DIR/site-packages"
 #    [[ -d \$SITE_PACKAGE_DIR_ABSOLUTE ]] && PATH="\$PATH:\$SITE_PACKAGE_DIR_ABSOLUTE"
