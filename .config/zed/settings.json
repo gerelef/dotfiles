@@ -103,7 +103,7 @@
     "enable_language_server": true,
     "ensure_final_newline_on_save": null, // disabled for edge cases;
     "format_on_save": "off",
-    "formatter": "prettier",
+    "formatter": "auto",
     "use_autoclose": true,
     "soft_wrap": "none",
     "always_treat_brackets_as_autoclosed": true,
