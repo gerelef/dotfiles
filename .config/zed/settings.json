@@ -92,7 +92,7 @@
         "version": "2",
         "dock": "right",
         "default_model": { "provider": "anthropic", "model": "claude-opus-4-thinking-latest" },
-        "inline_alternatives": [ { "provider": "anthropic", "model": "claude-sonnet-4-latest" } ]
+        "inline_assistant_model": { "provider": "anthropic", "model": "claude-sonnet-4-latest" }
     },
     "language_models": { "ollama": { "low_speed_timeout_in_seconds": 120 } },
     "git_status": true,
