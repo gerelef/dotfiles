@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-# HELP update-compat-layers [<tag_name>]; download & extract latest version of proton-ge
+# HELP update-compat-layers [<tag_name | ls>]; download & extract latest version of proton-ge
 
 _depends-on curl jq tar || exit
 
@@ -8,6 +8,10 @@ update-compat-layers () {
     if [[ $# -lt 1 ]]; then
         response=$(curl -sL 'https://api.github.com/repos/GloriousEggroll/proton-ge-custom/releases' | jq ".[0]")
     else
+	if [[ $1 == "ls" ]]; then
+	    ls -la "$HOME/.local/share/Steam/compatibilitytools.d/"
+	    exit 0
+	fi
         response=$(curl -sL 'https://api.github.com/repos/GloriousEggroll/proton-ge-custom/releases' | jq ".[] | select(.tag_name | contains(\"$1\"))")
     fi
     if [[ -z "$response" ]]; then
