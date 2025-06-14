@@ -1,15 +1,14 @@
+// FIXME ctrl + scrollup/down increase/decrease buffer_font
+//  tracked on https://github.com/zed-industries/zed/issues/10647
 [
     {
         "bindings": {
-            // MISSING ctrl + scrollup/down increase/decrease buffer_font
             // ---------------- EDITOR TOGGLES ----------------
             "f1": "workspace::ToggleLeftDock",
             "shift-f1": "workspace::ToggleRightDock",
             "ctrl-0": "zed::ResetBufferFontSize",
             "ctrl-=": "zed::IncreaseBufferFontSize",
             "ctrl--": "zed::DecreaseBufferFontSize",
-            "ctrl-alt-=": "editor::UnfoldLines",
-            "ctrl-alt--": "editor::Fold",
             "ctrl-`": "terminal_panel::ToggleFocus",
             "shift shift": "file_finder::Toggle",
             "ctrl ctrl": "command_palette::Toggle",
@@ -18,14 +17,11 @@
             "ctrl-alt-f": "go_to_line::Toggle",
             "ctrl-shift-f": "pane::DeploySearch",
             "ctrl-f": "buffer_search::Deploy",
-            "ctrl-r": [
-                "workspace::SendKeystrokes",
-                "ctrl-h"
-            ],
+            "ctrl-r": "buffer_search::DeployReplace",
             "ctrl-shift-x": "workspace::ToggleZoom",
             // ---------------- LINE MANIP ----------------
             "ctrl-c": "editor::Copy",
-            "ctrl-shift-c": "editor::CopyPermalinkToLine",
+            "ctrl-shift-c": "editor::Copy",  // for fatfingering convenience between terminal & buffer editor
             "ctrl-x": "editor::Cut",
             "ctrl-v": "editor::Paste",
             "ctrl-shift-v": "editor::Paste",
@@ -49,7 +45,6 @@
             "shift-enter": "search::SelectPreviousMatch",
             "ctrl-alt-enter": null, // disable newline above
             // ---------------- JETBRAINS ----------------
-            "shift-f6": "project_panel::Rename",
             "ctrl-l": "editor::Format",
             "ctrl-shift-l": "editor::ToggleSoftWrap",
             // ---------------- BROWSER BINDS ----------------
@@ -61,13 +56,26 @@
         "context": "Terminal",
         "bindings": {
             "ctrl-t": "workspace::NewTerminal",
-            "ctrl-r": ["terminal::SendKeystroke", "ctrl-r"]
+            "ctrl-r": ["terminal::SendKeystroke", "ctrl-r"]  // do NOT catch ctrl-r used for reverse search by shells
         }
     },
     {
         "context": "Search",
         "bindings": {
             "enter": "search::SelectNextMatch"
+        }
+    },
+    {
+        "context": "Editor",
+        "bindings": {
+            "ctrl-k": "editor::ToggleFold",
+            "shift-f6": "editor::Rename"
+        }
+    },
+    {
+        "context": "Project_Panel",
+        "bindings": {
+            "shift-f6": "project_panel::Rename"
         }
     }
 ]
