@@ -271,9 +271,16 @@ install-media-codecs () (
     "obs-studio-plugin-vlc-video" \
     "obs-studio-plugin-webkitgtk" \
     "obs-studio-plugin-x264" \
-    "v4l2loopback" # used for mirroring the scene as a camera
+    "v4l2loopback"  # used for mirroring the scene as a camera in OBS
 
-    sudo dnf install -y --best --allowerasing --skip-unavailable "ffmpeg" "gstreamer-ffmpeg" "ffmpeg-libs" "libva" "libva-utils" "ffmpegthumbnailer" "libavcodec-freeworld" "pipewire-codec-aptx"
+    sudo dnf install -y --best --allowerasing --skip-unavailable "ffmpeg" \
+    "gstreamer-ffmpeg" \
+    "ffmpeg-libs" \
+    "libva" \
+    "libva-utils" \
+    "ffmpegthumbnailer" \
+    "libavcodec-freeworld" \
+    "pipewire-codec-aptx"
     if _is-gnome-session; then
         # in order to have nautilus create thumbnails, we need both the ffmpeg thumbnailer & the appropriate codec
         #  afterwards, refresh the current cache
@@ -372,7 +379,8 @@ configure-system-defaults () (
     sudo sh -c "echo \"$REAL_USER 'hard nproc 10000'\" > '/etc/security/limits.d/90-nproc.conf'"
     _echo-success "Capped maximum number of processes."
     _echo-debug "Creating convenience for sudoers.d/convenience-defaults"
-    # 440 is the default rights of /etc/sudoers file, so we're copying the rights just in case (even though visudo -f /etc/sudoers.d/test creates the file with 640)
+    # 440 is the default rights of /etc/sudoers file, so we're copying the rights just in case
+    #  (even though visudo -f /etc/sudoers.d/test creates the file with 640)
     sudo sh -c 'echo "Defaults timestamp_timeout=120, pwfeedback" > "/etc/sudoers.d/convenience-defaults"'
     sudo chmod 440 "/etc/sudoers.d/convenience-defaults"
     _echo-success "Created sudoers.d convenience defaults."
@@ -432,7 +440,8 @@ configure-ssh-defaults () (
 )
 
 configure-tailscaled () (
-    # TODO eventually add crowdsec here, along with a 'remediation component'
+    # TODO eventually replace fail2ban with crowdsec here, along with a 'remediation component'
+    #  https://community.hetzner.com/tutorials/how-to-set-up-crowdsec-and-protect-ssh
     _echo-status "Installing tailscaled, openssh-server (sshd) & fail2ban"
 
     sudo dnf config-manager addrepo --from-repofile="https://pkgs.tailscale.com/stable/fedora/tailscale.repo"
@@ -441,7 +450,18 @@ configure-tailscaled () (
     sudo systemctl enable --now tailscaled
     sudo systemctl enable --now fail2ban
 
-    # TODO make sshd listen only on the tailscaled interface
+    tailscaled_ipvX=$(ip --json -brief address | jq '.[] | select(."ifname" | startswith("tailscale"))' | jq '."addr_info".[0].local | select(. != null and . != "127.0.0.1")')
+
+    if [[ -z $tailscaled_ipvX ]]; then
+        _echo-unexpected("Couldn't identify tailscaled interface, and sshd is listening on all interfaces!")
+    else
+        sudo tee "/etc/ssh/sshd_config" <<EOF
+ListenAddress $tailscaled_ipvX
+EOF
+        _echo-important("Bound tailscaled to $tailscaled_ipvX!")
+    fi
+
+    sleep 2
 
     sudo systemctl unmask sshd
     sudo systemctl enable --now sshd
@@ -458,7 +478,8 @@ bantime = 3600
 ignoreip = 127.0.0.1
 EOF
 
-    _echo-important "$(tailscale ip -4)"
+    # _echo-important "$(tailscale ip -4)"
+    #  "no current Tailscale IPs; state: NeedsLogin"
     _echo-status "Done."
 )
 
@@ -468,7 +489,7 @@ install-jetbrains-toolbox () (
     _depends-on tar || sudo dnf install -y tar
 
     echo "-------------------INSTALLING JETBRAINS TOOLBOX----------------"
-    sudo dnf install -y --best --allowerasing "fuse" "libXtst" "libXrender" "glx-utils" "fontconfig-devel" "gtk3" "tar"
+    sudo dnf install -y --best --allowerasing "libXtst" "libXrender" "glx-utils" "fontconfig-devel" "gtk3" "tar"
     mkdir "/tmp/jetbrains-toolbox"  # tmp dir
     sudo mkdir "/opt/jetbrains-toolbox"  # install dir
 
@@ -486,46 +507,6 @@ install-jetbrains-toolbox () (
     rm -rf "/tmp/jetbrains-install"  # remove tmp dir, not needed anymore
     echo "Done."
     jetbrains-toolbox &
-)
-
-install-visual-studio-code () (
-    _depends-on tee || sudo dnf install -y tee
-
-    if [[ -z "$(command -v code)" ]]; then
-        echo "Installing Visual Studio Code..."
-        # instructions taken from here (official site)
-        #  https://code.visualstudio.com/docs/setup/linux#_rhel-fedora-and-centos-based-distributions
-        sudo rpm --import https://packages.microsoft.com/keys/microsoft.asc
-        sudo tee "/etc/yum.repos.d/vscode.repo" <<-VSC_END
-[code]
-name=Visual Studio Code
-baseurl=https://packages.microsoft.com/yumrepos/vscode
-enabled=1
-gpgcheck=1
-gpgkey=https://packages.microsoft.com/keys/microsoft.asc
-VSC_END
-        sudo dnf check-update
-        sudo dnf install -y --best --allowerasing code
-
-        echo "Done."
-        return
-    fi
-
-    sudo dnf upgrade -y code
-)
-
-install-sublime-text-editor () (
-    if [[ -z "$(command -v sublime-text)" ]]; then
-        echo "Installing sublime-text ..."
-
-        sudo rpm -v --import https://download.sublimetext.com/sublimehq-rpm-pub.gpg
-        sudo dnf config-manager addrepo --from-repofile="https://download.sublimetext.com/rpm/stable/x86_64/sublime-text.repo"
-        sudo dnf install -y --best --allowerasing "sublime-text"
-
-        echo "Done."
-    fi
-
-    sudo dnf upgrade -y sublime-text
 )
 
 readonly REAL_USER="${SUDO_USER:-$(whoami)}"
@@ -570,12 +551,13 @@ gnome-shell-extension-appindicator \
 
 #######################################################################################################
 
-# replace grub2 with systemd-boot when we get rid of all the issues
+# TODO replace grub2 with systemd-boot when we get rid of all the issues
 #  regarding proprietary NVIDIA Drivers, and signing them for UEFI
 #  apparently, this is the way going forward with unified kernel image
 #  https://fedoraproject.org/wiki/Changes/Unified_Kernel_Support_Phase_2
 #  so we won't replace it manually, it'll be replaced be Red Hat themselves
 readonly INSTALLABLE_ESSENTIAL_PACKAGES="\
+"fuse" \
 setroubleshoot \
 setroubleshoot-plugins \
 firewall-config \
@@ -656,6 +638,7 @@ rhythmbox \
 totem \
 cheese \
 gnome-tour \
+gnome-calendar \
 gnome-weather \
 gnome-terminal \
 gnome-software \
@@ -753,7 +736,7 @@ fi
 
 if _is-gnome-session; then
     _echo-debug "GNOME session detected. Installing GNOME/libadwaita-specific packages."
-    sudo dnf install -y --best --allowerasing "gnome-calendar" "loupe"
+    sudo dnf install -y --best --allowerasing "loupe"
     sudo dnf install -y --best --allowerasing $INSTALLABLE_ADWAITA_PACKAGES $INSTALLABLE_GNOME_EXTENSIONS
     sudo dnf install -y --best --allowerasing 'gnome-session-xsession'
     flatpak install --system --noninteractive -y $INSTALLABLE_ADWAITA_FLATPAKS
@@ -768,44 +751,10 @@ if [[ $(sudo updatedb 2> /dev/null) ]]; then
 fi
 
 #######################################################################################################
-# user options here, ask most of the stuff ahead of time.
 
-_echo-important "You will be asked a series of questions ahead of time, so you can go semi-AFK while installing."
-_echo-important "Note that NVIDIA drivers require manual confirmation for MOK enrollment, and this cannot be automated"
-_echo-important " due to its intrusive nature."
-
-ask user question 'Do you want to install snapd?' && INSTALL_SNAPD="yes"
-_echo-debug "Will install snapd? $INSTALL_SNAPD"
-ask user question 'Do you want to install gaming packages?' && INSTALL_GAMING="yes"
-_echo-debug "Will install gaming? $INSTALL_GAMING"
-ask user question 'Do you want to install terminal tools?' && INSTALL_TERM_TOOLS="yes"
-_echo-debug "Will install terminal-tools? $INSTALL_TERM_TOOLS"
-ask user question 'Do you want to install tailscaled?' && INSTALL_TAILSCALED="yes"
-_echo-debug "Will install tailscaled? $INSTALL_TAILSCALED"
-ask user question 'Do you want to install development tools?' && INSTALL_DEV_TOOLS="yes"
-_echo-debug "Will install dev tools? $INSTALL_DEV_TOOLS"
-ask user question 'Do you want to install ollama?' && INSTALL_OLLAMA="yes"
-_echo-debug "Will install ollama? $INSTALL_OLLAMA"
-ask user question 'Do you want to install rpm tools?' && INSTALL_RPM_TOOLS="yes"
-_echo-debug "Will install rpm tools? $INSTALL_RPM_TOOLS"
-ask user question 'Do you want to install virtualization packages?' && INSTALL_VIRTUALIZATION="yes"
-_echo-debug "Will install virtualization? $INSTALL_VIRTUALIZATION"
-ask user question 'Do you want to install containerization packages?' && INSTALL_CONTAINERIZATION="yes"
-_echo-debug "Will install containerization? $INSTALL_CONTAINERIZATION"
-ask user question 'Do you want to install zeno/scrcpy?' && INSTALL_SCRCPY="yes"
-_echo-debug "Will install scrcpy? $INSTALL_SCRCPY"
-ask user question 'Do you want to install JetBrains Toolbox?' && INSTALL_JETBRAINS="yes"
-_echo-debug "Will install jetbrains? $INSTALL_JETBRAINS"
-ask user question 'Do you want to install Zed Text Editor?' && INSTALL_ZED="yes"
-_echo-debug "Will install zed? $INSTALL_ZED"
-ask user question 'Do you want to install Visual Studio Code?' && INSTALL_VSC="yes"
-_echo-debug "Will install vsc? $INSTALL_VSC"
-ask user question 'Do you want to install Sublime Text Editor?' && INSTALL_SUBLIME="yes"
-_echo-debug "Will install sublime? $INSTALL_SUBLIME"
-ask user question 'Do you want to install joplin?' && INSTALL_JOPLIN="yes"
-_echo-debug "Will install joplin? $INSTALL_JOPLIN"
-
-#######################################################################################################
+_echo-important "Note that NVIDIA drivers require manual confirmation for UEFI MOK enrollment"
+_echo-important " and this cannot be automated due to its intrusive nature."
+sleep 5
 
 _echo-debug "uninstalling bloat"
 sudo dnf remove -y $UNINSTALLABLE_BLOAT
@@ -823,7 +772,36 @@ configure-ssh-defaults
 sudo dnf remove -y cups-browsed
 
 #######################################################################################################
-# user-submitted opts
+# user options here, ask most of the stuff ahead of time.
+
+_echo-important "You will be asked a series of questions ahead of time, so you can go semi-AFK while installing."
+
+ask user question 'Do you want to install snapd?' && INSTALL_SNAPD="yes"
+_echo-debug "Will install snapd? $INSTALL_SNAPD"
+ask user question 'Do you want to install gaming packages?' && INSTALL_GAMING="yes"
+_echo-debug "Will install gaming? $INSTALL_GAMING"
+ask user question 'Do you want to install terminal tools?' && INSTALL_TERM_TOOLS="yes"
+_echo-debug "Will install terminal-tools? $INSTALL_TERM_TOOLS"
+ask user question 'Do you want to install tailscaled?' && INSTALL_TAILSCALED="yes"
+_echo-debug "Will install tailscaled? $INSTALL_TAILSCALED"
+ask user question 'Do you want to install development tools?' && INSTALL_DEV_TOOLS="yes"
+_echo-debug "Will install dev tools? $INSTALL_DEV_TOOLS"
+ask user question 'Do you want to install rpm tools?' && INSTALL_RPM_TOOLS="yes"
+_echo-debug "Will install rpm tools? $INSTALL_RPM_TOOLS"
+ask user question 'Do you want to install virtualization packages?' && INSTALL_VIRTUALIZATION="yes"
+_echo-debug "Will install virtualization? $INSTALL_VIRTUALIZATION"
+ask user question 'Do you want to install containerization packages?' && INSTALL_CONTAINERIZATION="yes"
+_echo-debug "Will install containerization? $INSTALL_CONTAINERIZATION"
+ask user question 'Do you want to install zeno/scrcpy?' && INSTALL_SCRCPY="yes"
+_echo-debug "Will install scrcpy? $INSTALL_SCRCPY"
+ask user question 'Do you want to install JetBrains Toolbox?' && INSTALL_JETBRAINS="yes"
+_echo-debug "Will install jetbrains? $INSTALL_JETBRAINS"
+ask user question 'Do you want to install Zed Text Editor?' && INSTALL_ZED="yes"
+_echo-debug "Will install zed? $INSTALL_ZED"
+ask user question 'Do you want to install joplin?' && INSTALL_JOPLIN="yes"
+_echo-debug "Will install joplin? $INSTALL_JOPLIN"
+
+#######################################################################################################
 
 [[ -n "$INSTALL_GAMING" ]] && install-gaming-packages
 [[ -n "$INSTALL_TAILSCALED" ]] && configure-tailscaled
@@ -847,8 +825,6 @@ if [[ -n "$INSTALL_DEV_TOOLS" ]]; then
 
     _echo-success "Done."
 fi
-
-[[ -n "$INSTALL_OLLAMA" ]] && curl -fsSL https://ollama.com/install.sh | bash
 
 if [[ -n "$INSTALL_RPM_TOOLS" ]]; then
     _echo-status "-------------------INSTALLING RPM TOOLS----------------"
@@ -924,12 +900,8 @@ EOF
 fi
 
 [[ -n "$INSTALL_JETBRAINS" ]] && install-jetbrains-toolbox
-[[ -n "$INSTALL_VSC" ]] && install-visual-studio-code
 [[ -n "$INSTALL_ZED" ]] && curl -f https://zed.dev/install.sh | sh
-[[ -n "$INSTALL_SUBLIME" ]] && install-sublime-text-editor
 [[ -n "$INSTALL_ZED" ]] && sudo dnf remove -y "gnome-text-editor" "gedit"
-[[ -n "$INSTALL_VSC" ]] && sudo dnf remove -y "gnome-text-editor" "gedit"
-[[ -n "$INSTALL_SUBLIME" ]] && sudo dnf remove -y "gnome-text-editor" "gedit"
 
 # this is bad but it's the official 'packaging' format jesus christ
 [[ -n "$INSTALL_JOPLIN" ]] && curl --proto '=https' --tlsv1.2 -sSf 'https://raw.githubusercontent.com/laurent22/joplin/dev/Joplin_install_and_update.sh' | bash
@@ -985,7 +957,7 @@ if _is-gnome-session; then
     gsettings set org.gnome.settings-daemon.plugins.media-keys custom-keybindings '[]'
     add-gsettings-shortcut "gnome-system-monitor" "gnome-system-monitor" "<Shift><Control>Escape"
     add-gsettings-shortcut "flameshot" "flatpak run --command=flameshot org.flameshot.Flameshot gui" "Print"
-    add-gsettings-shortcut "$TERMINAL_OF_CHOICE" "$TERMINAL_OF_CHOICE" "<Super>t"
+    add-gsettings-shortcut "$TERMINAL_OF_CHOICE" "$TERMINAL_OF_CHOICE" "<Super>t"  # ghostty --command=fish
 
     # nautilus & gtk3/gtk4 filechooser settings
     gsettings set org.gnome.nautilus.preferences show-create-link true
