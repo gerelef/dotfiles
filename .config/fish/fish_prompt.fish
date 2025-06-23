@@ -43,13 +43,12 @@ function fish_prompt --description 'Write out the prompt'
     end
 
     if set -q TRANSIENT
-        echo -n -s "$suffix "
+        echo -n -s $suffix " " (set_color blue)
         return
     else
         bind \r transient-execute
     end
 
-    set -l normal (set_color normal)
     set -q fish_color_status; or set -g fish_color_status red
 
     # Write pipestatus
@@ -64,7 +63,7 @@ function fish_prompt --description 'Write out the prompt'
     set -l statusb_color (set_color $bold_flag $fish_color_status)
     set -l prompt_status (__fish_print_pipestatus "[" "]" "|" "$status_color" "$statusb_color" $last_pipestatus)
 
-    echo -n -s (set_color $color_cwd) (prompt_pwd) $normal " "$prompt_status $suffix " "
+    echo -n -s (set_color $color_cwd) (prompt_pwd) (set_color normal) " "$prompt_status $suffix " "
 end
 
 function fish_right_prompt -d "Write out the right prompt"
@@ -89,5 +88,5 @@ function fish_right_prompt -d "Write out the right prompt"
         end
     end
 
-    echo -n -s (fish_vcs_prompt) $normal " " (set_color blue) $TIME_TAKEN
+    echo -n -s (fish_vcs_prompt) (set_color normal) " " (set_color blue) $TIME_TAKEN
 end
