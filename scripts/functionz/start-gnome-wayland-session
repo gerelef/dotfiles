@@ -1,5 +1,0 @@
-#!/usr/bin/env bash
-
-_depends-on dbus-run-session || exit
-
-dbus-run-session -- gnome-shell --display-server --wayland
