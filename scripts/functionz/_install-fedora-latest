@@ -97,8 +97,7 @@ install-universal-necessities () (
 
     sudo dnf group install -y --best --allowerasing "libreoffice"
     sudo dnf install -y --best --allowerasing --skip-unavailable $INSTALLABLE_APPLICATION_PACKAGES
-    sudo dnf swap gimp gimp3 -y --no-best --allowerasing
-    flatpak install --system --noninteractive -y $INSTALLABLE_FLATPAKS
+    flatpak install flathub --system --noninteractive -y $INSTALLABLE_FLATPAKS
     # install brave from the official repo, do NOT use the flatpak!!!
     sudo dnf config-manager addrepo -y --from-repofile=https://brave-browser-rpm-release.s3.brave.com/brave-browser.repo
     sudo dnf install -y --best brave-browser
@@ -141,7 +140,7 @@ optimize-hardware () (
 
         if _is-gnome-session; then
             _echo-debug "Installing s76-scheduler-plugin..."
-            git clone git@github.com:KyleGospo/s76-scheduler-plugin.git ~/.local/share/gnome-shell/extensions/s76-scheduler@mattjakeman.com
+            git clone https://github.com:KyleGospo/s76-scheduler-plugin.git ~/.local/share/gnome-shell/extensions/s76-scheduler@mattjakeman.com
             _echo-status "Enabling system76-scheduler..."
             sudo dnf copr enable -y kylegospo/system76-scheduler
             sudo dnf install -y --best --allowerasing --skip-unavailable system76-scheduler
@@ -295,7 +294,7 @@ install-media-codecs () (
 install-gaming-packages () (
     _echo-status "-------------------INSTALLING GAMING PACKAGES----------------"
     sudo dnf install -y --best --allowerasing --skip-unavailable "steam" "gamescope"
-    flatpak install --system --noninteractive -y "com.discordapp.Discord" "com.leinardi.gst"
+    flatpak install flathub --system --noninteractive -y "com.discordapp.Discord" "com.leinardi.gst"
     # vulkan drivers are required for proton-ge to work
     sudo dnf install -y --best --allowerasing --skip-unavailable "protontricks" "vulkan" "vulkan-loader" "vulkan-loader.i686"
     _echo-debug "installed proton-ge prerequisites"
@@ -425,14 +424,15 @@ tweak-minor-details () (
 )
 
 configure-ssh-defaults () (
+    ALGO="ed25519"
     # if the directory already exists, abandon
-    [[ -d "$REAL_USER_HOME/.ssh" ]] && return
+    [[ -d "$REAL_USER_HOME/.ssh/id_$ALGO" ]] && return
 
     sudo dnf install -y "ssh"
     sudo systemctl disable --now sshd
     _echo-status "-------------------GENERATING SSH KEY----------------"
     mkdir -p "$REAL_USER_HOME/.ssh"
-    ssh-keygen -q -t ed25519 -N '' -C "$REAL_USER@$(hostname)" -f "$REAL_USER_HOME/.ssh/id_ed25519" -P "" <<< $'\ny' >/dev/null 2>&1
+    ssh-keygen -q -t $ALGO -N '' -C "$REAL_USER@$(hostname)" -f "$REAL_USER_HOME/.ssh/id_ed25519" -P "" <<< $'\ny' >/dev/null 2>&1
     cat "$REAL_USER_HOME/.ssh/id_ed25519.pub"
     # this is REQUIRED for ssh related thingies; key must NOT be readable by anyone else but this user
     sudo chown "$REAL_USER" "$REAL_USER_HOME/.ssh/id_ed25519"
@@ -454,12 +454,12 @@ configure-tailscaled () (
     tailscaled_ipvX=$(ip --json -brief address | jq '.[] | select(."ifname" | startswith("tailscale"))' | jq '."addr_info".[0].local | select(. != null and . != "127.0.0.1")')
 
     if [[ -z $tailscaled_ipvX ]]; then
-        _echo-unexpected("Couldn't identify tailscaled interface, and sshd is listening on all interfaces!")
+        _echo-unexpected "Couldn't identify tailscaled interface, and sshd is listening on all interfaces!"
     else
         sudo tee "/etc/ssh/sshd_config" <<EOF
 ListenAddress $tailscaled_ipvX
 EOF
-        _echo-important("Bound tailscaled to $tailscaled_ipvX!")
+        _echo-important "Bound tailscaled to $tailscaled_ipvX!"
     fi
 
     sleep 2
@@ -528,10 +528,7 @@ adwaita-icon-theme \
 adwaita-cursor-theme \
 adwaita-gtk2-theme \
 adw-gtk3-theme \
-adwaita-qt5 \
 qadwaitadecorations-qt5 \
-qadwaitadecorations-qt6 \
-adwaita-qt6 \
 "
 
 readonly INSTALLABLE_ADWAITA_FLATPAKS="\
@@ -552,13 +549,8 @@ gnome-shell-extension-appindicator \
 
 #######################################################################################################
 
-# TODO replace grub2 with systemd-boot when we get rid of all the issues
-#  regarding proprietary NVIDIA Drivers, and signing them for UEFI
-#  apparently, this is the way going forward with unified kernel image
-#  https://fedoraproject.org/wiki/Changes/Unified_Kernel_Support_Phase_2
-#  so we won't replace it manually, it'll be replaced be Red Hat themselves
 readonly INSTALLABLE_ESSENTIAL_PACKAGES="\
-"fuse" \
+fuse \
 setroubleshoot \
 setroubleshoot-plugins \
 firewall-config \
@@ -602,7 +594,6 @@ xorg-x11-drv-nvidia-cuda \
 xorg-x11-drv-nvidia-power \
 nvidia-gpu-firmware \
 nvidia-modprobe \
-nvidia-smi \
 "
 
 readonly INSTALLABLE_VIRTUALIZATION_PACKAGES="\
@@ -611,7 +602,6 @@ swtpm-tools \
 virt-manager \
 libvirt-devel \
 virt-top \
-libguestfs-tools \
 guestfs-tools \
 bridge-utils \
 libvirt \
@@ -739,9 +729,8 @@ if _is-gnome-session; then
     _echo-debug "GNOME session detected. Installing GNOME/libadwaita-specific packages."
     sudo dnf install -y --best --allowerasing "loupe"
     sudo dnf install -y --best --allowerasing $INSTALLABLE_ADWAITA_PACKAGES $INSTALLABLE_GNOME_EXTENSIONS
-    sudo dnf install -y --best --allowerasing 'gnome-session-xsession'
-    flatpak install --system --noninteractive -y $INSTALLABLE_ADWAITA_FLATPAKS
-    flatpak install --system --noninteractive -y $INSTALLABLE_GNOME_FLATPAKS
+    flatpak install flathub --system --noninteractive -y $INSTALLABLE_ADWAITA_FLATPAKS
+    flatpak install flathub --system --noninteractive -y $INSTALLABLE_GNOME_FLATPAKS
 fi
 
 # this needs to be up-to-date for some commands
@@ -822,7 +811,7 @@ if [[ -n "$INSTALL_DEV_TOOLS" ]]; then
     sudo dnf group install -y --best --allowerasing  "c-development" "development-tools"
     sudo dnf install -y --best --allowerasing --skip-unavailable $INSTALLABLE_DEV_PKGS
     sudo dnf install -y --best --allowerasing nmap net-tools
-    flatpak install --system --noninteractive -y "net.werwolv.ImHex"
+    flatpak install flathub --system --noninteractive -y "net.werwolv.ImHex"
 
     _echo-success "Done."
 fi
@@ -1056,12 +1045,6 @@ if _is-gnome-session; then
     # modal & checkalive timeouts
     gsettings set org.gnome.mutter attach-modal-dialogs true
     gsettings set org.gnome.mutter check-alive-timeout 15000
-
-    # night light settings
-    gsettings set org.gnome.settings-daemon.plugins.color night-light-enabled true
-    gsettings set org.gnome.settings-daemon.plugins.color night-light-schedule-automatic false
-    gsettings set org.gnome.settings-daemon.plugins.color night-light-schedule-from 0.0
-    gsettings set org.gnome.settings-daemon.plugins.color night-light-schedule-to 6.0
 
     # keybinds/shortcuts
     gsettings set org.gnome.desktop.wm.keybindings minimize "['<Super>q']"
