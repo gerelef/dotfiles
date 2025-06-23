@@ -8,6 +8,7 @@
 # sudo dnf install -y --best --allowerasing --repofrompath "terra,https://repos.fyralabs.com/terra$(rpm -E %fedora)" --setopt="terra.gpgkey=https://repos.fyralabs.com/terra$(rpm -E %fedora)/key.asc" terra-release || exit
 # sudo dnf config-manager setopt terra.enabled=0
 
+export TRACE_SETUP_ON  # set before running to enable traces
 export DEBUG_SETUP_ON="yes"
 export PATH="$PATH:$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
 export UNITS="$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )/units"
@@ -514,7 +515,7 @@ readonly REAL_USER="${SUDO_USER:-$(whoami)}"
 readonly REAL_USER_HOME="/home/$REAL_USER"
 readonly HAS_CHANGED_HOSTNAME_FILE="/opt/has-changed-hostname"
 
-[[ -n "$DEBUG_SETUP_ON" ]] && set -x
+[[ -n "$TRACE_SETUP_ON" ]] && set -x
 
 shopt -s globstar
 shopt -s dotglob
