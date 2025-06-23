@@ -138,6 +138,9 @@ optimize-hardware () (
         _echo-debug "Updated grub."
         sudo update-grub
 
+        sudo chattr +T /home
+        _echo-debug "Configured chattr +T for /home"
+
         if _is-gnome-session; then
             _echo-debug "Installing s76-scheduler-plugin..."
             git clone https://github.com:KyleGospo/s76-scheduler-plugin.git ~/.local/share/gnome-shell/extensions/s76-scheduler@mattjakeman.com
@@ -355,8 +358,6 @@ EOF
         systemctl enable --user --now "$UNITS/openrgb.service"
     fi
 
-    sudo chattr +T /home
-    _echo-debug "Configured chattr +T for /home"
     _echo-success "Done."
 )
 
