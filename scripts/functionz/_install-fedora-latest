@@ -59,7 +59,7 @@ configure-residual-permissions () (
 )
 
 copy-dnf () (
-    _depends-on tee || sudo dnf install -y tee
+    _depends-on tee || sudo dnf install -y --quiet tee
 
     _echo-debug "Copying /etc/dnf/dnf.conf"
     # NOTE: ip_resolve=4 was added to disable ipv6 resolve, because there was an outage lol
@@ -72,8 +72,7 @@ best=False
 deltarpm=False
 skip_if_unavailable=True
 max_parallel_downloads=10
-metadata_expire=1
-keepcache=true
+metadata_expire=21600
 ip_resolve=4
 DNF_EOF
 )
@@ -81,8 +80,8 @@ DNF_EOF
 install-gnome-de () (
     _echo-status "-------------------INSTALLING GNOME----------------"
 
-    sudo dnf group install -y "gnome-desktop"
-    sudo dnf install -y "systemd-container"
+    sudo dnf group install -y --quiet "gnome-desktop"
+    sudo dnf install -y --quiet "systemd-container"
     sudo systemctl enable gdm
 
     _echo-success "Done."
@@ -90,22 +89,22 @@ install-gnome-de () (
 
 install-universal-necessities () (
     _echo-status "-------------------INSTALLING ESSENTIAL PACKAGES----------------"
-    sudo dnf install -y --best --allowerasing --skip-unavailable $INSTALLABLE_ESSENTIAL_PACKAGES
+    sudo dnf install -y --quiet --best --allowerasing --skip-unavailable $INSTALLABLE_ESSENTIAL_PACKAGES
     sudo systemctl enable --now firewalld
 
-    sudo dnf group install -y --best --allowerasing "hardware-support" "networkmanager-submodules" "printing" "input-methods"
+    sudo dnf group install -y --quiet --best --allowerasing "hardware-support" "networkmanager-submodules" "printing" "input-methods"
 
-    sudo dnf group install -y --best --allowerasing "libreoffice"
-    sudo dnf install -y --best --allowerasing --skip-unavailable $INSTALLABLE_APPLICATION_PACKAGES
+    sudo dnf group install -y --quiet --best --allowerasing "libreoffice"
+    sudo dnf install -y --quiet --best --allowerasing --skip-unavailable $INSTALLABLE_APPLICATION_PACKAGES
     flatpak install flathub --system --noninteractive -y $INSTALLABLE_FLATPAKS
     # install brave from the official repo, do NOT use the flatpak!!!
-    sudo dnf config-manager addrepo -y --from-repofile=https://brave-browser-rpm-release.s3.brave.com/brave-browser.repo
-    sudo dnf install -y --best brave-browser
+    sudo dnf config-manager addrepo -y --quiet --from-repofile=https://brave-browser-rpm-release.s3.brave.com/brave-browser.repo
+    sudo dnf install -y --quiet --best brave-browser
 
     _echo-debug "Checking whether btrfs is in rootfs or homefs (sometimes are different partitions)"
     if _is-btrfs-rootfs || _is-btrfs-homefs; then
         _echo-status "Found BTRFS, installing tools..."
-        sudo dnf install -y --best --allowerasing --skip-unavailable $INSTALLABLE_BTRFS_TOOLS
+        sudo dnf install -y --quiet --best --allowerasing --skip-unavailable $INSTALLABLE_BTRFS_TOOLS
     fi
 
     flatpak permission-set screenshot screenshot org.flameshot.Flameshot yes
@@ -129,6 +128,14 @@ optimize-hardware () (
 
     sudo systemctl enable --now systemd-bsod
 
+    if journalctl --boot | grep -i 'failed to send h2c command'; then
+        _echo-important "Found error messages regarding wifi powersaving. Deactivating feature..."
+        sudo tee /etc/NetworkManager/conf.d/wifi.conf <<EOF
+[connection]
+wifi.powersave = 2
+EOF
+    fi
+
     if _is-mobile-type; then
         _echo-status "Enabling power-efficient (but less secure) suspend to ram for mobile-type."
         _echo-important "This will FAIL HSI-2 tests."
@@ -145,8 +152,8 @@ optimize-hardware () (
             _echo-debug "Installing s76-scheduler-plugin..."
             git clone https://github.com/gerelef/s76-scheduler-plugin.git ~/.local/share/gnome-shell/extensions/s76-scheduler@mattjakeman.com
             _echo-status "Enabling system76-scheduler..."
-            sudo dnf copr enable -y kylegospo/system76-scheduler
-            sudo dnf install -y --best --allowerasing --skip-unavailable system76-scheduler
+            sudo dnf copr enable -y --quiet kylegospo/system76-scheduler
+            sudo dnf install -y --quiet --best --allowerasing --skip-unavailable system76-scheduler
             sudo systemctl enable --now com.system76.Scheduler.service
         fi
     fi
@@ -161,6 +168,9 @@ optimize-hardware () (
         sudo systemctl disable --now nvidia-powerd.service
         return
     fi
+
+    _echo-important "Locking down kernel with confidentiality mode."
+    sudo grubby --args="lockdown=confidentiality" --update-kernel=ALL
 
     _echo-status "Adding preempt=full kernel parameter..."
     sudo grubby --update-kernel=ALL --args="preempt=full"
@@ -220,7 +230,7 @@ install-proprietary-nvidia-drivers () (
     _echo-status "-------------------INSTALLING NVIDIA DRIVERS----------------"
     _echo-status "Found $NVIDIA_GPU!"
 
-    sudo dnf install -y --best --allowerasing --skip-unavailable $INSTALLABLE_NVIDIA_DRIVERS
+    sudo dnf install -y --quiet --best --allowerasing --skip-unavailable $INSTALLABLE_NVIDIA_DRIVERS
 
     # check arch wiki, these enable DRM
     sudo grubby --update-kernel=ALL --args="nvidia-drm.modeset=1"
@@ -264,19 +274,19 @@ install-media-codecs () (
     _echo-status "-------------------INSTALLING CODECS / H/W VIDEO ACCELERATION----------------"
 
     # based on https://github.com/devangshekhawat/Fedora-39-Post-Install-Guide
-    sudo dnf install -y --best --allowerasing --skip-unavailable lame\*
-    sudo dnf install -y --best --allowerasing --skip-unavailable "gstreamer1-plugin-openh264" "gstreamer1-libav"
-    sudo dnf group install -y --best --allowerasing --with-optional "multimedia"
+    sudo dnf install -y --quiet --best --allowerasing --skip-unavailable lame\*
+    sudo dnf install -y --quiet --best --allowerasing --skip-unavailable "gstreamer1-plugin-openh264" "gstreamer1-libav"
+    sudo dnf group install -y --quiet --best --allowerasing --with-optional "multimedia"
 
     # extra by me
-    sudo dnf install -y --best --allowerasing --skip-unavailable "obs-studio" \
+    sudo dnf install -y --quiet --best --allowerasing --skip-unavailable "obs-studio" \
     "obs-studio-plugin-vkcapture" \
     "obs-studio-plugin-vlc-video" \
     "obs-studio-plugin-webkitgtk" \
-    "obs-studio-plugin-x264" \
-    "v4l2loopback"  # used for mirroring the scene as a camera in OBS
+    "obs-studio-plugin-x264"
+    # "v4l2loopback" NOTE: DISABLED DUE TO TAINTING KERNEL # used for mirroring the scene as a camera in OBS
 
-    sudo dnf install -y --best --allowerasing --skip-unavailable "ffmpeg" \
+    sudo dnf install -y --quiet --best --allowerasing --skip-unavailable "ffmpeg" \
     "gstreamer-ffmpeg" \
     "ffmpeg-libs" \
     "libva" \
@@ -287,19 +297,19 @@ install-media-codecs () (
     if _is-gnome-session; then
         # in order to have nautilus create thumbnails, we need both the ffmpeg thumbnailer & the appropriate codec
         #  afterwards, refresh the current cache
-        sudo dnf install -y --best --allowerasing --skip-unavailable "ffmpegthumbnailer" "libavcodec-freeworld"
+        sudo dnf install -y --quiet --best --allowerasing --skip-unavailable "ffmpegthumbnailer" "libavcodec-freeworld"
         [[ -d "$REAL_USER_HOME/.cache/thumbnails" ]] && rm -rf "$REAL_USER_HOME/.cache/thumbnails"
     fi
-    sudo dnf reinstall -y "/etc/yum.repos.d/fedora-cisco-openh264.repo"
-    sudo dnf install -y --best --allowerasing --skip-unavailable "openh264" "gstreamer1-plugin-openh264" "mozilla-openh264"
+    sudo dnf reinstall -y --quiet "/etc/yum.repos.d/fedora-cisco-openh264.repo"
+    sudo dnf install -y --quiet --best --allowerasing --skip-unavailable "openh264" "gstreamer1-plugin-openh264" "mozilla-openh264"
 )
 
 install-gaming-packages () (
     _echo-status "-------------------INSTALLING GAMING PACKAGES----------------"
-    sudo dnf install -y --best --allowerasing --skip-unavailable "steam" "gamescope"
+    sudo dnf install -y --quiet --best --allowerasing --skip-unavailable "steam" "gamescope"
     flatpak install flathub --system --noninteractive -y "com.discordapp.Discord" "com.leinardi.gst"
     # vulkan drivers are required for proton-ge to work
-    sudo dnf install -y --best --allowerasing --skip-unavailable "protontricks" "vulkan" "vulkan-loader" "vulkan-loader.i686"
+    sudo dnf install -y --quiet --best --allowerasing --skip-unavailable "protontricks" "vulkan" "vulkan-loader" "vulkan-loader.i686"
     _echo-debug "installed proton-ge prerequisites"
     update-compat-layers
     _echo-debug "updated compatibility layers"
@@ -307,7 +317,7 @@ install-gaming-packages () (
     # openrgb utils
     if lscpu | grep -i amd; then
         _echo-status "Installing openrgb (setup works only for AMD chipsets currently) "
-        sudo dnf install -y --best --allowerasing --skip-unavailable "openrgb" "openrgb-udev-rules" "i2c-tools"
+        sudo dnf install -y --quiet --best --allowerasing --skip-unavailable "openrgb" "openrgb-udev-rules" "i2c-tools"
         sudo modprobe i2c-dev
         sudo modprobe i2c-piix4
         sudo touch /etc/modules-load.d/i2c.conf
@@ -379,13 +389,7 @@ configure-system-defaults () (
     _echo-debug "Capping nproc-count to prevent fork-bombs (hard nproc 10_000)"
     sudo sh -c "echo \"$REAL_USER 'hard nproc 10000'\" > '/etc/security/limits.d/90-nproc.conf'"
     _echo-success "Capped maximum number of processes."
-    _echo-debug "Creating convenience for sudoers.d/convenience-defaults"
-    # 440 is the default rights of /etc/sudoers file, so we're copying the rights just in case
-    #  (even though visudo -f /etc/sudoers.d/test creates the file with 640)
-    sudo sh -c 'echo "Defaults timestamp_timeout=120, pwfeedback" > "/etc/sudoers.d/convenience-defaults"'
-    sudo chmod 440 "/etc/sudoers.d/convenience-defaults"
-    _echo-success "Created sudoers.d convenience defaults."
-
+    # sudoers used to be here, but was moved for convenience with low-speed connections
     _echo-debug 'Creating polkit policy @ /etc/polkit-1/rules.d/99-custom-units.rules'
     _echo-debug ' ... in order to allow wheel users restart the NetworkManager.service '
     _echo-debug ' without further authorization.'
@@ -429,7 +433,7 @@ configure-ssh-defaults () (
     # if the directory already exists, abandon
     [[ -d "$REAL_USER_HOME/.ssh/id_$ALGO" ]] && return
 
-    sudo dnf install -y "ssh"
+    sudo dnf install -y --quiet "ssh"
     sudo systemctl disable --now sshd
     _echo-status "-------------------GENERATING SSH KEY----------------"
     mkdir -p "$REAL_USER_HOME/.ssh"
@@ -447,7 +451,7 @@ configure-tailscaled () (
     _echo-status "Installing tailscaled, openssh-server (sshd) & fail2ban"
 
     sudo dnf config-manager addrepo --from-repofile="https://pkgs.tailscale.com/stable/fedora/tailscale.repo"
-    sudo dnf install -y tailscale openssh-server fail2ban
+    sudo dnf install -y --quiet tailscale openssh-server fail2ban
 
     sudo systemctl enable --now tailscaled
     sudo systemctl enable --now fail2ban
@@ -488,10 +492,10 @@ EOF
 install-jetbrains-toolbox () (
     # dependencies, described here
     #  https://github.com/nagygergo/jetbrains-toolbox-install
-    _depends-on tar || sudo dnf install -y tar
+    _depends-on tar || sudo dnf install -y --quiet tar
 
     echo "-------------------INSTALLING JETBRAINS TOOLBOX----------------"
-    sudo dnf install -y --best --allowerasing "libXtst" "libXrender" "glx-utils" "fontconfig-devel" "gtk3" "tar"
+    sudo dnf install -y --quiet --best --allowerasing "libXtst" "libXrender" "glx-utils" "fontconfig-devel" "gtk3" "tar"
     mkdir "/tmp/jetbrains-toolbox"  # tmp dir
     sudo mkdir "/opt/jetbrains-toolbox"  # install dir
 
@@ -660,28 +664,37 @@ fi
 
 if _is-root; then
     _echo-unexpected "The script must not be run as super-user."
-    _echo-unexpected "Please re-run the script as a regular user."
+    _echo-unexpected "Permissions will be given granularly; Please re-run the script as a regular user."
     exit 2
 fi
 
+if ! test -f '/etc/sudoers.d/convenience-defaults'; then
+    _echo-debug "Creating convenience for sudoers.d/convenience-defaults"
+    # 440 is the default rights of /etc/sudoers file, so we're copying the rights just in case
+    #  (even though visudo -f /etc/sudoers.d/test creates the file with 640)
+    sudo sh -c 'echo "Defaults timestamp_timeout=120, pwfeedback" > "/etc/sudoers.d/convenience-defaults"'
+    sudo chmod 440 "/etc/sudoers.d/convenience-defaults"
+    _echo-success "Created sudoers.d convenience defaults."
+fi
+
 # add dnf plugin
-sudo dnf install -y --best --allowerasing --skip-unavailable "dnf5-command(config-manager)"
+sudo dnf install -y --quiet --best --allowerasing --skip-unavailable "dnf5-command(config-manager)"
 
 # dependencies
-sudo dnf install -y --best --allowerasing --skip-unavailable flatpak curl plocate pciutils udisks2
+sudo dnf install -y --quiet --best --allowerasing --skip-unavailable flatpak curl plocate pciutils udisks2
 
 # improve sudo dnf performance
 copy-dnf
 
 # for some reason this repository is added on every new install, it's NOT needed since we use toolbox
-sudo dnf copr remove -y --skip-unavailable phracek/PyCharm 2> /dev/null
+sudo dnf copr remove -y --quiet --skip-unavailable phracek/PyCharm 2> /dev/null
 # rpmfusion-free
 if [[ -z $(dnf repolist | grep 'rpmfusion-free') ]]; then
-    sudo dnf install -y --best --allowerasing "https://download1.rpmfusion.org/free/fedora/rpmfusion-free-release-$(rpm -E %fedora).noarch.rpm" || exit
+    sudo dnf install -y --quiet --best --allowerasing "https://download1.rpmfusion.org/free/fedora/rpmfusion-free-release-$(rpm -E %fedora).noarch.rpm" || exit
 fi
 # rpmfusion-nonfree
 if [[ -z $(dnf repolist | grep 'rpmfusion-nonfree') ]]; then
-    sudo dnf install -y --best --allowerasing "https://download1.rpmfusion.org/nonfree/fedora/rpmfusion-nonfree-release-$(rpm -E %fedora).noarch.rpm" || exit
+    sudo dnf install -y --quiet --best --allowerasing "https://download1.rpmfusion.org/nonfree/fedora/rpmfusion-nonfree-release-$(rpm -E %fedora).noarch.rpm" || exit
 fi
 
 # no requirement to add flathub ourselves anymore in f38; it should be enabled by default. however, it may not be, most likely by accident, so this is a failsafe
@@ -690,17 +703,17 @@ sudo flatpak remote-add --if-not-exists flathub-beta https://flathub.org/beta-re
 sudo flatpak remote-delete fedora 2> /dev/null
 sudo flatpak remote-delete fedora-testing 2> /dev/null
 
-sudo dnf update -y
-sudo dnf upgrade -y --refresh
+sudo dnf update -y --quiet
+sudo dnf upgrade -y --quiet --refresh
 
 #######################################################################################################
 
 # requirements across all desktops
 readonly TERMINAL_OF_CHOICE="${INSTALLABLE_TERMINAL:-alacritty}"
-sudo dnf install -y --best --allowerasing "$TERMINAL_OF_CHOICE" \
+sudo dnf install -y --quiet --best --allowerasing "$TERMINAL_OF_CHOICE" \
 "glx-utils" "mesa-dri-drivers" "mesa-vulkan-drivers" \
 "plymouth" "plymouth-system-theme" "tuned-ppd"
-sudo dnf group install -y "standard"
+sudo dnf group install -y --quiet "standard"
 
 _echo-debug "Installed terminal of choice ($TERMINAL_OF_CHOICE) for GUI-land."
 
@@ -728,8 +741,8 @@ fi
 
 if _is-gnome-session; then
     _echo-debug "GNOME session detected. Installing GNOME/libadwaita-specific packages."
-    sudo dnf install -y --best --allowerasing "loupe"
-    sudo dnf install -y --best --allowerasing $INSTALLABLE_ADWAITA_PACKAGES $INSTALLABLE_GNOME_EXTENSIONS
+    sudo dnf install -y --quiet --best --allowerasing "loupe"
+    sudo dnf install -y --quiet --best --allowerasing $INSTALLABLE_ADWAITA_PACKAGES $INSTALLABLE_GNOME_EXTENSIONS
     flatpak install flathub --system --noninteractive -y $INSTALLABLE_ADWAITA_FLATPAKS
     flatpak install flathub --system --noninteractive -y $INSTALLABLE_GNOME_FLATPAKS
 fi
@@ -748,7 +761,7 @@ _echo-important " and this cannot be automated due to its intrusive nature."
 sleep 5
 
 _echo-debug "uninstalling bloat"
-sudo dnf remove -y $UNINSTALLABLE_BLOAT
+sudo dnf remove -y --quiet --skip-unavailable $UNINSTALLABLE_BLOAT
 
 install-universal-necessities
 install-media-codecs
@@ -760,7 +773,7 @@ configure-system-defaults
 tweak-minor-details
 configure-ssh-defaults
 
-sudo dnf remove -y cups-browsed
+sudo dnf remove -y --quiet cups-browsed
 
 #######################################################################################################
 # user options here, ask most of the stuff ahead of time.
@@ -801,7 +814,7 @@ if [[ -n "$INSTALL_TERM_TOOLS" ]]; then
     _echo-status "-------------------INSTALLING TERMINAL TOOLS----------------"
 
     # 'expect' pkg provides the (very) useful 'unbuffer' command
-    sudo dnf install -y --best --allowerasing --skip-unavailable "tldr" "git-delta" "expect"
+    sudo dnf install -y --quiet --best --allowerasing --skip-unavailable "tldr" "git-delta" "expect"
 
     _echo-success "Done."
 fi
@@ -809,9 +822,9 @@ fi
 if [[ -n "$INSTALL_DEV_TOOLS" ]]; then
     _echo-status "-------------------INSTALLING DEV TOOLS----------------"
 
-    sudo dnf group install -y --best --allowerasing  "c-development" "development-tools"
-    sudo dnf install -y --best --allowerasing --skip-unavailable $INSTALLABLE_DEV_PKGS
-    sudo dnf install -y --best --allowerasing nmap net-tools
+    sudo dnf group install -y --quiet --best --allowerasing  "c-development" "development-tools"
+    sudo dnf install -y --quiet --best --allowerasing --skip-unavailable $INSTALLABLE_DEV_PKGS
+    sudo dnf install -y --quiet --best --allowerasing nmap net-tools
     flatpak install flathub --system --noninteractive -y "net.werwolv.ImHex"
 
     _echo-success "Done."
@@ -820,8 +833,8 @@ fi
 if [[ -n "$INSTALL_RPM_TOOLS" ]]; then
     _echo-status "-------------------INSTALLING RPM TOOLS----------------"
 
-    sudo dnf group install -y --best --allowerasing 'rpm-development-tools'
-    sudo dnf install -y --best --allowerasing --skip-unavailable \
+    sudo dnf group install -y --quiet --best --allowerasing 'rpm-development-tools'
+    sudo dnf install -y --quiet --best --allowerasing --skip-unavailable \
     rpmspectool \
     fedora-packager \
     fedpkg copr-cl \
@@ -845,9 +858,9 @@ fi
 
 if [[ -n "$INSTALL_VIRTUALIZATION" ]]; then
     _echo-status "-------------------INSTALLING VIRTUALIZATION PACKAGES----------------"
-    sudo dnf install -y --best --allowerasing --skip-unavailable $INSTALLABLE_VIRTUALIZATION_PACKAGES
+    sudo dnf install -y --quiet --best --allowerasing --skip-unavailable $INSTALLABLE_VIRTUALIZATION_PACKAGES
     if _is-virtual-machine; then
-        sudo dnf group install -y "guest-agents" "guest-desktop-agents"
+        sudo dnf group install -y --quiet "guest-agents" "guest-desktop-agents"
         _echo-debug "Installed guest-agents & guest-desktop-agents."
     fi
     sudo usermod -a -G libvirt "$REAL_USER"
@@ -857,22 +870,22 @@ fi
 
 if [[ -n "$INSTALL_CONTAINERIZATION" ]]; then
     _echo-status "-------------------INSTALLING CONTAINERIZATION PACKAGES----------------"
-    sudo dnf group install -y "container-management"
+    sudo dnf group install -y --quiet "container-management"
     _echo-success "Done."
 fi
 
 if [[ -n "$INSTALL_SCRCPY" ]]; then
     _echo-status "-------------------INSTALLING zeno/scrcpy----------------"
     sudo dnf copr enable -y zeno/scrcpy
-    sudo dnf install -y --best --allowerasing --skip-unavailable scrcpy adb
-    sudo dnf install -y --best --allowerasing nmap net-tools
+    sudo dnf install -y --quiet --best --allowerasing --skip-unavailable scrcpy adb
+    sudo dnf install -y --quiet --best --allowerasing nmap net-tools
     sudo systemctl enable --now adb
     _echo-success "Done."
 fi
 
 if [[ -n "$INSTALL_SNAPD" ]]; then
     _echo-status "-------------------INSTALLING SNAP ----------------"
-    sudo dnf install -y --best --allowerasing snapd
+    sudo dnf install -y --quiet --best --allowerasing snapd
     sudo systemctl enable --now snapd
     # relevant policykit actions were grabbed via `pkaction | grep -i snap`
     #  for more information on this file, see `man pklocalauthority`
@@ -892,7 +905,7 @@ fi
 
 [[ -n "$INSTALL_JETBRAINS" ]] && install-jetbrains-toolbox
 [[ -n "$INSTALL_ZED" ]] && curl -f https://zed.dev/install.sh | sh
-[[ -n "$INSTALL_ZED" ]] && sudo dnf remove -y "gnome-text-editor" "gedit"
+[[ -n "$INSTALL_ZED" ]] && sudo dnf remove -y --quiet "gnome-text-editor" "gedit"
 
 # this is bad but it's the official 'packaging' format jesus christ
 [[ -n "$INSTALL_JOPLIN" ]] && curl --proto '=https' --tlsv1.2 -sSf 'https://raw.githubusercontent.com/laurent22/joplin/dev/Joplin_install_and_update.sh' | bash
