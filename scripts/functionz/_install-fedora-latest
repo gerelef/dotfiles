@@ -529,6 +529,7 @@ shopt -s nullglob
 #######################################################################################################
 
 readonly INSTALLABLE_ADWAITA_PACKAGES="\
+loupe \
 adwaita-icon-theme \
 adwaita-cursor-theme \
 adwaita-gtk2-theme \
@@ -656,6 +657,9 @@ gnome-shell-extension-background-logo \
 
 [[ "${BASH_SOURCE[0]}" != "${0}" ]] && return
 
+_echo-important "You may enable/disable select debugging logs via DEBUG_SETUP_ON."
+_echo-important "You may enable/disable line-by-line tracing for debugging via TRACE_SETUP_ON."
+
 if ! ping -q -c 1 -W 1 google.com > /dev/null; then
     _echo-unexpected "Network connection was not detected."
     _echo-unexpected "This script needs network connectivity to continue."
@@ -668,7 +672,7 @@ if _is-root; then
     exit 2
 fi
 
-if ! test -f '/etc/sudoers.d/convenience-defaults'; then
+if ! sudo test -f '/etc/sudoers.d/convenience-defaults'; then
     _echo-debug "Creating convenience for sudoers.d/convenience-defaults"
     # 440 is the default rights of /etc/sudoers file, so we're copying the rights just in case
     #  (even though visudo -f /etc/sudoers.d/test creates the file with 640)
@@ -741,7 +745,6 @@ fi
 
 if _is-gnome-session; then
     _echo-debug "GNOME session detected. Installing GNOME/libadwaita-specific packages."
-    sudo dnf install -y --quiet --best --allowerasing "loupe"
     sudo dnf install -y --quiet --best --allowerasing $INSTALLABLE_ADWAITA_PACKAGES $INSTALLABLE_GNOME_EXTENSIONS
     flatpak install flathub --system --noninteractive -y $INSTALLABLE_ADWAITA_FLATPAKS
     flatpak install flathub --system --noninteractive -y $INSTALLABLE_GNOME_FLATPAKS
@@ -761,7 +764,7 @@ _echo-important " and this cannot be automated due to its intrusive nature."
 sleep 5
 
 _echo-debug "uninstalling bloat"
-sudo dnf remove -y --quiet --skip-unavailable $UNINSTALLABLE_BLOAT
+sudo dnf remove -y --quiet $UNINSTALLABLE_BLOAT
 
 install-universal-necessities
 install-media-codecs
@@ -918,7 +921,12 @@ mapfile -t parts < <(blkid -o list | grep --invert-match "crypto_" | grep -i "no
 for part in "${parts[@]}"; do
     part_name=$(echo $part | tr '/' ' ' | awk '{ print $NF }')
     # 512 size blocks, divided by 2, divided by 1024*1024
-    part_size=$(( $(cat /sys/class/block/$part_name/size)/2097152 ))
+    block_count="$(cat /sys/class/block/$part_name/size 2>/dev/null)"
+    # error case for btrfs subvolumes; otherwise works great
+    #  cat: /sys/class/block/btrfs(/size): No such file or directory
+    [[ -z $block_count ]] && continue
+
+    part_size=$(( $block_count/2097152 ))
     # if it's a really small partition, it's probably something like a uefi/bootmenu partition, skip it
     [[ $part_size -lt 2 ]] && continue
 
