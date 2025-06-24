@@ -143,7 +143,7 @@ optimize-hardware () (
 
         if _is-gnome-session; then
             _echo-debug "Installing s76-scheduler-plugin..."
-            git clone https://github.com:KyleGospo/s76-scheduler-plugin.git ~/.local/share/gnome-shell/extensions/s76-scheduler@mattjakeman.com
+            git clone https://github.com/gerelef/s76-scheduler-plugin.git ~/.local/share/gnome-shell/extensions/s76-scheduler@mattjakeman.com
             _echo-status "Enabling system76-scheduler..."
             sudo dnf copr enable -y kylegospo/system76-scheduler
             sudo dnf install -y --best --allowerasing --skip-unavailable system76-scheduler
