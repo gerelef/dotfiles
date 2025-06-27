@@ -170,6 +170,7 @@ EOF
     fi
 
     _echo-important "Locking down kernel with confidentiality mode."
+    _echo-important "This will disable memory (and other) runtime inspections."
     sudo grubby --args="lockdown=confidentiality" --update-kernel=ALL
 
     _echo-status "Adding preempt=full kernel parameter..."
