@@ -463,8 +463,10 @@ configure-tailscaled () (
         _echo-unexpected "Couldn't identify tailscaled interface, and sshd is listening on all interfaces!"
     else
         sudo tee "/etc/ssh/sshd_config" <<EOF
+PasswordAuthentication no
 ListenAddress $tailscaled_ipvX
 EOF
+_echo-important "Disabled sshd password authentication. Use AuthorizedKeysFile (named authorized_keys by default) with your public key to connect."
         _echo-important "Bound tailscaled to $tailscaled_ipvX!"
     fi
 
