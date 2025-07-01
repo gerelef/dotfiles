@@ -50,6 +50,11 @@ scripts/
     !!.config/.ssh
 [end]
 
+.config/flameshot.ini
+[if-directory:::.var/app/org.flameshot.Flameshot/]
+    !!.config/flameshot.ini
+[end]
+
 [redirect]
 // redirect to home (move up)
 scripts/.bashrc ::: .
@@ -68,6 +73,8 @@ scripts/.gitconfig-gitdelta ::: .
 
 // redirect the .ssh folder's contents to the ~/.ssh folder
 .config/.ssh/* ::: .ssh/
+
+.config/flameshot.ini ::: .var/app/org.flameshot.Flameshot/config/flameshot/
 
 .config/zed/python.json ::: .config/zed/snippets/
 .config/zed/shellscript.json ::: .config/zed/snippets/
