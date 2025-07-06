@@ -10,7 +10,6 @@
             "ctrl-=": "zed::IncreaseBufferFontSize",
             "ctrl--": "zed::DecreaseBufferFontSize",
             "ctrl-`": "terminal_panel::ToggleFocus",
-            "ctrl-k": "file_finder::Toggle",
             "shift shift": "file_finder::Toggle",
             "ctrl ctrl": "command_palette::Toggle",
             "ctrl-w": "pane::CloseActiveItem",
