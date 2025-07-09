@@ -60,7 +60,7 @@ ask-choice () (
         read -r
         if [[ $REPLY =~ ^[0-9][0-9]*$ && $REPLY -lt $# ]]; then
             echo-channel ""
-            ask $QUESTIONEE question "Are you sure you want to pick \"${args[$REPLY]}\"?" || continue
+            ask-question "Are you sure you want to pick \"${args[$REPLY]}\"?" || continue
 
             echo "$REPLY"
             return
@@ -71,7 +71,7 @@ ask-choice () (
 )
 
 ask () (
-    # sanity checks: 
+    # sanity checks:
     #  - we need at least 3 arguments (shortest version is 'user choice Q&A'
     #  - 2nd argument must be either system or user
     [[ $# -lt 3 ]] && exit 2
@@ -82,13 +82,13 @@ ask () (
     #  that supresses stdout to catch the interactive user choice and do some work with it
     [[ $1 == "system" ]] && IS_SYSTEM="yes"
 
-    [[ $2 == "question" ]] && ASK_TYPE="ask-question" 
-    [[ $2 == "input" ]] && ASK_TYPE="ask-input" 
+    [[ $2 == "question" ]] && ASK_TYPE="ask-question"
+    [[ $2 == "input" ]] && ASK_TYPE="ask-input"
     [[ $2 == "choice" ]] && ASK_TYPE="ask-choice"
-    
+
     # sanity: ASK_TYPE must not be non-existent after resolving
     [[ -z "$2" ]] && return 2
-    
+
     $ASK_TYPE "${@:3}"
 )
 
