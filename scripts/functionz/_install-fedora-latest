@@ -714,6 +714,13 @@ sudo dnf update -y --quiet
 sudo dnf upgrade -y --quiet --refresh
 
 #######################################################################################################
+AVAILABLE_TERMINALS=(
+    alacritty
+    kitty
+    ghostty
+)
+[[ -z $INSTALLABLE_TERMINAL ]] && INSTALLABLE_TERMINAL=${AVAILABLE_TERMINALS[$(ask system choice ${AVAILABLE_TERMINALS[@]})]}
+[[ $INSTALLABLE_TERMINAL == "ghostty" ]] && sudo dnf copr enable -y --quiet gerelef/ghostty
 
 # requirements across all desktops
 readonly TERMINAL_OF_CHOICE="${INSTALLABLE_TERMINAL:-alacritty}"
@@ -882,7 +889,7 @@ fi
 
 if [[ -n "$INSTALL_SCRCPY" ]]; then
     _echo-status "-------------------INSTALLING zeno/scrcpy----------------"
-    sudo dnf copr enable -y zeno/scrcpy
+    sudo dnf copr enable -y --quiet zeno/scrcpy
     sudo dnf install -y --quiet --best --allowerasing --skip-unavailable scrcpy adb
     sudo dnf install -y --quiet --best --allowerasing nmap net-tools
     sudo systemctl enable --now adb
