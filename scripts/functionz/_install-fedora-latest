@@ -272,7 +272,7 @@ install-proprietary-nvidia-drivers () (
 )
 
 install-media-codecs () (
-    _echo-status "-------------------INSTALLING CODECS / H/W VIDEO ACCELERATION----------------"
+    _echo-status "-------------------INSTALLING MEDIA CODECS / H/W VIDEO ACCELERATION----------------"
 
     # based on https://github.com/devangshekhawat/Fedora-39-Post-Install-Guide
     sudo dnf install -y --quiet --best --allowerasing --skip-unavailable lame\*
@@ -284,7 +284,8 @@ install-media-codecs () (
     "obs-studio-plugin-vkcapture" \
     "obs-studio-plugin-vlc-video" \
     "obs-studio-plugin-webkitgtk" \
-    "obs-studio-plugin-x264"
+    "obs-studio-plugin-x264" \
+    "easyeffects"
     # "v4l2loopback" NOTE: DISABLED DUE TO TAINTING KERNEL # used for mirroring the scene as a camera in OBS
 
     sudo dnf install -y --quiet --best --allowerasing --skip-unavailable "ffmpeg" \
