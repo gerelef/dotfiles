@@ -1,0 +1,244 @@
+#!/usr/bin/env bash
+
+# HELP ffw --help; ffmpeg wrapper for common usecases.
+
+_depends-on ffmpeg fish || exit
+
+# convert Minutes:Seconds (colon seperated) to seconds
+__hms () (
+    echo "$1" | awk -F: '{ print ($1 * 60) + $2 }';
+)
+
+# convert (X1,Y1) (X2,Y2) coords with X delimiter instead of comma to ffmpeg format (X2-X1,Y2-Y1)
+__xy_rp_to_ffilter_coords () (
+    echo "$@" | awk -F'[x ]' '{ print $3-$1":"$4-$2 }';
+)
+
+# convert (X,Y) coords with X delimiter instead of comma to ffmpeg format
+__xy_to_ffilter_coords () (
+    echo "$1" | awk -Fx '{ print $1":"$2 }';
+)
+
+show-usage () {
+    echo "Usage: ffmpeg wrapper for common usecases.
+       ffw video cat <file1> <file2> <...> <fileN>  # concatenate N number of videos
+       ffw video compress <file> <crf x265 log value>  # compress a video using x265; good crf values are 27 to 30
+       ffw video giphify <file>  # convert a video to gif
+       ffw video scale <file> <floating point ratio>  # scale video file to selected resolution
+       ffw video crop <file> <starting width x starting height> <ending width x ending height>  # crop a video's contents from start to end coordinates
+       ffw video extract video <file>  # extract video track from video with audio to mp3
+       ffw video extract frames <file>  # extract frames as uncompressed/raw screenshots (.bmp) to \$CWD
+       ffw video extract audio <file>  # extract audio from video with audio to mp3
+       ffw video info <file>  # get key information about the streams of a given file
+       ffw video shift <right | left> <file> <milliseconds>; shift video's audio to the right or left
+       ffw video trim <file> <sta:rt> <end:ing>  # trim video from start to end
+
+       ffw audio trim <file> <sta:rt> <end:ing>  # trim audio from start to end
+       ffw audio trim-from-transcription <file> <trancription-file>  # trim an mp3 from start to end using whisper's stdout transcription file"
+}
+
+ffconcat-video () (
+    [[ -z "$*" ]] && return 2
+
+    local inputs=()
+    local audio_video_ftracks=""
+    local trimmed_arg=""
+    local output_name=""
+    local count=0
+    for arg in "$@"; do
+        local inputs+=( -i "$arg" )
+        local audio_video_ftracks+="[$count:v] [$count:a] "
+        local trimmed_arg="$(basename -- ${arg%.*})"
+        local output_name+=$(head -c 4 <<< "$trimmed_arg")
+        ((++count))
+    done
+    local output_name=$(head -c 30 <<< "$output_name")
+    local output_name+="-concat$count.mp4"
+    ffmpeg -y -hide_banner "${inputs[@]}" -filter_complex "$audio_video_ftracks concat=n=$count:v=1:a=1 [v] [a]" -map "[v]" -map "[a]" -vsync cfr -r 60 "$PWD/$output_name"
+)
+
+ffcompress-mp4 () (
+    [[ -z "$*" ]] && return 2
+    [[ "$#" -ne 2 ]] && return 2
+    # $1 input
+    # $2 crf logarithmic value for x265
+    #  good values are from 27 to 30
+    local output=$(basename -- "${1%.*}")
+    ffmpeg -y -hide_banner -i "$1" -vcodec libx265 -crf "$2" -vsync cfr -r 60 "$PWD/$output-compressed.mp4"
+)
+
+ffgiphify () (
+    [[ -z "$*" ]] && return 2
+    [[ "$#" -ne 3 ]] && return 2
+    # $1 input
+    # $2 start m:s
+    # $3 end   m:s
+    local output=$(basename -- "${1%.*}")
+    local palette="/tmp/$output-palette.png"
+    ffmpeg -y -hide_banner -i "$1" -filter_complex "[0:v] palettegen" "$palette" 1> /dev/null
+    ffmpeg -y -hide_banner -ss "$(__hms "$2")" -to "$(__hms "$3")" -i "$1" -i "$palette" -filter_complex "[0:v] paletteuse" "$PWD/$output-giphified.gif" 1> /dev/null
+    rm -v "$palette"
+    echo "Done $output-giphified"
+)
+
+ffscale-mp4 () (
+    [[ -z "$*" ]] && return 2
+    [[ "$#" -ne 2 ]] && return 2
+    # $1 input
+    # $2 width:height
+    local output=$(basename -- "${1%.*}")
+    ffmpeg -y -hide_banner -i "$1" -vf scale="$(__xy_to_ffilter_coords "$2")" -vcodec libx265 -crf 22 -vsync cfr -r 60 "$PWD/$output-scaled.mp4"
+)
+
+ffinfo-mp4 () (
+    [[ -z "$*" ]] && return 2
+    [[ "$#" -ne 1 ]] && return 2
+
+    stream_info_raw="$(ffprobe "$1" -show_streams 2>&1 | sed -n '/STREAM/,$p')"
+    echo "resolution=$(echo "$stream_info_raw" | grep -i 'width=' | head -1 | cut -c7-)x$(echo "$stream_info_raw" | grep -i 'height=' | head -1 | cut -c8-)"
+    echo "$stream_info_raw" | grep -i 'duration=' | head -1
+    echo "$stream_info_raw" | grep -i 'bit_rate=' | head -1
+    echo "$stream_info_raw" | grep -i 'codec_long_name=' | head -1
+)
+
+ffrshift () (
+    ffmpeg -y -hide_banner -i "$1" -itsoffset "00:00:0$2" -i "$1" -vcodec copy -acodec copy -map 0:1 -map 1:0 "$output-shift.mp4"
+)
+
+fflshift () (
+    ffmpeg -y -hide_banner -i "$1" -itsoffset "00:00:0$2" -i "$3" -vcodec copy -acodec copy -map 1:0 -map 0:1 "$output-shift.mp4"
+)
+
+ffshift-mp4 () (
+    [[ "$#" -ne 3 ]] && return 2
+    seconds_millis=$(fish -c "math '$3 / 1000'")
+    output=$(fish -c "path change-extension '' $2")
+    echo "$1 $2 $3 $4"
+    if [[ $1 == "right" ]]; then
+        ffrshift $2 $seconds_millis
+        exit
+    elif [[ $1 == "left" ]]; then
+        fflshift $2 $seconds_millis
+        exit
+    fi
+    exit 2
+)
+
+fftrim-mp4 () (
+    [[ -z "$*" ]] && return 2
+    [[ "$#" -ne 3 ]] && return 2
+    # $1 input
+    # $2 start (seconds)
+    # $3 end   (seconds)
+    local output=$(basename -- "${1%.*}")
+    ffmpeg -y -hide_banner -ss "$(__hms "$2")" -to "$(__hms "$3")" -i "$1" -codec copy "$PWD/$output-trimmed.mp4"
+)
+
+ffvideo () (
+    subcommand="$1"
+    subcommand_args=( "${@:2}" )
+    case "$subcommand" in
+        cat)
+            ffconcat-video "${subcommand_args[@]}"
+            ;;
+        compress)
+            ffcompress-mp4 "${subcommand_args[@]}"
+            ;;
+        giphify)
+            ffgiphify "${subcommand_args[@]}"
+            ;;
+        scale)
+            ffscale-mp4 "${subcommand_args[@]}"
+            ;;
+        extract)
+            ffvideo-extract "${subcommand_args[@]}"
+            ;;
+        info)
+            ffinfo-mp4 "${subcommand_args[@]}"
+            ;;
+        shift)
+            ffshift-mp4  "${subcommand_args[@]}"
+            ;;
+        trim)
+            fftrim-mp4 "${subcommand_args[@]}"
+            ;;
+        *)
+            echo "Unknown subcommand argument: $subcommand"
+            exit 2
+            ;;
+    esac
+)
+
+fftrim-mp3 () (
+    [[ -z "$*" ]] && return 2
+    [[ "$#" -ne 3 ]] && return 2
+    # $1 input
+    # $2 start (seconds)
+    # $3 duration (seconds)
+    local output=$(basename -- "${1%.*}")
+    ffmpeg -y -hide_banner -ss "$(__hms "$2")" -to "$(__hms "$3")" -i "$1" -acodec copy "$PWD/$output-trimmed.mp3"
+)
+
+fftrim-mp3-from-transcription () (
+    [[ -z "$*" ]] && return 2
+    [[ "$#" -ne 2 ]] && return 2
+    [[ -f "$1" ]] || return 1
+
+    MASTERFILE_NAME="$1.masterfile"
+
+    mapfile -t transcriptions < $2 || exit
+
+    echo -ne '' > $MASTERFILE_NAME
+
+    count=1
+    for line in "${transcriptions[@]}"; do
+        IFS='  ' read -r start end text <<< $(echo $line | tr -d '\[\]\-\>')
+        outname="$1-part$count.mp3"
+        echo -e "Cutting from '$start' to '$end', for $outname w/ text . . .\n >>> '$text' "
+        ffmpeg -y -hide_banner -ss "$start" -to "$end" -i "$1" -acodec copy "$PWD/$outname" || exit
+        echo "./$outname|$text" >> $MASTERFILE_NAME
+        count=$(( count + 1))
+    done
+)
+
+ffaudio () (
+    subcommand="$1"
+    subcommand_args=( "${@:2}" )
+    case "$subcommand" in
+        trim)
+            fftrim-mp3 "${subcommand_args[@]}"
+            ;;
+        trim-from-transcription)
+            fftrim-mp3-from-transcription "${subcommand_args[@]}"
+            ;;
+        *)
+            echo "Unknown subcommand argument: $subcommand"
+            exit 2
+            ;;
+    esac
+)
+
+main () (
+    arg="$1"
+    case "$arg" in
+        -h|--help)
+            show-usage
+            exit 0
+            ;;
+        video)
+            ffvideo "${@:2}"
+            exit
+            ;;
+        audio)
+            ffaudio "${@:2}"
+            exit
+            ;;
+        *)
+            echo "Unknown main argument: $arg"
+            show-usage
+            exit 2
+            ;;
+    esac
+)
+
+[[ "${BASH_SOURCE[0]}" == "${0}" ]] && main "$@"
