@@ -1,0 +1,101 @@
+#!/usr/bin/env bash
+
+# HELP adbw --help; adb wrapper for common usecases.
+
+_depends-on adb || exit
+
+show-usage () {
+    echo "Usage: adb wrapper for common usecases.
+       adbw connect  # setup adb to work with usb debugging (over hotspot) and connect
+       adbw devices list  # list all devices
+       adbw devices debloat-rootless <device-id>  # debloat device rootlessly
+       adbw devices toggle-screen <device-id>  # toggle the screen for device
+       adbw package find <partial package-name>  # find packages filtered by a partial package-name
+       adbw package clear <package-name>  # clear cache & data of package-name
+       adbw package remove <package-name>  # uninstall package-name"
+}
+
+adb-devices () (
+    subcommand="$1"
+    case "$subcommand" in
+        list)
+            # "device" state is the correct state here for authorized devices
+            adb devices | awk '{ if (NR > 1) { printf $1 " " } }' | xargs
+            ;;
+        debloat-rootless)
+            adb uninstall --user 0 com.aura.oobe.samsung.gl
+            adb uninstall --user 0 com.aura.oobe.samsung
+            adb uninstall --user 0 com.ironsource.appcloud.oobe.hutchison
+            ;;
+        toggle-screen)
+            adb shell input keyevent KEYCODE_POWER
+            ;;
+        *)
+            echo "Unknown device argument: $subcommand"
+            exit 2
+            ;;
+    esac
+)
+
+adb-package () (
+    subcommand="$1"
+    package_named="$2"
+    if [[ -z "$package_named" ]]; then
+        echo "package-name must be given!";
+        show-usage
+        exit 2;
+    fi
+
+    case "$subcommand" in
+        find)
+            adb shell cmd package list packages | cut -c 9- | xargs
+            ;;
+        clear)
+            adb shell pm clear "$package_named"
+            ;;
+        remove)
+            adb uninstall --user 0 "$package_named"
+            ;;
+        *)
+            echo "Unknown package argument: $subcommand"
+            exit 2
+            ;;
+    esac
+)
+
+main () {
+    for ((i=1; i<=$#; i++)); do
+        arg="${!i}"
+        case "$arg" in
+            -h|--help)
+                show-usage
+                exit 0
+                ;;
+            connect)
+                ((i++))
+                ip="${!i}"
+                if [[ -z $ip ]]; then echo "device ip must be given!"; exit 2; fi
+                adb tcpip 5555 || exit
+                adb connect "$ip"
+                exit
+                ;;
+            devices)
+                ((i++))
+                adb-devices "${@:$i}"
+                exit
+                ;;
+            package)
+                ((i++))
+                adb-package "${@:$i}"
+                exit
+                ;;
+            *)
+                echo "Unknown argument: $arg"
+                show-usage
+                exit 2
+                ;;
+        esac
+    done
+}
+
+[[ "${BASH_SOURCE[0]}" == "${0}" ]] && main "$@"
