@@ -9,7 +9,7 @@ if [[ -n $(command -v "_depends-on" ) ]]; then
 fi
 
 pstow () {
-    curl --tlsv1.2 -fsSL "https://raw.githubusercontent.com/gerelef/pstow/master/pstow.py" | python3 - "$@"
+    curl --tlsv1.2 -fsSL "https://raw.githubusercontent.com/gerelef/pstow/master/pstow.py" | python3 - --verbose "$@"
 }
 
 # run only if this file is not sourced
