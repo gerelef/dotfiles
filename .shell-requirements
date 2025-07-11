@@ -23,4 +23,3 @@ systemd-container:machinectl
 util-linux-core:free
 util-linux-core:swapoff
 util-linux-core:swapon
-yt-dlp:yt-dlp
