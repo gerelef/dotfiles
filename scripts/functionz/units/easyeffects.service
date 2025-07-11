@@ -1,0 +1,12 @@
+[Unit]
+Description=Easy Effects is an advanced audio manipulation tool.
+After=graphical.target
+
+[Service]
+Type=simple
+StandardOutput=journal
+ExecStart=easyeffects --gapplication-service
+Restart=on-failure
+
+[Install]
+WantedBy=default.target
