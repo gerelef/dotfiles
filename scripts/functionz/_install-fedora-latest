@@ -854,7 +854,8 @@ if [[ -n "$INSTALL_RPM_TOOLS" ]]; then
     rpmspectool \
     fedora-packager \
     fedpkg copr-cl \
-    rust2rpm
+    rust2rpm \
+    copr-rpmbuild
 
     # Useful fedpkg commands:
     #  https://docs.fedoraproject.org/en-US/package-maintainers/Pull_Request_Guide/
