@@ -2,27 +2,27 @@
 
 show-usage () {
     echo "Usage: rpm utility wrapper for common usecases.
-        rpmutils buildrequires <spec file>  # will install all BuildRequires"
+        rpmutils buildrequires <spec file>  # will install all BuildRequires
+	rpmutils build-copr <spec file> # will reproduce a copr build with network access locally"
 }
 
 install-build-requires () (
-    mapfile -t required_dependencies < <(awk '/BuildRequires:/ { print $2 }' < $1)
-
-    if [[ -z "${required_dependencies[*]}" ]]; then
-        echo "Couldn't load required dependencies from $1 ?!"
-        echo "Will not install dependencies."
-        return
+    if ! test -f "$1"; then
+        echo "spec file provided '$1' CANNOT be found!"
+        exit 1
     fi
-
-    if [[ -z "$(command -v pkcon)" ]]; then
-        1>&2 echo "PackageKit is required in order to install login shell packages. Exiting."
-        return
-    fi
-
-    pkcon install --allow-reinstall "${required_dependencies[@]}"
+    pkexec sudo dnf builddep -y "$1"
 )
 
-
+build-copr () (
+    if ! test -f "$1"; then
+        echo "spec file provided '$1' CANNOT be found!"
+	exit 1
+    fi
+    spectool -g -R "$1"
+    pkexec sudo dnf builddep -y "$1"
+    rpmbuild -ba -vv "$1" 
+)
 
 main () (
     arg="$1"
@@ -35,6 +35,10 @@ main () (
             install-build-requires "${@:2}"
             exit
             ;;
+        build-copr)
+	    build-copr "${@:2}"
+	    exit
+	    ;;
         *)
             echo "Unknown main argument: $arg"
             show-usage
