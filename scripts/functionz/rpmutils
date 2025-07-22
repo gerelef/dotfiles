@@ -1,9 +1,12 @@
 #!/usr/bin/env bash
 
+# HELP rpmbuild & friends wrapper for common usecases
+
 show-usage () {
     echo "Usage: rpm utility wrapper for common usecases.
         rpmutils buildrequires <spec file>  # will install all BuildRequires
-	rpmutils build-copr <spec file> # will reproduce a copr build with network access locally"
+	rpmutils build-copr <spec file> # will reproduce a copr build with network access locally, will automatically grab dependencies & sources
+	rpmutils build <spec-file> # will reproduce a copr build with network access locally, will automatically grab sources & SKIP dependencies"
 }
 
 install-build-requires () (
@@ -24,6 +27,16 @@ build-copr () (
     rpmbuild -ba -vv "$1" 
 )
 
+build () (
+    if ! test -f "$1"; then
+        echo "spec file provided '$1' CANNOT be found!"
+	exit 1
+    fi
+
+    spectool -g -R "$1"
+    rpmbuild -ba -vv "$1"
+)
+
 main () (
     arg="$1"
     case "$arg" in
@@ -37,6 +50,10 @@ main () (
             ;;
         build-copr)
 	    build-copr "${@:2}"
+	    exit
+	    ;;
+        build) 
+	    build "${@:2}"
 	    exit
 	    ;;
         *)
