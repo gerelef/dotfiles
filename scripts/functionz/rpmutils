@@ -1,0 +1,46 @@
+#!/usr/bin/env bash
+
+show-usage () {
+    echo "Usage: rpm utility wrapper for common usecases.
+        rpmutils buildrequires <spec file>  # will install all BuildRequires"
+}
+
+install-build-requires () (
+    mapfile -t required_dependencies < <(awk '/BuildRequires:/ { print $2 }' < $1)
+
+    if [[ -z "${required_dependencies[*]}" ]]; then
+        echo "Couldn't load required dependencies from $1 ?!"
+        echo "Will not install dependencies."
+        return
+    fi
+
+    if [[ -z "$(command -v pkcon)" ]]; then
+        1>&2 echo "PackageKit is required in order to install login shell packages. Exiting."
+        return
+    fi
+
+    pkcon install --allow-reinstall "${required_dependencies[@]}"
+)
+
+
+
+main () (
+    arg="$1"
+    case "$arg" in
+        -h|--help)
+            show-usage
+            exit 0
+            ;;
+        buildrequires)
+            install-build-requires "${@:2}"
+            exit
+            ;;
+        *)
+            echo "Unknown main argument: $arg"
+            show-usage
+            exit 2
+            ;;
+    esac
+)
+
+[[ "${BASH_SOURCE[0]}" == "${0}" ]] && main "$@"
