@@ -9,6 +9,8 @@
 // this should never be symlinked, and will be copied manually via
 // sudo cp -f ../../../.config/.jupyter/jupyter_lab_config.py /var/lib/jupyter/.jupyter/
 .config/.jupyter/
+// service units must be configured manually
+units/
 
 // imported manually until we find a way to automate it away
 .config/flameshot.conf
