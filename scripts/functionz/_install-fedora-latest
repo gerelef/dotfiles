@@ -102,7 +102,7 @@ install-universal-necessities () (
     sudo dnf install -y --quiet --best brave-browser
 
     _echo-debug "Checking whether btrfs is in rootfs or homefs (sometimes are different partitions)"
-    if _is-btrfs-rootfs || _is-btrfs-homefs; then
+    if [[ $(checkc get homefs) == "btrfs" || $(checkc get rootfs) == "btrfs" ]]; then
         _echo-status "Found BTRFS, installing tools..."
         sudo dnf install -y --quiet --best --allowerasing --skip-unavailable $INSTALLABLE_BTRFS_TOOLS
     fi
@@ -136,7 +136,7 @@ wifi.powersave = 2
 EOF
     fi
 
-    if _is-mobile-type; then
+    if checkc is mobile; then
         _echo-status "Enabling power-efficient (but less secure) suspend to ram for mobile-type."
         _echo-important "This will FAIL HSI-2 tests."
         sudo grubby --update-kernel=ALL --args="mem_sleep_default=deep"  # deep sleep
@@ -148,7 +148,7 @@ EOF
         sudo chattr +T /home
         _echo-debug "Configured chattr +T for /home"
 
-        if _is-gnome-session; then
+        if checkc is gnome; then
             _echo-debug "Installing s76-scheduler-plugin..."
             git clone https://github.com/gerelef/s76-scheduler-plugin.git ~/.local/share/gnome-shell/extensions/s76-scheduler@mattjakeman.com
             _echo-status "Enabling system76-scheduler..."
@@ -158,7 +158,7 @@ EOF
         fi
     fi
 
-    if _is-desktop-type; then
+    if checkc is desktop; then
         _echo-status "Enabling non-power efficient (but more secure) suspend to idle (s2idle) for desktop-type..."
         _echo-important "This will PASS HSI-2 tests."
         sudo grubby --update-kernel=ALL --args="mem_sleep_default=s2idle"
@@ -194,7 +194,7 @@ create-swapfile () (
     _echo-status "-------------------CREATING /swapfile----------------"
     # btrfs specific no copy-on-write
     # https://unix.stackexchange.com/questions/599949/swapfile-swapon-invalid-argument
-    if _is-btrfs-rootfs; then
+    if [[ $(checkc get rootfs) == "btrfs" ]]; then
         _echo-debug "running btrfs truncate/chattr"
         sudo truncate -s 0 /swapfile
         sudo chattr +C /swapfile
@@ -211,7 +211,7 @@ create-swapfile () (
     _echo-debug "mkswap/swapon done"
 
     # btrfs specific fstab entry
-    if _is-btrfs-rootfs; then
+    if [[ $(checkc get rootfs) == "btrfs" ]]; then
         sudo sh -c 'echo "/swapfile none swap defaults 0 0" >> /etc/fstab'
         _echo-success "Done."
         return
@@ -223,8 +223,8 @@ create-swapfile () (
 
 install-proprietary-nvidia-drivers () (
     # install nvidia drivers if we have an NVIDIA card
-    if ! _is-nvidia-gpu; then return; fi
-    if ! _is-nvidia-nouveau; then return; fi
+    if ! checkc is nvidia-gpu; then return; fi
+    if ! checkc is nouveau; then return; fi
 
     readonly NVIDIA_GPU="$(_nvidia-gpu-model)"
 
@@ -247,7 +247,7 @@ install-proprietary-nvidia-drivers () (
 
     _echo-unexpected "NVIDIA drivers will be built on next boot."
 
-    if _is-uefi && [[ $(mokutil --sb-state 2> /dev/null) ]]; then
+    if checkc is uefi && [[ $(mokutil --sb-state 2> /dev/null) ]]; then
         # https://blog.monosoul.dev/2022/05/17/automatically-sign-nvidia-kernel-module-in-fedora-36/
         # https://github.com/NVIDIA/yum-packaging-precompiled-kmod/blob/main/UEFI.md
         # the official NVIDIA instructions recommend installing the driver first
@@ -296,7 +296,7 @@ install-media-codecs () (
     "ffmpegthumbnailer" \
     "libavcodec-freeworld" \
     "pipewire-codec-aptx"
-    if _is-gnome-session; then
+    if checkc is gnome; then
         # in order to have nautilus create thumbnails, we need both the ffmpeg thumbnailer & the appropriate codec
         #  afterwards, refresh the current cache
         sudo dnf install -y --quiet --best --allowerasing --skip-unavailable "ffmpegthumbnailer" "libavcodec-freeworld"
@@ -425,7 +425,7 @@ tweak-minor-details () (
     sudo systemctl disable --now NetworkManager-wait-online.service
     _echo-debug "Disabled NetworkManager-wait-online.service"
     # if GNOME, stop Software from autostarting & updating in the background, no reason
-    _is-gnome-session && sudo rm /etc/xdg/autostart/org.gnome.Software.desktop 2> /dev/null
+    checkc is gnome && sudo rm /etc/xdg/autostart/org.gnome.Software.desktop 2> /dev/null
 
     _echo-success "Done."
 )
@@ -672,7 +672,7 @@ if ! ping -q -c 1 -W 1 google.com > /dev/null; then
     exit 1
 fi
 
-if _is-root; then
+if checkc is root; then
     _echo-unexpected "The script must not be run as super-user."
     _echo-unexpected "Permissions will be given granularly; Please re-run the script as a regular user."
     exit 2
@@ -756,7 +756,7 @@ if [[ -z $XDG_CURRENT_DESKTOP ]]; then
     sudo systemctl reboot
 fi
 
-if _is-gnome-session; then
+if checkc is gnome; then
     _echo-debug "GNOME session detected. Installing GNOME/libadwaita-specific packages."
     sudo dnf install -y --quiet --best --allowerasing $INSTALLABLE_ADWAITA_PACKAGES $INSTALLABLE_GNOME_EXTENSIONS
     flatpak install flathub --system --noninteractive -y $INSTALLABLE_ADWAITA_FLATPAKS
@@ -876,7 +876,7 @@ fi
 if [[ -n "$INSTALL_VIRTUALIZATION" ]]; then
     _echo-status "-------------------INSTALLING VIRTUALIZATION PACKAGES----------------"
     sudo dnf install -y --quiet --best --allowerasing --skip-unavailable $INSTALLABLE_VIRTUALIZATION_PACKAGES
-    if _is-virtual-machine; then
+    if checkc is vm; then
         sudo dnf group install -y --quiet "guest-agents" "guest-desktop-agents"
         _echo-debug "Installed guest-agents & guest-desktop-agents."
     fi
@@ -964,7 +964,7 @@ sudo fwupdtool security 2> /dev/null | grep -i '✘'
 _echo-important "Make sure to restart your PC after making all the necessary adjustments."
 _echo-important "Remember to add a permanent mount point for internal storage partitions."
 
-if _is-gnome-session; then
+if checkc is gnome; then
     _echo-status "Personalizing GNOME session..."
     _echo-status "Recommended GNOME extensions: "
     _echo-important "- GTK3 Theme Auto Switcher (https://extensions.gnome.org/extension/4998/legacy-gtk3-theme-scheme-auto-switcher/)"

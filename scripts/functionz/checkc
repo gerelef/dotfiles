@@ -1,0 +1,200 @@
+#!/usr/bin/env bash
+
+_depends-on ip jq tr || exit
+_depends-on nmap awk || exit
+_depends-on dmidecode || exit
+_depends-on lspci || exit
+
+show-usage () {
+    echo "Usage: check for (c)ommon usecases.
+       checkc all-interfaces  # get all interface information
+       checkc all-connected <iface-ip>  # scan for all connected devices on iface ip
+       checkc is vm  # check if running under vm
+       checkc is uefi  # check if running under uefi
+       checkc is tty  # check if output is a terminal (tty) or anything else (probably a pipe)
+       checkc is root  # check if euid is root
+       checkc is nouveau  # check if running nouveau graphics drivers
+       checkc is nvidia-gpu  # check if there's an nvidia gpu installed
+       checkc is mobile  # check if the computer is a mobile type (e.g. laptop)
+       checkc is desktop  # check if the computer is a desktop type
+       checkc is service-running <service-name>  # check if <service-name> is running
+       checkc get homefs  # get home partition filesystem
+       checkc get rootfs  # get root partition filesystem"
+}
+
+ip-all-devices-ipv4 () (
+    if [[ $# != 1 ]]; then echo "interface ip argument must be given!"; exit 1; fi
+    nmap -n -sn "$1/24" -oG - | awk '/Up$/{print $2}' | grep --invert-match "$1"
+)
+
+ip-all-interfaces-ipv4 () (
+    ip -brief address
+)
+
+is-virtual-machine () (
+    _echo-debug "is-virtual-machine $(systemd-detect-virt)"
+    [[ $(systemd-detect-virt) != "none" ]] && return 0
+    return 1
+)
+
+is-uefi () (
+    _echo-debug "is-uefi $([ -d /sys/firmware/efi ] && echo UEFI || echo BIOS)"
+    [[ "$([ -d /sys/firmware/efi ] && echo UEFI || echo BIOS)" == "UEFI" ]] && return 0
+    return 1
+)
+
+is-tty () {
+    test -t 1
+}
+
+is-root () (
+    _echo-debug "is-root $(id -u) $? (0 is root)"
+    [[ $(id -u) = 0 ]] && return 0
+    return 1
+)
+
+is-nouveau () (
+    grep -e "nouveau" <( lsmod ) 2>/dev/null 1>&2
+)
+
+is-nvidia-gpu () (
+    (lspci | grep -i vga | grep NVIDIA) && return 0
+    return 1
+)
+
+is-mobile-type () (
+    _echo-debug "is-mobile-type $(sudo dmidecode --string chassis-type)"
+    readonly CHASSIS_TYPE="$(sudo dmidecode --string chassis-type)"
+    [[ $CHASSIS_TYPE == "Notebook" || $CHASSIS_TYPE == "Tablet" || $CHASSIS_TYPE == "Convertible" ]] && return 0
+    return 1
+)
+
+is-desktop-type () (
+    _echo-debug "is-desktop-type $(sudo dmidecode --string chassis-type)"
+    [[ "$(sudo dmidecode --string chassis-type)" == "Desktop" ]] && return 0
+    return 1
+)
+
+is-service-running () {
+    _echo-debug "is-service-running $1"
+    [[ $# != 1 ]] && exit 1
+    systemctl is-active --quiet "$1" && return 0
+    return 1
+}
+
+is-gnome-session () (
+    _echo-debug "is-gnome-session $XDG_CURRENT_DESKTOP"
+    [[ $XDG_CURRENT_DESKTOP == "GNOME" ]] && return 0
+    return 1
+)
+
+pure-checks () (
+    arg="$1"
+    case "$arg" in
+        -h|--help)
+            show-usage
+            exit 0
+            ;;
+        vm)
+            is-virtual-machine "${@:2}"
+            exit
+            ;;
+        uefi)
+            is-uefi "${@:2}"
+            exit
+            ;;
+        tty)
+            is-tty "${@:2}"
+            exit
+            ;;
+        root)
+            is-root "${@:2}"
+            exit
+            ;;
+        nouveau)
+            is-nouveau "${@:2}"
+            exit
+            ;;
+        nvidia-gpu)
+            is-nvidia-gpu "${@:2}"
+            exit
+            ;;
+        mobile)
+            is-mobile-type "${@:2}"
+            exit
+            ;;
+        desktop)
+            is-desktop-type "${@:2}"
+            exit
+            ;;
+        service-running)
+            is-service-running "${@:2}"
+            exit
+            ;;
+        gnome)
+            is-gnome-session "${@:2}"
+            exit
+            ;;
+        *)
+            echo "Unknown 'is' argument: $arg"
+            show-usage
+            exit 2
+            ;;
+    esac
+)
+
+getters () (
+    arg="$1"
+    case "$arg" in
+        -h|--help)
+            show-usage
+            exit 0
+            ;;
+        homefs)
+            echo "$(stat -f --format=%T "$(eval echo "~${SUDO_USER:-$(whoami)}")")"
+            exit
+            ;;
+        rootfs)
+            echo "$(stat -f --format=%T /)"
+            exit
+            ;;
+        *)
+            echo "Unknown 'get' argument: $arg"
+            show-usage
+            exit 2
+            ;;
+    esac
+)
+
+main () (
+    arg="$1"
+    case "$arg" in
+        -h|--help)
+            show-usage
+            exit 0
+            ;;
+        all-interfaces)
+            ip-all-interfaces-ipv4 "${@:2}"
+            exit
+            ;;
+        all-connected)
+            ip-all-devices-ipv4 "${@:2}"
+            exit
+            ;;
+        is)
+            pure-checks "${@:2}"
+            exit
+            ;;
+        get)
+            getters "${@:2}"
+            exit
+            ;;
+        *)
+            echo "Unknown 'main' argument: $arg"
+            show-usage
+            exit 2
+            ;;
+    esac
+)
+
+[[ "${BASH_SOURCE[0]}" == "${0}" ]] && main "$@"
