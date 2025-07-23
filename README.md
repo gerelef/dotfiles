@@ -81,7 +81,7 @@ strace -s 2000 -o unlink.log unlink file1
 
 ## services
 
-Additionally to the services in the `scripts/functionz/units/*`, I also sometimes host the following services:
+Additionally to the services in the `./units/*`, I also sometimes host the following services:
 
 - ollama
 - open-webui

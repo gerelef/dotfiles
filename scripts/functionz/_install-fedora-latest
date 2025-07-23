@@ -11,7 +11,7 @@
 export TRACE_SETUP_ON  # set before running to enable traces
 export DEBUG_SETUP_ON="yes"
 export PATH="$PATH:$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
-export UNITS="$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )/units"
+export UNITS="$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )/../../units"
 
 add-gsettings-shortcut () (
     [[ $# -ne 3 ]] && return 2
