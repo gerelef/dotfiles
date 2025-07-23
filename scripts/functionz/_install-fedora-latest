@@ -42,26 +42,26 @@ add-gsettings-shortcut () (
 )
 
 configure-residual-permissions () (
-    _echo-status "-------------------CHANGING ROOT OWNERSHIP AND GROUPS IN HOME----------------"
+    _echo status "-------------------CHANGING ROOT OWNERSHIP AND GROUPS IN HOME----------------"
     sudo chown "$REAL_USER" "$REAL_USER_HOME"
     sudo chgrp "$REAL_USER" "$REAL_USER_HOME"
 
     # everything in home should be owned by the user and in the user's group
     # this filter finds which f
     find "$REAL_USER_HOME" -user root -print0 2> /dev/null | while read -d $'\0' file; do
-        _echo-debug "sudo chown chgrp $REAL_USER $file"
+        _echo debug "sudo chown chgrp $REAL_USER $file"
 
         sudo chown "$REAL_USER" "$file"
         sudo chgrp "$REAL_USER" "$file"
     done
 
-    _echo-success "Done."
+    _echo success "Done."
 )
 
 copy-dnf () (
     _depends-on tee || sudo dnf install -y --quiet tee
 
-    _echo-debug "Copying /etc/dnf/dnf.conf"
+    _echo debug "Copying /etc/dnf/dnf.conf"
     # NOTE: ip_resolve=4 was added to disable ipv6 resolve, because there was an outage lol
     sudo tee "/etc/dnf/dnf.conf" <<-DNF_EOF
 [main]
@@ -78,17 +78,17 @@ DNF_EOF
 )
 
 install-gnome-de () (
-    _echo-status "-------------------INSTALLING GNOME----------------"
+    _echo status "-------------------INSTALLING GNOME----------------"
 
     sudo dnf group install -y --quiet "gnome-desktop"
     sudo dnf install -y --quiet "systemd-container"
     sudo systemctl enable gdm
 
-    _echo-success "Done."
+    _echo success "Done."
 )
 
 install-universal-necessities () (
-    _echo-status "-------------------INSTALLING ESSENTIAL PACKAGES----------------"
+    _echo status "-------------------INSTALLING ESSENTIAL PACKAGES----------------"
     sudo dnf install -y --quiet --best --allowerasing --skip-unavailable $INSTALLABLE_ESSENTIAL_PACKAGES
     sudo systemctl enable --now firewalld
 
@@ -101,14 +101,14 @@ install-universal-necessities () (
     sudo dnf config-manager addrepo -y --quiet --from-repofile=https://brave-browser-rpm-release.s3.brave.com/brave-browser.repo
     sudo dnf install -y --quiet --best brave-browser
 
-    _echo-debug "Checking whether btrfs is in rootfs or homefs (sometimes are different partitions)"
+    _echo debug "Checking whether btrfs is in rootfs or homefs (sometimes are different partitions)"
     if [[ $(checkc get homefs) == "btrfs" || $(checkc get rootfs) == "btrfs" ]]; then
-        _echo-status "Found BTRFS, installing tools..."
+        _echo status "Found BTRFS, installing tools..."
         sudo dnf install -y --quiet --best --allowerasing --skip-unavailable $INSTALLABLE_BTRFS_TOOLS
     fi
 
     flatpak permission-set screenshot screenshot org.flameshot.Flameshot yes
-    _echo-debug "Set permissions for flameshot."
+    _echo debug "Set permissions for flameshot."
 
     sudo tee "/usr/sbin/update-grub" <<GR_END
 #!/bin/sh
@@ -118,18 +118,18 @@ GR_END
 
     sudo chown root:root "/usr/sbin/update-grub"
     sudo chmod 755 "/usr/sbin/update-grub"
-    _echo-debug "Configured update-grub."
+    _echo debug "Configured update-grub."
 
-    _echo-success "Done."
+    _echo success "Done."
 )
 
 optimize-hardware () (
-    _echo-status "-------------------OPTIMIZING HARDWARE----------------"
+    _echo status "-------------------OPTIMIZING HARDWARE----------------"
 
     sudo systemctl enable --now systemd-bsod
 
     if journalctl --boot | grep -i 'failed to send h2c command'; then
-        _echo-important "Found error messages regarding wifi powersaving. Deactivating feature..."
+        _echo important "Found error messages regarding wifi powersaving. Deactivating feature..."
         sudo tee /etc/NetworkManager/conf.d/wifi.conf <<EOF
 [connection]
 wifi.powersave = 2
@@ -137,21 +137,21 @@ EOF
     fi
 
     if checkc is mobile; then
-        _echo-status "Enabling power-efficient (but less secure) suspend to ram for mobile-type."
-        _echo-important "This will FAIL HSI-2 tests."
+        _echo status "Enabling power-efficient (but less secure) suspend to ram for mobile-type."
+        _echo important "This will FAIL HSI-2 tests."
         sudo grubby --update-kernel=ALL --args="mem_sleep_default=deep"  # deep sleep
-        _echo-debug "Enabling deep /sys/power/mem_sleep"
+        _echo debug "Enabling deep /sys/power/mem_sleep"
         sudo sh -c 'echo deep > /sys/power/mem_sleep'
-        _echo-debug "Updated grub."
+        _echo debug "Updated grub."
         sudo update-grub
 
         sudo chattr +T /home
-        _echo-debug "Configured chattr +T for /home"
+        _echo debug "Configured chattr +T for /home"
 
         if checkc is gnome; then
-            _echo-debug "Installing s76-scheduler-plugin..."
+            _echo debug "Installing s76-scheduler-plugin..."
             git clone https://github.com/gerelef/s76-scheduler-plugin.git ~/.local/share/gnome-shell/extensions/s76-scheduler@mattjakeman.com
-            _echo-status "Enabling system76-scheduler..."
+            _echo status "Enabling system76-scheduler..."
             sudo dnf copr enable -y --quiet kylegospo/system76-scheduler
             sudo dnf install -y --quiet --best --allowerasing --skip-unavailable system76-scheduler
             sudo systemctl enable --now com.system76.Scheduler.service
@@ -159,31 +159,31 @@ EOF
     fi
 
     if checkc is desktop; then
-        _echo-status "Enabling non-power efficient (but more secure) suspend to idle (s2idle) for desktop-type..."
-        _echo-important "This will PASS HSI-2 tests."
+        _echo status "Enabling non-power efficient (but more secure) suspend to idle (s2idle) for desktop-type..."
+        _echo important "This will PASS HSI-2 tests."
         sudo grubby --update-kernel=ALL --args="mem_sleep_default=s2idle"
         sudo sh -c 'echo s2idle > /sys/power/mem_sleep'
         sudo update-grub
-        _echo-status "Disabling mobile-gpu specific service (https://forums.developer.nvidia.com/t/no-matching-gpu-found-with-510-47-03/202315/5)"
+        _echo status "Disabling mobile-gpu specific service (https://forums.developer.nvidia.com/t/no-matching-gpu-found-with-510-47-03/202315/5)"
         sudo systemctl disable --now nvidia-powerd.service
         return
     fi
 
-    _echo-important "Locking down kernel with confidentiality mode."
-    _echo-important "This will disable memory (and other) runtime inspections."
+    _echo important "Locking down kernel with confidentiality mode."
+    _echo important "This will disable memory (and other) runtime inspections."
     sudo grubby --args="lockdown=confidentiality" --update-kernel=ALL
 
-    _echo-status "Adding preempt=full kernel parameter..."
+    _echo status "Adding preempt=full kernel parameter..."
     sudo grubby --update-kernel=ALL --args="preempt=full"
 
-    _echo-status "Removing 'user friendly' kernel params."
-    _echo-status "If you want to delve deeper in kernel params, check out the CIS Benchmarks"
-    _echo-status 'https://www.cisecurity.org/benchmark/distribution_independent_linux'
+    _echo status "Removing 'user friendly' kernel params."
+    _echo status "If you want to delve deeper in kernel params, check out the CIS Benchmarks"
+    _echo status 'https://www.cisecurity.org/benchmark/distribution_independent_linux'
     sudo grubby --update-kernel=ALL --args="sysrq_always_enabled=1"
     sudo grubby --update-kernel=ALL --remove-args="quiet"
 
     sudo update-grub
-    _echo-success "Done."
+    _echo success "Done."
 )
 
 create-swapfile () (
@@ -191,33 +191,33 @@ create-swapfile () (
     [[ -n $(cat /etc/fstab | grep "/swapfile swap swap defaults 0 0") ]] && return
     [[ -n $(cat /etc/fstab | grep "/swapfile none swap defaults 0 0") ]] && return
 
-    _echo-status "-------------------CREATING /swapfile----------------"
+    _echo status "-------------------CREATING /swapfile----------------"
     # btrfs specific no copy-on-write
     # https://unix.stackexchange.com/questions/599949/swapfile-swapon-invalid-argument
     if [[ $(checkc get rootfs) == "btrfs" ]]; then
-        _echo-debug "running btrfs truncate/chattr"
+        _echo debug "running btrfs truncate/chattr"
         sudo truncate -s 0 /swapfile
         sudo chattr +C /swapfile
     fi
 
     kbs=$(grep MemTotal < /proc/meminfo | grep -E -o "[0-9]+")
     sudo dd if=/dev/zero of=/swapfile bs=1KB count="$kbs"
-    _echo-debug "created /swapfile"
+    _echo debug "created /swapfile"
     sudo chmod 600 /swapfile
     sudo chown root /swapfile
-    _echo-debug "set /swapfile permissions"
+    _echo debug "set /swapfile permissions"
     sudo mkswap /swapfile
     sudo swapon /swapfile
-    _echo-debug "mkswap/swapon done"
+    _echo debug "mkswap/swapon done"
 
     # btrfs specific fstab entry
     if [[ $(checkc get rootfs) == "btrfs" ]]; then
         sudo sh -c 'echo "/swapfile none swap defaults 0 0" >> /etc/fstab'
-        _echo-success "Done."
+        _echo success "Done."
         return
     fi
     sudo sh -c 'echo "/swapfile swap swap defaults 0 0" >> /etc/fstab'
-    _echo-success "Done."
+    _echo success "Done."
 )
 
 
@@ -228,24 +228,24 @@ install-proprietary-nvidia-drivers () (
 
     readonly NVIDIA_GPU="$(_nvidia-gpu-model)"
 
-    _echo-status "-------------------INSTALLING NVIDIA DRIVERS----------------"
-    _echo-status "Found $NVIDIA_GPU!"
+    _echo status "-------------------INSTALLING NVIDIA DRIVERS----------------"
+    _echo status "Found $NVIDIA_GPU!"
 
     sudo dnf install -y --quiet --best --allowerasing --skip-unavailable $INSTALLABLE_NVIDIA_DRIVERS
 
     # check arch wiki, these enable DRM
     sudo grubby --update-kernel=ALL --args="nvidia-drm.modeset=1"
     sudo grubby --update-kernel=ALL --args="nvidia-drm.fbdev=1"
-    _echo-debug "Added modeset & fbdev."
+    _echo debug "Added modeset & fbdev."
     sudo update-grub
-    _echo-debug "Updated grub."
+    _echo debug "Updated grub."
 
-    _echo-debug "Regenerating akmod build..."
+    _echo debug "Regenerating akmod build..."
     sudo akmods --force --rebuild || exit 1
     sudo dracut --force --regenerate-all || exit 1
-    _echo-debug "Regenerated akmod build."
+    _echo debug "Regenerated akmod build."
 
-    _echo-unexpected "NVIDIA drivers will be built on next boot."
+    _echo unexpected "NVIDIA drivers will be built on next boot."
 
     if checkc is uefi && [[ $(mokutil --sb-state 2> /dev/null) ]]; then
         # https://blog.monosoul.dev/2022/05/17/automatically-sign-nvidia-kernel-module-in-fedora-36/
@@ -255,24 +255,24 @@ install-proprietary-nvidia-drivers () (
         # since we shouldn't reboot/shutdown for a few minutes after installing akmod drivers
         # since they'll be compiling in the background!
         # Their recommendations talk about kmod, not akmod, but the process should be the same
-        _echo-important "You only have to do this once. Do NOT re-enroll MOK a second time."
+        _echo important "You only have to do this once. Do NOT re-enroll MOK a second time."
         if ask user question 'Do you want to enroll MOK and restart afterwards?'; then
-            _echo-important "Make sure you enroll MOK when you restart."
+            _echo important "Make sure you enroll MOK when you restart."
 
-            _echo-status "Signing GPU drivers..."
+            _echo status "Signing GPU drivers..."
             sudo kmodgenca -a
             sudo mokutil --import /etc/pki/akmods/certs/public_key.der
 
-            _echo-important "Finished signing GPU drivers."
+            _echo important "Finished signing GPU drivers."
             sudo systemctl reboot
         fi
     else
-        _echo-unexpected "UEFI not found; please restart & use UEFI in order to sign drivers..."
+        _echo unexpected "UEFI not found; please restart & use UEFI in order to sign drivers..."
     fi
 )
 
 install-media-codecs () (
-    _echo-status "-------------------INSTALLING MEDIA CODECS / H/W VIDEO ACCELERATION----------------"
+    _echo status "-------------------INSTALLING MEDIA CODECS / H/W VIDEO ACCELERATION----------------"
 
     # based on https://github.com/devangshekhawat/Fedora-39-Post-Install-Guide
     sudo dnf install -y --quiet --best --allowerasing --skip-unavailable lame\*
@@ -307,18 +307,18 @@ install-media-codecs () (
 )
 
 install-gaming-packages () (
-    _echo-status "-------------------INSTALLING GAMING PACKAGES----------------"
+    _echo status "-------------------INSTALLING GAMING PACKAGES----------------"
     sudo dnf install -y --quiet --best --allowerasing --skip-unavailable "steam" "gamescope"
     flatpak install flathub --system --noninteractive -y "com.discordapp.Discord" "com.leinardi.gst"
     # vulkan drivers are required for proton-ge to work
     sudo dnf install -y --quiet --best --allowerasing --skip-unavailable "protontricks" "vulkan" "vulkan-loader" "vulkan-loader.i686"
-    _echo-debug "installed proton-ge prerequisites"
+    _echo debug "installed proton-ge prerequisites"
     update-compat-layers
-    _echo-debug "updated compatibility layers"
+    _echo debug "updated compatibility layers"
 
     # openrgb utils
     if lscpu | grep -i amd; then
-        _echo-status "Installing openrgb (setup works only for AMD chipsets currently) "
+        _echo status "Installing openrgb (setup works only for AMD chipsets currently) "
         sudo dnf install -y --quiet --best --allowerasing --skip-unavailable "openrgb" "openrgb-udev-rules" "i2c-tools"
         sudo modprobe i2c-dev
         sudo modprobe i2c-piix4
@@ -370,7 +370,7 @@ EOF
         systemctl enable --user --now "$UNITS/openrgb.service"
     fi
 
-    _echo-success "Done."
+    _echo success "Done."
 )
 
 # man 5 sysctl.d
@@ -381,20 +381,20 @@ EOF
 #    It is recommended to prefix all filenames with a two-digit number and a dash, to simplify the ordering of the files.
 
 configure-system-defaults () (
-    _echo-status "-------------------SETTING UP SYSTEM DEFAULTS----------------"
-    _echo-debug "Lowering swappiness"
+    _echo status "-------------------SETTING UP SYSTEM DEFAULTS----------------"
+    _echo debug "Lowering swappiness"
     sudo sh -c 'echo "vm.swappiness = 3" > "/etc/sysctl.d/90-swappiness.conf"'
-    _echo-success "Lowered swappiness."
-    _echo-debug "Raising user-watches"
+    _echo success "Lowered swappiness."
+    _echo debug "Raising user-watches"
     sudo sh -c 'echo "fs.inotify.max_user_watches = 600000" > "/etc/sysctl.d/90-max_user_watches.conf"'
-    _echo-success "Raised user watches."
-    _echo-debug "Capping nproc-count to prevent fork-bombs (hard nproc 10_000)"
+    _echo success "Raised user watches."
+    _echo debug "Capping nproc-count to prevent fork-bombs (hard nproc 10_000)"
     sudo sh -c "echo \"$REAL_USER 'hard nproc 10000'\" > '/etc/security/limits.d/90-nproc.conf'"
-    _echo-success "Capped maximum number of processes."
+    _echo success "Capped maximum number of processes."
     # sudoers used to be here, but was moved for convenience with low-speed connections
-    _echo-debug 'Creating polkit policy @ /etc/polkit-1/rules.d/99-custom-units.rules'
-    _echo-debug ' ... in order to allow wheel users restart the NetworkManager.service '
-    _echo-debug ' without further authorization.'
+    _echo debug 'Creating polkit policy @ /etc/polkit-1/rules.d/99-custom-units.rules'
+    _echo debug ' ... in order to allow wheel users restart the NetworkManager.service '
+    _echo debug ' without further authorization.'
     sudo tee '/etc/polkit-1/rules.d/99-custom-units.rules' <<EOF
 polkit.addRule(
   function(action, subject) {
@@ -409,25 +409,25 @@ polkit.addRule(
 EOF
 
     sudo systemctl restart polkit
-    _echo-success "Done."
+    _echo success "Done."
 )
 
 tweak-minor-details () (
-    _echo-status "-------------------TWEAKING MINOR DETAILS----------------"
+    _echo status "-------------------TWEAKING MINOR DETAILS----------------"
     # https://github.com/tommytran732/Linux-Setup-Scripts/blob/main/Fedora-Workstation-36.sh
     sudo systemctl enable --now fstrim.timer
-    _echo-debug "Enabled fs trim timer."
+    _echo debug "Enabled fs trim timer."
     sudo timedatectl set-local-rtc '0' # for fixing dual boot time inconsistencies
-    _echo-debug "Set local rtc to 0."
+    _echo debug "Set local rtc to 0."
     # if the statement below doesnt work, check this out
     #  https://old.reddit.com/r/linuxhardware/comments/ng166t/s3_deep_sleep_not_working/
     # stop network manager from waiting until online, improves boot times
     sudo systemctl disable --now NetworkManager-wait-online.service
-    _echo-debug "Disabled NetworkManager-wait-online.service"
+    _echo debug "Disabled NetworkManager-wait-online.service"
     # if GNOME, stop Software from autostarting & updating in the background, no reason
     checkc is gnome && sudo rm /etc/xdg/autostart/org.gnome.Software.desktop 2> /dev/null
 
-    _echo-success "Done."
+    _echo success "Done."
 )
 
 configure-ssh-defaults () (
@@ -437,20 +437,20 @@ configure-ssh-defaults () (
 
     sudo dnf install -y --quiet "ssh"
     sudo systemctl disable --now sshd
-    _echo-status "-------------------GENERATING SSH KEY----------------"
+    _echo status "-------------------GENERATING SSH KEY----------------"
     mkdir -p "$REAL_USER_HOME/.ssh"
     ssh-keygen -q -t $ALGO -N '' -C "$REAL_USER@$(hostname)" -f "$REAL_USER_HOME/.ssh/id_ed25519" -P "" <<< $'\ny' >/dev/null 2>&1
     cat "$REAL_USER_HOME/.ssh/id_ed25519.pub"
     # this is REQUIRED for ssh related thingies; key must NOT be readable by anyone else but this user
     sudo chown "$REAL_USER" "$REAL_USER_HOME/.ssh/id_ed25519"
     sudo chmod 700 "$REAL_USER_HOME/.ssh/id_ed25519"
-    _echo-success "Done."
+    _echo success "Done."
 )
 
 configure-tailscaled () (
     # TODO eventually replace fail2ban with crowdsec here, along with a 'remediation component'
     #  https://community.hetzner.com/tutorials/how-to-set-up-crowdsec-and-protect-ssh
-    _echo-status "Installing tailscaled, openssh-server (sshd) & fail2ban"
+    _echo status "Installing tailscaled, openssh-server (sshd) & fail2ban"
 
     sudo dnf config-manager addrepo --from-repofile="https://pkgs.tailscale.com/stable/fedora/tailscale.repo"
     sudo dnf install -y --quiet tailscale openssh-server fail2ban
@@ -461,7 +461,7 @@ configure-tailscaled () (
     tailscaled_ipvX=$(ip --json -brief address | jq '.[] | select(."ifname" | startswith("tailscale"))' | jq '."addr_info".[0].local | select(. != null and . != "127.0.0.1")')
 
     if [[ -z $tailscaled_ipvX ]]; then
-        _echo-unexpected "Couldn't identify tailscaled interface, and sshd is listening on all interfaces!"
+        _echo unexpected "Couldn't identify tailscaled interface, and sshd is listening on all interfaces!"
     else
         # create the sshd_config.d/ dir if it doesn't exist
         [[ ! -d "/etc/ssh/sshd_config.d/" ]] && sudo mkdir -p "/etc/ssh/sshd_config.d/"
@@ -469,8 +469,8 @@ configure-tailscaled () (
 PasswordAuthentication no
 ListenAddress $tailscaled_ipvX
 EOF
-        _echo-important "Disabled sshd password authentication. Use AuthorizedKeysFile (named authorized_keys by default) with your public key to connect."
-        _echo-important "Bound tailscaled to $tailscaled_ipvX!"
+        _echo important "Disabled sshd password authentication. Use AuthorizedKeysFile (named authorized_keys by default) with your public key to connect."
+        _echo important "Bound tailscaled to $tailscaled_ipvX!"
     fi
 
     sleep 2
@@ -490,9 +490,9 @@ bantime = 3600
 ignoreip = 127.0.0.1
 EOF
 
-    # _echo-important "$(tailscale ip -4)"
+    # _echo important "$(tailscale ip -4)"
     #  "no current Tailscale IPs; state: NeedsLogin"
-    _echo-status "Done."
+    _echo status "Done."
 )
 
 install-jetbrains-toolbox () (
@@ -663,28 +663,28 @@ gnome-shell-extension-background-logo \
 
 [[ "${BASH_SOURCE[0]}" != "${0}" ]] && return
 
-_echo-important "You may enable/disable select debugging logs via DEBUG_SETUP_ON."
-_echo-important "You may enable/disable line-by-line tracing for debugging via TRACE_SETUP_ON."
+_echo important "You may enable/disable select debugging logs via DEBUG_SETUP_ON."
+_echo important "You may enable/disable line-by-line tracing for debugging via TRACE_SETUP_ON."
 
 if ! ping -q -c 1 -W 1 google.com > /dev/null; then
-    _echo-unexpected "Network connection was not detected."
-    _echo-unexpected "This script needs network connectivity to continue."
+    _echo unexpected "Network connection was not detected."
+    _echo unexpected "This script needs network connectivity to continue."
     exit 1
 fi
 
 if checkc is root; then
-    _echo-unexpected "The script must not be run as super-user."
-    _echo-unexpected "Permissions will be given granularly; Please re-run the script as a regular user."
+    _echo unexpected "The script must not be run as super-user."
+    _echo unexpected "Permissions will be given granularly; Please re-run the script as a regular user."
     exit 2
 fi
 
 if ! sudo test -f '/etc/sudoers.d/convenience-defaults'; then
-    _echo-debug "Creating convenience for sudoers.d/convenience-defaults"
+    _echo debug "Creating convenience for sudoers.d/convenience-defaults"
     # 440 is the default rights of /etc/sudoers file, so we're copying the rights just in case
     #  (even though visudo -f /etc/sudoers.d/test creates the file with 640)
     sudo sh -c 'echo "Defaults timestamp_timeout=120, pwfeedback" > "/etc/sudoers.d/convenience-defaults"'
     sudo chmod 440 "/etc/sudoers.d/convenience-defaults"
-    _echo-success "Created sudoers.d convenience defaults."
+    _echo success "Created sudoers.d convenience defaults."
 fi
 
 # add dnf plugin
@@ -732,51 +732,51 @@ sudo dnf install -y --quiet --best --allowerasing "$TERMINAL_OF_CHOICE" \
 "plymouth" "plymouth-system-theme" "tuned-ppd"
 sudo dnf group install -y --quiet "standard"
 
-_echo-debug "Installed terminal of choice ($TERMINAL_OF_CHOICE) for GUI-land."
+_echo debug "Installed terminal of choice ($TERMINAL_OF_CHOICE) for GUI-land."
 
 if [[ ! -f "$HAS_CHANGED_HOSTNAME_FILE" ]]; then
     if ask user question "Do you want to change the current hostname (current is: $(hostname))?"; then
         sudo hostnamectl hostname "$(ask system input 'Please provide a suitable hostname')"
         sudo touch "$HAS_CHANGED_HOSTNAME_FILE"
-        _echo-debug "Updated hostname."
+        _echo debug "Updated hostname."
     fi
 fi
 
 # if there's no desktop environment running...
 if [[ -z $XDG_CURRENT_DESKTOP ]]; then
-    _echo-debug "No \$XDG_CURRENT_DESKTOP detected: $XDG_CURRENT_DESKTOP"
+    _echo debug "No \$XDG_CURRENT_DESKTOP detected: $XDG_CURRENT_DESKTOP"
     # run installer ...
     install-gnome-de
 
-    _echo-important "Making sure we're booting into a DE next time we boot..."
+    _echo important "Making sure we're booting into a DE next time we boot..."
     sudo systemctl set-default graphical.target
-    _echo-debug "Set-default graphical.target"
-    _echo-debug "Rebooting in 5''..."
+    _echo debug "Set-default graphical.target"
+    _echo debug "Rebooting in 5''..."
     sleep 5  # sleep so user can actually read message just in case
     sudo systemctl reboot
 fi
 
 if checkc is gnome; then
-    _echo-debug "GNOME session detected. Installing GNOME/libadwaita-specific packages."
+    _echo debug "GNOME session detected. Installing GNOME/libadwaita-specific packages."
     sudo dnf install -y --quiet --best --allowerasing $INSTALLABLE_ADWAITA_PACKAGES $INSTALLABLE_GNOME_EXTENSIONS
     flatpak install flathub --system --noninteractive -y $INSTALLABLE_ADWAITA_FLATPAKS
     flatpak install flathub --system --noninteractive -y $INSTALLABLE_GNOME_FLATPAKS
 fi
 
 # this needs to be up-to-date for some commands
-_echo-debug "running updatedb..."
+_echo debug "running updatedb..."
 if [[ $(sudo updatedb 2> /dev/null) ]]; then
-    _echo-unexpected "updatedb errored, retrying with absolute path"
+    _echo unexpected "updatedb errored, retrying with absolute path"
     sudo /usr/sbin/updatedb
 fi
 
 #######################################################################################################
 
-_echo-important "Note that NVIDIA drivers require manual confirmation for UEFI MOK enrollment"
-_echo-important " and this cannot be automated due to its intrusive nature."
+_echo important "Note that NVIDIA drivers require manual confirmation for UEFI MOK enrollment"
+_echo important " and this cannot be automated due to its intrusive nature."
 sleep 5
 
-_echo-debug "uninstalling bloat"
+_echo debug "uninstalling bloat"
 sudo dnf remove -y --quiet $UNINSTALLABLE_BLOAT
 
 install-universal-necessities
@@ -794,32 +794,32 @@ sudo dnf remove -y --quiet cups-browsed
 #######################################################################################################
 # user options here, ask most of the stuff ahead of time.
 
-_echo-important "You will be asked a series of questions ahead of time, so you can go semi-AFK while installing."
+_echo important "You will be asked a series of questions ahead of time, so you can go semi-AFK while installing."
 
 ask user question 'Do you want to install snapd?' && INSTALL_SNAPD="yes"
-_echo-debug "Will install snapd? $INSTALL_SNAPD"
+_echo debug "Will install snapd? $INSTALL_SNAPD"
 ask user question 'Do you want to install gaming packages?' && INSTALL_GAMING="yes"
-_echo-debug "Will install gaming? $INSTALL_GAMING"
+_echo debug "Will install gaming? $INSTALL_GAMING"
 ask user question 'Do you want to install terminal tools?' && INSTALL_TERM_TOOLS="yes"
-_echo-debug "Will install terminal-tools? $INSTALL_TERM_TOOLS"
+_echo debug "Will install terminal-tools? $INSTALL_TERM_TOOLS"
 ask user question 'Do you want to install tailscaled?' && INSTALL_TAILSCALED="yes"
-_echo-debug "Will install tailscaled? $INSTALL_TAILSCALED"
+_echo debug "Will install tailscaled? $INSTALL_TAILSCALED"
 ask user question 'Do you want to install development tools?' && INSTALL_DEV_TOOLS="yes"
-_echo-debug "Will install dev tools? $INSTALL_DEV_TOOLS"
+_echo debug "Will install dev tools? $INSTALL_DEV_TOOLS"
 ask user question 'Do you want to install rpm tools?' && INSTALL_RPM_TOOLS="yes"
-_echo-debug "Will install rpm tools? $INSTALL_RPM_TOOLS"
+_echo debug "Will install rpm tools? $INSTALL_RPM_TOOLS"
 ask user question 'Do you want to install virtualization packages?' && INSTALL_VIRTUALIZATION="yes"
-_echo-debug "Will install virtualization? $INSTALL_VIRTUALIZATION"
+_echo debug "Will install virtualization? $INSTALL_VIRTUALIZATION"
 ask user question 'Do you want to install containerization packages?' && INSTALL_CONTAINERIZATION="yes"
-_echo-debug "Will install containerization? $INSTALL_CONTAINERIZATION"
+_echo debug "Will install containerization? $INSTALL_CONTAINERIZATION"
 ask user question 'Do you want to install zeno/scrcpy?' && INSTALL_SCRCPY="yes"
-_echo-debug "Will install scrcpy? $INSTALL_SCRCPY"
+_echo debug "Will install scrcpy? $INSTALL_SCRCPY"
 ask user question 'Do you want to install JetBrains Toolbox?' && INSTALL_JETBRAINS="yes"
-_echo-debug "Will install jetbrains? $INSTALL_JETBRAINS"
+_echo debug "Will install jetbrains? $INSTALL_JETBRAINS"
 ask user question 'Do you want to install Zed Text Editor?' && INSTALL_ZED="yes"
-_echo-debug "Will install zed? $INSTALL_ZED"
+_echo debug "Will install zed? $INSTALL_ZED"
 ask user question 'Do you want to install joplin?' && INSTALL_JOPLIN="yes"
-_echo-debug "Will install joplin? $INSTALL_JOPLIN"
+_echo debug "Will install joplin? $INSTALL_JOPLIN"
 
 #######################################################################################################
 
@@ -827,27 +827,27 @@ _echo-debug "Will install joplin? $INSTALL_JOPLIN"
 [[ -n "$INSTALL_TAILSCALED" ]] && configure-tailscaled
 
 if [[ -n "$INSTALL_TERM_TOOLS" ]]; then
-    _echo-status "-------------------INSTALLING TERMINAL TOOLS----------------"
+    _echo status "-------------------INSTALLING TERMINAL TOOLS----------------"
 
     # 'expect' pkg provides the (very) useful 'unbuffer' command
     sudo dnf install -y --quiet --best --allowerasing --skip-unavailable "tldr" "git-delta" "expect"
 
-    _echo-success "Done."
+    _echo success "Done."
 fi
 
 if [[ -n "$INSTALL_DEV_TOOLS" ]]; then
-    _echo-status "-------------------INSTALLING DEV TOOLS----------------"
+    _echo status "-------------------INSTALLING DEV TOOLS----------------"
 
     sudo dnf group install -y --quiet --best --allowerasing  "c-development" "development-tools"
     sudo dnf install -y --quiet --best --allowerasing --skip-unavailable $INSTALLABLE_DEV_PKGS
     sudo dnf install -y --quiet --best --allowerasing nmap net-tools
     flatpak install flathub --system --noninteractive -y "net.werwolv.ImHex"
 
-    _echo-success "Done."
+    _echo success "Done."
 fi
 
 if [[ -n "$INSTALL_RPM_TOOLS" ]]; then
-    _echo-status "-------------------INSTALLING RPM TOOLS----------------"
+    _echo status "-------------------INSTALLING RPM TOOLS----------------"
 
     sudo dnf group install -y --quiet --best --allowerasing 'rpm-development-tools'
     sudo dnf install -y --quiet --best --allowerasing --skip-unavailable \
@@ -870,38 +870,38 @@ if [[ -n "$INSTALL_RPM_TOOLS" ]]; then
     #  however the sources & relevant patches will have to be in `~/rpmbuild/SOURCES`
     # rust2rpm generates .spec files from rust builds
 
-    _echo-success "Done."
+    _echo success "Done."
 fi
 
 if [[ -n "$INSTALL_VIRTUALIZATION" ]]; then
-    _echo-status "-------------------INSTALLING VIRTUALIZATION PACKAGES----------------"
+    _echo status "-------------------INSTALLING VIRTUALIZATION PACKAGES----------------"
     sudo dnf install -y --quiet --best --allowerasing --skip-unavailable $INSTALLABLE_VIRTUALIZATION_PACKAGES
     if checkc is vm; then
         sudo dnf group install -y --quiet "guest-agents" "guest-desktop-agents"
-        _echo-debug "Installed guest-agents & guest-desktop-agents."
+        _echo debug "Installed guest-agents & guest-desktop-agents."
     fi
     sudo usermod -a -G libvirt "$REAL_USER"
-    _echo-debug "Added $REAL_USER to libvirt group."
-    _echo-success "Done."
+    _echo debug "Added $REAL_USER to libvirt group."
+    _echo success "Done."
 fi
 
 if [[ -n "$INSTALL_CONTAINERIZATION" ]]; then
-    _echo-status "-------------------INSTALLING CONTAINERIZATION PACKAGES----------------"
+    _echo status "-------------------INSTALLING CONTAINERIZATION PACKAGES----------------"
     sudo dnf group install -y --quiet "container-management"
-    _echo-success "Done."
+    _echo success "Done."
 fi
 
 if [[ -n "$INSTALL_SCRCPY" ]]; then
-    _echo-status "-------------------INSTALLING zeno/scrcpy----------------"
+    _echo status "-------------------INSTALLING zeno/scrcpy----------------"
     sudo dnf copr enable -y --quiet zeno/scrcpy
     sudo dnf install -y --quiet --best --allowerasing --skip-unavailable scrcpy adb
     sudo dnf install -y --quiet --best --allowerasing nmap net-tools
     sudo systemctl enable --now adb
-    _echo-success "Done."
+    _echo success "Done."
 fi
 
 if [[ -n "$INSTALL_SNAPD" ]]; then
-    _echo-status "-------------------INSTALLING SNAP ----------------"
+    _echo status "-------------------INSTALLING SNAP ----------------"
     sudo dnf install -y --quiet --best --allowerasing snapd
     sudo systemctl enable --now snapd
     # relevant policykit actions were grabbed via `pkaction | grep -i snap`
@@ -931,7 +931,7 @@ fi
 configure-residual-permissions
 
 mapfile -t parts < <(blkid -o list | grep --invert-match "crypto_" | grep -i "not mounted" | awk '{ print $1 }')
-[[ -n "$parts" ]] && _echo-important "--------------------------- POSSIBLE FSTAB PARTITIONS ---------------------------"
+[[ -n "$parts" ]] && _echo important "--------------------------- POSSIBLE FSTAB PARTITIONS ---------------------------"
 for part in "${parts[@]}"; do
     part_name=$(echo $part | tr '/' ' ' | awk '{ print $NF }')
     # 512 size blocks, divided by 2, divided by 1024*1024
@@ -944,33 +944,33 @@ for part in "${parts[@]}"; do
     # if it's a really small partition, it's probably something like a uefi/bootmenu partition, skip it
     [[ $part_size -lt 2 ]] && continue
 
-    _echo-important "Found PARTITION $part with SIZE $part_size GB"
-    _echo-important "Mount with mount --mkdir $part $REAL_USER_HOME/MOUNTPOINT"
-    _echo-important "For permanently mounted partitions add $part to fstab as: "
-    _echo-important "$part /MOUNTPOINT auto rw,user,exec,nosuid,nodev,nofail,auto,x-gvfs-show,x-gvfs-name=YOUR_NAME_HERE 0 0"
-    _echo-important "If this is a drive you don't want to automatically mount, add $part to fstab as: "
-    _echo-important "$part /home/$REAL_USER_HOME/MOUNTPOINT auto rw,user,exec,nosuid,nodev,nofail,x-gvfs-show,x-gvfs-name=YOUR_NAME_HERE 0 0"
-    _echo-important "--------"
-    _echo-important "FOR HOME PARTITIONS add $part to fstab as:"
-    _echo-important "$part /home/USERNAME auto defaults 0 2"
-    _echo-important "Then run:"
-    _echo-important "sudo mount -a && sudo useradd --home /home/USERNAME USERNAME && sudo sudo chown -R USERNAME:USERNAME /home/USERNAME"
-    _echo-important "---------------------------"
+    _echo important "Found PARTITION $part with SIZE $part_size GB"
+    _echo important "Mount with mount --mkdir $part $REAL_USER_HOME/MOUNTPOINT"
+    _echo important "For permanently mounted partitions add $part to fstab as: "
+    _echo important "$part /MOUNTPOINT auto rw,user,exec,nosuid,nodev,nofail,auto,x-gvfs-show,x-gvfs-name=YOUR_NAME_HERE 0 0"
+    _echo important "If this is a drive you don't want to automatically mount, add $part to fstab as: "
+    _echo important "$part /home/$REAL_USER_HOME/MOUNTPOINT auto rw,user,exec,nosuid,nodev,nofail,x-gvfs-show,x-gvfs-name=YOUR_NAME_HERE 0 0"
+    _echo important "--------"
+    _echo important "FOR HOME PARTITIONS add $part to fstab as:"
+    _echo important "$part /home/USERNAME auto defaults 0 2"
+    _echo important "Then run:"
+    _echo important "sudo mount -a && sudo useradd --home /home/USERNAME USERNAME && sudo sudo chown -R USERNAME:USERNAME /home/USERNAME"
+    _echo important "---------------------------"
 done
 
-_echo-important "HSI Report failures (through fwupdtool):"
+_echo important "HSI Report failures (through fwupdtool):"
 sudo fwupdtool security 2> /dev/null | grep -i '✘'
 
-_echo-important "Make sure to restart your PC after making all the necessary adjustments."
-_echo-important "Remember to add a permanent mount point for internal storage partitions."
+_echo important "Make sure to restart your PC after making all the necessary adjustments."
+_echo important "Remember to add a permanent mount point for internal storage partitions."
 
 if checkc is gnome; then
-    _echo-status "Personalizing GNOME session..."
-    _echo-status "Recommended GNOME extensions: "
-    _echo-important "- GTK3 Theme Auto Switcher (https://extensions.gnome.org/extension/4998/legacy-gtk3-theme-scheme-auto-switcher/)"
-    _echo-important "- Tailscale Status (https://github.com/maxgallup/tailscale-status)"
+    _echo status "Personalizing GNOME session..."
+    _echo status "Recommended GNOME extensions: "
+    _echo important "- GTK3 Theme Auto Switcher (https://extensions.gnome.org/extension/4998/legacy-gtk3-theme-scheme-auto-switcher/)"
+    _echo important "- Tailscale Status (https://github.com/maxgallup/tailscale-status)"
 
-    _echo-status "Configuring all gsettings for $REAL_USER..."
+    _echo status "Configuring all gsettings for $REAL_USER..."
     foreach $(partial gsettings set org.gnome.desktop.wm.keybindings {1} "[]" ) < <(gsettings list-recursively org.gnome.desktop.wm.keybindings | awk '{ print $2 }')
 
     # theme settings
@@ -1109,4 +1109,4 @@ fi
 #  this might not be needed, but better to be explicit than implicit
 sync
 
-_echo-success "Done."
+_echo success "Done."

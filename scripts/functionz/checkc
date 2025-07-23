@@ -32,13 +32,13 @@ ip-all-interfaces-ipv4 () (
 )
 
 is-virtual-machine () (
-    _echo-debug "is-virtual-machine $(systemd-detect-virt)"
+    _echo debug "is-virtual-machine $(systemd-detect-virt)"
     [[ $(systemd-detect-virt) != "none" ]] && return 0
     return 1
 )
 
 is-uefi () (
-    _echo-debug "is-uefi $([ -d /sys/firmware/efi ] && echo UEFI || echo BIOS)"
+    _echo debug "is-uefi $([ -d /sys/firmware/efi ] && echo UEFI || echo BIOS)"
     [[ "$([ -d /sys/firmware/efi ] && echo UEFI || echo BIOS)" == "UEFI" ]] && return 0
     return 1
 )
@@ -48,7 +48,7 @@ is-tty () {
 }
 
 is-root () (
-    _echo-debug "is-root $(id -u) $? (0 is root)"
+    _echo debug "is-root $(id -u) $? (0 is root)"
     [[ $(id -u) = 0 ]] && return 0
     return 1
 )
@@ -63,27 +63,27 @@ is-nvidia-gpu () (
 )
 
 is-mobile-type () (
-    _echo-debug "is-mobile-type $(sudo dmidecode --string chassis-type)"
+    _echo debug "is-mobile-type $(sudo dmidecode --string chassis-type)"
     readonly CHASSIS_TYPE="$(sudo dmidecode --string chassis-type)"
     [[ $CHASSIS_TYPE == "Notebook" || $CHASSIS_TYPE == "Tablet" || $CHASSIS_TYPE == "Convertible" ]] && return 0
     return 1
 )
 
 is-desktop-type () (
-    _echo-debug "is-desktop-type $(sudo dmidecode --string chassis-type)"
+    _echo debug "is-desktop-type $(sudo dmidecode --string chassis-type)"
     [[ "$(sudo dmidecode --string chassis-type)" == "Desktop" ]] && return 0
     return 1
 )
 
 is-service-running () {
-    _echo-debug "is-service-running $1"
+    _echo debug "is-service-running $1"
     [[ $# != 1 ]] && exit 1
     systemctl is-active --quiet "$1" && return 0
     return 1
 }
 
 is-gnome-session () (
-    _echo-debug "is-gnome-session $XDG_CURRENT_DESKTOP"
+    _echo debug "is-gnome-session $XDG_CURRENT_DESKTOP"
     [[ $XDG_CURRENT_DESKTOP == "GNOME" ]] && return 0
     return 1
 )
