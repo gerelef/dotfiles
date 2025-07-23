@@ -4,10 +4,10 @@
 
 show-usage () {
     echo "Usage: rpm utility wrapper for common usecases.
-       rpmutils buildrequires <spec file>  # will install all BuildRequires
-       rpmutils build-copr <spec file> # will reproduce a copr build with network access locally, will automatically grab dependencies & sources
-       rpmutils build <spec-file> # will reproduce a copr build with network access locally, will automatically grab sources & SKIP dependencies
-       rpmutils compare-versions <version1> <version2>  # compare two versions to determine which one is larger than the other one"
+       rpmw buildrequires <spec file>  # will install all BuildRequires
+       rpmw build-copr <spec file> # will reproduce a copr build with network access locally, will automatically grab dependencies & sources
+       rpmw build <spec-file> # will reproduce a copr build with network access locally, will automatically grab sources & SKIP dependencies
+       rpmw compare-versions <version1> <version2>  # compare two versions to determine which one is larger than the other one"
 }
 
 install-build-requires () (
