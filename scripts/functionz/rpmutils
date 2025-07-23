@@ -4,9 +4,10 @@
 
 show-usage () {
     echo "Usage: rpm utility wrapper for common usecases.
-        rpmutils buildrequires <spec file>  # will install all BuildRequires
-	rpmutils build-copr <spec file> # will reproduce a copr build with network access locally, will automatically grab dependencies & sources
-	rpmutils build <spec-file> # will reproduce a copr build with network access locally, will automatically grab sources & SKIP dependencies"
+       rpmutils buildrequires <spec file>  # will install all BuildRequires
+       rpmutils build-copr <spec file> # will reproduce a copr build with network access locally, will automatically grab dependencies & sources
+       rpmutils build <spec-file> # will reproduce a copr build with network access locally, will automatically grab sources & SKIP dependencies
+       rpmutils compare-versions <version1> <version2>  # compare two versions to determine which one is larger than the other one"
 }
 
 install-build-requires () (
@@ -24,7 +25,7 @@ build-copr () (
     fi
     spectool -g -R "$1"
     pkexec sudo dnf builddep -y "$1"
-    rpmbuild -ba -vv "$1" 
+    rpmbuild -ba -vv "$1"
 )
 
 build () (
@@ -35,6 +36,16 @@ build () (
 
     spectool -g -R "$1"
     rpmbuild -ba -vv "$1"
+)
+
+compare-versions () (
+    if [[ $# -ne 2 ]]; then
+        echo "incorrect number of arguments to compare versions (got $#, expected 2)"
+        show-usage
+        exit 2
+    fi
+
+    rpmdev-vercmp "$1" "$2"
 )
 
 main () (
@@ -49,13 +60,17 @@ main () (
             exit
             ;;
         build-copr)
-	    build-copr "${@:2}"
-	    exit
-	    ;;
-        build) 
-	    build "${@:2}"
-	    exit
-	    ;;
+    	    build-copr "${@:2}"
+    	    exit
+            ;;
+        build)
+    	    build "${@:2}"
+    	    exit
+            ;;
+        compare-versions)
+            compare-versions "${@:2}"
+            exit
+            ;;
         *)
             echo "Unknown main argument: $arg"
             show-usage
