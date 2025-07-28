@@ -557,6 +557,7 @@ readonly INSTALLABLE_GNOME_EXTENSIONS="\
 gnome-extensions-app \
 gnome-shell-extension-places-menu \
 gnome-shell-extension-appindicator \
+gnome-shell-extension-blur-my-shell \
 "
 
 #######################################################################################################
@@ -969,6 +970,9 @@ if checkc is gnome; then
     _echo status "Recommended GNOME extensions: "
     _echo important "- GTK3 Theme Auto Switcher (https://extensions.gnome.org/extension/4998/legacy-gtk3-theme-scheme-auto-switcher/)"
     _echo important "- Tailscale Status (https://github.com/maxgallup/tailscale-status)"
+    _echo important "Make sure to activate installed GNOME extensions AFTER restarting once!"
+
+    sleep 2
 
     _echo status "Configuring all gsettings for $REAL_USER..."
     foreach $(partial gsettings set org.gnome.desktop.wm.keybindings {1} "[]" ) < <(gsettings list-recursively org.gnome.desktop.wm.keybindings | awk '{ print $2 }')
