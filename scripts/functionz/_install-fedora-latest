@@ -187,6 +187,10 @@ EOF
 )
 
 create-swapfile () (
+    if ! checkc is mobile; then
+        _echo important "Will not configure disk swap on anything except mobile-type."
+        return
+    fi
     # if we haven't created /swapfile, go ahead, otherwise get out
     [[ -n $(cat /etc/fstab | grep "/swapfile swap swap defaults 0 0") ]] && return
     [[ -n $(cat /etc/fstab | grep "/swapfile none swap defaults 0 0") ]] && return
@@ -382,9 +386,20 @@ EOF
 
 configure-system-defaults () (
     _echo status "-------------------SETTING UP SYSTEM DEFAULTS----------------"
-    _echo debug "Lowering swappiness"
-    sudo sh -c 'echo "vm.swappiness = 3" > "/etc/sysctl.d/90-swappiness.conf"'
-    _echo success "Lowered swappiness."
+    _echo debug "Configuring swappiness for zram"
+    sudo tee "/etc/sysctl.d/90-swappiness.conf" << EOF
+vm.swappiness = 180
+vm.watermark_boost_factor = 0
+vm.watermark_scale_factor = 125
+vm.page-cluster = 0
+EOF
+    sudo tee "/usr/lib/systemd/zram-generator.conf" << EOF
+# see additional compression algorithms in "/sys/block/zram0/comp_algorithm"
+[zram0]
+zram-size = ram
+compression-algorithm = lz4
+EOF
+    _echo success "Configured swappiness."
     _echo debug "Raising user-watches"
     sudo sh -c 'echo "fs.inotify.max_user_watches = 600000" > "/etc/sysctl.d/90-max_user_watches.conf"'
     _echo success "Raised user watches."
