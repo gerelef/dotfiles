@@ -843,6 +843,8 @@ if [[ -n "$INSTALL_DEV_TOOLS" ]]; then
     sudo dnf install -y --quiet --best --allowerasing --skip-unavailable $INSTALLABLE_DEV_PKGS
     sudo dnf install -y --quiet --best --allowerasing nmap net-tools
     flatpak install flathub --system --noninteractive -y "net.werwolv.ImHex"
+    sudo dnf copr enable -y --quiet gerelef/vet
+    sudo dnf install -y --quiet --best --allowerasing vet
 
     _echo success "Done."
 fi
