@@ -388,7 +388,8 @@ configure-system-defaults () (
     _echo status "-------------------SETTING UP SYSTEM DEFAULTS----------------"
     _echo debug "Configuring swappiness for zram"
     sudo tee "/etc/sysctl.d/90-swappiness.conf" << EOF
-vm.swappiness = 180
+vm.swappiness = 200
+vm.vfs_cache_pressure = 200
 vm.watermark_boost_factor = 0
 vm.watermark_scale_factor = 125
 vm.page-cluster = 0
