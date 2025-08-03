@@ -9,8 +9,7 @@
     // ---------------- TELEMETRY ----------------
     // use defaults: "auto_update": true,
     "features": {
-        "edit_prediction_provider": "zed",
-        "copilot": false
+        "edit_prediction_provider": "none"
     },
     "telemetry": {
         "diagnostics": false,
@@ -93,13 +92,10 @@
     "agent": {
         "enabled": true,
         "button": true,
-        "version": "2",
         "dock": "right",
         "default_model": { "provider": "anthropic", "model": "claude-opus-4-thinking-latest" },
         "inline_assistant_model": { "provider": "anthropic", "model": "claude-sonnet-4-latest" }
     },
-    "language_models": { "ollama": { "low_speed_timeout_in_seconds": 120 } },
-    "git_status": true,
     "git": {
         "git_gutter": "tracked_files",
         "inline_blame": { "enabled": true, "show_commit_summary": true }
@@ -124,7 +120,7 @@
         "cursor_shape": "bar",
         "shell": { "program": "fish" },
         "working_directory": "current_project_directory",
-        "toolbar": { "title": true, "breadcrumbs": false },
+        "toolbar": { "breadcrumbs": false },
         "detect_venv": "off"
     }
 }
