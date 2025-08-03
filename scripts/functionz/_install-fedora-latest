@@ -455,7 +455,7 @@ configure-ssh-defaults () (
     sudo systemctl disable --now sshd
     _echo status "-------------------GENERATING SSH KEY----------------"
     mkdir -p "$REAL_USER_HOME/.ssh"
-    ssh-keygen -q -t $ALGO -N '' -C "$REAL_USER@$(hostname)" -f "$REAL_USER_HOME/.ssh/id_ed25519" -P "" <<< $'\ny' >/dev/null 2>&1
+    [[ ! -f "$REAL_USER_HOME/.ssh/id_ed25519" ]] && ssh-keygen -q -t $ALGO -N '' -C "$REAL_USER@$(hostname)" -f "$REAL_USER_HOME/.ssh/id_ed25519" -P "" <<< $'\ny' >/dev/null 2>&1
     cat "$REAL_USER_HOME/.ssh/id_ed25519.pub"
     # this is REQUIRED for ssh related thingies; key must NOT be readable by anyone else but this user
     sudo chown "$REAL_USER" "$REAL_USER_HOME/.ssh/id_ed25519"
