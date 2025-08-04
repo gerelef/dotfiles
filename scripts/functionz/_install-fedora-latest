@@ -230,10 +230,8 @@ install-proprietary-nvidia-drivers () (
     if ! checkc is nvidia-gpu; then return; fi
     if ! checkc is nouveau; then return; fi
 
-    readonly NVIDIA_GPU="$(_nvidia-gpu-model)"
-
     _echo status "-------------------INSTALLING NVIDIA DRIVERS----------------"
-    _echo status "Found $NVIDIA_GPU!"
+    _echo status "Found NVIDIA GPU!"
 
     sudo dnf install -y --quiet --best --allowerasing --skip-unavailable $INSTALLABLE_NVIDIA_DRIVERS
 
@@ -520,7 +518,7 @@ install-jetbrains-toolbox () (
     sudo dnf install -y --quiet --best --allowerasing "libXtst" "libXrender" "glx-utils" "fontconfig-devel" "gtk3" "tar"
     mkdir "/tmp/jetbrains-toolbox"  # tmp dir
     sudo mkdir "/opt/jetbrains-toolbox"  # install dir
-
+:wq
     readonly ARCHIVE_URL=$(curl -s 'https://data.services.jetbrains.com/products/releases?code=TBA&latest=true&type=release' | grep -Po '"linux":.*?[^\\]",' | awk -F ':' '{print $3,":"$4}'| sed 's/[", ]//g')
     wget -cO "/tmp/jetbrains-toolbox/jetbrains-toolbox.tar.gz" "$ARCHIVE_URL"
 
