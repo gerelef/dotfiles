@@ -1,23 +1,14 @@
-#!/usr/bin/env fish
+#!/usr/bin/env bash
 
-# HELP foreach 'echo' ./*; run a command for each element provided
+# HELP foreach 'echo' ./*; run a command for each element provided, or from stdin
 
-function foreach --description 'run anything ($1) in a for-each loop (for each argument)'
-    if [ (count $argv) -eq 1 ]
-        set stdinargs $(cat -)
+main () {
+    args="${@:2}"
+    [[ $# -eq 1 ]] && args="$(cat -)"
 
-        for ARG in $stdinargs[1..]
-            $argv[1] "$ARG"
-        end
+    for arg in $args; do
+        $1 "$arg"
+    done
+}
 
-        return
-    end
-
-    for ARG in $argv[2..]
-        $argv[1] "$ARG"
-    end
-end
-
-if [ "$_" != source ]
-    foreach $argv
-end
+[[ "${BASH_SOURCE[0]}" == "${0}" ]] && main "$@"
