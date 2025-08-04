@@ -948,7 +948,7 @@ fi
 configure-residual-permissions
 
 mapfile -t parts < <(blkid -o list | grep --invert-match "crypto_" | grep -i "not mounted" | awk '{ print $1 }')
-[[ -n "$parts" ]] && _echo important "--------------------------- POSSIBLE FSTAB PARTITIONS ---------------------------"
+[[ -n "$parts" ]] && _echo important "┌─────────────────────────────────────── POSSIBLE FSTAB PARTITIONS ────────────────────────────────────────"
 for part in "${parts[@]}"; do
     part_name=$(echo $part | tr '/' ' ' | awk '{ print $NF }')
     # 512 size blocks, divided by 2, divided by 1024*1024
@@ -961,18 +961,18 @@ for part in "${parts[@]}"; do
     # if it's a really small partition, it's probably something like a uefi/bootmenu partition, skip it
     [[ $part_size -lt 2 ]] && continue
 
-    _echo important "Found PARTITION $part with SIZE $part_size GB"
-    _echo important "Mount with mount --mkdir $part $REAL_USER_HOME/MOUNTPOINT"
-    _echo important "For permanently mounted partitions add $part to fstab as: "
-    _echo important "$part /MOUNTPOINT auto rw,user,exec,nosuid,nodev,nofail,auto,x-gvfs-show,x-gvfs-name=YOUR_NAME_HERE 0 0"
-    _echo important "If this is a drive you don't want to automatically mount, add $part to fstab as: "
-    _echo important "$part /home/$REAL_USER_HOME/MOUNTPOINT auto rw,user,exec,nosuid,nodev,nofail,x-gvfs-show,x-gvfs-name=YOUR_NAME_HERE 0 0"
-    _echo important "--------"
-    _echo important "FOR HOME PARTITIONS add $part to fstab as:"
-    _echo important "$part /home/USERNAME auto defaults 0 2"
-    _echo important "Then run:"
-    _echo important "sudo mount -a && sudo useradd --home /home/USERNAME USERNAME && sudo sudo chown -R USERNAME:USERNAME /home/USERNAME"
-    _echo important "---------------------------"
+    _echo important "│ Found PARTITION $part with SIZE $part_size GB"
+    _echo important "│ Mount with mount --mkdir $part $REAL_USER_HOME/MOUNTPOINT"
+    _echo important "│ For permanently mounted partitions add $part to fstab as: "
+    _echo important "│ $part /MOUNTPOINT auto rw,user,exec,nosuid,nodev,nofail,auto,x-gvfs-show,x-gvfs-name=YOUR_NAME_HERE 0 0"
+    _echo important "│ If this is a drive you don't want to automatically mount, add $part to fstab as: "
+    _echo important "│ $part $REAL_USER_HOME/MOUNTPOINT auto rw,user,exec,nosuid,nodev,nofail,x-gvfs-show,x-gvfs-name=YOUR_NAME_HERE 0 0"
+    _echo important "├─────────────────────────────────────────────────────"
+    _echo important "│ FOR HOME PARTITIONS add $part to fstab as:"
+    _echo important "│ $part /home/USERNAME auto defaults 0 2"
+    _echo important "│ Then run:"
+    _echo important "│ sudo mount -a && sudo useradd --home /home/USERNAME USERNAME && sudo sudo chown -R USERNAME:USERNAME /home/USERNAME"
+    _echo important "├──────────────────────────────────────────────────────────────────────────────────────────────────────────"
 done
 
 _echo important "HSI Report failures (through fwupdtool):"
