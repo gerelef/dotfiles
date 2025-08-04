@@ -680,6 +680,7 @@ gnome-shell-extension-background-logo \
 
 _echo important "You may enable/disable select debugging logs via DEBUG_SETUP_ON."
 _echo important "You may enable/disable line-by-line tracing for debugging via TRACE_SETUP_ON."
+_echo important "You may view all logs displayed in the current script post install via: journalctl -b -t 'setup.sh'"
 
 if ! ping -q -c 1 -W 1 google.com > /dev/null; then
     _echo unexpected "Network connection was not detected."
@@ -1131,3 +1132,4 @@ fi
 sync
 
 _echo success "Done."
+_echo important "You may view all logs displayed in the current script post install via: journalctl -b -t 'setup.sh'"
