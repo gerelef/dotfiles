@@ -528,10 +528,10 @@ install-jetbrains-toolbox () (
     sudo tar -xzf "/tmp/jetbrains-toolbox/jetbrains-toolbox.tar.gz" -C "/opt/jetbrains-toolbox" --strip-components=1
     rm -f "/tmp/jetbrains-toolbox/jetbrains-toolbox.tar.gz"
 
-    echo "Linking /opt/jetbrains-toolbox/jetbrains-toolbox to /usr/local/bin ..."
-    sudo chmod 755 "/opt/jetbrains-toolbox/jetbrains-toolbox"
-    sudo chown -R root:root "/opt/jetbrains-toolbox"
-    sudo ln -sf "/opt/jetbrains-toolbox/jetbrains-toolbox" "/usr/local/bin/jetbrains-toolbox"
+    echo "Linking /opt/jetbrains-toolbox/bin/jetbrains-toolbox to /usr/local/bin ..."
+    sudo chmod 755 "/opt/jetbrains-toolbox/bin/jetbrains-toolbox"
+    sudo chown -R root:root "/opt/bin/jetbrains-toolbox"
+    sudo ln -sf "/opt/jetbrains-toolbox/bin/jetbrains-toolbox" "/usr/local/bin/jetbrains-toolbox"
     rm -rf "/tmp/jetbrains-install"  # remove tmp dir, not needed anymore
     echo "Done."
     jetbrains-toolbox &
