@@ -1,9 +1,5 @@
 #!/usr/bin/env bash
 
-_depends-on ip jq tr || exit
-_depends-on nmap awk || exit
-_depends-on dmidecode || exit
-_depends-on lspci || exit
 
 show-usage () {
     echo "Usage: check for (c)ommon usecases.
@@ -23,11 +19,13 @@ show-usage () {
 }
 
 ip-all-devices-ipv4 () (
+    _depends-on nmap awk || exit
     if [[ $# != 1 ]]; then echo "interface ip argument must be given!"; exit 1; fi
     nmap -n -sn "$1/24" -oG - | awk '/Up$/{print $2}' | grep --invert-match "$1"
 )
 
 ip-all-interfaces-ipv4 () (
+    _depends-on ip || exit
     ip -brief address
 )
 
@@ -58,11 +56,13 @@ is-nouveau () (
 )
 
 is-nvidia-gpu () (
+    _depends-on lspci || exit
     (lspci | grep -i vga | grep NVIDIA) && return 0
     return 1
 )
 
 is-mobile-type () (
+    _depends-on dmidecode || exit
     _echo debug "is-mobile-type $(sudo dmidecode --string chassis-type)"
     readonly CHASSIS_TYPE="$(sudo dmidecode --string chassis-type)"
     [[ $CHASSIS_TYPE == "Notebook" || $CHASSIS_TYPE == "Tablet" || $CHASSIS_TYPE == "Convertible" ]] && return 0
@@ -70,6 +70,7 @@ is-mobile-type () (
 )
 
 is-desktop-type () (
+    _depends-on dmidecode || exit
     _echo debug "is-desktop-type $(sudo dmidecode --string chassis-type)"
     [[ "$(sudo dmidecode --string chassis-type)" == "Desktop" ]] && return 0
     return 1
