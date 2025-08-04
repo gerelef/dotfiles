@@ -2,13 +2,13 @@
 
 # HELP foreach 'echo' ./*; run a command for each element provided, or from stdin
 
-main () {
-    args="${@:2}"
-    [[ $# -eq 1 ]] && args="$(cat -)"
+foreach () {
+    args=("${@:2}")
+    [[ $# -eq 1 ]] && mapfile -t args < <(cat -)
 
-    for arg in $args; do
+    for arg in "${args[@]}"; do
         $1 "$arg"
     done
 }
 
-[[ "${BASH_SOURCE[0]}" == "${0}" ]] && main "$@"
+[[ "${BASH_SOURCE[0]}" == "${0}" ]] && foreach "$@"
