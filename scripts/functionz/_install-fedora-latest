@@ -732,6 +732,7 @@ sudo dnf update -y --quiet
 sudo dnf upgrade -y --quiet --refresh
 
 #######################################################################################################
+_echo important "Please choose your terminal of choice for GUI-land."
 AVAILABLE_TERMINALS=(
     alacritty
     kitty
