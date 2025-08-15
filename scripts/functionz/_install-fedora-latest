@@ -847,7 +847,11 @@ if [[ -n "$INSTALL_TERM_TOOLS" ]]; then
     _echo status "-------------------INSTALLING TERMINAL TOOLS----------------"
 
     # 'expect' pkg provides the (very) useful 'unbuffer' command
-    sudo dnf install -y --quiet --best --allowerasing --skip-unavailable "tldr" "git-delta" "expect"
+    sudo dnf install -y --quiet --best --allowerasing --skip-unavailable "tldr" \
+    "git-delta" \
+    "expect" \
+    "vim" \
+    "helix"
 
     _echo success "Done."
 fi

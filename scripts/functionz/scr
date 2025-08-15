@@ -7,6 +7,7 @@ BUFFERS_HOME="${XDG_CONFIG_HOME:-$HOME/.config}/scratch"
 echo-help-text () {
     echo "scr [<buffer name>] [d <buffer name>] [p <buffer name>]"
     echo ""
+    echo "scr                  - the last modified named buffer will be opened in the default \$EDITOR"
     echo "scr <buffer name>    - the named buffer will be opened in the default \$EDITOR"
     echo "scr ls               - all named buffers will be listed"
     echo "scr p <buffer name>  - the named buffer's path will be echoed"
@@ -43,22 +44,27 @@ main () (
         exit 2
     fi
 
-    if [[ $# -lt 1 ]]; then
+    args=("${@}")
+    nargs="$#"  # alternative is ${#args[@]}, which is a no-go syntax lol
+
+    # if there are no arguments, pretend we're given the last modified buffer as an argument,
+    #  which will be the first argument
+    if [[ $nargs -eq 0 ]]; then
+        args=( $(ls --sort=time "$BUFFERS_HOME") )
+        nargs=1
+    fi
+
+    if [[ $nargs -eq 1 ]] && [[ ${args[0]} = "-h" || ${args[0]} = "--help" ]]; then
         echo-help-text
         exit 2
     fi
 
-    if [[ $# -eq 1 ]] && [[ $1 = "-h" || $1 = "--help" ]]; then
+    if [[ $nargs -eq 1 && ${args[0]} = -* ]]; then
         echo-help-text
         exit 2
     fi
 
-    if [[ $# -eq 1 && $1 = -* ]]; then
-        echo-help-text
-        exit 2
-    fi
-
-    if [[ $# -eq 1 && $1 = "ls" ]]; then
+    if [[ $nargs -eq 1 && ${args[0]} = "ls" ]]; then
         echo-available-buffers
         exit
     fi
@@ -70,43 +76,43 @@ main () (
         cd "$BUFFERS_HOME" || exit 1
     fi
 
-    if [[ $1 = "d" ]]; then
-        if [[ $# -lt 2 ]]; then
+    if [[ ${args[0]} = "d" ]]; then
+        if [[ $nargs -lt 2 ]]; then
             echo "No buffer to be deleted was provided."
             echo "You may delete one of the following buffers:"
             echo-available-buffers
             exit 2
         fi
-        rm "$BUFFERS_HOME/$2"
+        rm -vf "$BUFFERS_HOME/${args[1]}"
         exit
     fi
 
-    if [[ $1 = "p" ]]; then
-        if [[ $# -lt 2 ]]; then
+    if [[ ${args[0]} = "p" ]]; then
+        if [[ $nargs -lt 2 ]]; then
             echo "No buffer to be echoed was provided."
             echo "You may echo one of the following buffers:"
             echo-available-buffers
             exit 2
         fi
-        [[ -f "$BUFFERS_HOME/$2" ]] && echo "$BUFFERS_HOME/$2"
+        [[ -f "$BUFFERS_HOME/${args[1]}" ]] && echo "$BUFFERS_HOME/${args[1]}"
         # if the previous call fails, this will die silently, but that's suprisingly
         #  ok, since the only chance of _not_ echoing out the path would be if
         #  it never existed.
         exit
     fi
 
-    echo "Opening scratchpad $BUFFERS_HOME/$1 ..."
-    "$EDITOR" "$BUFFERS_HOME/$1" || exit
+    echo "Opening scratchpad $BUFFERS_HOME/${args[0]} ..."
+    "$EDITOR" -- "$BUFFERS_HOME/${args[0]}" || exit
 
     echo "Editor closed."
     # editor closed w/o saving
-    if [[ ! -f "$BUFFERS_HOME/$1" ]]; then
-        echo "Buffer '$1' was discarded."
+    if [[ ! -f "$BUFFERS_HOME/${args[0]}" ]]; then
+        echo "Buffer '${args[0]}' was discarded."
         exit 0
     fi
-    if detect-buffer-executable "$BUFFERS_HOME/$1"; then
+    if detect-buffer-executable "$BUFFERS_HOME/${args[0]}"; then
         echo "Detected executable buffer via shebang. Adding executable permissions." 1>&2 2>/dev/null
-        chmod +x "$BUFFERS_HOME/$1" || exit
+        chmod +x "$BUFFERS_HOME/${args[0]}" || exit
     fi
 )
 
