@@ -7,31 +7,43 @@ _depends-on adb || exit
 show-usage () {
     echo "Usage: adb wrapper for common usecases.
        adbw connect  # setup adb to work with usb debugging (over hotspot) and connect
-       adbw devices list  # list all devices
-       adbw devices debloat-rootless <device-id>  # debloat device rootlessly
-       adbw devices toggle-screen <device-id>  # toggle the screen for device
-       adbw package find <partial package-name>  # find packages filtered by a partial package-name
+       adbw devices ls  # list all devices
+       adbw devices debloat-rootless  # debloat device rootlessly
+       adbw devices toggle-screen  # toggle the screen for device
+       adbw package ls  # list all packages 
        adbw package clear <package-name>  # clear cache & data of package-name
-       adbw package remove <package-name>  # uninstall package-name"
+       adbw package remove <package-name>  # uninstall package-name
+       adbw package disable <fully.qualified.name>  # disable package using fully qualified name"
 }
 
 adb-devices () (
     subcommand="$1"
     case "$subcommand" in
-        list)
+        ls)
             # "device" state is the correct state here for authorized devices
             adb devices | awk '{ if (NR > 1) { printf $1 " " } }' | xargs
             ;;
         debloat-rootless)
+            set -x  # showcase what we're installing / uninstalling
+
             adb uninstall --user 0 com.aura.oobe.samsung.gl
             adb uninstall --user 0 com.aura.oobe.samsung
             adb uninstall --user 0 com.ironsource.appcloud.oobe.hutchison
+            adb uninstall --user 0 com.google.android.googlequicksearchbox
+            adb uninstall --user 0 com.samsung.android.kidsinstaller
+            adb uninstall --user 0 com.samsung.android.game.gamehome
+            adb uninstall --user 0 com.samsung.android.game.gos
+            adb uninstall --user 0 com.samsung.android.game.gametools
+            adb uninstall --user 0 com.samsung.android.app.spage
+
+            set +x
             ;;
         toggle-screen)
             adb shell input keyevent KEYCODE_POWER
             ;;
         *)
-            echo "Unknown device argument: $subcommand"
+            echo "Unknown device argument: ${subcommand:=NONE PROVIDED}"
+            show-usage
             exit 2
             ;;
     esac
@@ -39,31 +51,47 @@ adb-devices () (
 
 adb-package () (
     subcommand="$1"
-    package_named="$2"
-    if [[ -z "$package_named" ]]; then
-        echo "package-name must be given!";
-        show-usage
-        exit 2;
-    fi
+    package_named="${@:2}"
+    requires-package-named () {
+        if [[ -z "$package_named" ]]; then
+            echo "package-name must be given!"
+            show-usage
+            exit 2
+        fi
+    }
 
     case "$subcommand" in
-        find)
-            adb shell cmd package list packages | cut -c 9- | xargs
+        ls)
+            adb shell cmd package list packages | cut -c 9-
             ;;
         clear)
+            requires-package-named
             adb shell pm clear "$package_named"
             ;;
         remove)
+            requires-package-named
             adb uninstall --user 0 "$package_named"
             ;;
+        disable)
+            requires-package-named
+            for pkg in "${package_named[@]}"; do
+                adb uninstall --user 0 "$package_named"
+            done
+            ;;
         *)
-            echo "Unknown package argument: $subcommand"
+            echo "Unknown package argument: ${subcommand:=NONE PROVIDED}"
+            show-usage
             exit 2
             ;;
     esac
 )
 
 main () {
+    if [[ $# -eq 0 ]]; then
+        show-usage
+        exit 2
+    fi
+
     for ((i=1; i<=$#; i++)); do
         arg="${!i}"
         case "$arg" in
