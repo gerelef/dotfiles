@@ -432,12 +432,25 @@ def strategy_exec(multimatches: dict[str, list[Block]], **kwargs):
         subprocess.Popen(to_exec, shell=False, env=os.environ)
 
 
+def strategy_contains(multimatches: dict[str, list[Block]], **kwargs):
+    """
+    DEFAULT STRATEGY WHEN PIPED, OR EXPLICITLY.
+    Print the aggregate's owners' filename *uniquely* to stdout, no decorations.
+    """
+    # sanity: this should never fail
+    assert isinstance(multimatches, dict)
+    names = sorted([k for k, _ in multimatches.items()])
+    for p in names:
+        print(p)
+
+
 def main(options):
     """
     @throws Exception on strategies other than printing strategies.
     """
     padding = options.padding
     decorated = options.decorated
+    containers_only = options.contains
     multimatches: dict[str, list[Block]] = {}
     paths = preprocess(Path(options.path))
     exec = options.exec if isinstance(options.exec, str) and shutil.which(options.exec) else None
@@ -452,6 +465,8 @@ def main(options):
 
     strategy = None
     is_piped = UTF8Table.is_piped()
+    if strategy is None and containers_only:
+        strategy = strategy_contains
     if strategy is None and exec is not None:
         strategy = partial(strategy_exec, exec=exec,)
     if strategy is None and (decorated and not is_piped):
@@ -468,6 +483,8 @@ class UserOptions:
     filters: list[str]
     # -i, --insensitive
     insensitive: bool
+    # -c, --contains
+    contains: bool
     normalized: bool
     # --padding <int>
     padding: int
@@ -481,10 +498,23 @@ def _parse_args(args) -> UserOptions:
     parser = argparse.ArgumentParser(description="findt: a recursive content text locator")
     parser.add_argument("path", type=str)
     parser.add_argument("filters", nargs="+")
-    parser.add_argument("-i", "--insensitive", default=False, action="store_true", required=False)
-    parser.add_argument("-d", "--no-decorations", default=False, action="store_true", required=False)
-    parser.add_argument("--padding", type=int, default=2, required=False)
-    parser.add_argument("-e", "--exec", type=str, default=None, required=False)
+    parser.add_argument("-i", "--insensitive", default=False, action="store_true", required=False,
+        help="Match case-insensitively. Off by default.")
+    parser.add_argument("-c", "--contains", default=False, action="store_true", required=False,
+        help="Only display the containers that matched (uniquely), separated by newlines. Off by default.")
+    parser.add_argument("-d", "--no-decorations", default=False, action="store_true", required=False,
+        help="Do not add decorative borders, and allow wrapping the screen. Decorations are on by default.")
+    parser.add_argument("--padding", type=int, default=2, required=False,
+        help="Padding around the matched term. Default is 2.")
+    parser.add_argument("-e", "--exec", type=str, default=None, required=False,
+        help="Executable to run with the matched term."
+             "Shlex split the executable, and afterward, for each match:"
+             "Argument $1 is the filename."
+             "Argument $2 is the first match's line number."
+             "Argument $3 is the first match's line contents."
+             "Argument $4 is the second match's line number."
+             "Argument $5 is the second match's line contents."
+             "... same thing for everything else.")
 
     options = parser.parse_args(args)
     if isinstance(options.exec, str) and not shutil.which(options.exec):
@@ -499,6 +529,7 @@ Resolution: `{shutil.which(options.exec)}`""", file=sys.stderr)
         path=options.path,
         filters=options.filters,
         insensitive=options.insensitive,
+        contains=options.contains,
         normalized=options.insensitive,
         padding=options.padding,
         decorated=not options.no_decorations,
