@@ -13,7 +13,8 @@
 units/
 
 // imported manually until we find a way to automate it away
-.config/flameshot.conf
+//  ~/.var/app/org.flameshot.Flameshot/config/flameshot/
+.config/flameshot.ini
 
 scripts/
 // only link these specific files from the scripts directory
