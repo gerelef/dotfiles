@@ -1054,13 +1054,10 @@ if checkc is gnome; then
     gsettings set org.gnome.shell.window-switcher current-workspace-only false
 
     # peripheral settings
-    gsettings set org.gnome.desktop.peripherals.keyboard numlock-state false
-    gsettings set org.gnome.desktop.peripherals.keyboard remember-numlock-state false
     gsettings set org.gnome.desktop.peripherals.keyboard repeat true
-    gsettings set org.gnome.desktop.peripherals.keyboard repeat-interval 25
+    gsettings set org.gnome.desktop.peripherals.keyboard delay 200
     gsettings set org.gnome.desktop.peripherals.mouse double-click 250
     gsettings set org.gnome.desktop.peripherals.mouse middle-click-emulation false
-    gsettings set org.gnome.desktop.peripherals.mouse natural-scroll false
     gsettings set org.gnome.desktop.peripherals.mouse speed -0.2
     gsettings set org.gnome.desktop.peripherals.mouse accel-profile 'flat'
     gsettings set org.gnome.desktop.peripherals.touchpad accel-profile 'flat'
@@ -1071,7 +1068,7 @@ if checkc is gnome; then
     gsettings set org.gnome.desktop.peripherals.touchpad middle-click-emulation false
     gsettings set org.gnome.desktop.peripherals.touchpad natural-scroll true
     gsettings set org.gnome.desktop.peripherals.touchpad send-events 'enabled'
-    gsettings set org.gnome.desktop.peripherals.touchpad speed 0.10000000000000001
+    gsettings set org.gnome.desktop.peripherals.touchpad speed 0.1
     gsettings set org.gnome.desktop.peripherals.touchpad tap-and-drag false
     gsettings set org.gnome.desktop.peripherals.touchpad tap-and-drag-lock false
     gsettings set org.gnome.desktop.peripherals.touchpad tap-button-map 'default'
