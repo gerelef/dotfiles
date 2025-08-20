@@ -1,0 +1,32 @@
+#!/usr/bin/env bash
+
+# HELP git ls <git log arguments>; fzf-powered 'ls' command
+# "You can also add new commands by adding an executable file named git-newcommand to your PATH."
+
+_depends-on fzf || exit
+
+# code from here: https://gist.github.com/junegunn/f4fca918e937e6bf5bad
+#  provided as 'fshow' fn.
+# modified to replicate functionality of removed 'git ls' alias with the core buffer
+
+__git-ls() {
+    git log --pretty=format:"%C(yellow)%h %C(reset)%C(yellow)%ad%C(auto)%d %s %C(blue)[%cn]" \
+            --decorate \
+            --date=short \
+            --graph \
+            --color=always \
+            "$@" |
+    fzf \
+        --ansi \
+        --no-sort \
+        --reverse \
+        --tiebreak=index \
+        --bind=ctrl-s:toggle-sort \
+        --bind "ctrl-m:execute:
+                (grep -o '[a-f0-9]\{7\}' | head -1 |
+                xargs -I % sh -c 'git show --color=always % | less -R') << 'FZF-EOF'
+                {}
+FZF-EOF"
+}
+
+[[ "${BASH_SOURCE[0]}" == "${0}" ]] && __git-ls "$@"
