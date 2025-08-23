@@ -23,6 +23,8 @@ scripts/
 // joplin keymap doesn't load dynamically, womp womp
 .config/keymap-desktop.json
 .config/extensions/
+// gnome dconf db must be imported manually
+.config/gnome.ini
 
 [if-pkg:::delta]
     !!scripts/.gitconfig-gitdelta
