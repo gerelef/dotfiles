@@ -1,0 +1,4 @@
+inherits = "jetbrains_dark"
+"ui.background" = { bg = "" }
+"ui.statusline" = { bg = "" }
+"ui.gutter.selected" = { bg = "" }

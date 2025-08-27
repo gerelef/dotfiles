@@ -45,6 +45,11 @@ scripts/
     !!.config/zed
 [end]
 
+.config/helix
+[if-pkg:::hx]
+    !!.config/helix
+[end]
+
 .config/.ssh
 // link only in default profile
 [if-profile:::default]
@@ -72,8 +77,9 @@ scripts/.gitconfig-gitdelta ::: .
 // redirect to nested (not created necessarily) directory
 .config/jetbrains-keymap.xml ::: .config/JetBrains/*/keymaps/
 
-// create subdirectories on the fly, don't nest unecessarily
+// create subdirectories on the fly, don't nest unnecessarily
 .config/fish/fish_prompt.fish ::: .config/fish/functions/
+.config/helix/transparent.toml ::: .config/helix/themes/
 
 // redirect the .ssh folder's contents to the ~/.ssh folder
 .config/.ssh/* ::: .ssh/
