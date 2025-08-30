@@ -52,6 +52,12 @@ cd ~ && git clone https://github.com/gerelef/dotfiles && ~/dotfiles/scripts/func
 
 ## spellbook
 
+- to remove old kernels in case /boot fills up
+```bash
+rpm -q kernel-core  # list all installed kernels
+sudo dnf remove kernel-core-M.mm.v # remove the kernel afterwards
+```
+
 - spotify backup playlists
 
 ````bash
