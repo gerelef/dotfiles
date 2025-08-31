@@ -134,6 +134,48 @@ fftrim-mp4 () (
     ffmpeg -y -hide_banner -ss "$(__hms "$2")" -to "$(__hms "$3")" -i "$1" -codec copy "$PWD/$output-trimmed.mp4"
 )
 
+ffvideo-extract-video () (
+    [[ -z "$*" ]] && return 2
+    local output=$(basename -- "${1%.*}")
+    ffmpeg -y -hide_banner -i "$1" -c copy -an "$PWD/$output-video.mp4"
+    echo "Done $output-video"
+)
+
+ffvideo-extract-frames () (
+    [[ -z "$*" ]] && return 2
+    [[ "$#" -ne 1 ]] && return 2
+    output=$(basename -- "${1%.*}")
+    ffmpeg -i "$1" "$PWD/$output%09d.bmp"
+)
+
+ffvideo-extract-audio () (
+    [[ -z "$*" ]] && return 2
+    local output=$(basename -- "${1%.*}")
+    ffmpeg -i "$1" -vn "$PWD/$output-audio.mp3" 1> /dev/null
+    echo "Done $output-audio"
+)
+
+ffvideo-extract () (
+    subcommand="$1"
+    subcommand_args=( "${@:2}" )
+    case "$subcommand" in
+        video)
+            ffvideo-extract-video "${subcommand_args[@]}"
+            ;;
+        frames)
+            ffvideo-extract-frames "${subcommand_args[@]}"
+            ;;
+        audio)
+            ffvideo-extract-audio "${subcommand_args[@]}"
+            ;;
+        *)
+            echo "Unknown subcommand argument: $subcommand"
+            show-usage
+            exit 2
+            ;;
+    esac
+)
+
 ffvideo () (
     subcommand="$1"
     subcommand_args=( "${@:2}" )
@@ -164,6 +206,7 @@ ffvideo () (
             ;;
         *)
             echo "Unknown subcommand argument: $subcommand"
+            show-usage
             exit 2
             ;;
     esac
@@ -213,6 +256,7 @@ ffaudio () (
             ;;
         *)
             echo "Unknown subcommand argument: $subcommand"
+            show-usage
             exit 2
             ;;
     esac
