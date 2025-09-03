@@ -1,0 +1,14 @@
+[Unit]
+Description="Simple maximum wattage cap for NVIDIA GPGPUs via nvidia-smi."
+After=graphical.target
+
+[Service]
+Type=oneshot
+StandardOutput=journal
+Environment="DESIRED_WATTAGE=150"
+ExecStart=sh -c 'nvidia-smi -pl $DESIRED_WATTAGE'
+RemainAfterExit=yes
+Restart=on-failure
+
+[Install]
+WantedBy=default.target
