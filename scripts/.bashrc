@@ -221,8 +221,8 @@ alias fuck='sudo $(history -p \!\!)'
 
 [[ -n "$(command -v wget)" ]] && alias wget="\wget -c --read-timeout=5 --tries=0 --cut-file-get-vars --content-disposition"
 [[ -n "$(command -v npm)" ]] && alias npm="\npm --loglevel silly"
-[[ -n "$(command -v yt-dlp)" ]] && alias yt-dlp-mp4="yt-dlp --format \"bv*[ext=mp4]+ba[ext=m4a]/b[ext=mp4]\" "
-[[ -n "$(command -v yt-dlp)" ]] && alias yt-dlp-thumbnail="yt-dlp --write-thumbnail --skip-download "
+[[ -n "$(command -v yt-dlp)" ]] && alias ytdl-mp4="yt-dlp --format \"bv*[ext=mp4]+ba[ext=m4a]/b[ext=mp4]\" "
+[[ -n "$(command -v yt-dlp)" ]] && alias ytdl-thumbnail="yt-dlp --write-thumbnail --skip-download "
 
 # chromium depot_tools, add to PATH only if they actually exist
 #  https://chromium.googlesource.com/chromium/tools/depot_tools.git

@@ -153,8 +153,8 @@ abbr --position command --add !! --function __last_command
 
 type -q wget && abbr --position command --add wget "wget -c --read-timeout=5 --tries=0 --cut-file-get-vars --content-disposition"
 type -q npm && abbr --position command --add npm "npm --loglevel silly"
-type -q yt-dlp && abbr --position command --set-cursor --add yt-dlp-mp4 "yt-dlp --format \"bv*[ext=mp4]+ba[ext=m4a]/b[ext=mp4]\" "
-type -q yt-dlp && abbr --position command --set-cursor --add yt-dlp-thumbnail "yt-dlp --write-thumbnail --skip-download "
+type -q yt-dlp && abbr --position command --set-cursor --add ytdl-mp4 "yt-dlp --format \"bv*[ext=mp4]+ba[ext=m4a]/b[ext=mp4]\" "
+type -q yt-dlp && abbr --position command --set-cursor --add ytdl-thumbnail "yt-dlp --write-thumbnail --skip-download "
 
 # chromium depot_tools, add to PATH only if they actually exist
 #  https://chromium.googlesource.com/chromium/tools/depot_tools.git
