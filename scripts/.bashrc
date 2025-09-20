@@ -261,7 +261,7 @@ if [[ -n "$(command -v zoxide)" ]]; then
 fi
 
 if [[ -n "$(command -v lsd)" ]]; then
-    alias lss="lsd -A --group-dirs=first --blocks=permission,user,group,date,name --date '+%d/%m %H:%M:%S'"
+    alias lss="lsd -A --group-dirs=first --blocks=permission,user,group,date,size,name --date '+%d/%m %H:%M:%S' --truncate-owner-after=3 --permission=octal"
 fi
 
 if locate --version 2> /dev/null 1>&2 && test -n "$(command -v fzf)"; then
