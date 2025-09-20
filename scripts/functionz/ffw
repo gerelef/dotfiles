@@ -32,6 +32,8 @@ show-usage () {
        ffw video info <file>  # get key information about the streams of a given file
        ffw video shift <right | left> <file> <milliseconds>; shift video's audio to the right or left
        ffw video trim <file> <sta:rt> <end:ing>  # trim video from start to end
+       ffw video discordify standard <file>  # split a video in 10 megabyte chunks to fit within discord file limitations
+       ffw video discordify premium <file>  # split a video in 500 megabyte chunks to fit within discord file limitations
 
        ffw audio trim <file> <sta:rt> <end:ing>  # trim audio from start to end
        ffw audio trim-from-transcription <file> <trancription-file>  # trim an mp3 from start to end using whisper's stdout transcription file"
@@ -134,6 +136,26 @@ fftrim-mp4 () (
     ffmpeg -y -hide_banner -ss "$(__hms "$2")" -to "$(__hms "$3")" -i "$1" -codec copy "$PWD/$output-trimmed.mp4"
 )
 
+ffdiscordify () (
+    [[ "$#" -ne 2 ]] && return 2
+    target_megabytes=$1
+    original_source=$2
+
+    original_source_total_duration=$(ffprobe "$original_source" -show_streams 2>&1 | sed -n '/STREAM/,$p' | grep -i 'duration=' | head -1 | awk -F '=' '{ printf $2 }')
+
+    start=0
+    iteration=0
+    while test $(echo "$start < $original_source_total_duration" | bc -l) -eq 1; do
+        output="$PWD/$original_source-ds-$iteration.mp4"
+        ffmpeg -y -hide_banner -ss "$start" -to "$original_source_total_duration" -i "$original_source" -fs $target_megabytes -codec copy "$output" 2>/dev/null 1>&2
+        intermediary_file_size=$(ffprobe "$output" -show_streams 2>&1 | sed -n '/STREAM/,$p' | grep -i 'duration=' | head -1 | awk -F '=' '{ printf $2 }')
+        start=$(echo "$start $intermediary_file_size" | awk '{ printf $1 + $2 }')
+        echo "outputting chunk $output..."
+
+        ((iteration++))
+    done
+)
+
 ffvideo-extract-video () (
     [[ -z "$*" ]] && return 2
     local output=$(basename -- "${1%.*}")
@@ -203,6 +225,17 @@ ffvideo () (
             ;;
         trim)
             fftrim-mp4 "${subcommand_args[@]}"
+            ;;
+        discordify)
+            [[ ${subcommand_args[0]} = "standard" ]] && chunk_size=10000000  # 10MB
+            [[ ${subcommand_args[0]} = "premium" ]] && chunk_size=500000000  # 500MB
+            if [[ -z $chunk_size ]]; then
+                echo "Unknown discordify argument: ${subcommand_args[1]}. Needs standard or premium."
+                show-usage
+                exit 2
+            fi
+
+            ffdiscordify $chunk_size "${subcommand_args[1]}"
             ;;
         *)
             echo "Unknown subcommand argument: $subcommand"
