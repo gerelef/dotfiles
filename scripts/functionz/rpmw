@@ -15,16 +15,16 @@ install-build-requires () (
         echo "spec file provided '$1' CANNOT be found!"
         exit 1
     fi
-    pkexec sudo dnf builddep -y "$1"
+    sudo dnf builddep -y "$1"
 )
 
 build-copr () (
     if ! test -f "$1"; then
         echo "spec file provided '$1' CANNOT be found!"
-	exit 1
+      	exit 1
     fi
     spectool -g -R "$1"
-    pkexec sudo dnf builddep -y "$1"
+    sudo dnf builddep -y "$1"
     rpmbuild -ba -vv "$1"
 )
 
