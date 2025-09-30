@@ -38,12 +38,9 @@ readonly _NOCOLOUR="\033[0m"
 readonly _BOLD="\033[1m"
 readonly _UNDERLINE="\033[4m"
 readonly _BLINK="\033[5m"
-readonly _FLBLUE="\033[38;5;39m"
-readonly _FGREEN="\033[38;5;34m"
-readonly _FPGREEN="\033[38;5;42m"
+readonly _FWHITE="\033[38;5;15m"
 readonly _FLMAGENTA="\033[38;5;163m"
 readonly _FYELLOW="\033[38;5;178m"
-readonly _FRED="\033[38;5;124m"
 readonly _FLRED="\033[38;5;196m"
 readonly _FBROWN="\033[38;5;138m"
 readonly _FORANGE="\033[38;5;172m"
@@ -74,18 +71,19 @@ mini-prompt () {
 
     VENV_STATUS="${VIRTUAL_ENV:-N/A}"
     if [[ "$VENV_STATUS" != "N/A" ]]; then local PCOLOUR="$_FLMAGENTA"; local PHINT=">>>"; fi
-    if [[ "$VENV_STATUS" == "N/A" ]]; then local PCOLOUR="$_FGREEN"; local PHINT="\$"; fi
+    if [[ "$VENV_STATUS" == "N/A" ]]; then local PCOLOUR="$_FWHITE"; local PHINT=">"; fi
     [[ -n "$(_git-branch "$(pwd)" 2> /dev/null)" ]] && PCOLOUR="$_FORANGE"
 
-    PS1=" \[${_FYELLOW}\]\w\[${_NOCOLOUR}\] " # working directory
+    PS1="\[${_FYELLOW}\]\w\[${_NOCOLOUR}\]" # working directory
     [[ -n "$(_git-status "$(pwd)" 2> /dev/null)" ]] && PS1+="\[$_FBROWN\](changes)\[${_NOCOLOUR}\] "
 
     # Show error exit code if there is one
-    [[ $LAST_COMMAND != 0 ]] && PS1+="\[${_FLRED}\][$LAST_COMMAND]\[${_NOCOLOUR}\] "
+    [[ $LAST_COMMAND != 0 ]] && PS1+=" \[${_FLRED}\][$LAST_COMMAND]\[${_NOCOLOUR}\]"
 
     PS1+="\[${PCOLOUR}\]$PHINT\[${_NOCOLOUR}\] "
-    # PS2 is used to continue a command using the \ character
-    PS2="\[${_FPGREEN}\]>\[${_NOCOLOUR}\] "
+    # PS2 is used to continue a command using the \ character;
+    #  we leave this empty so there is no confusion
+    PS2=""
     # PS3 is used to enter a number choice in a script
     PS3='Please enter a number from above list: '
     # PS4 is used for tracing a script in debug mode
@@ -231,6 +229,12 @@ if locate --version 2> /dev/null 1>&2 && locate --limit 1 'depot_tools' 2> /dev/
     # add shell functions (executables) to $PATH
     PATH=$PATH:"$(locate --limit 1 depot_tools)"
     alias fetch="\fetch --no-history"
+fi
+
+# php valet setup
+if locate --version 2> /dev/null 1>&2 && locate --limit 1 'vendor/cpriego/valet-linux' 2> /dev/null 1>&2; then
+    # add valet executable to $PATH
+    PATH=$PATH:"$(locate --limit 1 'vendor/cpriego/valet-linux')"
 fi
 
 if [[ -n "$(command -v vi)" ]]; then

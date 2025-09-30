@@ -158,9 +158,15 @@ type -q yt-dlp && abbr --position command --set-cursor --add ytdl-thumbnail "yt-
 
 # chromium depot_tools, add to PATH only if they actually exist
 #  https://chromium.googlesource.com/chromium/tools/depot_tools.git
-if locate --version 2>/dev/null 1>&2 && locate --limit 1 depot_tools 2>/dev/null 1>&2
-    fish_add_path -g (locate --limit 1 depot_tools)
+if locate --version 2> /dev/null 1>&2 && locate --limit 1 'depot_tools' 2> /dev/null 1>&2
+    fish_add_path -g (locate --limit 1 'depot_tools')
     abbr --position command --add fetch "fetch --no-history"
+end
+
+# php valet setup
+if locate --version 2> /dev/null 1>&2 && locate --limit 1 'vendor/cpriego/valet-linux' 2> /dev/null 1>&2
+    # add valet executable to $PATH
+    fish_add_path -g (locate --limit 1 'vendor/cpriego/valet-linux')
 end
 
 if type -q vi
