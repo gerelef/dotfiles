@@ -5,6 +5,7 @@ bufferline = "multiple"
 completion-replace = true
 popup-border = "all"
 end-of-line-diagnostics = "hint"
+auto-format = false
 
 [editor.inline-diagnostics]
 cursor-line = "error"
