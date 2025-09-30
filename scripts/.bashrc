@@ -231,12 +231,6 @@ if locate --version 2> /dev/null 1>&2 && locate --limit 1 'depot_tools' 2> /dev/
     alias fetch="\fetch --no-history"
 fi
 
-# php valet setup
-if locate --version 2> /dev/null 1>&2 && locate --limit 1 'vendor/cpriego/valet-linux' 2> /dev/null 1>&2; then
-    # add valet executable to $PATH
-    PATH=$PATH:"$(locate --limit 1 'vendor/cpriego/valet-linux')"
-fi
-
 if [[ -n "$(command -v vi)" ]]; then
     export VISUAL="vi"
     export EDITOR="vi"

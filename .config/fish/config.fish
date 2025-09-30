@@ -163,12 +163,6 @@ if locate --version 2> /dev/null 1>&2 && locate --limit 1 'depot_tools' 2> /dev/
     abbr --position command --add fetch "fetch --no-history"
 end
 
-# php valet setup
-if locate --version 2> /dev/null 1>&2 && locate --limit 1 'vendor/cpriego/valet-linux' 2> /dev/null 1>&2
-    # add valet executable to $PATH
-    fish_add_path -g (locate --limit 1 'vendor/cpriego/valet-linux')
-end
-
 if type -q vi
     set -gx VISUAL vi
     set -gx EDITOR vi
