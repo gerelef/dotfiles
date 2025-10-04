@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 
+# HELP checkc --help; ffmpeg wrapper for common usecases.
 
 show-usage () {
     echo "Usage: check for (c)ommon usecases.
