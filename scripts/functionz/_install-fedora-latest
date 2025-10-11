@@ -599,7 +599,7 @@ pulseeffects \
 readonly INSTALLABLE_FLATPAKS="\
 org.flameshot.Flameshot \
 com.spotify.Client \
-org.gnome.Showtime \
+com.github.rafostar.Clapper \
 com.github.PintaProject.Pinta \
 io.gitlab.theevilskeleton.Upscaler \
 com.github.tchx84.Flatseal \
@@ -1015,3 +1015,4 @@ if checkc is gnome; then
     add-gsettings-shortcut "flameshot" "flatpak run --command=flameshot org.flameshot.Flameshot gui" "Print"
     add-gsettings-shortcut "$TERMINAL_OF_CHOICE" "$TERMINAL_OF_CHOICE" "<Super>t"  # ghostty --command=fish
 fi
+
