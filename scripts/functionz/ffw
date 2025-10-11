@@ -32,8 +32,7 @@ show-usage () {
        ffw video info <file>  # get key information about the streams of a given file
        ffw video shift <right | left> <file> <milliseconds>; shift video's audio to the right or left
        ffw video trim <file> <sta:rt> <end:ing>  # trim video from start to end
-       ffw video discordify standard <file>  # split a video in 10 megabyte chunks to fit within discord file limitations
-       ffw video discordify premium <file>  # split a video in 500 megabyte chunks to fit within discord file limitations
+       ffw video discordify <file>  # ultra compress a video similarly to the 'social 10mb' option on handbrake for sharing
 
        ffw audio trim <file> <sta:rt> <end:ing>  # trim audio from start to end
        ffw audio trim-from-transcription <file> <trancription-file>  # trim an mp3 from start to end using whisper's stdout transcription file"
@@ -137,6 +136,19 @@ fftrim-mp4 () (
 )
 
 ffdiscordify () (
+    [[ "$#" -ne 1 ]] && return 2
+    local output=$(basename -- "${1%.*}")
+    ffmpeg -y -hide_banner \
+      -i "$1" \
+      -c:v libx264 -preset slow -crf 28 -maxrate 800k -bufsize 1600k \
+      -vf "scale='min(1280,iw)':'min(720,ih)':force_original_aspect_ratio=decrease" -r 60 \
+      -c:a aac -b:a 128k -ac 2 \
+      -movflags +faststart \
+      "$PWD/$output-social.mp4"
+)
+
+# FIXME unused!
+ffchunkify () (
     [[ "$#" -ne 2 ]] && return 2
     target_megabytes=$1
     original_source=$2
@@ -227,16 +239,19 @@ ffvideo () (
             fftrim-mp4 "${subcommand_args[@]}"
             ;;
         discordify)
-            [[ ${subcommand_args[0]} = "standard" ]] && chunk_size=10000000  # 10MB
-            [[ ${subcommand_args[0]} = "premium" ]] && chunk_size=500000000  # 500MB
-            if [[ -z $chunk_size ]]; then
-                echo "Unknown discordify argument: ${subcommand_args[1]}. Needs standard or premium."
-                show-usage
-                exit 2
-            fi
-
-            ffdiscordify $chunk_size "${subcommand_args[1]}"
+            ffdiscordify "${subcommand_args[@]}"
             ;;
+        # chunkify)
+            # [[ ${subcommand_args[0]} = "standard" ]] && chunk_size=10000000  # 10MB
+            # [[ ${subcommand_args[0]} = "premium" ]] && chunk_size=500000000  # 500MB
+            # if [[ -z $chunk_size ]]; then
+                # echo "Unknown chunkify argument: ${subcommand_args[1]}. Needs standard or premium."
+                # show-usage
+                # exit 2
+            # fi
+#
+            # ffchunkify $chunk_size "${subcommand_args[1]}"
+            # ;;
         *)
             echo "Unknown subcommand argument: $subcommand"
             show-usage
