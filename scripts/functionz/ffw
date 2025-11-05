@@ -24,7 +24,7 @@ show-usage () {
        ffw video cat <file1> <file2> <...> <fileN>  # concatenate N number of videos
        ffw video compress <file> <crf x265 log value>  # compress a video using x265; good crf values are 27 to 30
        ffw video giphify <file>  # convert a video to gif
-       ffw video scale <file> <floating point ratio>  # scale video file to selected resolution
+       ffw video scale <file> <width:height>  # scale video file to selected resolution
        ffw video crop <file> <starting width x starting height> <ending width x ending height>  # crop a video's contents from start to end coordinates
        ffw video extract video <file>  # extract video track from video with audio to mp3
        ffw video extract frames <file>  # extract frames as uncompressed/raw screenshots (.bmp) to \$CWD
