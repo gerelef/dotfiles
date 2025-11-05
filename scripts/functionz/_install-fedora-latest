@@ -601,6 +601,7 @@ org.flameshot.Flameshot \
 com.spotify.Client \
 com.github.rafostar.Clapper \
 com.github.PintaProject.Pinta \
+io.github.wartybix.Constrict \
 io.gitlab.theevilskeleton.Upscaler \
 com.github.tchx84.Flatseal \
 it.mijorus.gearlever \
@@ -997,11 +998,6 @@ _echo important "You may view all logs displayed in the current script post inst
 
 if checkc is gnome; then
     _echo status "Personalizing GNOME session..."
-    _echo status "Recommended GNOME extensions: "
-    _echo important "- GTK3 Theme Auto Switcher (https://extensions.gnome.org/extension/4998/legacy-gtk3-theme-scheme-auto-switcher/)"
-    _echo important "- Tailscale Status (https://github.com/maxgallup/tailscale-status)"
-    _echo important "Make sure to activate installed GNOME extensions AFTER restarting once!"
-
     sleep 2
 
     _echo status "Loading default dconf settings $REAL_USER..."
@@ -1014,5 +1010,10 @@ if checkc is gnome; then
     add-gsettings-shortcut "gnome-system-monitor" "gnome-system-monitor" "<Shift><Control>Escape"
     add-gsettings-shortcut "flameshot" "flatpak run --command=flameshot org.flameshot.Flameshot gui" "Print"
     add-gsettings-shortcut "$TERMINAL_OF_CHOICE" "$TERMINAL_OF_CHOICE" "<Super>t"  # ghostty --command=fish
+    
+    _echo status "Recommended GNOME extensions: "
+    _echo important "- GTK3 Theme Auto Switcher (https://extensions.gnome.org/extension/4998/legacy-gtk3-theme-scheme-auto-switcher/)"
+    [[ -n "$INSTALL_TAILSCALED" ]] && _echo important "- Tailscale Status (https://github.com/maxgallup/tailscale-status)"
+    _echo important "Make sure to activate installed GNOME extensions AFTER restarting once!"
 fi
 
