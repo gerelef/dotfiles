@@ -108,8 +108,10 @@ install-universal-necessities () (
         sudo dnf install -y --quiet --best --allowerasing --skip-unavailable $INSTALLABLE_BTRFS_TOOLS
     fi
 
-    flatpak permission-set screenshot screenshot org.flameshot.Flameshot yes
-    _echo debug "Set permissions for flameshot."
+    if checkc is gnome; then
+        flatpak permission-set screenshot screenshot org.flameshot.Flameshot yes
+        _echo debug "Set permissions for flameshot."
+    fi
 
     sudo tee "/usr/sbin/update-grub" <<GR_END
 #!/bin/sh
@@ -564,6 +566,7 @@ org.gtk.Gtk3theme.adw-gtk3-dark \
 "
 
 readonly INSTALLABLE_GNOME_FLATPAKS="\
+org.flameshot.Flameshot \
 de.haeckerfelix.Fragments \
 org.gnome.Snapshot \
 "
@@ -597,7 +600,6 @@ pulseeffects \
 "
 
 readonly INSTALLABLE_FLATPAKS="\
-org.flameshot.Flameshot \
 com.spotify.Client \
 com.github.rafostar.Clapper \
 com.github.PintaProject.Pinta \
@@ -1010,10 +1012,19 @@ if checkc is gnome; then
     add-gsettings-shortcut "gnome-system-monitor" "gnome-system-monitor" "<Shift><Control>Escape"
     add-gsettings-shortcut "flameshot" "flatpak run --command=flameshot org.flameshot.Flameshot gui" "Print"
     add-gsettings-shortcut "$TERMINAL_OF_CHOICE" "$TERMINAL_OF_CHOICE" "<Super>t"  # ghostty --command=fish
-    
+
     _echo status "Recommended GNOME extensions: "
     _echo important "- GTK3 Theme Auto Switcher (https://extensions.gnome.org/extension/4998/legacy-gtk3-theme-scheme-auto-switcher/)"
     [[ -n "$INSTALL_TAILSCALED" ]] && _echo important "- Tailscale Status (https://github.com/maxgallup/tailscale-status)"
     _echo important "Make sure to activate installed GNOME extensions AFTER restarting once!"
 fi
 
+if checkc is kde && test $TERMINAL_OF_CHOICE -eq "ghostty"; then
+    sudo tee "/usr/local/bin/ghostty-fish" <<GR_END
+#!/usr/bin/env bash
+
+ghostty --command=fish
+GR_END
+
+    chmod +x '/usr/local/bin/ghostty-fish'
+fi
