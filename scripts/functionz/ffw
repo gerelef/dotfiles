@@ -33,6 +33,7 @@ show-usage () {
        ffw video shift <right | left> <file> <milliseconds>; shift video's audio to the right or left
        ffw video trim <file> <sta:rt> <end:ing>  # trim video from start to end
        ffw video discordify <file>  # ultra compress a video similarly to the 'social 10mb' option on handbrake for sharing
+       ffw video davincify <file>  # convert a video to a davinci resolve (free) compatible format
 
        ffw audio trim <file> <sta:rt> <end:ing>  # trim audio from start to end
        ffw audio trim-from-transcription <file> <trancription-file>  # trim an mp3 from start to end using whisper's stdout transcription file"
@@ -147,6 +148,20 @@ ffdiscordify () (
       "$PWD/$output-social.mp4"
 )
 
+ffdavincify () (
+    [[ "$#" -ne 1 ]] && return 2
+    local output=$(basename -- "${1%.*}")
+    ffmpeg -y -hide_banner \
+      -i "$1" \
+      -vcodec mjpeg \
+      -q:v 2 \
+      -acodec pcm_s16be \
+      -q:a 0 \
+      -f mov \
+      -movflags +faststart \
+      "$PWD/$output-resolv.mp4"
+)
+
 # FIXME unused!
 ffchunkify () (
     [[ "$#" -ne 2 ]] && return 2
@@ -241,6 +256,9 @@ ffvideo () (
         discordify)
             ffdiscordify "${subcommand_args[@]}"
             ;;
+        davincify)
+            ffdavincify "${subcommand_args[@]}"
+            ;;
         # chunkify)
             # [[ ${subcommand_args[0]} = "standard" ]] && chunk_size=10000000  # 10MB
             # [[ ${subcommand_args[0]} = "premium" ]] && chunk_size=500000000  # 500MB
@@ -249,7 +267,6 @@ ffvideo () (
                 # show-usage
                 # exit 2
             # fi
-#
             # ffchunkify $chunk_size "${subcommand_args[1]}"
             # ;;
         *)
