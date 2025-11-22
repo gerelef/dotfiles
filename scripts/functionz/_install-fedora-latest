@@ -425,6 +425,18 @@ polkit.addRule(
 )
 EOF
 
+
+    _echo debug 'Creating polkit policy @ /etc/polkit-1/localauthority/50-local.d/10-decrypt-disks.pkla'
+    _echo debug ' ... in order to allow wheel users to decrypt drives without further authorization.'
+    sudo tee '/etc/polkit-1/localauthority/50-local.d/10-decrypt-disks.pkla' <<EOF
+[Allow wheel group members to decrypt drives without authorization]
+Identity=unix-group:wheel
+Action=org.freedesktop.udisks2.encrypted-unlock-system
+ResultAny=yes
+ResultInactive=yes
+ResultActive=yes
+EOF
+
     sudo systemctl restart polkit
     _echo success "Done."
 )
