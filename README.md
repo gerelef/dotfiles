@@ -112,10 +112,15 @@ cp ./$1 "~/.config/systemd/user/"
 
 ## thrustmaster t150 setup
 
-The current steps provided will NOT work with secure boot.
-
 - Drivers (requires `dkms` pkg), courtesy of scarburato:
-  https://github.com/scarburato/t150_driver
+  https://github.com/scarburato/t150_drive
+
+```bash
+git clone 'git@github.com:scarburato/t150_driver.git' && cd t150_driver/ && sudo dnf install -y dkms
+# we will continue with configuring dkms signing of modules with the secure boot key
+sudo ./install.sh && mokutil --import /var/lib/dkms/mok.pub
+# RESTART AND IMPORT THE PUBLIC KEY with the same password you entered
+```
 - Oversteer:
   https://github.com/berarma/oversteer
 
