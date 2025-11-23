@@ -139,7 +139,7 @@ sudo udevadm control --reload-rules && sudo udevadm trigger
 - Calibrate [flatness value](https://forum.scssoft.com/viewtopic.php?t=273373); will NOT persist!
 
 ```bash
-sudo evdev-joystick --evdev /dev/input/by-id/usb-Thrustmaster_Thrustmaster_T150RS-event-joystick --d 0
+sudo dnf install -y linuxconsoletools && sudo evdev-joystick --evdev /dev/input/by-id/usb-Thrustmaster_Thrustmaster_T150RS-event-joystick --d 0
 ```
 
 ## compiling inside a pod
