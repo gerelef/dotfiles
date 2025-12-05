@@ -15,7 +15,7 @@ install-build-requires () (
         echo "spec file provided '$1' CANNOT be found!"
         exit 1
     fi
-    sudo dnf builddep -y "$1"
+    sudo dnf builddep -y --allowerasing "$1"
 )
 
 build-copr () (
