@@ -60,8 +60,10 @@ sudo dnf remove kernel-core-M.mm.v # remove the kernel afterwards
 
 - spotify backup playlists
 
-````bash
-foreach spotify-dump-playlist < $(spotify-dump-public-playlist-uris-from-profile 'YOUR_PROFILE_URI_HERE')```
+```bash
+foreach spotify-dump-playlist < $(spotify-dump-public-playlist-uris-from-profile 'YOUR_PROFILE_URI_HERE')
+```
+
 - initramfs blew up, regenerate:
 ```bash
 sudo dracut --force --regenerate-all --verbose && sudo grub2-mkconfig -o /boot/grub2/grub.cfg
