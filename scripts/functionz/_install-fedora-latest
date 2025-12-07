@@ -853,6 +853,8 @@ ask user question 'Do you want to install Zed Text Editor?' && INSTALL_ZED="yes"
 _echo debug "Will install zed? $INSTALL_ZED"
 ask user question 'Do you want to install joplin?' && INSTALL_JOPLIN="yes"
 _echo debug "Will install joplin? $INSTALL_JOPLIN"
+ask user question 'Do you want to install ollama?' && INSTALL_OLLAMA="yes"
+_echo debug "Will install joplin? $INSTALL_OLLAMA"
 
 #######################################################################################################
 
@@ -965,6 +967,8 @@ fi
 
 # this is bad but it's the official 'packaging' format jesus christ
 [[ -n "$INSTALL_JOPLIN" ]] && curl --proto '=https' --tlsv1.2 -sSf 'https://raw.githubusercontent.com/laurent22/joplin/dev/Joplin_install_and_update.sh' | bash
+
+[[ -n "$INSTALL_OLLAMA" ]] && sudo dnf install -y --quiet "ollama"
 #######################################################################################################
 
 configure-residual-permissions
