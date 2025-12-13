@@ -829,6 +829,10 @@ sudo dnf remove -y --quiet cups-browsed
 
 _echo important "You will be asked a series of questions ahead of time, so you can go semi-AFK while installing."
 
+if checkc is gnome; then
+    ask user question 'Do you want to personalize install?' && PERSONALIZE_DEFAULTS="yes"
+    _echo debug "Will personalize install? $PERSONALIZE_DEFAULTS"
+fi
 ask user question 'Do you want to install snapd?' && INSTALL_SNAPD="yes"
 _echo debug "Will install snapd? $INSTALL_SNAPD"
 ask user question 'Do you want to install gaming packages?' && INSTALL_GAMING="yes"
@@ -1014,7 +1018,7 @@ sync
 _echo success "Done."
 _echo important "You may view all logs displayed in the current script post install via: journalctl -b -t 'setup.sh'"
 
-if checkc is gnome; then
+if checkc is gnome && test -n "$PERSONALIZE_DEFAULTS"; then
     _echo status "Personalizing GNOME session..."
     sleep 2
 
