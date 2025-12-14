@@ -585,6 +585,8 @@ org.gnome.Snapshot \
 
 readonly INSTALLABLE_GNOME_EXTENSIONS="\
 gnome-extensions-app \
+gnome-shell-extension-gsconnect \
+nautilus-gsconnect \
 gnome-shell-extension-places-menu \
 gnome-shell-extension-appindicator \
 gnome-shell-extension-blur-my-shell \
