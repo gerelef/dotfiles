@@ -20,6 +20,7 @@ nmap:nmap
 pciutils:lspci
 ruby:ruby
 systemd-container:machinectl
+copr/gerelef/constrict-cli:constrict-cli
 util-linux-core:free
 util-linux-core:swapoff
 util-linux-core:swapon

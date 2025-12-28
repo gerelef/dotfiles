@@ -2,7 +2,7 @@
 
 # HELP ffw --help; ffmpeg wrapper for common usecases.
 
-_depends-on ffmpeg fish || exit
+_depends-on ffmpeg fish constrict-cli || exit
 
 # convert Minutes:Seconds (colon seperated) to seconds
 __hms () (
@@ -138,14 +138,17 @@ fftrim-mp4 () (
 
 ffdiscordify () (
     [[ "$#" -ne 1 ]] && return 2
-    local output=$(basename -- "${1%.*}")
-    ffmpeg -y -hide_banner \
-      -i "$1" \
-      -c:v libx264 -preset slow -crf 28 -maxrate 800k -bufsize 1600k \
-      -vf "scale='min(1280,iw)':'min(720,ih)':force_original_aspect_ratio=decrease" -r 60 \
-      -c:a aac -b:a 128k -ac 2 \
-      -movflags +faststart \
-      "$PWD/$output-social.mp4"
+    local output="$PWD/$(basename -- "${1%.*}")-social.mp4"
+    if [[ -f $output ]]; then
+        rm -f "$output" || exit 1
+    fi
+    constrict-cli -i "$1" \
+          -s 10 \
+          -t 5 \
+          --framerate auto \
+          --extra-quality \
+          --codec av1 \
+          -o "$output"
 )
 
 ffdavincify () (
