@@ -165,27 +165,6 @@ ffdavincify () (
       "$PWD/$output-resolv.mp4"
 )
 
-# FIXME unused!
-ffchunkify () (
-    [[ "$#" -ne 2 ]] && return 2
-    target_megabytes=$1
-    original_source=$2
-
-    original_source_total_duration=$(ffprobe "$original_source" -show_streams 2>&1 | sed -n '/STREAM/,$p' | grep -i 'duration=' | head -1 | awk -F '=' '{ printf $2 }')
-
-    start=0
-    iteration=0
-    while test $(echo "$start < $original_source_total_duration" | bc -l) -eq 1; do
-        output="$PWD/$original_source-ds-$iteration.mp4"
-        ffmpeg -y -hide_banner -ss "$start" -to "$original_source_total_duration" -i "$original_source" -fs $target_megabytes -codec copy "$output" 2>/dev/null 1>&2
-        intermediary_file_size=$(ffprobe "$output" -show_streams 2>&1 | sed -n '/STREAM/,$p' | grep -i 'duration=' | head -1 | awk -F '=' '{ printf $2 }')
-        start=$(echo "$start $intermediary_file_size" | awk '{ printf $1 + $2 }')
-        echo "outputting chunk $output..."
-
-        ((iteration++))
-    done
-)
-
 ffvideo-extract-video () (
     [[ -z "$*" ]] && return 2
     local output=$(basename -- "${1%.*}")
