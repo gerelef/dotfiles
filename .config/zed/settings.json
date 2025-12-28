@@ -17,7 +17,7 @@
     },
     // ---------------- VISUAL ----------------
     "hide_mouse": "never",
-    "icon_theme": "Zed (Default)",
+    "icon_theme": "Catppuccin Macchiato",
     "buffer_font_size": 17,
     "buffer_font_family": "Noto Sans Mono",
     "ui_font_size": 17,
@@ -25,7 +25,7 @@
     "theme": {
         "mode": "system",
         "light": "Catppuccin Latte",
-        "dark": "Catppuccin Macchiato"
+        "dark": "Catppuccin Mocha"
     },
     "project_panel": {
         "button": true,
@@ -86,7 +86,7 @@
     "tab_size": 4,
     // ---------------- EDITOR SETTINGS ----------------
     "notification_panel":  { "button": false },
-    "chat_panel":          { "dock": "right" },
+    "git_panel":           { "dock": "right" },
     "collaboration_panel": { "dock": "right" },
     "outline_panel":       { "dock": "right" },
     "agent": {
