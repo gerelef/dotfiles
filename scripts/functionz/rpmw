@@ -7,6 +7,7 @@ show-usage () {
        rpmw buildrequires <spec file>  # will install all BuildRequires
        rpmw build-copr <spec file> # will reproduce a copr build with network access locally, will automatically grab dependencies & sources
        rpmw build <spec-file> # will reproduce a copr build with network access locally, will automatically grab sources & SKIP dependencies
+       rpmw bump <rpmdev-bumpspec args> # bumps release tags in specfiles
        rpmw compare-versions <version1> <version2>  # compare two versions to determine which one is larger than the other one"
 }
 
@@ -32,11 +33,20 @@ build-copr () (
 build () (
     if ! test -f "$1"; then
         echo "spec file provided '$1' CANNOT be found!"
-	exit 1
+        exit 1
     fi
 
     spectool -g -R "$1"
     rpmbuild -ba -vv "$1"
+)
+
+bump () (
+    if ! test -f "$1"; then
+        echo "spec file provided '$1' CANNOT be found!"
+        exit 1
+    fi
+
+    rpmdev-bumpspec "$1"
 )
 
 compare-versions () (
@@ -66,6 +76,10 @@ main () (
             ;;
         build)
     	    build "${@:2}"
+    	    exit
+            ;;
+        bump)
+    	    bump "${@:2}"
     	    exit
             ;;
         compare-versions)
