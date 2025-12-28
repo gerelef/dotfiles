@@ -46,7 +46,7 @@ bump () (
         exit 1
     fi
 
-    rpmdev-bumpspec "$1"
+    rpmdev-bumpspec "$@"
 )
 
 compare-versions () (
