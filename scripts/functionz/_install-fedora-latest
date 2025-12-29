@@ -98,6 +98,8 @@ install-universal-necessities () (
     sudo dnf group install -y --quiet --best --allowerasing "libreoffice"
     sudo dnf install -y --quiet --best --allowerasing --skip-unavailable $INSTALLABLE_APPLICATION_PACKAGES
     flatpak install flathub --system --noninteractive -y $INSTALLABLE_FLATPAKS
+    sudo dnf copr enable -y --quiet gerelef/constrict-cli  # ... in place of the flatpak, to be used by cli
+    sudo dnf install -y --quiet --best --allowerasing constrict-cli
     # install brave from the official repo, do NOT use the flatpak!!!
     sudo dnf config-manager addrepo -y --quiet --from-repofile=https://brave-browser-rpm-release.s3.brave.com/brave-browser.repo
     sudo dnf install -y --quiet --best brave-browser
@@ -617,7 +619,6 @@ readonly INSTALLABLE_FLATPAKS="\
 com.spotify.Client \
 com.github.rafostar.Clapper \
 com.github.PintaProject.Pinta \
-io.github.wartybix.Constrict \
 io.gitlab.theevilskeleton.Upscaler \
 com.github.tchx84.Flatseal \
 it.mijorus.gearlever \
