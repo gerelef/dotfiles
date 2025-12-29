@@ -41,11 +41,6 @@ build () (
 )
 
 bump () (
-    if ! test -f "$1"; then
-        echo "spec file provided '$1' CANNOT be found!"
-        exit 1
-    fi
-
     rpmdev-bumpspec "$@"
 )
 
