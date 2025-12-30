@@ -15,7 +15,14 @@ The common `$XDG_CONFIG_HOME` directory setup is semi-emulated, with exceptions 
 
 After running a setup script in `dotfiles/scripts/setup/...` I just need to install my dotfiles & my themes.
 
-- To deploy my dotfiles I use [pstow](https://github.com/gerelef/pstow); check the command below.
+To deploy my dotfiles I use [pstow](https://github.com/gerelef/pstow); check the command below to automatically deploy the default profile:
+
+**Warning! This is a DESTRUCTIVE command, and it WILL overwrite files!**
+
+```bash
+cd ~ && git clone https://github.com/gerelef/dotfiles && ~/dotfiles/scripts/functionz/pstow --source ~/dotfiles --target ~ --profile default --force --yes
+```
+
 - To install my compatibility layers for gaming, I use `update-compat-layers`, which is a utility located under `scripts/utils/`
 - To set CTRL+Tab / CTRL+Shift+Tab as a shortcut in chrome, I use the following snippet from [superuser](https://superuser.com/questions/104917/chrome-tab-ordering/1326712#1326712)
 
@@ -41,13 +48,6 @@ document.body.onclick = function (e) {
             });
         });
 };
-```
-
-To automatically deploy the default profile:
-**Warning! This is a DESTRUCTIVE command, and it WILL overwrite files!**
-
-```bash
-cd ~ && git clone https://github.com/gerelef/dotfiles && ~/dotfiles/scripts/functionz/pstow --source ~/dotfiles --target ~ --profile default --force --yes
 ```
 
 ## spellbook
