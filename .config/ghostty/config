@@ -6,5 +6,3 @@ cursor-style = bar
 gtk-titlebar = false
 linux-cgroup = always
 confirm-close-surface=false
-
-keybind = ctrl+shift+s=write_scrollback_file:open
