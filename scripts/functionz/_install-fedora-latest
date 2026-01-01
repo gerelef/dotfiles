@@ -98,8 +98,6 @@ install-universal-necessities () (
     sudo dnf group install -y --quiet --best --allowerasing "libreoffice"
     sudo dnf install -y --quiet --best --allowerasing --skip-unavailable $INSTALLABLE_APPLICATION_PACKAGES
     flatpak install flathub --system --noninteractive -y $INSTALLABLE_FLATPAKS
-    sudo dnf copr enable -y --quiet gerelef/constrict-cli  # ... in place of the flatpak, to be used by cli
-    sudo dnf install -y --quiet --best --allowerasing constrict-cli
     # install brave from the official repo, do NOT use the flatpak!!!
     sudo dnf config-manager addrepo -y --quiet --from-repofile=https://brave-browser-rpm-release.s3.brave.com/brave-browser.repo
     sudo dnf install -y --quiet --best brave-browser
@@ -846,6 +844,8 @@ if [[ -n "$INSTALL_GAMING" ]]; then
     ask user question 'Do you want to install beammp?' && INSTALL_BEAMMP="yes"
     _echo debug "Will install beammp? $INSTALL_BEAMMP"
 fi
+ask user question 'Do you want to install constrict?' && INSTALL_CONSTRICT="yes"
+_echo debug "Will install constrict? $INSTALL_CONSTRICT"
 ask user question 'Do you want to install terminal tools?' && INSTALL_TERM_TOOLS="yes"
 _echo debug "Will install terminal-tools? $INSTALL_TERM_TOOLS"
 ask user question 'Do you want to install tailscaled?' && INSTALL_TAILSCALED="yes"
@@ -887,6 +887,13 @@ if [[ -n "$INSTALL_BEAMMP" ]]; then
 
     sudo dnf copr enable -y --quiet gerelef/BeamMP-Launcher
     sudo dnf install -y --quiet --best --allowerasing BeamMP-Launcher
+fi
+
+if [[ -n "$INSTALL_CONSTRICT" ]]; then
+    _echo status "-------------------INSTALLING CONSTRICT-------------------"
+
+    sudo dnf copr enable -y --quiet gerelef/constrict
+    sudo dnf install -y --quiet --best --allowerasing constrict
 fi
 
 if [[ -n "$INSTALL_TERM_TOOLS" ]]; then
