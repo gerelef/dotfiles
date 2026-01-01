@@ -8,6 +8,8 @@ show-usage () {
        rpmw build-copr <spec file> # will reproduce a copr build with network access locally, will automatically grab dependencies & sources
        rpmw build <spec-file> # will reproduce a copr build with network access locally, will automatically grab sources & SKIP dependencies
        rpmw bump <rpmdev-bumpspec args> # bumps release tags in specfiles
+       rpmw depends-on <executable>  # check what are the direct dependencies of an executable that's CURRENTLY RUNNING via PID
+       rpmw resolve-dep <file>  # check what package a file comes from (rpm -qf)
        rpmw compare-versions <version1> <version2>  # compare two versions to determine which one is larger than the other one"
 }
 
@@ -44,6 +46,19 @@ bump () (
     rpmdev-bumpspec "$@"
 )
 
+depends-on () (
+    pid=$(pidof $1)
+    if [[ -z "$pid" ]]; then
+        echo "Couldn't resolve pid of "
+    fi
+
+    lsof -P -T -p $pid
+)
+
+resolve-dep () (
+    rpm -qf $1
+)
+
 compare-versions () (
     if [[ $# -ne 2 ]]; then
         echo "incorrect number of arguments to compare versions (got $#, expected 2)"
@@ -75,6 +90,14 @@ main () (
             ;;
         bump)
     	    bump "${@:2}"
+    	    exit
+            ;;
+        depends-on)
+    	    depends-on "${@:2}"
+    	    exit
+            ;;
+        resolve-dep)
+    	    resolve-dep "${@:2}"
     	    exit
             ;;
         compare-versions)
