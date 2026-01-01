@@ -840,6 +840,12 @@ ask user question 'Do you want to install snapd?' && INSTALL_SNAPD="yes"
 _echo debug "Will install snapd? $INSTALL_SNAPD"
 ask user question 'Do you want to install gaming packages?' && INSTALL_GAMING="yes"
 _echo debug "Will install gaming? $INSTALL_GAMING"
+if [[ -n "$INSTALL_GAMING" ]]; then
+    ask user question 'Do you want to install steering wheel packages?' && INSTALL_WHEEL="yes"
+    _echo debug "Will install steering wheel? $INSTALL_WHEEL"
+    ask user question 'Do you want to install beammp?' && INSTALL_BEAMMP="yes"
+    _echo debug "Will install beammp? $INSTALL_BEAMMP"
+fi
 ask user question 'Do you want to install terminal tools?' && INSTALL_TERM_TOOLS="yes"
 _echo debug "Will install terminal-tools? $INSTALL_TERM_TOOLS"
 ask user question 'Do you want to install tailscaled?' && INSTALL_TAILSCALED="yes"
@@ -868,8 +874,23 @@ _echo debug "Will install joplin? $INSTALL_OLLAMA"
 [[ -n "$INSTALL_GAMING" ]] && install-gaming-packages
 [[ -n "$INSTALL_TAILSCALED" ]] && configure-tailscaled
 
+if [[ -n "$INSTALL_WHEEL" ]]; then
+    _echo status "-------------------INSTALLING STEERING WHEEL PACKAGES-------------------"
+
+    flatpak install flathub --system --noninteractive -y io.github.lawstorant.boxflat
+    sudo dnf copr enable -y --quiet gerelef/oversteer-git
+    sudo dnf install -y --quiet --best --allowerasing oversteer
+fi
+
+if [[ -n "$INSTALL_BEAMMP" ]]; then
+    _echo status "-------------------INSTALLING BEAMMP-------------------"
+
+    sudo dnf copr enable -y --quiet gerelef/BeamMP-Launcher
+    sudo dnf install -y --quiet --best --allowerasing BeamMP-Launcher
+fi
+
 if [[ -n "$INSTALL_TERM_TOOLS" ]]; then
-    _echo status "-------------------INSTALLING TERMINAL TOOLS----------------"
+    _echo status "-------------------INSTALLING TERMINAL TOOLS-------------------"
 
     # 'expect' pkg provides the (very) useful 'unbuffer' command
     sudo dnf install -y --quiet --best --allowerasing --skip-unavailable "tldr" \
