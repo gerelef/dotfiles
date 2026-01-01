@@ -2,13 +2,15 @@
 
 # HELP rpmbuild & friends wrapper for common usecases
 
+_depends-on spectool rpmbuild rpmdev-bumpspec rpmdev-vercmp || exit
+
 show-usage () {
     echo "Usage: rpm utility wrapper for common usecases.
        rpmw buildrequires <spec file>  # will install all BuildRequires
        rpmw build-copr <spec file> # will reproduce a copr build with network access locally, will automatically grab dependencies & sources
        rpmw build <spec-file> # will reproduce a copr build with network access locally, will automatically grab sources & SKIP dependencies
        rpmw bump <rpmdev-bumpspec args> # bumps release tags in specfiles
-       rpmw depends-on <executable>  # check what are the direct dependencies of an executable that's CURRENTLY RUNNING via PID
+       rpmw depends-on <pid>  # check what are the dependencies from the pid of a currently running application
        rpmw resolve-dep <file>  # check what package a file comes from (rpm -qf)
        rpmw compare-versions <version1> <version2>  # compare two versions to determine which one is larger than the other one"
 }
@@ -47,12 +49,7 @@ bump () (
 )
 
 depends-on () (
-    pid=$(pidof $1)
-    if [[ -z "$pid" ]]; then
-        echo "Couldn't resolve pid of "
-    fi
-
-    lsof -P -T -p $pid
+    lsof -P -T -p $1
 )
 
 resolve-dep () (

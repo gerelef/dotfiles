@@ -16,6 +16,11 @@ grep:grep
 ImageMagick:identify
 iproute:ip
 jq:jq
+lsof:lsof
+rpmdevtools:spectool
+rpmdevtools:rpmbuild
+rpmdevtools:rpmdev-bumpspec
+rpmdevtools:rpmdev-vercmp
 nmap:nmap
 pciutils:lspci
 ruby:ruby
