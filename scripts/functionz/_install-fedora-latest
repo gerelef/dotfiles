@@ -615,7 +615,6 @@ pulseeffects \
 
 readonly INSTALLABLE_FLATPAKS="\
 com.spotify.Client \
-com.github.rafostar.Clapper \
 com.github.PintaProject.Pinta \
 io.gitlab.theevilskeleton.Upscaler \
 com.github.tchx84.Flatseal \
