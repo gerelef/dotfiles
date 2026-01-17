@@ -408,6 +408,7 @@ EOF
     _echo debug "Capping nproc-count to prevent fork-bombs (hard nproc 10_000)"
     sudo sh -c "echo \"$REAL_USER 'hard nproc 10000'\" > '/etc/security/limits.d/90-nproc.conf'"
     _echo success "Capped maximum number of processes."
+    # TODO man limits.conf wine11, set 'nice' to -5 or so
     # sudoers used to be here, but was moved for convenience with low-speed connections
     _echo debug 'Creating polkit policy @ /etc/polkit-1/rules.d/99-custom-units.rules'
     _echo debug ' ... in order to allow wheel users restart the NetworkManager.service '
