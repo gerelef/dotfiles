@@ -129,7 +129,26 @@ GR_END
 optimize-hardware () (
     _echo status "-------------------OPTIMIZING HARDWARE----------------"
 
-    sudo systemctl enable --now systemd-bsod
+    _echo status "Enabling scx_lavd (Steam Deck) scheduler."
+    _echo important "This is better for gaming workloads."
+    sudo dnf copr enable -y 'bieszczaders/kernel-cachyos-addons'
+    sudo dnf install -y --quiet --best --allowerasing --skip-unavailable scx-scheds
+
+    sudo tee /etc/systemd/system/scx-lavd.service <<EOF
+[Unit]
+Description=scx_lavd Scheduler
+After=network.target
+
+[Service]
+ExecStart=/usr/bin/scx_lavd --autopilot
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target
+EOF
+    sudo systemctl daemon-reload
+    sudo systemctl enable --now scx-lavd.service
 
     if journalctl --boot | grep -i 'failed to send h2c command'; then
         _echo important "Found error messages regarding wifi powersaving. Deactivating feature..."
@@ -139,41 +158,17 @@ wifi.powersave = 2
 EOF
     fi
 
-    if checkc is mobile; then
-        _echo status "Enabling power-efficient (but less secure) suspend to ram for mobile-type."
-        _echo important "This will FAIL HSI-2 tests."
-        sudo grubby --update-kernel=ALL --args="mem_sleep_default=deep"  # deep sleep
-        _echo debug "Enabling deep /sys/power/mem_sleep"
-        sudo sh -c 'echo deep > /sys/power/mem_sleep'
-        _echo debug "Updated grub."
-        sudo update-grub
+    _echo status "Enabling power-efficient (but less secure) suspend to ram for mobile-type."
+    _echo important "This will FAIL HSI-2 tests."
+    sudo grubby --update-kernel=ALL --args="mem_sleep_default=deep"  # deep sleep
+    _echo debug "Enabling deep /sys/power/mem_sleep"
+    sudo sh -c 'echo deep > /sys/power/mem_sleep'
+    _echo debug "Updated grub."
+    sudo update-grub
 
-        sudo chattr +T /home
-        _echo debug "Configured chattr +T for /home"
-
-        # TODO when BPF scx schedulers (verify by running scx_simple) are fully supported
-        #  in fedora, scrap all of this bullshit and just use the better scheduler with a systemd service
-        if checkc is gnome; then
-            _echo debug "Installing s76-scheduler-plugin..."
-            git clone https://github.com/gerelef/s76-scheduler-plugin.git ~/.local/share/gnome-shell/extensions/s76-scheduler@mattjakeman.com
-            _echo status "Enabling system76-scheduler..."
-            sudo dnf copr enable -y --quiet kylegospo/system76-scheduler
-            sudo dnf install -y --quiet --best --allowerasing --skip-unavailable system76-scheduler
-            sudo systemctl enable --now com.system76.Scheduler.service
-        fi
-    fi
-
-    if checkc is desktop; then
-        _echo status "Enabling non-power efficient (but more secure) suspend to idle (s2idle) for desktop-type..."
-        _echo important "This will PASS HSI-2 tests."
-        sudo grubby --update-kernel=ALL --args="mem_sleep_default=s2idle"
-        sudo sh -c 'echo s2idle > /sys/power/mem_sleep'
-        sudo update-grub
-        _echo status "Disabling mobile-gpu specific service (https://forums.developer.nvidia.com/t/no-matching-gpu-found-with-510-47-03/202315/5)"
-        sudo systemctl disable --now nvidia-powerd.service
-        return
-    fi
-
+    sudo chattr +T /home
+    _echo debug "Configured chattr +T for /home"
+    
     _echo important "Locking down kernel with confidentiality mode."
     _echo important "This will disable memory (and other) runtime inspections."
     sudo grubby --args="lockdown=confidentiality" --update-kernel=ALL
