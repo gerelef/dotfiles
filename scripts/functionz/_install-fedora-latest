@@ -151,6 +151,8 @@ EOF
         sudo chattr +T /home
         _echo debug "Configured chattr +T for /home"
 
+        # TODO when BPF scx schedulers (verify by running scx_simple) are fully supported
+        #  in fedora, scrap all of this bullshit and just use the better scheduler with a systemd service
         if checkc is gnome; then
             _echo debug "Installing s76-scheduler-plugin..."
             git clone https://github.com/gerelef/s76-scheduler-plugin.git ~/.local/share/gnome-shell/extensions/s76-scheduler@mattjakeman.com
