@@ -209,6 +209,7 @@ alias ....='cd ../../..'
 alias .....='cd ../../../..'
 
 # convenience alias
+alias ssh="TERM=xterm-256color ssh"
 alias egrep="\grep -E"
 alias grep="\grep -i"
 alias rm="\rm -v"

@@ -138,6 +138,7 @@ alias ... "cd ../.."
 alias .... "cd ../../.."
 alias ..... "cd ../../../.."
 
+abbr --position command --add ssh "TERM=xterm-256color ssh"
 abbr --position command --add egrep "grep -E"
 abbr --position command --add grep "grep -i"
 abbr --position command --add rm "rm -v"
