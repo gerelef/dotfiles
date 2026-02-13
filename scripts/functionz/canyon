@@ -1,0 +1,79 @@
+#!/usr/bin/env python3
+import sys
+import argparse
+from http.server import HTTPServer, BaseHTTPRequestHandler
+from socketserver import ThreadingMixIn
+
+# HELP Simple HTTP logging server that logs all request headers and responds with 200 OK
+
+class LoggingHTTPRequestHandler(BaseHTTPRequestHandler):
+    def log_message(self, format, *args):
+        # Override to send logs to stdout instead of stderr
+        sys.stdout.write("%s - - [%s] %s\n" %
+                        (self.address_string(),
+                         self.log_date_time_string(),
+                         format % args))
+        sys.stdout.flush()
+
+    def _handle_request(self):
+        # Log all request headers
+        print(f"\n--- Request Headers for {self.command} {self.path} ---")
+        for header, value in self.headers.items():
+            print(f"{header}: {value}")
+        print("--- End Headers ---\n")
+
+        # Log the request and respond with 200 OK
+        self.send_response(200)
+        self.send_header('Content-type', 'text/plain')
+        self.end_headers()
+        self.wfile.write(b'OK')
+
+    # Handle all HTTP methods
+    def do_GET(self):
+        self._handle_request()
+
+    def do_POST(self):
+        self._handle_request()
+
+    def do_PUT(self):
+        self._handle_request()
+
+    def do_DELETE(self):
+        self._handle_request()
+
+    def do_HEAD(self):
+        self._handle_request()
+
+    def do_OPTIONS(self):
+        self._handle_request()
+
+    def do_PATCH(self):
+        self._handle_request()
+
+    def do_CONNECT(self):
+        self._handle_request()
+
+    def do_TRACE(self):
+        self._handle_request()
+
+class ThreadedHTTPServer(ThreadingMixIn, HTTPServer):
+    """Handle requests in separate threads."""
+    daemon_threads = True
+
+def main():
+    parser = argparse.ArgumentParser(description='Simple HTTP logging server')
+    parser.add_argument('port', type=int, help='Port to listen on')
+    args = parser.parse_args()
+
+    server_address = ('0.0.0.0', args.port)
+    httpd = ThreadedHTTPServer(server_address, LoggingHTTPRequestHandler)
+
+    print(f"Starting server on 0.0.0.0:{args.port}")
+    try:
+        httpd.serve_forever()
+    except KeyboardInterrupt:
+        print("\nShutting down server...")
+        httpd.shutdown()
+
+if __name__ == '__main__':
+    main()
