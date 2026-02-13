@@ -17,10 +17,73 @@ end
 #  im torn, i do not know if this is disgusting or really cool
 def dir_contents(dir)
     files = Dir.entries(File.dirname(dir)).sort().select{ |fn| ! fn.include? "."}
+    output_lines = []
     for fn in files do
         path = "%s/%s" % [File.dirname(dir), fn]
         next unless File.file?(path)
-        echo_help_text(path)
+        tail = File.basename(path)
+        found = false
+        File.open(path, "r") do |file|
+            regexr_match = file.find { |line| line =~ /#\sHELP\s(.+)/ }
+            found = !regexr_match.to_s.strip.empty?
+            if found
+                output_lines << "\033[0;31m%s\033[0m -> %s" % [tail, $1]
+            else
+                output_lines << "\033[0;31m%s\033[0m" % tail
+            end
+        end
+    end
+
+    page_output(output_lines)
+end
+
+def terminal_height
+    begin
+        require 'io/console'
+        IO.console.winsize[0]
+    rescue
+        25  # default fallback
+    end
+end
+
+def terminal_width
+    begin
+        require 'io/console'
+        IO.console.winsize[1]
+    rescue
+        80  # default fallback
+    end
+end
+
+def strip_ansi_codes(text)
+    text.gsub(/\033\[[0-9;]*m/, '')
+end
+
+def calculate_wrapped_lines(lines)
+    width = terminal_width
+    total_lines = 0
+
+    lines.each do |line|
+        clean_line = strip_ansi_codes(line)
+        if clean_line.length <= width
+            total_lines += 1
+        else
+            total_lines += (clean_line.length.to_f / width).ceil
+        end
+    end
+
+    total_lines
+end
+
+def page_output(output_lines)
+    # Check if output should be paged
+    if $stdout.isatty && calculate_wrapped_lines(output_lines) > terminal_height - 2
+        # Use pager for output
+        IO.popen("less -R", "w") do |pager|
+            output_lines.each { |line| pager.puts line }
+        end
+    else
+        output_lines.each { |line| puts line }
     end
 end
 
@@ -38,9 +101,22 @@ if __FILE__ == $0
             exit(1)
         end
 
+        output_lines = []
         globbed_path.each do |fn|
-            echo_help_text(fn)
+            tail = File.basename(fn)
+            found = false
+            File.open(fn, "r") do |file|
+                regexr_match = file.find { |line| line =~ /#\sHELP\s(.+)/ }
+                found = !regexr_match.to_s.strip.empty?
+                if found
+                    output_lines << "\033[0;31m%s\033[0m -> %s" % [tail, $1]
+                else
+                    output_lines << "\033[0;31m%s\033[0m" % tail
+                end
+            end
         end
+
+        page_output(output_lines)
         exit()
     end
     dir_contents(__FILE__)
