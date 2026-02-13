@@ -1,0 +1,71 @@
+#!/usr/bin/env bash
+#!/usr/bin/env bash
+
+# HELP bak --help; backup file by adding .bak extension
+
+show-usage () {
+    echo "Usage: backup file by adding .bak extension
+       bak <file>  # rename file to file.bak in the same directory
+       bak --to <directory> <file>  # rename file to file.bak and move to specified directory"
+}
+
+main () {
+    local target_dir=""
+    local files=()
+
+    if [[ $# -eq 0 ]]; then
+        show-usage
+        exit 2
+    fi
+
+    # Parse arguments
+    while [[ $# -gt 0 ]]; do
+        case "$1" in
+            -h|--help)
+                show-usage
+                exit 0
+                ;;
+            --to)
+                if [[ $# -lt 2 ]]; then
+                    echo "Error: --to requires a directory argument"
+                    exit 1
+                fi
+                target_dir="$2"
+                shift 2
+                ;;
+            *)
+                files+=("$1")
+                shift
+                ;;
+        esac
+    done
+
+    # Validate target directory if specified
+    if [[ -n "$target_dir" && ! -d "$target_dir" ]]; then
+        echo "Error: Directory '$target_dir' does not exist"
+        exit 1
+    fi
+
+    # Process files
+    for file in "${files[@]}"; do
+        if [[ -f "$file" ]]; then
+            local backup_name="$file.bak"
+
+            if [[ -n "$target_dir" ]]; then
+                # Extract just the filename from the path
+                local filename=$(basename "$backup_name")
+                local destination="$target_dir/$filename"
+                mv "$file" "$destination"
+                echo "Renamed $file to $filename and moved to $target_dir"
+            else
+                mv "$file" "$backup_name"
+                echo "Renamed $file to $backup_name"
+            fi
+        else
+            echo "Error: File '$file' does not exist"
+            exit 1
+        fi
+    done
+}
+
+[[ "${BASH_SOURCE[0]}" == "${0}" ]] && main "$@"
