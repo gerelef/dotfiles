@@ -223,6 +223,12 @@ alias fuck='sudo $(history -p \!\!)'
 [[ -n "$(command -v yt-dlp)" ]] && alias ytdl-mp4="yt-dlp --format \"bv*[ext=mp4]+ba[ext=m4a]/b[ext=mp4]\" "
 [[ -n "$(command -v yt-dlp)" ]] && alias ytdl-thumbnail="yt-dlp --write-thumbnail --skip-download "
 
+if [[ -f '/etc/wsl.conf' ]]; then
+    # turn off world-writeable directory colouring when wsl is detected
+    #  this causes unintelligible writing on wsl for windows directories
+    export LS_COLORS=$LS_COLORS:'ow=36:'
+fi
+
 # chromium depot_tools, add to PATH only if they actually exist
 #  https://chromium.googlesource.com/chromium/tools/depot_tools.git
 # `locate --version` checks if it exists, and is a 'mac' style locate or not

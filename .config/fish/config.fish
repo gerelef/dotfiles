@@ -157,6 +157,12 @@ type -q npm && abbr --position command --add npm "npm --loglevel silly"
 type -q yt-dlp && abbr --position command --set-cursor --add ytdl-mp4 "yt-dlp --format \"bv*[ext=mp4]+ba[ext=m4a]/b[ext=mp4]\" "
 type -q yt-dlp && abbr --position command --set-cursor --add ytdl-thumbnail "yt-dlp --write-thumbnail --skip-download "
 
+if test -f '/etc/wsl.conf'
+    # turn off world-writeable directory colouring when wsl is detected
+    #  this causes unintelligible writing on wsl for windows directories
+    set -gx LS_COLORS=$LS_COLORS:'ow=36:'
+end
+
 # chromium depot_tools, add to PATH only if they actually exist
 #  https://chromium.googlesource.com/chromium/tools/depot_tools.git
 if locate --version 2> /dev/null 1>&2 && locate --limit 1 'depot_tools' 2> /dev/null 1>&2
