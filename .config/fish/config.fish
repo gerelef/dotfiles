@@ -160,7 +160,7 @@ type -q yt-dlp && abbr --position command --set-cursor --add ytdl-thumbnail "yt-
 if test -f '/etc/wsl.conf'
     # turn off world-writeable directory colouring when wsl is detected
     #  this causes unintelligible writing on wsl for windows directories
-    set -gx LS_COLORS=$LS_COLORS:'ow=36:'
+    set -gx LS_COLORS "$LS_COLORS:ow=36"
 end
 
 # chromium depot_tools, add to PATH only if they actually exist

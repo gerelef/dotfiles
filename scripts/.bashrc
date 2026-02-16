@@ -226,7 +226,7 @@ alias fuck='sudo $(history -p \!\!)'
 if [[ -f '/etc/wsl.conf' ]]; then
     # turn off world-writeable directory colouring when wsl is detected
     #  this causes unintelligible writing on wsl for windows directories
-    export LS_COLORS=$LS_COLORS:'ow=36:'
+    export LS_COLORS="$LS_COLORS:ow=36"
 fi
 
 # chromium depot_tools, add to PATH only if they actually exist
