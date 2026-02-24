@@ -8,16 +8,13 @@
 {
     // ---------------- TELEMETRY ----------------
     // use defaults: "auto_update": true,
-    "features": {
-        "edit_prediction_provider": "none"
-    },
     "telemetry": {
         "diagnostics": false,
         "metrics": false
     },
     // ---------------- VISUAL ----------------
     "hide_mouse": "never",
-    "icon_theme": "Catppuccin Macchiato",
+    "icon_theme": "Zed (Default)",
     "buffer_font_size": 17,
     "buffer_font_family": "Noto Sans Mono",
     "ui_font_size": 17,
@@ -93,8 +90,8 @@
         "enabled": true,
         "button": true,
         "dock": "right",
-        "default_model": { "provider": "anthropic", "model": "claude-opus-4-thinking-latest" },
-        "inline_assistant_model": { "provider": "anthropic", "model": "claude-sonnet-4-latest" }
+        "default_model": { "provider": "anthropic", "model": "claude-opus-4-6-thinking-latest" },
+        "inline_assistant_model": { "provider": "anthropic", "model": "claude-sonnet-4-6-latest" }
     },
     "git": {
         "git_gutter": "tracked_files",
@@ -112,7 +109,10 @@
     "show_completion_documentation": true,
     "show_edit_predictions": true,
     "auto_signature_help": true,
-    "edit_predictions": { "disabled_globs": [ ".env" ] },
+    "edit_predictions": {
+        "provider": "none",
+        "disabled_globs": [ ".env" ]
+    },
     // ---------------- TERMINAL ----------------
     "terminal": {
         "button": true,
