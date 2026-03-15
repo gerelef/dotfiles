@@ -2,6 +2,8 @@ background = 282828
 foreground = eeeeee
 background-opacity = 0.85
 
+window-height = 31
+window-width = 91
 cursor-style = bar
 gtk-titlebar = false
 linux-cgroup = always
