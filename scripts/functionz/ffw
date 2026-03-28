@@ -34,6 +34,7 @@ show-usage () {
        ffw video trim <file> <sta:rt> <end:ing>  # trim video from start to end
        ffw video discordify <file>  # ultra compress a video similarly to the 'social 10mb' option on handbrake for sharing
        ffw video davincify <file>  # convert a video to a davinci resolve (free) compatible format
+       ffw video youtubify <file>  # convert a davinci resolve input video to youtube compatible output
 
        ffw audio trim <file> <sta:rt> <end:ing>  # trim audio from start to end
        ffw audio trim-from-transcription <file> <trancription-file>  # trim an mp3 from start to end using whisper's stdout transcription file"
@@ -165,6 +166,19 @@ ffdavincify () (
       "$PWD/$output-resolv.mp4"
 )
 
+ffyoutubify () (
+    [[ "$#" -ne 1 ]] && return 2
+    local output=$(basename -- "${1%.*}")
+    ffmpeg -y -hide_banner \
+      -c:v prores -i "$1" \
+      -map 0:v:0 -map 0:a:0? \
+      -c:v libx264 -preset medium -crf 18 -pix_fmt yuv420p \
+      -c:a aac -b:a 384k \
+      -movflags +faststart \
+      -fflags +genpts \
+      "$PWD/$output-yt.mp4"
+)
+
 ffvideo-extract-video () (
     [[ -z "$*" ]] && return 2
     local output=$(basename -- "${1%.*}")
@@ -240,6 +254,9 @@ ffvideo () (
             ;;
         davincify)
             ffdavincify "${subcommand_args[@]}"
+            ;;
+        youtubify)
+            ffyoutubify "${subcommand_args[@]}"
             ;;
         # chunkify)
             # [[ ${subcommand_args[0]} = "standard" ]] && chunk_size=10000000  # 10MB
