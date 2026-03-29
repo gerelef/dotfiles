@@ -26,7 +26,7 @@ install-build-requires () (
 build-copr () (
     if ! test -f "$1"; then
         echo "spec file provided '$1' CANNOT be found!"
-      	exit 1
+        exit 1
     fi
     rm -r "$HOME/rpmbuild/SOURCES/"
     spectool -g -R "$1"
@@ -78,24 +78,24 @@ main () (
             exit
             ;;
         build-copr)
-    	    build-copr "${@:2}"
-    	    exit
+            build-copr "${@:2}"
+            exit
             ;;
         build)
-    	    build "${@:2}"
-    	    exit
+            build "${@:2}"
+            exit
             ;;
         bump)
-    	    bump "${@:2}"
-    	    exit
+            bump "${@:2}"
+            exit
             ;;
         depends-on)
-    	    depends-on "${@:2}"
-    	    exit
+            depends-on "${@:2}"
+            exit
             ;;
         resolve-dep)
-    	    resolve-dep "${@:2}"
-    	    exit
+            resolve-dep "${@:2}"
+            exit
             ;;
         compare-versions)
             compare-versions "${@:2}"

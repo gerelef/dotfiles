@@ -15,8 +15,8 @@ echo-help-text () {
     echo ""
     echo "You may not begin a buffer's name with a dash ( - )."
     echo ""
-    echo "No buffer name provided." 1>&2 2>/dev/null
-    echo "You can create a new buffer, or pick one of the following ones:" 1>&2 2>/dev/null
+    echo "No buffer name provided." >&2
+    echo "You can create a new buffer, or pick one of the following ones:" >&2
     echo-available-buffers
 }
 
@@ -32,15 +32,15 @@ detect-buffer-executable () {
 echo-available-buffers () {
     for filename in "$BUFFERS_HOME"/*; do
         [[ "$(basename -- "$filename")" = "*" ]] && continue
-        echo "$(basename -- "$filename")" 1>&2 2> /dev/null
+        echo "$(basename -- "$filename")" >&2
     done
 }
 
 main () (
     if [[ -z $EDITOR ]]; then
         # the following line is intentionally single quoted
-        echo '$EDITOR envvar is not defined, therefore no editor can be used.' 1>&2 2>/dev/null
-        echo 'Please reconfigure your environment and retry.' 1>&2 2>/dev/null
+        echo '$EDITOR envvar is not defined, therefore no editor can be used.' >&2
+        echo 'Please reconfigure your environment and retry.' >&2
         exit 2
     fi
 
@@ -70,7 +70,7 @@ main () (
     fi
 
     if ! cd "$BUFFERS_HOME"; then
-        echo "Failed to change CWD to $BUFFERS_HOME. Creating directories..." 1>&2 2>/dev/null
+        echo "Failed to change CWD to $BUFFERS_HOME. Creating directories..." >&2
         mkdir -p "$BUFFERS_HOME"
         # if this also fails, we need to stop because something's gone sideways
         cd "$BUFFERS_HOME" || exit 1
@@ -111,7 +111,7 @@ main () (
         exit 0
     fi
     if detect-buffer-executable "$BUFFERS_HOME/${args[0]}"; then
-        echo "Detected executable buffer via shebang. Adding executable permissions." 1>&2 2>/dev/null
+        echo "Detected executable buffer via shebang. Adding executable permissions." >&2
         chmod +x "$BUFFERS_HOME/${args[0]}" || exit
     fi
 )

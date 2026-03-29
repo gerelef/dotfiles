@@ -83,7 +83,12 @@
     "tab_size": 4,
     // ---------------- EDITOR SETTINGS ----------------
     "agent": {
-        "default_model": { "enable_thinking": false, "provider": "anthropic", "model": "claude-opus-4-6-1m-context-latest" },
+        "default_model": {
+            "effort": "medium",
+            "enable_thinking": true,
+            "provider": "zed.dev",
+            "model": "claude-sonnet-4-6"
+        },
         "inline_assistant_model": { "provider": "anthropic", "model": "claude-3-haiku-20240307" }
     },
     "git": {

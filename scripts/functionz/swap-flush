@@ -2,9 +2,9 @@
 
 # HELP flush /swapfile; DANGEROUS, will NOT check if /swapfile contents fit in memory!
 
-swap_used="$(free -m | awk '/Swap:/{ print $3 }')"
-
 _depends-on free awk grep swapon swapoff || exit
+
+swap_used="$(free -m | awk '/Swap:/{ print $3 }')"
 
 if [[ -z "$swap_used" ]]; then
     echo "FATAL ERROR: SWAP USED IS EMPTY: $swap_used, CANNOT CONTINUE!" 1>&2

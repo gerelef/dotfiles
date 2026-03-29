@@ -74,8 +74,8 @@ adb-package () (
             ;;
         disable)
             requires-package-named
-            for pkg in "${package_named[@]}"; do
-                adb uninstall --user 0 "$package_named"
+            for pkg in "${@:2}"; do
+                adb uninstall --user 0 "$pkg"
             done
             ;;
         *)

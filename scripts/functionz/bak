@@ -1,5 +1,4 @@
 #!/usr/bin/env bash
-#!/usr/bin/env bash
 
 # HELP bak --help; backup file by adding .bak extension
 
