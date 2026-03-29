@@ -17,6 +17,7 @@ import shutil
 import shlex
 import sys
 import unicodedata
+import re
 from copy import copy
 from dataclasses import dataclass
 from functools import partial
@@ -106,7 +107,8 @@ class UTF8Table:
         ])
 
     def row(self, string) -> str:
-        return f"{UTF8Table.V_BORDER}{string:<{self.width}}{UTF8Table.V_BORDER}"
+        padding = max(0, self.width - _visible_len(string))
+        return f"{UTF8Table.V_BORDER}{string}{' ' * padding}{UTF8Table.V_BORDER}"
 
     def bot(self) -> str:
         return f"{UTF8Table.BL_BORDER}{UTF8Table.H_BORDER * self.width}{UTF8Table.BR_BORDER}"
@@ -131,6 +133,59 @@ def upper(string, uppercase=False) -> str:
     if not uppercase:
         return string
     return string.upper()
+
+
+_ANSI_LIGHT_RED = "\033[91m"
+_ANSI_RESET = "\033[0m"
+_ANSI_ESCAPE_RE = re.compile(r"\033\[[0-9;]*m")
+
+
+def _visible_len(s: str) -> int:
+    """Return the visible length of *s*, excluding ANSI escape sequences."""
+    return len(_ANSI_ESCAPE_RE.sub("", s))
+
+
+def _highlight(line: str, queries: list[str]) -> str:
+    """Wrap every occurrence of each query in *line* with light-red ANSI colour.
+    Matching is always done case-insensitively so it works for both the default
+    and --insensitive modes (where stored queries are already uppercased).
+    """
+    if not queries or not line:
+        return line
+    line_upper = line.upper()
+    intervals: list[list[int]] = []
+    for q in queries:
+        q_upper = q.upper()
+        if not q_upper:
+            continue
+        start = 0
+        while start < len(line_upper):
+            idx = line_upper.find(q_upper, start)
+            if idx == -1:
+                break
+            intervals.append([idx, idx + len(q)])
+            start = idx + len(q)
+    if not intervals:
+        return line
+    # merge overlapping / adjacent intervals
+    intervals.sort()
+    merged: list[list[int]] = []
+    for s, e in intervals:
+        if merged and s <= merged[-1][1]:
+            merged[-1][1] = max(merged[-1][1], e)
+        else:
+            merged.append([s, e])
+    # build highlighted string
+    result: list[str] = []
+    prev = 0
+    for s, e in merged:
+        result.append(line[prev:s])
+        result.append(_ANSI_LIGHT_RED)
+        result.append(line[s:e])
+        result.append(_ANSI_RESET)
+        prev = e
+    result.append(line[prev:])
+    return "".join(result)
 
 
 @dataclass
@@ -170,6 +225,7 @@ class Aggregate:
         self.__pqueries: list[str] = []
         self.__lines: dict[int, str] = {}
         self.__matched_lines: list[int] = []
+        self.__line_queries: dict[int, list[str]] = {}
         self.__start_lc: int = 9999999
         self.__end_lc: int = -1
 
@@ -179,6 +235,7 @@ class Aggregate:
         for b in blocks:
             self.__matched_lines.append(b.rank)
             self.__pqueries.append(b._query)
+            self.__line_queries.setdefault(b.rank, []).append(b._query)
             for line_count, line in b.lines():
                 self.__start_lc = min(line_count, self.__start_lc)
                 self.__end_lc = max(line_count, self.__end_lc)
@@ -186,12 +243,15 @@ class Aggregate:
                     continue
                 self.__lines[line_count] = line
 
-    def simple(self):
+    def simple(self, colour: bool = False):
         # line count padding
         max_lc_padding = len(str(self.__end_lc))
 
         def build(lc: int, line: str) -> str:
-            return f"{format(lc, str(max_lc_padding) + 'd')}: {line.replace('	', '    ')}"
+            content = line.replace('	', '    ')
+            if colour and lc in self.__line_queries:
+                content = _highlight(content, self.__line_queries[lc])
+            return f"{format(lc, str(max_lc_padding) + 'd')}: {content}"
 
         yield True, f"{str(self.__owner)} lines~{self.__padding}: {' '.join(list(map(str, sorted(self.__matched_lines))))}"
 
@@ -208,13 +268,16 @@ class Aggregate:
 
         return
 
-    def pretty(self, max_width) -> Iterator[tuple[bool, str]]:
+    def pretty(self, max_width, colour: bool = False) -> Iterator[tuple[bool, str]]:
         # line count padding
         max_lc_padding = len(str(self.__end_lc))
 
         def build(lc: int, line: str) -> str:
             stem = f"{format(lc, str(max_lc_padding) + 'd')}: "
-            return f"{stem}{line.replace('	', '    ')[:max_width - len(stem)]}"
+            content = line.replace('	', '    ')[:max_width - len(stem)]
+            if colour and lc in self.__line_queries:
+                content = _highlight(content, self.__line_queries[lc])
+            return f"{stem}{content}"
 
         infix = f" lines~{self.__padding}: "
         header_content = f" ".join(list(map(str, sorted(self.__matched_lines))))
@@ -372,7 +435,7 @@ def strategy_echo_pretty(multimatches: dict[str, list[Block]], **kwargs):
         aggregate.aggregate(v)
 
         table = UTF8Table()
-        ppretty = aggregate.pretty(table.width)
+        ppretty = aggregate.pretty(table.width, colour=True)
         _, header = next(ppretty)
         print(table.header(header))
         for is_seq, table_entry in ppretty:
@@ -394,7 +457,7 @@ def strategy_echo_minimal(multimatches: dict[str, list[Block]], **kwargs):
         aggregate = Aggregate(Path(k), kwargs["padding"])
         aggregate.aggregate(v)
 
-        for _, entry in aggregate.simple():
+        for _, entry in aggregate.simple(colour=sys.stdout.isatty()):
             print(entry)
 
 
@@ -496,7 +559,7 @@ class UserOptions:
 
 def _parse_args(args) -> UserOptions:
     parser = argparse.ArgumentParser(description="findt: a recursive content text locator")
-    parser.add_argument("path", type=str)
+    parser.add_argument("path", type=str, nargs="?", default=None)
     parser.add_argument("filters", nargs="+")
     parser.add_argument("-i", "--insensitive", default=False, action="store_true", required=False,
         help="Match case-insensitively. Off by default.")
@@ -517,6 +580,8 @@ def _parse_args(args) -> UserOptions:
              "... same thing for everything else.")
 
     options = parser.parse_args(args)
+    if options.path is None:
+        options.path = os.getcwd()
     if isinstance(options.exec, str) and not shutil.which(options.exec):
         print(
             f"""Cannot continue. Argument --exec was given, however it resolved to nothing.
