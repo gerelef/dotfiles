@@ -84,10 +84,9 @@
     // ---------------- EDITOR SETTINGS ----------------
     "agent": {
         "default_model": {
-            "effort": "medium",
             "enable_thinking": true,
-            "provider": "zed.dev",
-            "model": "claude-sonnet-4-6"
+            "provider": "anthropic",
+            "model": "claude-sonnet-4-6-thinking-latest"
         },
         "inline_assistant_model": { "provider": "anthropic", "model": "claude-3-haiku-20240307" }
     },
@@ -108,7 +107,7 @@
     "show_edit_predictions": true,
     "auto_signature_help": true,
     "edit_predictions": {
-        "provider": "zed",
+        "provider": "none",
         "disabled_globs": [ ".env" ]
     },
     // ---------------- TERMINAL ----------------
