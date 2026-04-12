@@ -2,7 +2,7 @@
 
 # HELP ffw --help; ffmpeg wrapper for common usecases.
 
-_depends-on ffmpeg fish constrict-cli || exit
+_depends-on ffmpeg fish constrict-cli tesseract || exit
 
 # convert Minutes:Seconds (colon seperated) to seconds
 __hms () (
@@ -27,7 +27,8 @@ show-usage () {
        ffw video scale <file> <width:height>  # scale video file to selected resolution
        ffw video crop <file> <starting width x starting height> <ending width x ending height>  # crop a video's contents from start to end coordinates
        ffw video extract video <file>  # extract video track from video with audio to mp3
-       ffw video extract frames <file>  # extract frames as uncompressed/raw screenshots (.bmp) to \$CWD
+       ffw video extract frames <file>  # extract frames as uncompressed/raw screenshots (.bmp) to $CWD
+       ffw video extract text <file>  # extract text from an image or video (per-frame) using tesseract OCR; saves a .txt alongside the input file
        ffw video extract audio <file>  # extract audio from video with audio to mp3
        ffw video info <file>  # get key information about the streams of a given file
        ffw video shift <right | left> <file> <milliseconds>; shift video's audio to the right or left
@@ -207,6 +208,47 @@ ffvideo-extract-frames () (
     ffmpeg -i "$1" "$PWD/$output%09d.bmp"
 )
 
+ffvideo-extract-text () (
+    [[ -z "$*" ]] && return 2
+    [[ "$#" -ne 1 ]] && return 2
+
+    local input="$1"
+    local input_dir
+    input_dir="$(dirname -- "$input")"
+    local output_base="$input_dir/$(basename -- "${input%.*}")"
+
+    # detect if the file carries a video stream
+    local has_video
+    has_video="$(ffprobe -v error -select_streams v:0 -show_entries stream=codec_type -of csv=p=0 "$input" 2>/dev/null)"
+
+    if [[ "$has_video" == "video" ]]; then
+        local tmp_dir
+        tmp_dir="$(mktemp -d)"
+        echo "Extracting frames to $tmp_dir ..."
+        ffmpeg -hide_banner -i "$input" -vsync 0 "$tmp_dir/frame%09d.bmp"
+
+        local combined_output="${output_base}-text.txt"
+        echo -ne '' > "$combined_output"
+
+        local frame_count=0
+        for frame in "$tmp_dir"/frame*.bmp; do
+            ((++frame_count))
+            echo "--- Frame $frame_count ---" >> "$combined_output"
+            local frame_base="${frame%.bmp}"
+            tesseract "$frame" "$frame_base" 2>/dev/null
+            cat "${frame_base}.txt" >> "$combined_output"
+            echo "" >> "$combined_output"
+        done
+
+        echo "Cleaning up intermediary frames ..."
+        rm -rf "$tmp_dir"
+        echo "Done → $combined_output"
+    else
+        tesseract "$input" "${output_base}-text"
+        echo "Done → ${output_base}-text.txt"
+    fi
+)
+
 ffvideo-extract-audio () (
     [[ -z "$*" ]] && return 2
     local output=$(basename -- "${1%.*}")
@@ -223,6 +265,9 @@ ffvideo-extract () (
             ;;
         frames)
             ffvideo-extract-frames "${subcommand_args[@]}"
+            ;;
+        text)
+            ffvideo-extract-text "${subcommand_args[@]}"
             ;;
         audio)
             ffvideo-extract-audio "${subcommand_args[@]}"
