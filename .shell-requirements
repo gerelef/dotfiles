@@ -12,6 +12,7 @@ ffmpeg:ffmpeg
 figlet:figlet
 fzf:fzf
 gawk:awk
+gnuplot:gnuplot
 grep:grep
 ImageMagick:identify
 iproute:ip

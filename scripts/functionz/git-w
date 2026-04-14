@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 
 # HELP git w --help; git wrapper for common usecases and fzf-powered log commands.
-# The 'w' stands for wrapper, in a similar pattern like the rest of utility wrappers in this repository.
+#  The 'w' stands for wrapper, in a similar pattern like the rest of utility wrappers in this repository.
+#  Summary commands have been taken from the following URL: https://piechowski.io/post/git-commands-before-reading-code/
 
 show-usage () {
     echo "Usage: git wrapper for common usecases and fzf-powered log commands.
@@ -12,7 +13,8 @@ show-usage () {
        git w nuke <path>              # unstage, restore, and force-clean a path
        git w alias                    # list all git w subcommands
        git w when <query>             # fzf-powered search for when a commit was made; query is the initial fzf filter
-       git w ls <git log arguments>   # fzf-powered git log viewer; arguments are forwarded directly to git log"
+       git w ls <git log arguments>   # fzf-powered git log viewer; arguments are forwarded directly to git log
+       git w summary                  # print key repo stats"
 }
 
 git-w-st () (
@@ -112,6 +114,67 @@ git-w-restore () (
     esac
 )
 
+git-w-summary () (
+    _depends-on gnuplot || exit
+
+    echo "━━━ repository summary ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+    echo "The following is a summary of key repository metrics. Each section serves as a data point for analysis, and will be followed by the appropriate paragraph to explain the metric."
+
+    local branch="$(git branch --show-current)"
+    local remote="$(git remote get-url origin 2>/dev/null || echo '(none)')"
+    local head_info="$(git log -1 --pretty=format:'%h  %s  (%ar, %an)')"
+    local total_commits="$(git rev-list --count HEAD)"
+    echo "  Branch  : ${branch}"
+    echo "  Remote  : ${remote}"
+    echo "  HEAD    : ${head_info}"
+    echo "  Commits : ${total_commits}"
+    echo ""
+
+    echo "━━━ commits per month ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+    git log --format='%ad' --date=format:'%Y-%m' \
+        | sort | uniq -c \
+        | awk '{print $2, $1}' \
+        | gnuplot -e "
+            set terminal dumb size 80,20 noenhanced;
+            set xdata time;
+            set timefmt '%Y-%m';
+            set format x '%b %y';
+            set ylabel 'commits';
+            set key off;
+            set style data impulses;
+            set yrange [0:*];
+            plot '-' using 1:2 lw 2
+        "
+    echo "Commit count by month, for the entire history of the repo. I scan the output looking for shapes. A steady rhythm is healthy. But what does it look like when the count drops by half in a single month? Usually someone left. A declining curve over 6 to 12 months tells you the team is losing momentum. Periodic spikes followed by quiet months means the team batches work into releases instead of shipping continuously."
+    echo ""
+
+    echo "━━━ top contributors ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+    git shortlog -sn --no-merges \
+        | head -10 \
+        | awk -F'\t' '{printf "  %5d  %s\n", int($1), $2}'
+    echo "Every contributor ranked by commit count. If one person accounts for 60% or more, that’s your bus factor. If they left six months ago, it’s a crisis. If the top contributor from the overall shortlog doesn’t appear in a 6-month window (git shortlog -sn --no-merges --since="6 months ago"), I flag that to the client immediately."
+    echo ""
+
+    echo "━━━ most-changed files ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+    git log --pretty=format: --name-only --since="1 year ago" \
+        | grep -v '^$' \
+        | sort | uniq -c | sort -rn | head -10 \
+        | awk '{printf "  %5d  %s\n", $1, $2}'
+    echo "The 20 most-changed files in the last year. The file at the top is almost always the one people warn me about. 'Oh yeah, that file. Everyone’s afraid to touch it.' A 2005 Microsoft Research study found churn-based metrics predicted defects more reliably than complexity metrics alone. I take the top 5 files from this list and cross-reference them against the bug hotspot command below. A file that’s high-churn and high-bug is your single biggest risk."
+    echo "https://www.microsoft.com/en-us/research/publication/use-of-relative-code-churn-measures-to-predict-system-defect-density/"
+    echo ""
+
+    echo "━━━ most-fixed files ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+    git log -i -E --grep="fix|bug|broken" --name-only --format='' \
+        | grep -v '^$' \
+        | sort | uniq -c | sort -nr | head -20 \
+        | awk '{printf "  %5d  %s\n", $1, $2}'
+    echo "Same shape as the most-changed files metric, filtered to commits with bug-related keywords. Compare this list against the churn hotspots. Files that appear on both are your highest-risk code: they keep breaking and keep getting patched, but never get properly fixed."
+    echo ""
+    echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+
+)
+
 main () (
     subcommand="$1"
     subcommand_args=( "${@:2}" )
@@ -143,6 +206,9 @@ main () (
             ;;
         ls)
             git-w-ls "${subcommand_args[@]}"
+            ;;
+        summary)
+            git-w-summary
             ;;
         *)
             echo "Unknown subcommand: ${subcommand:=NONE PROVIDED}"
