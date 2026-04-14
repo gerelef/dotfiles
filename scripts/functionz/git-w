@@ -1,20 +1,62 @@
 #!/usr/bin/env bash
 
-# HELP git w --help; git wrapper for fzf-powered log commands.
-# "You can also add new commands by adding an executable file named git-newcommand to your PATH."
-
-_depends-on fzf || exit
+# HELP git w --help; git wrapper for common usecases and fzf-powered log commands.
+# The 'w' stands for wrapper, in a similar pattern like the rest of utility wrappers in this repository.
 
 show-usage () {
-    echo "Usage: git wrapper for fzf-powered log commands.
-       git w when <query>           # fzf-powered search for when a commit was made; query is passed as the initial fzf filter
-       git w ls <git log arguments> # fzf-powered git log viewer; arguments are forwarded directly to git log"
+    echo "Usage: git wrapper for common usecases and fzf-powered log commands.
+       git w status                   # git status -sb
+       git w blame <file> <L1,L2>     # git blame -w -C -C -C -L
+       git w changed                  # show changed files (name + status) for a commit
+       git w restore untracked        # git clean -d -f
+       git w nuke <path>              # unstage, restore, and force-clean a path
+       git w alias                    # list all git w subcommands
+       git w when <query>             # fzf-powered search for when a commit was made; query is the initial fzf filter
+       git w ls <git log arguments>   # fzf-powered git log viewer; arguments are forwarded directly to git log"
 }
+
+git-w-st () (
+    git status -sb "$@"
+)
+
+git-w-bl () (
+    git blame -w -C -C -C -L "$@"
+)
+
+git-w-list-changed () (
+    git diff-tree --no-commit-id --name-status -r "$@"
+)
+
+git-w-restore-untracked () (
+    git clean -d -f "$@"
+)
+
+show-restore-usage () {
+    echo "Usage: git w restore <subcommand>
+       git w restore untracked        # git clean -d -f (remove untracked files and dirs)"
+}
+
+git-w-nuke () (
+    if [[ -z "$1" ]]; then
+        echo "nuke requires a path argument!"
+        show-usage
+        exit 2
+    fi
+    git restore --staged "$1"
+    git restore "$1"
+    git clean -d -f "$1"
+)
+
+git-w-alias () (
+    show-usage
+)
 
 # code from here: https://gist.github.com/junegunn/f4fca918e937e6bf5bad
 #  provided as 'fshow' fn.
 
 git-w-when () (
+    _depends-on fzf || exit
+
     git log --pretty=format:"%C(yellow)%h %C(reset)%C(yellow)%ad%C(auto)%d %s %C(blue)[%cn]" \
             --decorate \
             --date=short \
@@ -34,6 +76,8 @@ FZF-EOF"
 )
 
 git-w-ls () (
+    _depends-on fzf || exit
+
     git log --pretty=format:"%C(yellow)%h %C(reset)%C(yellow)%ad%C(auto)%d %s %C(blue)[%cn]" \
             --decorate \
             --date=short \
@@ -53,6 +97,21 @@ git-w-ls () (
 FZF-EOF"
 )
 
+git-w-restore () (
+    subcommand="$1"
+    subcommand_args=( "${@:2}" )
+    case "$subcommand" in
+        untracked)
+            git-w-restore-untracked "${subcommand_args[@]}"
+            ;;
+        *)
+            echo "Unknown restore subcommand: ${subcommand:=NONE PROVIDED}"
+            show-restore-usage
+            exit 2
+            ;;
+    esac
+)
+
 main () (
     subcommand="$1"
     subcommand_args=( "${@:2}" )
@@ -60,6 +119,24 @@ main () (
         -h|--help)
             show-usage
             exit 0
+            ;;
+        status)
+            git-w-st "${subcommand_args[@]}"
+            ;;
+        blame)
+            git-w-bl "${subcommand_args[@]}"
+            ;;
+        changed)
+            git-w-list-changed "${subcommand_args[@]}"
+            ;;
+        restore)
+            git-w-restore "${subcommand_args[@]}"
+            ;;
+        nuke)
+            git-w-nuke "${subcommand_args[@]}"
+            ;;
+        alias)
+            git-w-alias
             ;;
         when)
             git-w-when "${subcommand_args[@]}"
