@@ -120,7 +120,7 @@ function _install-optional-shell-requirements --description 'install optional sh
         return 1
     end
     # zoxide is used as a reference point for echoing out a helpful tip on startup, see below
-    pkcon install --allow-reinstall zoxide lsd plocate yt-dlp
+    pkcon install --allow-reinstall zoxide lsd plocate ripgrep yt-dlp
 end
 
 # suppress regular greeting
@@ -152,10 +152,11 @@ abbr --position command --add vpip --function __venv_activate_fish
 function __last_command; echo "$history[1]"; end
 abbr --position command --add !! --function __last_command
 
+type -q rg && abbr --position command --add rg "rg -C=1 -. -i" # -. disables hidden file filter, -C=1 adds surrounding one line, -i is case (i)nsensitive
 type -q wget && abbr --position command --add wget "wget -c --read-timeout=5 --tries=0 --cut-file-get-vars --content-disposition"
 type -q npm && abbr --position command --add npm "npm --loglevel silly"
-type -q yt-dlp && abbr --position command --set-cursor --add ytdl-mp4 "yt-dlp --format \"bv*[ext=mp4]+ba[ext=m4a]/b[ext=mp4]\" "
-type -q yt-dlp && abbr --position command --set-cursor --add ytdl-thumbnail "yt-dlp --write-thumbnail --skip-download "
+type -q yt-dlp && abbr --position command --set-cursor --add ytdl-mp4 "yt-dlp --format \"bv*[ext=mp4]+ba[ext=m4a]/b[ext=mp4]\""
+type -q yt-dlp && abbr --position command --set-cursor --add ytdl-thumbnail "yt-dlp --write-thumbnail --skip-download"
 
 if test -f '/etc/wsl.conf'
     # turn off world-writeable directory colouring when wsl is detected

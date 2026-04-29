@@ -191,7 +191,7 @@ _install-optional-shell-requirements () {
         return 1
     fi
     # zoxide is used as a reference point for echoing out a helpful tip on startup, see below
-    pkcon install --allow-reinstall zoxide lsd plocate yt-dlp
+    pkcon install --allow-reinstall zoxide lsd plocate ripgrep yt-dlp
 }
 
 # use custom prompt
@@ -218,6 +218,7 @@ alias palindrome="\rev"
 # vpip is defined above as a function
 alias fuck='sudo $(history -p \!\!)'
 
+[[ -n "$(command -v rg)" ]]  && alias rg="\rg -C=1 -. -i"
 [[ -n "$(command -v wget)" ]] && alias wget="\wget -c --read-timeout=5 --tries=0 --cut-file-get-vars --content-disposition"
 [[ -n "$(command -v npm)" ]] && alias npm="\npm --loglevel silly"
 [[ -n "$(command -v yt-dlp)" ]] && alias ytdl-mp4="yt-dlp --format \"bv*[ext=mp4]+ba[ext=m4a]/b[ext=mp4]\" "
