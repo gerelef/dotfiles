@@ -83,6 +83,7 @@
     "tab_size": 4,
     // ---------------- EDITOR SETTINGS ----------------
     "agent": {
+        "dock": "right",
         "default_model": {
             "effort": "medium",
             "enable_thinking": true,
