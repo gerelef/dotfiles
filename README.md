@@ -114,7 +114,7 @@ cp ./$1 "~/.config/systemd/user/"
 ```bash
 git clone 'git@github.com:scarburato/t150_driver.git' && cd t150_driver/ && sudo dnf install -y dkms
 # we will continue with configuring dkms signing of modules with the secure boot key
-sudo ./install.sh && mokutil --import /var/lib/dkms/mok.pub
+sudo ./install.sh && sudo mokutil --import /var/lib/dkms/mok.pub
 # RESTART AND IMPORT THE PUBLIC KEY with the same password you entered
 ```
 - Oversteer:
