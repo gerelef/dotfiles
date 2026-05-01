@@ -138,6 +138,16 @@ sudo udevadm control --reload-rules && sudo udevadm trigger
 sudo dnf install -y linuxconsoletools && sudo evdev-joystick --evdev /dev/input/by-id/usb-Thrustmaster_Thrustmaster_T150RS-event-joystick --d 0
 ```
 
+## cosmic-desktop autologin
+
+```bash
+sudo tee -a '/etc/greetd/cosmic-greeter.toml' <<EOF
+[initial_session]
+command = "start-cosmic"
+user = "cerberus"
+EOF
+```
+
 ## compiling inside a pod
 
 ```bash
