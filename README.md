@@ -138,6 +138,19 @@ sudo udevadm control --reload-rules && sudo udevadm trigger
 sudo dnf install -y linuxconsoletools && sudo evdev-joystick --evdev /dev/input/by-id/usb-Thrustmaster_Thrustmaster_T150RS-event-joystick --d 0
 ```
 
+## migrating to fedora releases
+
+- upgradeing to a specific version
+```sh
+sudo dnf system-upgrade download --releasever=44 
+```
+
+- downgrading to a specific version (might remove other repos -- please check)
+```sh
+RELEASEVER=44 sudo dnf distro-sync --releasever=$RELEASEVER --refresh --disablerepo=rawhide --allowerasing --best
+```
+
+
 ## cosmic-desktop autologin
 
 ```bash
