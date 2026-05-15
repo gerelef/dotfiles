@@ -1,0 +1,42 @@
+{
+    (
+        modifiers: [],
+        key: "XF86AudioPlay",
+    ): System(PlayPause),
+    (
+        modifiers: [
+            Super,
+        ],
+        key: "m",
+    ): Disable,
+    (
+        modifiers: [
+            Super,
+        ],
+        key: "x",
+    ): Maximize,
+    (
+        modifiers: [
+            Super,
+        ],
+        key: "t",
+    ): Spawn("ghostty --command=fish"),
+    (
+        modifiers: [
+            Super,
+        ],
+        key: "q",
+    ): Minimize,
+    (
+        modifiers: [
+            Super,
+        ],
+    ): System(WorkspaceOverview),
+    (
+        modifiers: [
+            Ctrl,
+            Shift,
+        ],
+        key: "grave",
+    ): Spawn("gnome-system-monitor"),
+}
