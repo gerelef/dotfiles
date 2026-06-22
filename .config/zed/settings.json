@@ -1,10 +1,6 @@
 // https://zed.dev/docs/configuring-zed
 //
-// To see all of Zed's default settings without changing your
-// custom settings, run the `open default settings` command
-// from the command palette or from `Zed` application menu.
-// FIXME TODO/FIXME highlighting missing
-//  tracked here https://github.com/zed-industries/extensions/issues/523
+// Highlighting FIXME TODO/FIXME with 'Comments Highlighter' extension.
 {
     // ---------------- TELEMETRY ----------------
     // use defaults: "auto_update": true,
@@ -14,11 +10,13 @@
     },
     // ---------------- VISUAL ----------------
     "hide_mouse": "never",
-    "icon_theme": "Zed (Default)",
     "buffer_font_size": 17,
     "buffer_font_family": "Noto Sans Mono",
     "ui_font_size": 17,
     "ui_font_family": "Noto Sans Mono",
+    "agent_buffer_font_size": 17,
+    "agent_ui_font_size": 17,
+    "markdown_preview_font_family": "Noto Sans",
     "theme": {
         "mode": "system",
         "light": "Catppuccin Latte",
@@ -83,21 +81,22 @@
     "tab_size": 4,
     // ---------------- EDITOR SETTINGS ----------------
     "agent": {
+        "default_profile": "ask",
         "dock": "right",
         "default_model": {
             "effort": "medium",
             "enable_thinking": true,
             "provider": "anthropic",
-            "model": "claude-sonnet-4-6-latest"
+            "model": "claude-sonnet-4-6"
         },
-        "inline_assistant_model": { "provider": "anthropic", "model": "claude-3-haiku-20240307" }
+        "inline_assistant_model": { "provider": "anthropic", "model": "claude-haiku-4-5-20251001" }
     },
     "git": {
         "git_gutter": "tracked_files",
         "inline_blame": { "enabled": true, "show_commit_summary": true }
     },
     "enable_language_server": true,
-    "ensure_final_newline_on_save": null, // disabled for edge cases;
+    "ensure_final_newline_on_save": false, // disabled for edge cases;
     "format_on_save": "off",
     "formatter": "auto",
     "use_autoclose": true,
