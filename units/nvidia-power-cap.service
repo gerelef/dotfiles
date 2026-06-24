@@ -5,7 +5,7 @@ After=graphical.target
 [Service]
 Type=oneshot
 StandardOutput=journal
-Environment="DESIRED_WATTAGE=150"
+Environment="DESIRED_WATTAGE=180"
 ExecStart=sh -c 'nvidia-smi -pl $DESIRED_WATTAGE'
 RemainAfterExit=yes
 Restart=on-failure
