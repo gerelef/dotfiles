@@ -12,7 +12,8 @@ show-usage () {
        rpmw bump <rpmdev-bumpspec args> # bumps release tags in specfiles
        rpmw depends-on <pid>  # check what are the dependencies from the pid of a currently running application
        rpmw resolve-dep <file>  # check what package a file comes from (rpm -qf)
-       rpmw compare-versions <version1> <version2>  # compare two versions to determine which one is larger than the other one"
+       rpmw compare-versions <version1> <version2>  # compare two versions to determine which one is larger than the other one
+       rpmw download <package>  # download the srpm of a package that is already on fedora repos"
 }
 
 install-build-requires () (
@@ -56,6 +57,10 @@ resolve-dep () (
     rpm -qf $1
 )
 
+download-srpm () (
+    dnf download --srpm "$@"
+)
+
 compare-versions () (
     if [[ $# -ne 2 ]]; then
         echo "incorrect number of arguments to compare versions (got $#, expected 2)"
@@ -95,6 +100,10 @@ main () (
             ;;
         resolve-dep)
             resolve-dep "${@:2}"
+            exit
+            ;;
+        download)
+            download-srpm "${@:2}"
             exit
             ;;
         compare-versions)
