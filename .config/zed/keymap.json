@@ -5,7 +5,10 @@
         "bindings": {
             // ---------------- EDITOR TOGGLES ----------------
             "f1": "workspace::ToggleLeftDock",
-            "shift-f1": "workspace::ToggleRightDock",
+            "shift-f1": "multi_workspace::ToggleWorkspaceSidebar",
+            "ctrl-shift-f1": "workspace::ToggleRightDock",
+            // later, make this the ctrl tab behaviour when focused on agents sidebar
+            // "ctrl-shift-f1": "agents_sidebar::ToggleThreadSwitcher",
             "ctrl-0": "zed::ResetBufferFontSize",
             "ctrl-=": "zed::IncreaseBufferFontSize",
             "ctrl--": "zed::DecreaseBufferFontSize",
