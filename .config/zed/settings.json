@@ -97,6 +97,13 @@
     "show_completion_documentation": true,
     "auto_signature_help": true,
     // ---------------- AGENT SETTINGS ----------------
+    "context_servers": {
+        "agent-postit": {
+            "enabled": true,
+            "url": "http://127.0.0.1:8000/mcp",
+            "headers": { "Authorization": "Bearer NONE" }
+        },
+    },
     // https://opencode.ai/go
     // Model                 Model training   Data retention
     // DeepSeek V4 Flash     Used             No agreement
@@ -134,6 +141,26 @@
             "model": "go/glm-5.2",
         },
         "inline_assistant_model": { "provider": "opencode", "model": "go/minimax-m2.7" },
+        "tool_permissions": {
+            "tools": {
+                // agent-postit: auto-allow
+                "mcp:agent-postit:topic.read": { "default": "allow" },
+                "mcp:agent-postit:postit.read": { "default": "allow" },
+                "mcp:agent-postit:postit.read_section": { "default": "allow" },
+                "mcp:agent-postit:postit.read_lines": { "default": "allow" },
+                "mcp:agent-postit:postit.ls": { "default": "allow" },
+                "mcp:agent-postit:postit.search": { "default": "allow" },
+                "mcp:agent-postit:postit.recent": { "default": "allow" },
+                "mcp:agent-postit:topic.create": { "default": "allow" },
+                "mcp:agent-postit:topic.write": { "default": "allow" },
+                "mcp:agent-postit:postit.create": { "default": "allow" },
+
+                // agent-postit: confirm first
+                "mcp:agent-postit:postit.update_body": { "default": "confirm" },
+                "mcp:agent-postit:postit.rename": { "default": "confirm" },
+                "mcp:agent-postit:postit.delete": { "default": "confirm" },
+            },
+        },
     },
     "language_models": {
         "opencode": {
