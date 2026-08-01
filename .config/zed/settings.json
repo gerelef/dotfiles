@@ -81,25 +81,6 @@
     "hard_tabs": false,
     "tab_size": 4,
     // ---------------- EDITOR SETTINGS ----------------
-    "agent": {
-        "auto_compact": {
-            "threshold": 60000
-        },
-        "use_modifier_to_send": true,
-        "thinking_display": "always_expanded",
-        "single_file_review": true,
-        "enable_feedback": false,
-        "sidebar_side": "left",
-        "default_profile": "ask",
-        "dock": "right",
-        "default_model": {
-            "effort": "low",
-            "enable_thinking": true,
-            "provider": "anthropic",
-            "model": "claude-haiku-4-5-20251001",
-        },
-        "inline_assistant_model": { "provider": "anthropic", "model": "claude-haiku-4-5-20251001" },
-    },
     "git": {
         "git_gutter": "tracked_files",
         "inline_blame": { "location": "status_bar", "enabled": true, "show_commit_summary": true },
@@ -114,12 +95,85 @@
     "show_whitespaces": "selection",
     "show_completions_on_input": true,
     "show_completion_documentation": true,
-    "show_edit_predictions": false,
     "auto_signature_help": true,
+    // ---------------- AGENT SETTINGS ----------------
+    // https://opencode.ai/go
+    // Model                 Model training   Data retention
+    // DeepSeek V4 Flash     Used             No agreement
+    // DeepSeek V4 Pro       Not used         0 days
+    // Kimi K2.7 Code        Not used         0 days
+    // Kimi K2.6             Not used         0 days
+    // Kimi K3               Not used         0 days
+    // MiniMax M2.7          Not used         0 days
+    // MiniMax M3            Not used         0 days
+    // MiMo-V2.5-Pro         Not used         0 days
+    // MiMo-V2.5             Not used         0 days
+    // Qwen3.7 Max           Not used         0 days
+    // Qwen3.7 Plus          Not used         0 days
+    // Qwen3.6 Plus          Not used         0 days
+    // GPT 5.6 Luna          Not used         30 days
+    // GLM-5.2               Not used         0 days
+    // GLM-5.1               Not used         0 days
+    // Grok 4.5              Not used         30 days
+    // Hy3                   Not used         0 days
+    "agent": {
+        "auto_compact": {
+            "threshold": 90000,
+        },
+        "use_modifier_to_send": true,
+        "thinking_display": "always_expanded",
+        "single_file_review": true,
+        "enable_feedback": false,
+        "sidebar_side": "left",
+        "default_profile": "ask",
+        "dock": "right",
+        "default_model": {
+            "effort": "high",
+            "enable_thinking": true,
+            "provider": "opencode",
+            "model": "go/glm-5.2",
+        },
+        "inline_assistant_model": { "provider": "opencode", "model": "go/minimax-m2.7" },
+    },
+    "language_models": {
+        "opencode": {
+            "show_free_models": true,
+            "show_zen_models": false,
+        },
+    },
+    "show_edit_predictions": false,
     "edit_predictions": {
         "allow_data_collection": "no",
+        "mode": "eager",
         "provider": "none",
-        "disabled_globs": [".env"],
+        // "provider": "open_ai_compatible_api",
+        // "open_ai_compatible_api": {
+        //     "api_url": "https://opencode.ai/zen/go/v1/completions",
+        //     "model": "opencode-go/glm-5.2",
+        //     "prompt_format": "glm",
+        //     "max_output_tokens": 256,
+        // },
+        "disabled_globs": [
+            ".env",
+            ".env.local",
+            ".env.production",
+            ".env.development",
+            "application.properties",
+            "application.yml",
+            "application.yaml",
+            ".properties",
+            ".config",
+            "config.json",
+            "credentials.json",
+            "secrets.json",
+            ".aws/credentials",
+            "secrets.yaml",
+            ".htpasswd",
+            "*.pfx",
+            "*.p12",
+            "*.pem",
+            "*.key",
+        ],
     },
     // ---------------- TERMINAL ----------------
     "terminal": {
