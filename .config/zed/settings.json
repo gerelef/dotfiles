@@ -124,15 +124,57 @@
     // Grok 4.5              Not used         30 days
     // Hy3                   Not used         0 days
     "agent": {
+        "profiles": {
+            "ask": {
+                "name": "Ask",
+                "tools": {
+                    "create_thread": true,
+                    "diagnostics": true,
+                    "fetch": true,
+                    "list_agents_and_models": true,
+                    "list_directory": true,
+                    "find_path": true,
+                    "find_references": true,
+                    "get_code_actions": true,
+                    "go_to_definition": true,
+                    "read_file": true,
+                    "grep": true,
+                    "skill": true,
+                    "spawn_agent": true,
+                    "search_web": true
+                },
+                "enable_all_context_servers": false,
+                "context_servers": {
+                    "agent-postit": {
+                        "tools": {
+                            "topic.write": true,
+                            "topic.read": true,
+                            "topic.create": true,
+                            "postit.append": true,
+                            "postit.rename": true,
+                            "postit.search": true,
+                            "postit.recent": true,
+                            "postit.read_section": true,
+                            "postit.read_lines": true,
+                            "postit.read": true,
+                            "postit.ls": true,
+                            "postit.capabilities": true,
+                            "postit.delete": true,
+                            "postit.create": true
+                        }
+                    }
+                }
+            }
+        },
         "auto_compact": {
-            "threshold": 90000,
+            "threshold": 100000,
         },
         "use_modifier_to_send": true,
         "thinking_display": "always_expanded",
         "single_file_review": true,
         "enable_feedback": false,
         "sidebar_side": "left",
-        "default_profile": "ask",
+        "default_profile": "write",
         "dock": "right",
         "default_model": {
             "effort": "high",
@@ -151,12 +193,13 @@
                 "mcp:agent-postit:postit.ls": { "default": "allow" },
                 "mcp:agent-postit:postit.search": { "default": "allow" },
                 "mcp:agent-postit:postit.recent": { "default": "allow" },
+                "mcp:agent-postit:postit.capabilities": { "default": "allow" },
                 "mcp:agent-postit:topic.create": { "default": "allow" },
                 "mcp:agent-postit:topic.write": { "default": "allow" },
                 "mcp:agent-postit:postit.create": { "default": "allow" },
-
+                "mcp:agent-postit:postit.append": { "default": "allow" },
                 // agent-postit: confirm first
-                "mcp:agent-postit:postit.update_body": { "default": "confirm" },
+                "mcp:agent-postit:postit.overwrite": { "default": "confirm" },
                 "mcp:agent-postit:postit.rename": { "default": "confirm" },
                 "mcp:agent-postit:postit.delete": { "default": "confirm" },
             },
