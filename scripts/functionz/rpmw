@@ -2,59 +2,102 @@
 
 # HELP rpmbuild & friends wrapper for common usecases
 
-_depends-on spectool rpmbuild rpmdev-bumpspec rpmdev-vercmp || exit
+_depends-on spectool rpmbuild rpmdev-bumpspec rpmdev-vercmp rpmspec || exit
 
 show-usage () {
     echo "Usage: rpm utility wrapper for common usecases.
-       rpmw buildrequires <spec file>  # will install all BuildRequires
-       rpmw build-copr <spec file> # will reproduce a copr build with network access locally, will automatically grab dependencies & sources
-       rpmw build <spec-file> # will reproduce a copr build with network access locally, will automatically grab sources & SKIP dependencies
-       rpmw bump <rpmdev-bumpspec args> # bumps release tags in specfiles
-       rpmw depends-on <pid>  # check what are the dependencies from the pid of a currently running application
+       rpmw tree  # set up ~/rpmbuild tree (rpmdev-setuptree)
+       rpmw sources <spec file>  # list the Source/Patch entries of a spec (spectool -l)
+       rpmw buildrequires <spec file>  # install all BuildRequires via dnf builddep
+       rpmw build-copr <spec file>  # reproduce a copr build locally: wipes SOURCES, grabs sources, installs BuildRequires, then rpmbuild -ba
+       rpmw build <spec file>  # grab sources and rpmbuild -ba (SKIPS BuildRequires install)
+       rpmw srpm <spec file>  # grab sources and build only the Source RPM (rpmbuild -bs) — what you upload to copr/fedpkg
+       rpmw lint <spec file | rpm file>...  # run rpmlint on a spec or built rpm
+       rpmw expand <spec file>  # print the spec with all macros expanded (rpmspec -P)
+       rpmw bump <rpmdev-bumpspec args>  # bumps release tags in specfiles
+       rpmw whatrequires <package>...  # list packages that Require the given package (dnf repoquery --whatrequires)
+       rpmw depends-on <pid>  # check what are the dependencies from the pid of a currently running application (lsof)
        rpmw resolve-dep <file>  # check what package a file comes from (rpm -qf)
        rpmw compare-versions <version1> <version2>  # compare two versions to determine which one is larger than the other one
        rpmw download <package>  # download the srpm of a package that is already on fedora repos"
 }
 
-install-build-requires () (
+# fail-fast guard used by build* functions; the function body is already a
+# subshell so `set -e` only scopes to that invocation.
+__req_spec () (
     if ! test -f "$1"; then
         echo "spec file provided '$1' CANNOT be found!"
         exit 1
     fi
+)
+
+tree () (
+    _depends-on rpmdev-setuptree || exit
+    rpmdev-setuptree
+)
+
+sources () (
+    __req_spec "$1" || exit 1
+    spectool -l "$1"
+)
+
+install-build-requires () (
+    __req_spec "$1" || exit 1
     sudo dnf builddep -y --allowerasing "$1"
 )
 
 build-copr () (
-    if ! test -f "$1"; then
-        echo "spec file provided '$1' CANNOT be found!"
-        exit 1
-    fi
-    rm -r "$HOME/rpmbuild/SOURCES/"
+    set -e
+    __req_spec "$1" || exit 1
+    # start from a clean SOURCES dir so stale tarballs don't shadow new ones
+    rm -rf "$HOME/rpmbuild/SOURCES"
+    mkdir -p "$HOME/rpmbuild/SOURCES"
     spectool -g -R "$1"
-    sudo dnf builddep -y "$1"
+    sudo dnf builddep -y --allowerasing "$1"
     rpmbuild -ba -vv "$1"
 )
 
 build () (
-    if ! test -f "$1"; then
-        echo "spec file provided '$1' CANNOT be found!"
-        exit 1
-    fi
-
+    set -e
+    __req_spec "$1" || exit 1
+    mkdir -p "$HOME/rpmbuild/SOURCES"
     spectool -g -R "$1"
     rpmbuild -ba -vv "$1"
+)
+
+srpm () (
+    set -e
+    __req_spec "$1" || exit 1
+    mkdir -p "$HOME/rpmbuild/SOURCES"
+    spectool -g -R "$1"
+    rpmbuild -bs -vv "$1"
+)
+
+lint () (
+    _depends-on rpmlint || exit
+    rpmlint "$@"
+)
+
+expand () (
+    __req_spec "$1" || exit 1
+    rpmspec -P "$1"
 )
 
 bump () (
     rpmdev-bumpspec "$@"
 )
 
+whatrequires () (
+    dnf repoquery --whatrequires "$@"
+)
+
 depends-on () (
-    lsof -P -T -p $1
+    _depends-on lsof || exit
+    lsof -P -T -p "$1"
 )
 
 resolve-dep () (
-    rpm -qf $1
+    rpm -qf "$@"
 )
 
 download-srpm () (
@@ -74,9 +117,17 @@ compare-versions () (
 main () (
     arg="$1"
     case "$arg" in
-        -h|--help)
+        -h|--help|"")
             show-usage
-            exit 0
+            [[ -z "$arg" ]] && exit 2 || exit 0
+            ;;
+        tree)
+            tree
+            exit
+            ;;
+        sources)
+            sources "${@:2}"
+            exit
             ;;
         buildrequires)
             install-build-requires "${@:2}"
@@ -90,8 +141,24 @@ main () (
             build "${@:2}"
             exit
             ;;
+        srpm)
+            srpm "${@:2}"
+            exit
+            ;;
+        lint)
+            lint "${@:2}"
+            exit
+            ;;
+        expand)
+            expand "${@:2}"
+            exit
+            ;;
         bump)
             bump "${@:2}"
+            exit
+            ;;
+        whatrequires)
+            whatrequires "${@:2}"
             exit
             ;;
         depends-on)
