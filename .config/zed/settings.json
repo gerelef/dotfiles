@@ -166,9 +166,7 @@
                 }
             }
         },
-        "auto_compact": {
-            "threshold": 100000,
-        },
+        "auto_compact": { "threshold": 200000 },
         "use_modifier_to_send": true,
         "thinking_display": "always_expanded",
         "single_file_review": true,
@@ -176,6 +174,11 @@
         "sidebar_side": "left",
         "default_profile": "write",
         "dock": "right",
+        "subagent_model": {
+            "enable_thinking": false,
+            "provider": "opencode",
+            "model": "go/minimax-m3",
+        },
         "default_model": {
             "effort": "high",
             "enable_thinking": true,
