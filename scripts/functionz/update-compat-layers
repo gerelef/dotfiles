@@ -18,10 +18,17 @@ update-compat-layers () {
         echo "Couldn't pick any available candidate after filtering ($response)"
         exit 1
     fi
-    dname=$(jq '.tag_name' <<< "$response" | tr -d '"')
-    tarball_url=$(jq ".assets.[] | select(.browser_download_url | contains(\"$dname.tar.gz\")) | .browser_download_url" <<< "$response" | tr -d '"')
+    dname=$(jq -r '.tag_name' <<< "$response")
+    # GE-Proton assets are arch-suffixed (e.g. GE-Proton11-5-x86_64.tar.gz).
+    # Pick the tarball matching the host's CPU arch and the release tag.
+    case "$(uname -m)" in
+        aarch64|arm64)  arch='aarch64' ;;
+        x86_64|amd64)   arch='x86_64'  ;;
+        *)              arch='x86_64'  ;;
+    esac
+    tarball_url=$(jq -r --arg dname "$dname" --arg arch "$arch" '.assets[] | select(.name | endswith(".tar.gz") and contains($dname) and contains($arch)) | .browser_download_url' <<< "$response" | head -n1)
     if [[ -z "$tarball_url" ]]; then
-        echo "Couldn't pick any available asset after filtering ($response)"
+        echo "Couldn't pick any available asset for arch '$arch' ($response)"
         exit 1
     fi
 
