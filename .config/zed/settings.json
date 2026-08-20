@@ -8,6 +8,7 @@
     "telemetry": {
         "diagnostics": false,
         "metrics": false,
+        "anthropic_retention": false
     },
     // ---------------- VISUAL ----------------
     "hide_mouse": "never",
@@ -34,28 +35,35 @@
         "git_diff": true,
         "search_results": true,
         "selected_symbol": true,
-        "diagnostics": "all",
+        "diagnostics": "information",
         "axes": { "horizontal": false },
     },
     "tab_bar": {
         "show": true,
         "show_nav_history_buttons": false,
+        "show_pinned_tabs_in_separate_row": true,
+        "show_tab_bar_buttons": true
     },
     "tabs": {
-        "close_position": "right",
-        "file_icons": false,
         "git_status": true,
+        "show_close_button": "hidden",
+        "close_position": null,
+        "file_icons": false,
     },
     "toolbar": {
         "breadcrumbs": false,
         "quick_actions": false,
         "selections_menu": false,
+        "agent_review": false,
+        "code_actions": false,
     },
     "inlay_hints": {
         "enabled": true,
         "show_type_hints": true,
         "show_parameter_hints": true,
+        "show_value_hints": true,
         "show_other_hints": true,
+        "show_background": true,
         "edit_debounce_ms": 700,
         "scroll_debounce_ms": 50,
     },
@@ -76,8 +84,8 @@
         "coloring": "fixed",
         "background_coloring": "disabled",
     },
-    "preferred_line_length": 120,
-    "wrap_guides": [120],
+    "preferred_line_length": 100,
+    "wrap_guides": [100],
     "hard_tabs": false,
     "tab_size": 4,
     // ---------------- EDITOR SETTINGS ----------------
@@ -97,75 +105,29 @@
     "show_completion_documentation": true,
     "auto_signature_help": true,
     // ---------------- AGENT SETTINGS ----------------
-    "context_servers": {
-        "agent-postit": {
-            "enabled": true,
-            "url": "http://127.0.0.1:8000/mcp",
-            "headers": { "Authorization": "Bearer NONE" }
-        },
-    },
     // https://opencode.ai/go
-    // Model                 Model training   Data retention
-    // DeepSeek V4 Flash     Used             No agreement
-    // DeepSeek V4 Pro       Not used         0 days
-    // Kimi K2.7 Code        Not used         0 days
-    // Kimi K2.6             Not used         0 days
-    // Kimi K3               Not used         0 days
-    // MiniMax M2.7          Not used         0 days
-    // MiniMax M3            Not used         0 days
-    // MiMo-V2.5-Pro         Not used         0 days
-    // MiMo-V2.5             Not used         0 days
-    // Qwen3.7 Max           Not used         0 days
-    // Qwen3.7 Plus          Not used         0 days
-    // Qwen3.6 Plus          Not used         0 days
-    // GPT 5.6 Luna          Not used         30 days
-    // GLM-5.2               Not used         0 days
-    // GLM-5.1               Not used         0 days
-    // Grok 4.5              Not used         30 days
-    // Hy3                   Not used         0 days
+    // Model                       Model training   Data retention
+    // Grok 4.5                    Not used         30 days
+    // GPT 5.6 Luna                Not used         30 days
+    // GLM-5.3                     Not used         0 days
+    // GLM-5.2                     Not used         0 days
+    // GLM-5.1                     Not used         0 days
+    // Kimi K3                     Not used         0 days
+    // Kimi K2.7 Code              Not used         0 days
+    // Kimi K2.6                   Not used         0 days
+    // MiMo-V2.5-Pro               Not used         0 days
+    // MiMo-V2.5                   Not used         0 days
+    // Qwen3.8 Max                 Not used         0 days
+    // Qwen3.7 Max                 Not used         0 days
+    // Qwen3.7 Plus                Not used         0 days
+    // Qwen3.6 Plus                Not used         0 days
+    // MiniMax M3                  Not used         0 days
+    // MiniMax M2.7                Not used         0 days
+    // Muse Spark 1.2 Contributor  Used             Not ZDR
+    // DeepSeek V4 Pro             Not used         0 days
+    // DeepSeek V4 Flash           Not used         0 days
+    // Hy3                         Not used         0 days
     "agent": {
-        "profiles": {
-            "ask": {
-                "name": "Ask",
-                "tools": {
-                    "create_thread": true,
-                    "diagnostics": true,
-                    "fetch": true,
-                    "list_agents_and_models": true,
-                    "list_directory": true,
-                    "find_path": true,
-                    "find_references": true,
-                    "get_code_actions": true,
-                    "go_to_definition": true,
-                    "read_file": true,
-                    "grep": true,
-                    "skill": true,
-                    "spawn_agent": true,
-                    "search_web": true
-                },
-                "enable_all_context_servers": false,
-                "context_servers": {
-                    "agent-postit": {
-                        "tools": {
-                            "topic.write": true,
-                            "topic.read": true,
-                            "topic.create": true,
-                            "postit.append": true,
-                            "postit.rename": true,
-                            "postit.search": true,
-                            "postit.recent": true,
-                            "postit.read_section": true,
-                            "postit.read_lines": true,
-                            "postit.read": true,
-                            "postit.ls": true,
-                            "postit.capabilities": true,
-                            "postit.delete": true,
-                            "postit.create": true
-                        }
-                    }
-                }
-            }
-        },
         "auto_compact": { "threshold": 200000 },
         "use_modifier_to_send": true,
         "thinking_display": "always_expanded",
@@ -185,34 +147,10 @@
             "provider": "opencode",
             "model": "go/glm-5.2",
         },
-        "inline_assistant_model": { "provider": "opencode", "model": "go/minimax-m2.7" },
-        "tool_permissions": {
-            "tools": {
-                // agent-postit: auto-allow
-                "mcp:agent-postit:topic.read": { "default": "allow" },
-                "mcp:agent-postit:postit.read": { "default": "allow" },
-                "mcp:agent-postit:postit.read_section": { "default": "allow" },
-                "mcp:agent-postit:postit.read_lines": { "default": "allow" },
-                "mcp:agent-postit:postit.ls": { "default": "allow" },
-                "mcp:agent-postit:postit.search": { "default": "allow" },
-                "mcp:agent-postit:postit.recent": { "default": "allow" },
-                "mcp:agent-postit:postit.capabilities": { "default": "allow" },
-                "mcp:agent-postit:topic.create": { "default": "allow" },
-                "mcp:agent-postit:topic.write": { "default": "allow" },
-                "mcp:agent-postit:postit.create": { "default": "allow" },
-                "mcp:agent-postit:postit.append": { "default": "allow" },
-                // agent-postit: confirm first
-                "mcp:agent-postit:postit.overwrite": { "default": "confirm" },
-                "mcp:agent-postit:postit.rename": { "default": "confirm" },
-                "mcp:agent-postit:postit.delete": { "default": "confirm" },
-            },
-        },
+        "inline_assistant_model": { "provider": "opencode", "model": "go/minimax-m3" },
     },
     "language_models": {
-        "opencode": {
-            "show_free_models": true,
-            "show_zen_models": false,
-        },
+        "opencode": { "show_zen_models": false },
     },
     "show_edit_predictions": false,
     "edit_predictions": {
