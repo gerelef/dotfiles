@@ -63,7 +63,7 @@
         "show_parameter_hints": true,
         "show_value_hints": true,
         "show_other_hints": true,
-        "show_background": true,
+        "show_background": false,
         "edit_debounce_ms": 700,
         "scroll_debounce_ms": 50,
     },
@@ -156,7 +156,8 @@
     "edit_predictions": {
         "allow_data_collection": "no",
         "mode": "eager",
-        "provider": "none",
+        "provider": "ollama",
+        "ollama": { "model": "JetBrains/Mellum-4b-sft-all:latest" },
         // "provider": "open_ai_compatible_api",
         // "open_ai_compatible_api": {
         //     "api_url": "https://opencode.ai/zen/go/v1/completions",
