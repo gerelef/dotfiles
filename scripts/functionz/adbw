@@ -6,7 +6,8 @@ _depends-on adb || exit
 
 show-usage () {
     echo "Usage: adb wrapper for common usecases.
-       adbw connect  # setup adb to work with usb debugging (over hotspot) and connect
+       adbw connect <ip>|<ip:port>  # connect over wifi; port optional (mDNS discovery, legacy 5555 fallback)
+       adbw pair <ip:pair-port> [code]  # pair via wireless debugging (code prompted if omitted)
        adbw devices ls  # list all devices
        adbw devices debloat-rootless  # debloat device rootlessly
        adbw devices toggle-screen  # toggle the screen for device
@@ -86,6 +87,59 @@ adb-package () (
     esac
 )
 
+# Android 11+ wireless debugging uses random ports, NOT 5555:
+#   - pair port:  Developer options -> Wireless debugging -> "Pair device with pairing code"
+#   - connect port: Developer options -> Wireless debugging -> "IP address & Port"
+adb-connect () (
+    ip="${1:-}"
+    if [[ -z $ip ]]; then echo "device ip (or ip:port) must be given!"; show-usage; exit 2; fi
+
+    # explicit port given: use it verbatim
+    if [[ $ip == *:* ]]; then
+        adb connect "$ip"
+        exit
+    fi
+
+    # no port: try mDNS discovery for this device's connect port
+    discovered="$(adb mdns services 2>/dev/null \
+        | grep -oE '([0-9]{1,3}\.){3}[0-9]{1,3}:[0-9]+' \
+        | grep -F "$ip" | head -n 1)"
+    if [[ -n $discovered ]]; then
+        echo "mDNS: $ip -> $discovered"
+        adb connect "$discovered"
+        exit
+    fi
+
+    # legacy fallback: classic 'adb tcpip 5555' (usb-initiated) workflow
+    if adb connect "$ip:5555" | grep -qE '^(connected|already connected) to '; then
+        exit
+    fi
+
+    echo "failed to connect to $ip"
+    echo "  Android 11+ wireless debugging does not use port 5555. Either:"
+    echo "    adbw pair $ip:<pair-port> <code>     # from 'Pair device with pairing code' dialog"
+    echo "    adbw connect $ip:<connect-port>      # from 'IP address & Port' on the Wireless debugging screen"
+    exit 1
+)
+
+adb-pair () (
+    addr="${1:-}"
+    code="${2:-}"
+    if [[ -z $addr ]]; then echo "ip:pair-port must be given!"; show-usage; exit 2; fi
+
+    if [[ -n $code ]]; then
+        adb pair "$addr" "$code"
+    else
+        adb pair "$addr"   # adb prompts for the pairing code itself
+    fi || exit 1
+
+    # pairing != connecting; the connect port differs from the pair port.
+    # give mDNS a moment to advertise it, then try to connect.
+    sleep 2
+    ip="${addr%%:*}"
+    adb-connect "$ip" || true
+)
+
 main () {
     if [[ $# -eq 0 ]]; then
         show-usage
@@ -101,10 +155,12 @@ main () {
                 ;;
             connect)
                 ((i++))
-                ip="${!i}"
-                if [[ -z $ip ]]; then echo "device ip must be given!"; exit 2; fi
-                adb tcpip 5555 || exit
-                adb connect "$ip"
+                adb-connect "${@:$i}" || exit
+                exit
+                ;;
+            pair)
+                ((i++))
+                adb-pair "${@:$i}" || exit
                 exit
                 ;;
             devices)
