@@ -6,6 +6,7 @@ _depends-on adb || exit
 
 show-usage () {
     echo "Usage: adb wrapper for common usecases.
+       adbw -s <serial> <command>  # target a specific device (needed when several are connected)
        adbw connect <ip>|<ip:port>  # connect over wifi; port optional (mDNS discovery, legacy 5555 fallback)
        adbw pair <ip:pair-port> [code]  # pair via wireless debugging (code prompted if omitted)
        adbw devices ls  # list all devices
@@ -14,7 +15,12 @@ show-usage () {
        adbw package ls  # list all packages 
        adbw package clear <package-name>  # clear cache & data of package-name
        adbw package remove <package-name>  # uninstall package-name
-       adbw package disable <fully.qualified.name>  # disable package using fully qualified name"
+       adbw package disable <fully.qualified.name>  # disable package using fully qualified name
+       adbw log dump [pkg] [logcat-args]  # static (non-live) logs; extra args pass to logcat (-T '<time>' ~ --since, -t <n> ~ tail)
+       adbw log follow [pkg]  # live logs (like journalctl -f)
+       adbw log crash [pkg]  # crash buffer only
+       adbw log clear  # wipe log buffers
+       adbw log size"  # ring buffer sizes (like journalctl --disk-usage)
 }
 
 adb-devices () (
@@ -52,7 +58,7 @@ adb-devices () (
 
 adb-package () (
     subcommand="$1"
-    package_named="${@:2}"
+    package_named="${2:-}"
     requires-package-named () {
         if [[ -z "$package_named" ]]; then
             echo "package-name must be given!"
@@ -81,6 +87,91 @@ adb-package () (
             ;;
         *)
             echo "Unknown package argument: ${subcommand:=NONE PROVIDED}"
+            show-usage
+            exit 2
+            ;;
+    esac
+)
+
+# journalctl-style log viewing. pkg filter resolves to a uid where possible so old
+# (pre-restart) entries still match in static dumps; running non-package processes
+# (system_server etc.) fall back to a live pid filter.
+adb-log () (
+    subcommand="$1"
+    pkg="${2:-}"
+    extra=()
+
+    # allow leading flags without a pkg filter: adbw log dump -b events
+    if [[ "$pkg" == -* ]]; then
+        extra=("${@:2}")
+        pkg=""
+    else
+        extra=("${@:3}")
+    fi
+
+    # adb's bare 'more than one device' error is unhelpful; disambiguate upfront
+    if [[ -z "$ANDROID_SERIAL" ]]; then
+        connected="$(adb devices | awk 'NR > 1 && $2 == "device" {print "  " $1}')"
+        if (( $(wc -l <<<"$connected") > 1 )); then
+            echo "multiple devices connected; target one with: adbw -s <serial> log ..."
+            echo "$connected"
+            exit 1
+        fi
+    fi
+
+    resolve-filter () {
+        local name="$1" uid pid
+
+        uid="$(adb shell pm list packages -U "$name" 2>/dev/null | tr -d '\r' \
+            | grep -oE 'uid:[0-9]+' | head -n1 | cut -d: -f2)"
+        if [[ -n "$uid" ]]; then
+            echo "--uid=$uid"
+            return 0
+        fi
+
+        # older devices without 'pm list -U'
+        uid="$(adb shell dumpsys package "$name" 2>/dev/null | tr -d '\r' \
+            | grep -m1 -oE 'userId=[0-9]+' | cut -d= -f2)"
+        if [[ -n "$uid" ]]; then
+            echo "--uid=$uid"
+            return 0
+        fi
+
+        pid="$(adb shell pidof "$name" 2>/dev/null | tr -d '\r' | awk '{print $1}')"
+        if [[ -n "$pid" ]]; then
+            echo "--pid=$pid"
+            return 0
+        fi
+
+        echo "could not resolve '$name' to a package uid or running pid" >&2
+        return 1
+    }
+
+    filter=()
+    if [[ -n "$pkg" ]]; then
+        filter=("$(resolve-filter "$pkg")") || exit 1
+    fi
+
+    case "$subcommand" in
+        dump)
+            # static, non-live (journalctl with no flags)
+            adb logcat -d "${filter[@]}" "${extra[@]}"
+            ;;
+        follow)
+            # live tail (journalctl -f)
+            adb logcat "${filter[@]}" "${extra[@]}"
+            ;;
+        crash)
+            adb logcat -d -b crash "${filter[@]}" "${extra[@]}"
+            ;;
+        clear)
+            adb logcat -c
+            ;;
+        size)
+            adb logcat -g
+            ;;
+        *)
+            echo "Unknown log argument: ${subcommand:=NONE PROVIDED}"
             show-usage
             exit 2
             ;;
@@ -142,6 +233,7 @@ adb-pair () (
 
 main () {
     if [[ $# -eq 0 ]]; then
+        echo "No command given!"
         show-usage
         exit 2
     fi
@@ -152,6 +244,17 @@ main () {
             -h|--help)
                 show-usage
                 exit 0
+                ;;
+            -s|--serial)
+                ((i++))
+                serial="${!i}"
+                if [[ -z "$serial" ]]; then
+                    echo "serial must be given after -s"
+                    show-usage
+                    exit 2
+                fi
+                # all nested adb calls (log/package/devices shell outs) target this device
+                export ANDROID_SERIAL="$serial"
                 ;;
             connect)
                 ((i++))
@@ -173,6 +276,11 @@ main () {
                 adb-package "${@:$i}"
                 exit
                 ;;
+            log)
+                ((i++))
+                adb-log "${@:$i}"
+                exit
+                ;;
             *)
                 echo "Unknown argument: $arg"
                 show-usage
@@ -180,6 +288,11 @@ main () {
                 ;;
         esac
     done
+
+    # only flags were given (e.g. 'adbw -s <serial>'): nothing was dispatched
+    echo "No command given!"
+    show-usage
+    exit 2
 }
 
 [[ "${BASH_SOURCE[0]}" == "${0}" ]] && main "$@"

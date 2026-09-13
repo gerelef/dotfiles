@@ -136,7 +136,8 @@
     // Omen Alpha                  Not used         0 days
     "agent": {
         "sandbox_permissions": {
-            "allow_unsandboxed": true
+            "write_paths": [],
+            "allow_unsandboxed": false
         },
         "auto_compact": { "threshold": 200000 },
         "use_modifier_to_send": true,
