@@ -16,6 +16,8 @@ show-usage () {
        adbw package clear <package-name>  # clear cache & data of package-name
        adbw package remove <package-name>  # uninstall package-name
        adbw package disable <fully.qualified.name>  # disable package using fully qualified name
+       adbw package kill <package-name>  # force-stop package-name
+       adbw install <apk> [flags]  # install apk (replaces existing, keeps its data); extra flags pass to adb install (e.g. -d to allow downgrade)
        adbw log dump [pkg] [logcat-args]  # static (non-live) logs; extra args pass to logcat (-T '<time>' ~ --since, -t <n> ~ tail)
        adbw log follow [pkg]  # live logs (like journalctl -f)
        adbw log crash [pkg]  # crash buffer only
@@ -84,6 +86,10 @@ adb-package () (
             for pkg in "${@:2}"; do
                 adb uninstall --user 0 "$pkg"
             done
+            ;;
+        kill)
+            requires-package-named
+            adb shell am force-stop "$package_named"
             ;;
         *)
             echo "Unknown package argument: ${subcommand:=NONE PROVIDED}"
@@ -176,6 +182,53 @@ adb-log () (
             exit 2
             ;;
     esac
+)
+
+# apk install; -r (replace existing, keep data) is the dev-workflow default.
+# common failure modes get an actionable hint instead of adb's bare error.
+adb-install () (
+    apk="${1:-}"
+    if [[ -z "$apk" ]]; then
+        echo "apk path must be given!"
+        show-usage
+        exit 2
+    fi
+    if [[ "$apk" == -* ]]; then
+        echo "apk path must come first; adb flags go after it (adbw install app.apk -d)"
+        exit 2
+    fi
+    if [[ ! -f "$apk" ]]; then
+        echo "no such file: $apk"
+        exit 2
+    fi
+    extra=("${@:2}")
+
+    # adb's bare 'more than one device' error is unhelpful; disambiguate upfront
+    if [[ -z "$ANDROID_SERIAL" ]]; then
+        connected="$(adb devices | awk 'NR > 1 && $2 == "device" {print "  " $1}')"
+        if (( $(wc -l <<<"$connected") > 1 )); then
+            echo "multiple devices connected; target one with: adbw -s <serial> install ..."
+            echo "$connected"
+            exit 1
+        fi
+    fi
+
+    output="$(adb install -r "$apk" "${extra[@]}" 2>&1)"
+    status=$?
+    echo "$output"
+
+    if (( status != 0 )); then
+        if grep -q 'INSTALL_FAILED_UPDATE_INCOMPATIBLE' <<<"$output"; then
+            pkg="$(grep -oE 'Package [a-zA-Z0-9._]+' <<<"$output" | head -n1 | cut -d' ' -f2)"
+            echo "installed copy has a different signature (e.g. store build vs locally signed); to replace it:"
+            echo "  adbw package remove ${pkg:-<package-name>}"
+            echo "  note: removal is refused while the app is the default for a role (e.g. active home launcher) - switch defaults first"
+        elif grep -q 'INSTALL_FAILED_VERSION_DOWNGRADE' <<<"$output"; then
+            echo "installed version is newer; allow the downgrade with:"
+            echo "  adbw install $apk -d"
+        fi
+    fi
+    exit $status
 )
 
 # Android 11+ wireless debugging uses random ports, NOT 5555:
@@ -279,6 +332,11 @@ main () {
             log)
                 ((i++))
                 adb-log "${@:$i}"
+                exit
+                ;;
+            install)
+                ((i++))
+                adb-install "${@:$i}"
                 exit
                 ;;
             *)
