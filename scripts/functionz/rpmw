@@ -31,6 +31,19 @@ __req_spec () (
     fi
 )
 
+# Serialize the build* commands: they share ~/rpmbuild/SOURCES (and
+# build-copr wipes it), so two concurrent rpmw builds clobber each other's
+# source tarballs mid-build. Takes an exclusive flock on FD 9 that stays
+# held for the rest of the calling (sub)shell, i.e. until the build exits.
+__lock_builds () {
+    mkdir -p "$HOME/rpmbuild"
+    exec 9>"$HOME/rpmbuild/.rpmw.lock"
+    if ! flock -n 9; then
+        echo "rpmw: another build is running, waiting for it to finish..."
+        flock 9
+    fi
+}
+
 tree () (
     _depends-on rpmdev-setuptree || exit
     rpmdev-setuptree
@@ -49,6 +62,7 @@ install-build-requires () (
 build-copr () (
     set -e
     __req_spec "$1" || exit 1
+    __lock_builds
     # start from a clean SOURCES dir so stale tarballs don't shadow new ones
     rm -rf "$HOME/rpmbuild/SOURCES"
     mkdir -p "$HOME/rpmbuild/SOURCES"
@@ -60,6 +74,7 @@ build-copr () (
 build () (
     set -e
     __req_spec "$1" || exit 1
+    __lock_builds
     mkdir -p "$HOME/rpmbuild/SOURCES"
     spectool -g -R "$1"
     rpmbuild -ba -vv "$1"
@@ -68,6 +83,7 @@ build () (
 srpm () (
     set -e
     __req_spec "$1" || exit 1
+    __lock_builds
     mkdir -p "$HOME/rpmbuild/SOURCES"
     spectool -g -R "$1"
     rpmbuild -bs -vv "$1"
