@@ -8,7 +8,7 @@
     "telemetry": {
         "diagnostics": false,
         "metrics": false,
-        "anthropic_retention": false
+        "anthropic_retention": false,
     },
     // ---------------- VISUAL ----------------
     "hide_mouse": "never",
@@ -42,7 +42,7 @@
         "show": true,
         "show_nav_history_buttons": false,
         "show_pinned_tabs_in_separate_row": true,
-        "show_tab_bar_buttons": true
+        "show_tab_bar_buttons": true,
     },
     "tabs": {
         "git_status": true,
@@ -107,7 +107,7 @@
     "auto_signature_help": false,
     "markdown_preview": {
         "max_width": 1200.0,
-        "limit_content_width": true
+        "limit_content_width": true,
     },
     // ---------------- AGENT SETTINGS ----------------
     // https://opencode.ai/go
@@ -141,9 +141,9 @@
     "agent": {
         "sandbox_permissions": {
             "write_paths": [],
-            "allow_unsandboxed": false
+            "allow_unsandboxed": false,
         },
-        "auto_compact": { "threshold": 200000 },
+        "auto_compact": { "threshold": 300000 },
         "use_modifier_to_send": true,
         "thinking_display": "always_expanded",
         "single_file_review": true,
@@ -164,10 +164,16 @@
         },
         "inline_assistant_model": { "provider": "opencode", "model": "go/minimax-m3" },
     },
+    "context_servers": {
+        "exa": {
+            "url": "https://mcp.exa.ai/mcp",
+            "headers": { "x-api-key": "" },
+        },
+    },
     "language_models": {
         "opencode": { "show_zen_models": false },
     },
-    "show_edit_predictions": true,
+    "show_edit_predictions": false,
     "edit_predictions": {
         "allow_data_collection": "no",
         "mode": "eager",
