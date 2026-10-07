@@ -17,6 +17,7 @@
     "base_keymap": "JetBrains",
     "seed_search_query_from_cursor": "selection",
     "middle_click_paste": false,
+    "scroll_beyond_last_line": "vertical_scroll_margin",
     "vertical_scroll_margin": 0,
     "restore_on_startup": "last_session",
     "session": { "restore_unsaved_buffers": true },
@@ -26,7 +27,11 @@
     "formatter": "auto",
     "use_autoclose": true,
     "always_treat_brackets_as_autoclosed": true,
+    "diff_view_style": "unified",
+    "line_ending": "prefer_lf",
     // ---------------- VISUAL ----------------
+    "code_lens": "menu",
+    "lsp_document_colors": "inlay",
     "hide_mouse": "never",
     "theme": {
         "mode": "system",
@@ -38,6 +43,11 @@
         "inline_blame": { "location": "status_bar", "enabled": true, "show_commit_summary": true },
     },
     "project_panel": {
+        "hide_hidden": false,
+        "hide_root": true,
+        "diagnostic_badges": true,
+        "show_diagnostics": "all",
+        "bold_folder_labels": true,
         "button": true,
         "dock": "left",
         "git_status": true,
@@ -48,8 +58,28 @@
         "git_diff": true,
         "search_results": true,
         "selected_symbol": true,
-        "diagnostics": "information",
+        "diagnostics": "warning",
         "axes": { "horizontal": false },
+    },
+    "sticky_scroll": {
+        "enabled": true
+    },
+    "minimap": {
+        "max_width_columns": 60,
+        "thumb": "hover",
+        "display_in": "all_editors",
+        "show": "auto"
+    },
+    "title_bar": {
+        "open_menus_on_hover": false,
+        "button_layout": "platform_default",
+        "show_menus": false,
+        "show_user_menu": true,
+        "show_sign_in": false,
+        "show_project_items": true,
+        "show_worktree_name": true,
+        "show_branch_name": true,
+        "show_branch_status_icon": true
     },
     "tab_bar": {
         "show": true,
@@ -70,6 +100,13 @@
         "agent_review": false,
         "code_actions": false,
     },
+    "status_bar": {
+        "active_language_button": true,
+        "active_encoding_button": "enabled",
+        "cursor_position_button": true,
+        "pending_keystrokes_indicator": true,
+        "line_endings_button": true
+    },
     "inlay_hints": {
         "enabled": true,
         "show_type_hints": true,
@@ -77,8 +114,13 @@
         "show_value_hints": true,
         "show_other_hints": true,
         "show_background": false,
-        "edit_debounce_ms": 700,
-        "scroll_debounce_ms": 50,
+    },
+    "diagnostics": {
+        "inline": {
+            "enabled": true,
+            "min_column": 80,
+            "padding": 4
+        }
     },
     "show_completions_on_input": true,
     "show_completion_documentation": true,
@@ -106,6 +148,7 @@
     "show_whitespaces": "selection",
     // ---------------- TERMINAL ----------------
     "terminal": {
+        "flexible": false,
         "button": true,
         "copy_on_select": false,
         "blinking": "on",
@@ -167,6 +210,10 @@
         "enable_feedback": false,
         "default_profile": "write",
         "dock": "right",
+        "flexible": false,
+        "show_turn_stats": true,
+        "max_content_width": 480.0,
+        "default_width": 500.0,
         "default_model": {
             "effort": "high",
             "enable_thinking": true,
@@ -207,8 +254,9 @@
     "edit_predictions": {
         "allow_data_collection": "no",
         "mode": "eager",
-        "provider": "ollama",
-        "ollama": { "model": "deepseek-coder:1.3b" },
+        "provider": "none",
+        // "provider": "ollama",
+        // "ollama": { "model": "deepseek-coder:1.3b" },
         // "provider": "open_ai_compatible_api",
         // "open_ai_compatible_api": {
         //     "api_url": "https://opencode.ai/zen/go/v1/completions",
