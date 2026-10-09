@@ -12,7 +12,6 @@
             "ctrl-0": "zed::ResetBufferFontSize",
             "ctrl-=": "zed::IncreaseBufferFontSize",
             "ctrl--": "zed::DecreaseBufferFontSize",
-            "ctrl-`": "terminal_panel::ToggleFocus",
             "shift shift": "file_finder::Toggle",
             "ctrl ctrl": "command_palette::Toggle",
             "ctrl-w": "pane::CloseActiveItem",
@@ -22,16 +21,15 @@
             "ctrl-f": "buffer_search::Deploy",
             "ctrl-r": "buffer_search::DeployReplace",
             "ctrl-shift-x": "workspace::ToggleZoom",
+            "ctrl-n": "agent::NewThread",
             // ---------------- LINE MANIP ----------------
-            "ctrl-c": "editor::Copy",
-            "ctrl-shift-c": "editor::Copy",  // for fatfingering convenience between terminal & buffer editor
             "ctrl-x": "editor::Cut",
             "ctrl-v": "editor::Paste",
             "ctrl-shift-v": "editor::Paste",
             "ctrl-z": "editor::Undo",
             "ctrl-shift-z": "editor::Redo",
             "ctrl-y": "editor::Redo",
-            "ctrl-alt-d": "editor::ToggleSelectedDiffHunks",
+            "ctrl-alt-d": "editor::ToggleAllDiffHunks",
             "ctrl-d": "editor::DuplicateLineDown",
             "ctrl-shift-d": "editor::DuplicateLineUp",
             "ctrl-pageup": "pane::ActivatePreviousItem",
@@ -59,7 +57,9 @@
         "context": "Terminal",
         "bindings": {
             "ctrl-t": "workspace::NewTerminal",
-            "ctrl-r": ["terminal::SendKeystroke", "ctrl-r"]  // do NOT catch ctrl-r used for reverse search by shells
+            "ctrl-r": ["terminal::SendKeystroke", "ctrl-r"],  // do NOT catch ctrl-r used for reverse search by shells
+            "ctrl-shift-c": "editor::Copy",  // for fatfingering convenience between terminal & buffer editor
+            "ctrl-`": "editor::ToggleFocus",
         }
     },
     {
@@ -72,7 +72,12 @@
         "context": "Editor",
         "bindings": {
             "ctrl-k": "editor::ToggleFold",
-            "shift-f6": "editor::Rename"
+            "shift-f6": "editor::Rename",
+            "ctrl-c": "editor::Copy",  // do not migrate to main ; this will stop us from doing kb interrupts otherwise...
+            "ctrl-shift-c": "editor::Copy",  // for fatfingering convenience between terminal & buffer editor
+            "ctrl-`": "terminal_panel::ToggleFocus",
+            "ctrl-down": "editor::GoToHunk",
+            "ctrl-up": "editor::GoToPreviousHunk",
         }
     },
     {
@@ -80,5 +85,11 @@
         "bindings": {
             "shift-f6": "project_panel::Rename"
         }
-    }
+    },
+    {
+        "context": "AgentPanel",
+        "bindings": {
+            "ctrl-`": "editor::ToggleFocus",
+        }
+    },
 ]
