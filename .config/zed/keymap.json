@@ -90,6 +90,18 @@
         "context": "AgentPanel",
         "bindings": {
             "ctrl-`": "editor::ToggleFocus",
+            "up": "agent::ScrollOutputToPreviousMessage",
+            "down": "agent::ScrollOutputToNextMessage",
+            // FIXME this doesn't work yet.
+            //  "home": "agent::ScrollOutputToTop",
+            //  "end": "agent::ScrollOutputToBottom",
         }
     },
+    {
+        "context": "AcpThread",
+        "unbind": {
+            "up": "agent::ScrollOutputLineUp",
+            "down": "agent::ScrollOutputLineDown",
+        }
+    }
 ]
