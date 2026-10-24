@@ -223,6 +223,7 @@ alias fuck='sudo $(history -p \!\!)'
 [[ -n "$(command -v npm)" ]] && alias npm="\npm --loglevel silly"
 [[ -n "$(command -v yt-dlp)" ]] && alias ytdl-mp4="yt-dlp --format \"bv*[ext=mp4]+ba[ext=m4a]/b[ext=mp4]\" "
 [[ -n "$(command -v yt-dlp)" ]] && alias ytdl-thumbnail="yt-dlp --write-thumbnail --skip-download "
+[[ -n "$(command -v tmux)" ]] && alias agent="tmux new -As agent"
 
 if [[ -f '/etc/wsl.conf' ]]; then
     # turn off world-writeable directory colouring when wsl is detected

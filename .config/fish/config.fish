@@ -157,6 +157,7 @@ type -q wget && abbr --position command --add wget "wget -c --read-timeout=5 --t
 type -q npm && abbr --position command --add npm "npm --loglevel silly"
 type -q yt-dlp && abbr --position command --set-cursor --add ytdl-mp4 "yt-dlp --format \"bv*[ext=mp4]+ba[ext=m4a]/b[ext=mp4]\""
 type -q yt-dlp && abbr --position command --set-cursor --add ytdl-thumbnail "yt-dlp --write-thumbnail --skip-download"
+type -q tmux && abbr --position command --set-cursor --add agent "tmux new -As agent"
 
 if test -f '/etc/wsl.conf'
     # turn off world-writeable directory colouring when wsl is detected
